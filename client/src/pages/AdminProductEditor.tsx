@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -30,14 +31,24 @@ import {
   FileImage,
   PenTool,
   Loader2,
+  LayoutGrid,
 } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 
+type PartData = {
+  id: number;
+  key: string;
+  label: string;
+  imageUrl: string | null;
+  sortOrder: number;
+};
+
 type ZoneData = {
   id: number;
   label: string;
+  partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
   purpose: "logo" | "playerName" | "playerNumber" | "custom";
@@ -75,6 +86,24 @@ export default function AdminProductEditor() {
     onError: (err) => toast.error(`Fehler: ${err.message}`),
   });
 
+  const createPart = trpc.part.create.useMutation({
+    onSuccess: () => {
+      utils.product.getById.invalidate({ id: productId });
+      toast.success("Teil hinzugefügt");
+    },
+  });
+
+  const updatePartMut = trpc.part.update.useMutation({
+    onSuccess: () => utils.product.getById.invalidate({ id: productId }),
+  });
+
+  const deletePartMut = trpc.part.delete.useMutation({
+    onSuccess: () => {
+      utils.product.getById.invalidate({ id: productId });
+      toast.success("Teil gelöscht");
+    },
+  });
+
   const createZone = trpc.zone.create.useMutation({
     onSuccess: () => {
       utils.product.getById.invalidate({ id: productId });
@@ -100,7 +129,7 @@ export default function AdminProductEditor() {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [activeSide, setActiveSide] = useState<"front" | "back">("front");
+  const [activePartId, setActivePartId] = useState<number | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
   const [draggingZone, setDraggingZone] = useState<number | null>(null);
   const [resizingZone, setResizingZone] = useState<number | null>(null);
@@ -111,6 +140,9 @@ export default function AdminProductEditor() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+
+  const parts: PartData[] = (productData?.parts as PartData[]) || [];
+  const hasParts = parts.length > 0;
 
   useEffect(() => {
     if (productData) {
@@ -123,15 +155,24 @@ export default function AdminProductEditor() {
           purpose: z.purpose || "logo",
         }))
       );
+      // Auto-select first part if none selected
+      if (activePartId === null && productData.parts?.length) {
+        setActivePartId((productData.parts as PartData[])[0].id);
+      }
     }
   }, [productData]);
 
-  const currentImage = activeSide === "front" ? productData?.frontImageUrl : productData?.backImageUrl;
-  const currentZones = localZones.filter((z) => z.side === activeSide);
+  const activePart = parts.find((p) => p.id === activePartId);
+  const currentImage = hasParts
+    ? activePart?.imageUrl || null
+    : null;
+  const currentZones = hasParts
+    ? localZones.filter((z) => z.partId === activePartId)
+    : localZones;
 
-  // ─── Image Upload ───────────────────────────────────────────────────────
-  const handleImageUpload = useCallback(
-    async (side: "front" | "back") => {
+  // ─── Image Upload for Part ─────────────────────────────────────────────
+  const handlePartImageUpload = useCallback(
+    async (partId: number) => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/jpeg,image/png,image/webp,image/svg+xml,image/gif";
@@ -168,11 +209,49 @@ export default function AdminProductEditor() {
           }
 
           const { url } = await resp.json();
+          await updatePartMut.mutateAsync({ id: partId, imageUrl: url });
+          toast.success("Bild hochgeladen");
+        } catch (err: any) {
+          toast.error(err.message || "Upload fehlgeschlagen");
+        } finally {
+          setUploading(false);
+          setUploadProgress("");
+        }
+      };
+      input.click();
+    },
+    [updatePartMut]
+  );
+
+  // ─── Legacy Image Upload (for products without parts) ──────────────────
+  const handleLegacyImageUpload = useCallback(
+    async (side: "front" | "back") => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/jpeg,image/png,image/webp,image/svg+xml,image/gif";
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        setUploading(true);
+        setUploadProgress("Wird hochgeladen...");
+        try {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(",")[1]);
+            reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden"));
+            reader.readAsDataURL(file);
+          });
+          const resp = await fetch("/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileName: file.name, data: base64, contentType: file.type }),
+          });
+          if (!resp.ok) throw new Error("Upload fehlgeschlagen");
+          const { url } = await resp.json();
           await updateProduct.mutateAsync({
             id: productId,
             ...(side === "front" ? { frontImageUrl: url } : { backImageUrl: url }),
           });
-          toast.success(`${side === "front" ? "Vorderseite" : "Rückseite"} hochgeladen`);
         } catch (err: any) {
           toast.error(err.message || "Upload fehlgeschlagen");
         } finally {
@@ -323,24 +402,132 @@ export default function AdminProductEditor() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6">
           {/* Left: Canvas */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={activeSide === "front" ? "default" : "outline"} size="sm" className="h-8" onClick={() => setActiveSide("front")}>Vorderseite</Button>
-              <Button variant={activeSide === "back" ? "default" : "outline"} size="sm" className="h-8" onClick={() => setActiveSide("back")}>Rückseite</Button>
-              <div className="flex-1" />
-              <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm" onClick={() => handleImageUpload(activeSide)} disabled={uploading}>
-                {uploading ? <><Loader2 className="w-3.5 h-3.5 sm:mr-1.5 animate-spin" /><span className="hidden sm:inline">{uploadProgress}</span></> : <><Upload className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">{activeSide === "front" ? "Vorder" : "Rück"}seite hochladen</span></>}
-              </Button>
-            </div>
+            {/* Part Tabs / Navigation */}
+            {hasParts ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <LayoutGrid className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Teile</span>
+                </div>
+                <ScrollArea className="w-full">
+                  <div className="flex gap-2 pb-2">
+                    {parts
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map((part) => {
+                        const isActive = activePartId === part.id;
+                        const partZones = localZones.filter((z) => z.partId === part.id);
+                        return (
+                          <button
+                            key={part.id}
+                            className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all min-w-[90px] sm:min-w-[110px] ${
+                              isActive
+                                ? "border-primary bg-primary/5 shadow-sm"
+                                : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
+                            }`}
+                            onClick={() => {
+                              setActivePartId(part.id);
+                              setSelectedZoneId(null);
+                            }}
+                          >
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-muted/30 rounded overflow-hidden">
+                              {part.imageUrl ? (
+                                <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Image className="w-5 h-5 text-muted-foreground/30" />
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{part.label}</span>
+                            {partZones.length > 0 && (
+                              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                                {partZones.length} {partZones.length === 1 ? "Zone" : "Zonen"}
+                              </Badge>
+                            )}
+                          </button>
+                        );
+                      })}
+                    {/* Add Part Button */}
+                    <button
+                      className="flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 border-dashed border-muted-foreground/20 hover:border-primary/50 hover:bg-primary/5 transition-all min-w-[90px] sm:min-w-[110px]"
+                      onClick={() => {
+                        createPart.mutate({
+                          productId,
+                          key: `teil_${parts.length + 1}`,
+                          label: `Teil ${parts.length + 1}`,
+                          sortOrder: parts.length,
+                        });
+                      }}
+                    >
+                      <Plus className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-[10px] sm:text-xs text-muted-foreground">Neues Teil</span>
+                    </button>
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+
+                {/* Upload Button for active part */}
+                {activePart && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs sm:text-sm"
+                      onClick={() => handlePartImageUpload(activePart.id)}
+                      disabled={uploading}
+                    >
+                      {uploading ? (
+                        <><Loader2 className="w-3.5 h-3.5 sm:mr-1.5 animate-spin" /><span className="hidden sm:inline">{uploadProgress}</span></>
+                      ) : (
+                        <><Upload className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Bild für {activePart.label} hochladen</span></>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      onClick={() => {
+                        if (confirm(`"${activePart.label}" wirklich löschen?`)) {
+                          deletePartMut.mutate({ id: activePart.id });
+                          setActivePartId(parts.find((p) => p.id !== activePart.id)?.id || null);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Legacy: front/back toggle for products without parts */
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button variant="outline" size="sm" className="h-8" onClick={() => handleLegacyImageUpload("front")} disabled={uploading}>
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />Vorderseite
+                </Button>
+                <Button variant="outline" size="sm" className="h-8" onClick={() => handleLegacyImageUpload("back")} disabled={uploading}>
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />Rückseite
+                </Button>
+              </div>
+            )}
 
             {/* Canvas Area */}
             <Card className="overflow-hidden">
-              <div ref={canvasRef} className="relative bg-[#f8f9fa] aspect-[3/4] select-none" style={{ cursor: draggingZone ? "grabbing" : "default" }} onClick={() => setSelectedZoneId(null)}>
+              <div
+                ref={canvasRef}
+                className="relative bg-[#f8f9fa] aspect-[3/4] select-none"
+                style={{ cursor: draggingZone ? "grabbing" : "default" }}
+                onClick={() => setSelectedZoneId(null)}
+              >
                 {currentImage ? (
-                  <img src={currentImage} alt={`${activeSide} Ansicht`} className="w-full h-full object-contain pointer-events-none" draggable={false} />
+                  <img src={currentImage} alt="Produktansicht" className="w-full h-full object-contain pointer-events-none" draggable={false} />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground px-4">
                     <Upload className="w-10 h-10 sm:w-12 sm:h-12 mb-3 opacity-30" />
-                    <p className="text-xs sm:text-sm text-center">Klicke oben auf &quot;Hochladen&quot; um ein Bild hinzuzufügen</p>
+                    <p className="text-xs sm:text-sm text-center">
+                      {hasParts && activePart
+                        ? `Klicke oben auf "Bild hochladen" um ein Bild für "${activePart.label}" hinzuzufügen`
+                        : "Kein Teil ausgewählt"}
+                    </p>
                   </div>
                 )}
 
@@ -381,6 +568,9 @@ export default function AdminProductEditor() {
             <Tabs defaultValue="details">
               <TabsList className="w-full">
                 <TabsTrigger value="details" className="flex-1 text-xs sm:text-sm">Details</TabsTrigger>
+                {hasParts && activePart && (
+                  <TabsTrigger value="part" className="flex-1 text-xs sm:text-sm">Teil</TabsTrigger>
+                )}
                 <TabsTrigger value="zones" className="flex-1 text-xs sm:text-sm">Zonen</TabsTrigger>
               </TabsList>
 
@@ -405,12 +595,71 @@ export default function AdminProductEditor() {
                 </Card>
               </TabsContent>
 
+              {/* Part Details Tab */}
+              {hasParts && activePart && (
+                <TabsContent value="part" className="space-y-4 mt-3 sm:mt-4">
+                  <Card>
+                    <CardHeader className="pb-2 sm:pb-3"><CardTitle className="text-sm sm:text-base">Teil: {activePart.label}</CardTitle></CardHeader>
+                    <CardContent className="space-y-3 sm:space-y-4">
+                      <div>
+                        <Label className="text-xs sm:text-sm">Bezeichnung</Label>
+                        <Input
+                          value={activePart.label}
+                          className="h-8 sm:h-9"
+                          onChange={(e) => {
+                            // Optimistic local update
+                          }}
+                          onBlur={(e) => updatePartMut.mutate({ id: activePart.id, label: e.target.value })}
+                          defaultValue={activePart.label}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs sm:text-sm">Schlüssel</Label>
+                        <Input
+                          value={activePart.key}
+                          className="h-8 sm:h-9 font-mono text-xs"
+                          onBlur={(e) => updatePartMut.mutate({ id: activePart.id, key: e.target.value })}
+                          defaultValue={activePart.key}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs sm:text-sm">Sortierung</Label>
+                        <Input
+                          type="number"
+                          className="h-8 sm:h-9"
+                          defaultValue={activePart.sortOrder}
+                          onBlur={(e) => updatePartMut.mutate({ id: activePart.id, sortOrder: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
                 <Card>
                   <CardHeader className="pb-2 sm:pb-3 flex flex-row items-center justify-between">
                     <CardTitle className="text-sm sm:text-base">Platzierungszonen</CardTitle>
-                    <Button size="sm" className="h-8 text-xs" onClick={() => createZone.mutate({ productId, label: `Zone ${currentZones.length + 1}`, side: activeSide, type: "image", purpose: "logo", posX: 30, posY: 30, width: 25, height: 20, sortOrder: currentZones.length })}>
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() =>
+                        createZone.mutate({
+                          productId,
+                          partId: activePartId || undefined,
+                          label: `Zone ${currentZones.length + 1}`,
+                          side: "front",
+                          type: "image",
+                          purpose: "logo",
+                          posX: 30,
+                          posY: 30,
+                          width: 25,
+                          height: 20,
+                          sortOrder: currentZones.length,
+                        })
+                      }
+                    >
                       <Plus className="w-3.5 h-3.5 mr-1" />Zone hinzufügen
                     </Button>
                   </CardHeader>
@@ -418,7 +667,9 @@ export default function AdminProductEditor() {
                     {currentZones.length === 0 ? (
                       <div className="text-center py-6 sm:py-8 text-muted-foreground text-xs sm:text-sm">
                         <Layers className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-30" />
-                        Noch keine Zonen für diese Seite.
+                        {hasParts && activePart
+                          ? `Noch keine Zonen für "${activePart.label}".`
+                          : "Noch keine Zonen vorhanden."}
                       </div>
                     ) : (
                       <div className="space-y-3">

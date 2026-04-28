@@ -1,0 +1,45 @@
+Admin-Produktliste: Viele Test-Produkte von den Tests vorhanden. 
+Ich muss ein neues Template-basiertes Produkt erstellen um die Gesamtvorschau zu testen.
+Klicke auf "Neues Produkt" und wähle das Trikot-Template.
+
+Template-Auswahl Dialog zeigt:
+- "Trikot Klassisch" mit Beschreibung und allen 7 Teilen als Badges
+- Vorderteil, Rückteil, Ärmel Links, Ärmel Rechts, Kragen, Bündchen Links, Bündchen Rechts
+- Vorschaubild ist leer (kein Thumbnail) - das ist OK, weil es ein generisches Template ist
+
+Produkt aus Vorlage erstellt: "Heimtrikot 2025/26"
+- Admin-Editor zeigt 7 Teile in der horizontalen Navigation
+- Vorderteil ist ausgewählt, zeigt Trikot-Kontur mit 3 vordefinierten Zonen:
+  - Brust Logo (blau)
+  - Brust Sponsor (rot/grün)
+  - Bauch Sponsor (grün)
+- Zonen sind korrekt auf dem Canvas positioniert
+- Rechts: Produktdetails Panel mit Name, Kategorie, Beschreibung
+- FUNKTIONIERT PERFEKT! Template wurde korrekt angelegt mit allen 7 Teilen und 9 Zonen
+
+Kunden-Konfigurator Test (Heimtrikot 2025/26):
+- 7 Teile in der horizontalen Navigation (Vorderteil, Rückteil, Ärmel Links/Rechts, Kragen, Bündchen Links/Rechts)
+- "Einzelteile" und "Gesamtübersicht" Toggle-Buttons sichtbar
+- Vorderteil zeigt Trikot-Kontur mit 3 Zonen: Brust Logo, Brust Sponsor, Bauch Sponsor
+- Rechtes Panel: Zonen-Tab mit Upload-Möglichkeiten und Text-Eingabe
+- Mannschaft-Tab verfügbar
+- Export-Button oben rechts
+- ALLES FUNKTIONIERT!
+
+Gesamtübersicht-Modus Test:
+- Toggle auf "Gesamtübersicht" geklickt - Button ist jetzt aktiv (blau hervorgehoben)
+- Zeigt alle 7 Teile in einem Grid-Layout:
+  - Vorderteil, Rückteil, Ärmel Links (obere Reihe)
+  - Ärmel Rechts, Kragen, Bündchen Links (untere Reihe)
+  - Bündchen Rechts (darunter, muss scrollen)
+- Jedes Teil zeigt seine Kontur und Zonen
+- Rechtes Panel zeigt weiterhin die Zonen des ausgewählten Teils
+- GESAMTÜBERSICHT FUNKTIONIERT!
+
+Rückteil-Test:
+- Rückteil zeigt V-Ausschnitt Kontur mit 3 Zonen:
+  - Spielername (purpose: playerName) - Hinweis: "Wähle einen Spieler aus der Mannschaftsliste"
+  - Spielernummer (purpose: playerNumber) - Hinweis: "Wähle einen Spieler aus der Mannschaftsliste"
+  - Rücken Sponsor (Freitext + Bild-Upload)
+- Purpose-basierte Zonen werden korrekt erkannt und angezeigt!
+- ALLES FUNKTIONIERT PERFEKT!

@@ -146,6 +146,13 @@ export default function Home() {
                         alt={product.name}
                         className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                       />
+                    ) : product.templateId ? (
+                      <div className="w-full h-full flex items-center justify-center p-4">
+                        <div className="text-center">
+                          <Shirt className="w-10 h-10 sm:w-14 sm:h-14 text-primary/40 mx-auto" />
+                          <span className="text-[10px] text-muted-foreground mt-1 block">Template-Produkt</span>
+                        </div>
+                      </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Shirt className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground/30" />

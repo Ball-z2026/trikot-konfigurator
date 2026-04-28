@@ -4,8 +4,10 @@ import {
   InsertUser,
   users,
   products,
+  productParts,
   productZones,
   InsertProduct,
+  InsertProductPart,
   InsertProductZone,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -143,9 +145,105 @@ export async function updateProduct(
 export async function deleteProduct(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  // Delete zones first
+  // Delete zones first, then parts, then product
   await db.delete(productZones).where(eq(productZones.productId, id));
+  await db.delete(productParts).where(eq(productParts.productId, id));
   await db.delete(products).where(eq(products.id, id));
+}
+
+// ─── Product Parts Helpers ──────────────────────────────────────────────────
+
+export async function listPartsByProduct(productId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(productParts)
+    .where(eq(productParts.productId, productId))
+    .orderBy(asc(productParts.sortOrder));
+}
+
+export async function createPart(data: InsertProductPart) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(productParts).values(data);
+  return result[0].insertId;
+}
+
+export async function updatePart(id: number, data: Partial<InsertProductPart>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(productParts).set(data).where(eq(productParts.id, id));
+}
+
+export async function deletePart(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Delete zones belonging to this part first
+  await db.delete(productZones).where(eq(productZones.partId, id));
+  await db.delete(productParts).where(eq(productParts.id, id));
+}
+
+/**
+ * Create a product from a template: creates the product, all parts, and all predefined zones.
+ * Returns the new product ID.
+ */
+export async function createProductFromTemplate(
+  productData: InsertProduct,
+  parts: Array<{
+    key: string;
+    label: string;
+    imageUrl: string;
+    sortOrder: number;
+    zones: Array<{
+      label: string;
+      type: "image" | "text" | "both";
+      purpose: "logo" | "playerName" | "playerNumber" | "custom";
+      posX: number;
+      posY: number;
+      width: number;
+      height: number;
+      sortOrder: number;
+    }>;
+  }>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // 1. Create the product
+  const productResult = await db.insert(products).values(productData);
+  const productId = productResult[0].insertId;
+
+  // 2. Create parts and their zones
+  for (const part of parts) {
+    const partResult = await db.insert(productParts).values({
+      productId,
+      key: part.key,
+      label: part.label,
+      imageUrl: part.imageUrl,
+      sortOrder: part.sortOrder,
+    });
+    const partId = partResult[0].insertId;
+
+    // 3. Create zones for this part
+    for (const zone of part.zones) {
+      await db.insert(productZones).values({
+        productId,
+        partId,
+        label: zone.label,
+        side: "front", // default, not used for part-based products
+        type: zone.type,
+        purpose: zone.purpose,
+        posX: zone.posX,
+        posY: zone.posY,
+        width: zone.width,
+        height: zone.height,
+        sortOrder: zone.sortOrder,
+      });
+    }
+  }
+
+  return productId;
 }
 
 // ─── Zone Helpers ───────────────────────────────────────────────────────────
@@ -157,6 +255,16 @@ export async function listZonesByProduct(productId: number) {
     .select()
     .from(productZones)
     .where(eq(productZones.productId, productId))
+    .orderBy(asc(productZones.sortOrder));
+}
+
+export async function listZonesByPart(partId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(productZones)
+    .where(eq(productZones.partId, partId))
     .orderBy(asc(productZones.sortOrder));
 }
 

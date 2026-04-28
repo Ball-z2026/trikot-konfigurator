@@ -20,11 +20,17 @@ import {
   Trash2,
   Eye,
   EyeOff,
+  LayoutTemplate,
+  FileText,
+  ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
+import { TEXTIL_TEMPLATES } from "@shared/templates";
+
+type CreateMode = "choose" | "template" | "blank";
 
 export default function AdminProducts() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -40,8 +46,20 @@ export default function AdminProducts() {
       setLocation(`/admin/products/${data.id}`);
       toast.success("Produkt erstellt");
       setDialogOpen(false);
+      resetDialog();
     },
     onError: () => toast.error("Fehler beim Erstellen"),
+  });
+
+  const createFromTemplate = trpc.product.createFromTemplate.useMutation({
+    onSuccess: (data) => {
+      utils.product.list.invalidate();
+      setLocation(`/admin/products/${data.id}`);
+      toast.success("Produkt aus Vorlage erstellt – Teile und Zonen wurden automatisch angelegt!");
+      setDialogOpen(false);
+      resetDialog();
+    },
+    onError: () => toast.error("Fehler beim Erstellen aus Vorlage"),
   });
 
   const deleteProduct = trpc.product.delete.useMutation({
@@ -60,8 +78,38 @@ export default function AdminProducts() {
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createMode, setCreateMode] = useState<CreateMode>("choose");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("");
+
+  const resetDialog = () => {
+    setCreateMode("choose");
+    setSelectedTemplateId(null);
+    setNewName("");
+    setNewCategory("");
+  };
+
+  const selectedTemplate = TEXTIL_TEMPLATES.find((t) => t.id === selectedTemplateId);
+
+  const handleCreateFromTemplate = () => {
+    if (!selectedTemplate || !newName.trim()) return;
+    createFromTemplate.mutate({
+      name: newName.trim(),
+      description: selectedTemplate.description,
+      category: newCategory.trim() || selectedTemplate.category,
+      templateId: selectedTemplate.id,
+      parts: selectedTemplate.parts,
+    });
+  };
+
+  const handleCreateBlank = () => {
+    if (!newName.trim()) return;
+    createProduct.mutate({
+      name: newName.trim(),
+      category: newCategory.trim() || undefined,
+    });
+  };
 
   if (loading) {
     return (
@@ -121,49 +169,221 @@ export default function AdminProducts() {
             </Link>
             <h1 className="text-lg font-bold">Produktverwaltung</h1>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog
+            open={dialogOpen}
+            onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) resetDialog();
+            }}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Neues Produkt
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Neues Produkt erstellen</DialogTitle>
+                <DialogTitle>
+                  {createMode === "choose" && "Neues Produkt erstellen"}
+                  {createMode === "template" && !selectedTemplateId && "Vorlage auswählen"}
+                  {createMode === "template" && selectedTemplateId && "Produkt aus Vorlage"}
+                  {createMode === "blank" && "Leeres Produkt erstellen"}
+                </DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label htmlFor="name">Produktname</Label>
-                  <Input
-                    id="name"
-                    placeholder="z.B. Trikot Modell A"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                  />
+
+              {/* Step 1: Choose mode */}
+              {createMode === "choose" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                  <button
+                    className="group relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-dashed hover:border-primary hover:bg-primary/5 transition-all text-left"
+                    onClick={() => setCreateMode("template")}
+                  >
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <LayoutTemplate className="w-7 h-7 text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold text-base">Aus Vorlage</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Wähle ein vordefiniertes Template mit Teilen und Platzierungszonen
+                      </p>
+                    </div>
+                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </button>
+
+                  <button
+                    className="group relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-dashed hover:border-primary hover:bg-primary/5 transition-all text-left"
+                    onClick={() => setCreateMode("blank")}
+                  >
+                    <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                      <FileText className="w-7 h-7 text-muted-foreground group-hover:text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold text-base">Leeres Produkt</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Erstelle ein leeres Produkt und lade eigene Bilder hoch
+                      </p>
+                    </div>
+                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </button>
                 </div>
-                <div>
-                  <Label htmlFor="category">Kategorie</Label>
-                  <Input
-                    id="category"
-                    placeholder="z.B. Trikot, Hoodie, Jacke..."
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                  />
+              )}
+
+              {/* Step 2a: Template selection */}
+              {createMode === "template" && !selectedTemplateId && (
+                <div className="space-y-4 pt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCreateMode("choose")}
+                    className="mb-2"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Zurück
+                  </Button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {TEXTIL_TEMPLATES.map((template) => (
+                      <button
+                        key={template.id}
+                        className="group flex flex-col overflow-hidden rounded-xl border-2 hover:border-primary transition-all"
+                        onClick={() => {
+                          setSelectedTemplateId(template.id);
+                          setNewCategory(template.category);
+                        }}
+                      >
+                        <div className="aspect-[4/3] bg-muted/30 overflow-hidden p-4">
+                          <img
+                            src={template.previewUrl}
+                            alt={template.name}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <div className="p-4 text-left">
+                          <h4 className="font-semibold">{template.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {template.description}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {template.parts.map((part) => (
+                              <Badge key={part.key} variant="secondary" className="text-xs">
+                                {part.label}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <Button
-                  className="w-full"
-                  disabled={!newName.trim()}
-                  onClick={() =>
-                    createProduct.mutate({
-                      name: newName.trim(),
-                      category: newCategory.trim() || undefined,
-                    })
-                  }
-                >
-                  Erstellen
-                </Button>
-              </div>
+              )}
+
+              {/* Step 2b: Template selected – enter name */}
+              {createMode === "template" && selectedTemplateId && selectedTemplate && (
+                <div className="space-y-4 pt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedTemplateId(null)}
+                    className="mb-2"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Andere Vorlage
+                  </Button>
+
+                  <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
+                    <img
+                      src={selectedTemplate.previewUrl}
+                      alt={selectedTemplate.name}
+                      className="w-20 h-20 object-contain"
+                    />
+                    <div>
+                      <h4 className="font-semibold">{selectedTemplate.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedTemplate.parts.length} Teile,{" "}
+                        {selectedTemplate.parts.reduce((sum, p) => sum + p.zones.length, 0)} vordefinierte Zonen
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="tpl-name">Produktname</Label>
+                    <Input
+                      id="tpl-name"
+                      placeholder="z.B. Heimtrikot 2025/26"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="tpl-category">Kategorie</Label>
+                    <Input
+                      id="tpl-category"
+                      placeholder="z.B. Trikot"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    className="w-full"
+                    disabled={!newName.trim() || createFromTemplate.isPending}
+                    onClick={handleCreateFromTemplate}
+                  >
+                    {createFromTemplate.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    ) : (
+                      <LayoutTemplate className="w-4 h-4 mr-2" />
+                    )}
+                    Aus Vorlage erstellen
+                  </Button>
+                </div>
+              )}
+
+              {/* Step 2c: Blank product */}
+              {createMode === "blank" && (
+                <div className="space-y-4 pt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCreateMode("choose")}
+                    className="mb-2"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Zurück
+                  </Button>
+                  <div>
+                    <Label htmlFor="blank-name">Produktname</Label>
+                    <Input
+                      id="blank-name"
+                      placeholder="z.B. Trikot Modell A"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="blank-category">Kategorie</Label>
+                    <Input
+                      id="blank-category"
+                      placeholder="z.B. Trikot, Hoodie, Jacke..."
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    className="w-full"
+                    disabled={!newName.trim() || createProduct.isPending}
+                    onClick={handleCreateBlank}
+                  >
+                    {createProduct.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    ) : (
+                      <Plus className="w-4 h-4 mr-2" />
+                    )}
+                    Leeres Produkt erstellen
+                  </Button>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -180,7 +400,7 @@ export default function AdminProducts() {
             <Shirt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Keine Produkte vorhanden</h3>
             <p className="text-muted-foreground mb-6">
-              Erstelle dein erstes Produkt, um loszulegen.
+              Erstelle dein erstes Produkt – wähle eine Vorlage oder starte von Null.
             </p>
             <Button onClick={() => setDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
@@ -203,7 +423,13 @@ export default function AdminProducts() {
                       <Shirt className="w-16 h-16 text-muted-foreground/20" />
                     </div>
                   )}
-                  <div className="absolute top-3 right-3">
+                  <div className="absolute top-3 right-3 flex gap-1">
+                    {(product as any).templateId && (
+                      <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
+                        <LayoutTemplate className="w-3 h-3 mr-1" />
+                        Vorlage
+                      </Badge>
+                    )}
                     <Badge variant={product.published ? "default" : "secondary"}>
                       {product.published ? "Veröffentlicht" : "Entwurf"}
                     </Badge>

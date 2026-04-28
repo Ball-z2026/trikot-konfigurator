@@ -1,0 +1,9 @@
+Trikot Template Asset URLs
+===========================
+vorderteil: /manus-storage/trikot_vorderteil_58c100c1.png
+rueckteil: /manus-storage/trikot_rueckteil_4f149411.png
+aermel_panel_1: /manus-storage/trikot_aermel_panel_1_ecb40de3.png
+aermel_panel_2: /manus-storage/trikot_aermel_panel_2_03dd3553.png
+kragen: /manus-storage/trikot_kragen_db24b3df.png
+buendchen_1: /manus-storage/trikot_buendchen_1_6da9054f.png
+buendchen_2: /manus-storage/trikot_buendchen_2_f87a5d72.png

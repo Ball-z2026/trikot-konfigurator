@@ -237,3 +237,23 @@
 [2026-04-28T12:57:14.483Z] 8:57:14 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-28T12:58:42.666Z] 8:58:42 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
 [2026-04-28T13:02:37.062Z] 9:02:37 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-28T17:43:02.620Z] [Auth] Missing session cookie
+[2026-04-28T17:44:31.163Z] 1:44:31 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-28T17:44:32.555Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T17:44:32.791Z] Server running on http://localhost:3000/
+[2026-04-28T17:45:36.438Z] 1:45:36 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-28T17:45:38.023Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T17:45:38.270Z] Server running on http://localhost:3000/
+[2026-04-28T17:46:13.463Z] 1:46:13 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-28T17:46:14.930Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T17:46:15.194Z] Server running on http://localhost:3000/
+[2026-04-28T17:47:34.032Z] 1:47:34 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-04-28T17:50:25.615Z] 1:50:25 PM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-04-28T17:50:27.689Z] 1:50:27 PM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-scroll-area
+[2026-04-28T17:50:27.690Z] 1:50:27 PM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-04-28T17:50:34.112Z] [Auth] Missing session cookie
+[2026-04-28T17:54:44.971Z] 1:54:44 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-28T17:54:51.399Z] [Auth] Missing session cookie
+[2026-04-28T17:55:19.983Z] 1:55:19 PM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-04-28T17:57:35.354Z] 1:57:35 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-28T17:58:07.180Z] [Auth] Missing session cookie

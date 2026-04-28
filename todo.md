@@ -30,3 +30,13 @@
 - [x] Admin Bild-Upload Error-Handling und Loading-States verbessern
 - [x] Zonen-Mapping für Name/Nummer explizit modellieren (purpose-Feld: logo, playerName, playerNumber, custom)
 - [x] PNG-/ZIP-Export stabilisieren (double rAF + reduzierter Timeout, Error-Handling pro Spieler, Dateinamen-Sanitization)
+
+## Trikot-Template als Vorlage bei Produkterstellung
+- [x] Trikot-Teile in höherer Auflösung extrahieren und als Assets hochladen
+- [x] DB-Schema: productParts Tabelle + productZones mit partId erweitert + products mit templateId
+- [x] Admin-Produkterstellung: Template-Auswahl Dropdown/Karten bei "Neues Produkt"
+- [x] Bei Template-Auswahl: Teile-Bilder und vordefinierte Zonen automatisch anlegen
+- [x] Konfigurator: Einzelteile-Navigation (Vorderteil, Rückteil, Ärmel etc.) statt nur Vorder-/Rückseite
+- [x] Konfigurator: Zusammengebaute Trikot-Gesamtvorschau (alle Teile gleichzeitig in einem Grid-Layout)
+- [x] UI-Toggle zwischen Einzelteil-Bearbeitung und Gesamtvorschau (Einzelteile / Gesamtübersicht Buttons)
+- [x] Home-Seite: Vorschau für Parts-basierte Produkte (Template-Icon Fallback)
