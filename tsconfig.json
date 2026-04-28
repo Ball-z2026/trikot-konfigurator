@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -17,7 +17,12 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": ["./client/src/*"],
+      "@shared/*": ["./shared/*"],
+      "@assets/*": ["./attached_assets/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["client/src", "server", "shared"]
 }

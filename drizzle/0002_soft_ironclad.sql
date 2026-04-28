@@ -1,0 +1,1 @@
+ALTER TABLE `product_zones` ADD `purpose` enum('logo','playerName','playerNumber','custom') DEFAULT 'logo' NOT NULL;

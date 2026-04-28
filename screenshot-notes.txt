@@ -1,0 +1,9 @@
+Admin Product Editor funktioniert:
+- Produkt "Test Trikot" wurde erfolgreich erstellt (ID 1)
+- Zonen-Tab zeigt "Platzierungszonen" mit "Zone hinzufügen" Button
+- Zone 1 wurde erstellt und ist als blaues Rechteck auf dem Canvas sichtbar
+- Zone zeigt Label "Zone 1" oben links, Resize-Handle unten rechts (blauer Punkt)
+- Rechtes Panel zeigt Zone-Details: Name-Input, Typ-Selector (Bild), Position (30%, 30% | 25x20)
+- Vorderseite/Rückseite Toggle funktioniert
+- "Vorderseite hochladen" Button ist sichtbar
+- Alles funktioniert korrekt!

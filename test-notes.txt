@@ -1,0 +1,21 @@
+Admin-Produktverwaltung Screenshot (2026-04-28):
+- 5 Testprodukte vorhanden: Bulk Test Product, Test Hoodie, Test Jacket, Test Trikot, Zone Test Product
+- Alle als "Entwurf" markiert
+- Jedes Produkt hat Bearbeiten, Veröffentlichen und Löschen Buttons
+- "Neues Produkt" Button oben rechts
+- Keine Bilder hochgeladen (Platzhalter-Icons)
+- Layout sieht gut aus, Grid mit 3 Spalten
+
+Nächster Test: Produkt-Editor mit Zonen-Editor testen
+
+Zonen-Tab Screenshot (Admin Produkt-Editor):
+- Zone 1 existiert mit Typ "Bild" und Zweck "Logo"
+- Zone ist auf dem Canvas sichtbar mit blauem Hintergrund und gestricheltem Rand
+- "Zone hinzufügen" Button funktioniert
+- Typ-Dropdown zeigt: Bild
+- Zweck-Dropdown zeigt: Logo
+- Position: 30%, 30% | 25x20
+- Resize-Handle unten rechts sichtbar (blauer Punkt)
+- Alles funktioniert korrekt!
+
+Nächster Test: Zweck auf Spielername ändern und weitere Zone hinzufügen

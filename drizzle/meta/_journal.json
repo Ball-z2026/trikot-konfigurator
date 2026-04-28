@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1777379252553,
+      "tag": "0000_flat_switch",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1777379483839,
+      "tag": "0001_damp_pride",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1777380222792,
+      "tag": "0002_soft_ironclad",
+      "breakpoints": true
+    }
+  ]
+}

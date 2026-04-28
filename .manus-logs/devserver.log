@@ -106,3 +106,133 @@
 [2026-04-28T12:11:56.513Z] 8:11:56 AM [vite] (client) page reload src/types/index.ts
 [2026-04-28T12:11:56.514Z] 8:11:56 AM [vite] (client) page reload src/utils/helpers.ts
 [2026-04-28T12:11:56.551Z] 8:11:56 AM [vite] server restarted.
+[2026-04-28T12:11:58.521Z] 8:11:58 AM [vite] (client) page reload index.html
+[2026-04-28T12:11:58.542Z] 8:11:58 AM [vite] (client) page reload client/index.html
+[2026-04-28T12:11:59.779Z] 8:11:59 AM [vite] changed tsconfig file detected: /home/ubuntu/trikot-konfigurator/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2026-04-28T12:11:59.780Z] 8:11:59 AM [vite] vite.config.ts changed, restarting server...
+[2026-04-28T12:11:59.801Z] 8:11:59 AM [vite] server restarted.
+[2026-04-28T12:12:16.325Z] [vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+[2026-04-28T12:12:16.326Z] 1060|    }
+[2026-04-28T12:12:16.326Z] 1061|  }
+[2026-04-28T12:12:16.327Z] 1062|  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Anton&display=swap');
+[2026-04-28T12:12:16.327Z] |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-04-28T12:12:16.327Z] 1063|  * {
+[2026-04-28T12:12:16.328Z] 1064|    box-sizing: border-box;
+[2026-04-28T12:27:18.485Z] Dev server process group stopped
+[2026-04-28T12:27:18.506Z] ELIFECYCLE  Command failed.
+[2026-04-28T12:27:18.516Z] Dev server exited with code -15
+[2026-04-28T12:27:33.451Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-28T12:27:34.004Z] 
+[2026-04-28T12:27:34.005Z] node:internal/modules/run_main:122
+[2026-04-28T12:27:34.005Z] triggerUncaughtException(
+[2026-04-28T12:27:34.006Z] ^
+[2026-04-28T12:27:34.006Z] Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@shared/const' imported from /home/ubuntu/trikot-konfigurator/server/_core/oauth.ts
+[2026-04-28T12:27:34.006Z] at packageResolve (node:internal/modules/esm/resolve:857:9)
+[2026-04-28T12:27:34.007Z] at moduleResolve (node:internal/modules/esm/resolve:926:18)
+[2026-04-28T12:27:34.007Z] at defaultResolve (node:internal/modules/esm/resolve:1056:11)
+[2026-04-28T12:27:34.007Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-04-28T12:27:34.008Z] at resolveBase (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379253831:2:3744)
+[2026-04-28T12:27:34.008Z] at resolveDirectory (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379253831:2:4243)
+[2026-04-28T12:27:34.009Z] at resolveTsPaths (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379253831:2:4984)
+[2026-04-28T12:27:34.009Z] at resolve (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379253831:2:5361)
+[2026-04-28T12:27:34.009Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-04-28T12:27:34.010Z] at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+[2026-04-28T12:27:34.010Z] code: 'ERR_MODULE_NOT_FOUND'
+[2026-04-28T12:27:34.010Z] }
+[2026-04-28T12:27:34.011Z] 
+[2026-04-28T12:27:34.011Z] Node.js v22.13.0
+[2026-04-28T12:27:35.492Z] Dev server process group stopped
+[2026-04-28T12:27:35.518Z] Dev server exited with code -15
+[2026-04-28T12:27:38.515Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-28T12:27:39.002Z] 
+[2026-04-28T12:27:39.003Z] node:internal/modules/run_main:122
+[2026-04-28T12:27:39.004Z] triggerUncaughtException(
+[2026-04-28T12:27:39.004Z] ^
+[2026-04-28T12:27:39.004Z] Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@shared/const' imported from /home/ubuntu/trikot-konfigurator/server/_core/oauth.ts
+[2026-04-28T12:27:39.004Z] at packageResolve (node:internal/modules/esm/resolve:857:9)
+[2026-04-28T12:27:39.005Z] at moduleResolve (node:internal/modules/esm/resolve:926:18)
+[2026-04-28T12:27:39.005Z] at defaultResolve (node:internal/modules/esm/resolve:1056:11)
+[2026-04-28T12:27:39.005Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-04-28T12:27:39.006Z] at resolveBase (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379258847:2:3744)
+[2026-04-28T12:27:39.006Z] at resolveDirectory (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379258847:2:4243)
+[2026-04-28T12:27:39.006Z] at resolveTsPaths (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379258847:2:4984)
+[2026-04-28T12:27:39.007Z] at resolve (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379258847:2:5361)
+[2026-04-28T12:27:39.007Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-04-28T12:27:39.007Z] at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+[2026-04-28T12:27:39.008Z] code: 'ERR_MODULE_NOT_FOUND'
+[2026-04-28T12:27:39.008Z] }
+[2026-04-28T12:27:39.008Z] 
+[2026-04-28T12:27:39.008Z] Node.js v22.13.0
+[2026-04-28T12:30:28.335Z] Dev server process group stopped
+[2026-04-28T12:30:28.362Z] Dev server exited with code -15
+[2026-04-28T12:30:31.349Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-28T12:30:33.130Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:30:33.381Z] Server running on http://localhost:3000/
+[2026-04-28T12:31:18.238Z] 8:31:18 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-28T12:31:20.076Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:31:20.366Z] Server running on http://localhost:3000/
+[2026-04-28T12:31:51.679Z] 8:31:51 AM [tsx] change in ./server/db.ts Restarting...
+[2026-04-28T12:31:53.206Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:31:53.488Z] Server running on http://localhost:3000/
+[2026-04-28T12:32:27.646Z] 8:32:27 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-28T12:32:29.319Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:32:29.603Z] Server running on http://localhost:3000/
+[2026-04-28T12:32:38.416Z] 8:32:38 AM [tsx] change in ./server/_core/index.ts Restarting...
+[2026-04-28T12:32:38.712Z] c
+[2026-04-28T12:32:38.713Z] node:internal/modules/run_main:122
+[2026-04-28T12:32:38.713Z] triggerUncaughtException(
+[2026-04-28T12:32:38.714Z] ^
+[2026-04-28T12:32:38.714Z] Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/ubuntu/trikot-konfigurator/server/uploadRoute' imported from /home/ubuntu/trikot-konfigurator/server/_core/index.ts
+[2026-04-28T12:32:38.715Z] at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+[2026-04-28T12:32:38.715Z] at moduleResolve (node:internal/modules/esm/resolve:932:10)
+[2026-04-28T12:32:38.715Z] at defaultResolve (node:internal/modules/esm/resolve:1056:11)
+[2026-04-28T12:32:38.716Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-04-28T12:32:38.716Z] at resolveBase (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379558573:2:3744)
+[2026-04-28T12:32:38.717Z] at async resolveDirectory (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379558573:2:4237)
+[2026-04-28T12:32:38.717Z] at async resolve (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777379558573:2:5355)
+[2026-04-28T12:32:38.718Z] at async nextResolve (node:internal/modules/esm/hooks:748:22)
+[2026-04-28T12:32:38.718Z] at async Hooks.resolve (node:internal/modules/esm/hooks:240:24)
+[2026-04-28T12:32:38.718Z] at async handleMessage (node:internal/modules/esm/worker:199:18) {
+[2026-04-28T12:32:38.719Z] code: 'ERR_MODULE_NOT_FOUND',
+[2026-04-28T12:32:38.719Z] url: 'file:///home/ubuntu/trikot-konfigurator/server/uploadRoute'
+[2026-04-28T12:32:38.720Z] }
+[2026-04-28T12:32:38.720Z] 
+[2026-04-28T12:32:38.720Z] Node.js v22.13.0
+[2026-04-28T12:32:50.102Z] Dev server process group stopped
+[2026-04-28T12:32:50.122Z] Dev server exited with code -15
+[2026-04-28T12:32:53.117Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-28T12:32:54.786Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:32:55.042Z] Server running on http://localhost:3000/
+[2026-04-28T12:33:35.053Z] 8:33:35 AM [vite] (client) hmr update /src/index.css
+[2026-04-28T12:33:46.563Z] 8:33:46 AM [vite] (client) page reload index.html
+[2026-04-28T12:33:56.207Z] 8:33:56 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-28T12:34:18.875Z] 8:34:18 AM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-04-28T12:37:33.805Z] Dev server process group stopped
+[2026-04-28T12:37:33.870Z] Dev server exited with code -15
+[2026-04-28T12:37:36.817Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-28T12:37:38.780Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:37:39.080Z] Server running on http://localhost:3000/
+[2026-04-28T12:37:46.773Z] 8:37:46 AM [vite] (client) ✨ new dependencies optimized: html-to-image, jszip, file-saver, @radix-ui/react-dialog, @radix-ui/react-label, @radix-ui/react-separator, @radix-ui/react-tabs, @radix-ui/react-select
+[2026-04-28T12:37:46.774Z] 8:37:46 AM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-04-28T12:39:03.406Z] [Auth] Missing session cookie
+[2026-04-28T12:43:21.613Z] 8:43:21 AM [tsx] change in ./server/uploadRoute.ts Restarting...
+[2026-04-28T12:43:23.179Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:43:23.436Z] Server running on http://localhost:3000/
+[2026-04-28T12:43:35.214Z] 8:43:35 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-28T12:43:36.842Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:43:37.106Z] Server running on http://localhost:3000/
+[2026-04-28T12:44:12.025Z] 8:44:12 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-28T12:44:13.478Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:44:13.720Z] Server running on http://localhost:3000/
+[2026-04-28T12:47:50.994Z] 8:47:50 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-04-28T12:48:19.730Z] [Auth] Missing session cookie
+[2026-04-28T12:48:25.186Z] Dev server process group stopped
+[2026-04-28T12:48:25.246Z] Dev server exited with code -15
+[2026-04-28T12:48:28.218Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-28T12:48:29.952Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T12:48:30.209Z] Server running on http://localhost:3000/
+[2026-04-28T12:50:06.252Z] 8:50:06 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-28T12:50:28.518Z] [Auth] Missing session cookie
+[2026-04-28T12:55:51.261Z] 8:55:51 AM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-04-28T12:57:14.483Z] 8:57:14 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-28T12:58:42.666Z] 8:58:42 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
