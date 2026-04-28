@@ -421,3 +421,118 @@ describe("product.delete", () => {
     expect(product).toBeNull();
   });
 });
+
+describe("product.update colorPalette", () => {
+  it("sets a color palette on a product", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const { id } = await caller.product.create({
+      name: "Color Palette Test",
+      category: "Trikot",
+    });
+
+    const result = await caller.product.update({
+      id,
+      colorPalette: ["#ff0000", "#00ff00", "#0000ff", "#ffffff", "#000000"],
+    });
+    expect(result.success).toBe(true);
+
+    // Verify palette is stored
+    const product = await caller.product.getById({ id });
+    expect(product?.colorPalette).toBeDefined();
+    expect(Array.isArray(product?.colorPalette)).toBe(true);
+    expect(product?.colorPalette?.length).toBe(5);
+    expect(product?.colorPalette).toContain("#ff0000");
+  });
+
+  it("clears a color palette by setting null", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const { id } = await caller.product.create({
+      name: "Clear Palette Test",
+      category: "Trikot",
+    });
+
+    // Set palette
+    await caller.product.update({
+      id,
+      colorPalette: ["#ff0000", "#00ff00"],
+    });
+
+    // Clear palette
+    const result = await caller.product.update({
+      id,
+      colorPalette: null,
+    });
+    expect(result.success).toBe(true);
+
+    const product = await caller.product.getById({ id });
+    expect(product?.colorPalette).toBeNull();
+  });
+});
+
+describe("part.update defaultColor", () => {
+  it("sets a default color on a part", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const { id: productId } = await caller.product.create({
+      name: "Part Color Test",
+      category: "Trikot",
+    });
+
+    const { id: partId } = await caller.part.create({
+      productId,
+      key: "vorderteil",
+      label: "Vorderteil",
+      sortOrder: 0,
+    });
+
+    const result = await caller.part.update({
+      id: partId,
+      defaultColor: "#dc2626",
+    });
+    expect(result.success).toBe(true);
+
+    // Verify color is stored
+    const product = await caller.product.getById({ id: productId });
+    const part = product?.parts?.find((p: any) => p.id === partId);
+    expect(part?.defaultColor).toBe("#dc2626");
+  });
+
+  it("clears a default color by setting null", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const { id: productId } = await caller.product.create({
+      name: "Clear Part Color Test",
+      category: "Trikot",
+    });
+
+    const { id: partId } = await caller.part.create({
+      productId,
+      key: "rueckteil",
+      label: "Rückteil",
+      sortOrder: 1,
+    });
+
+    // Set color
+    await caller.part.update({
+      id: partId,
+      defaultColor: "#0000ff",
+    });
+
+    // Clear color
+    const result = await caller.part.update({
+      id: partId,
+      defaultColor: null,
+    });
+    expect(result.success).toBe(true);
+
+    const product = await caller.product.getById({ id: productId });
+    const part = product?.parts?.find((p: any) => p.id === partId);
+    expect(part?.defaultColor).toBeNull();
+  });
+});

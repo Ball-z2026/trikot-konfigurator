@@ -38,8 +38,11 @@ import {
   Ruler,
   Palette,
   Building2,
+  Droplets,
+  X,
 } from "lucide-react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { TEXTIL_TEMPLATES } from "@shared/templates";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 
@@ -49,6 +52,7 @@ type PartData = {
   label: string;
   imageUrl: string | null;
   sortOrder: number;
+  defaultColor: string | null;
 };
 
 type ZoneData = {
@@ -184,15 +188,25 @@ export default function AdminProductEditor() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [colorPalette, setColorPalette] = useState<string[]>([]);
+  const [newColor, setNewColor] = useState("#1e40af");
 
   const parts: PartData[] = (productData?.parts as PartData[]) || [];
   const hasParts = parts.length > 0;
+
+  // Sublimation-Erkennung: Farbauswahl nur für Sublimationsprodukte
+  const isSublimation = useMemo(() => {
+    if (!productData?.templateId) return false;
+    const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
+    return tmpl?.printMethod === "sublimation";
+  }, [productData?.templateId]);
 
   useEffect(() => {
     if (productData) {
       setName(productData.name);
       setCategory(productData.category || "");
       setDescription(productData.description || "");
+      setColorPalette((productData as any).colorPalette || []);
       setLocalZones(
         (productData.zones as ZoneData[]).map((z) => ({
           ...z,
@@ -442,6 +456,12 @@ export default function AdminProductEditor() {
                             )}
                           </div>
                           <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{part.label}</span>
+                          {isSublimation && part.defaultColor && (
+                            <div className="flex items-center gap-1">
+                              <div className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: part.defaultColor }} />
+                              <span className="text-[8px] font-mono text-muted-foreground">{part.defaultColor}</span>
+                            </div>
+                          )}
                           {partZones.length > 0 && (
                             <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">{partZones.length} {partZones.length === 1 ? "Zone" : "Zonen"}</Badge>
                           )}
@@ -589,6 +609,89 @@ export default function AdminProductEditor() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Color Palette Editor - nur für Sublimation */}
+                {isSublimation && (
+                  <Card>
+                    <CardHeader className="pb-2 sm:pb-3">
+                      <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                        <Droplets className="w-4 h-4" />
+                        Farbpalette (Sublimation)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                        Definiere die verfügbaren Farben, aus denen Kunden pro Trikotteil wählen können.
+                      </p>
+
+                      {/* Existing colors */}
+                      {colorPalette.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {colorPalette.map((color, idx) => (
+                            <div key={idx} className="relative group">
+                              <div
+                                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-border shadow-sm cursor-pointer transition-transform hover:scale-110"
+                                style={{ backgroundColor: color }}
+                                title={color}
+                              />
+                              <button
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => {
+                                  const updated = colorPalette.filter((_, i) => i !== idx);
+                                  setColorPalette(updated);
+                                  updateProduct.mutate({ id: productId, colorPalette: updated.length > 0 ? updated : null });
+                                }}
+                              >
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                              <span className="text-[8px] font-mono text-muted-foreground text-center block mt-0.5 leading-none">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add new color */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          className="w-8 h-8 rounded border cursor-pointer"
+                          value={newColor}
+                          onChange={(e) => setNewColor(e.target.value)}
+                        />
+                        <Input
+                          className="h-8 text-xs font-mono flex-1"
+                          value={newColor}
+                          onChange={(e) => setNewColor(e.target.value)}
+                          placeholder="#000000"
+                        />
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={() => {
+                            if (newColor && /^#[0-9a-fA-F]{6}$/.test(newColor) && !colorPalette.includes(newColor)) {
+                              const updated = [...colorPalette, newColor];
+                              setColorPalette(updated);
+                              updateProduct.mutate({ id: productId, colorPalette: updated });
+                              toast.success(`Farbe ${newColor} hinzugefügt`);
+                            } else if (colorPalette.includes(newColor)) {
+                              toast.error("Farbe bereits vorhanden");
+                            } else {
+                              toast.error("Ungültiger Hex-Farbwert (z.B. #1e40af)");
+                            }
+                          }}
+                        >
+                          <Plus className="w-3.5 h-3.5 mr-1" />Hinzufügen
+                        </Button>
+                      </div>
+
+                      {colorPalette.length === 0 && (
+                        <p className="text-[10px] text-muted-foreground italic text-center py-2">
+                          Noch keine Farben definiert. Füge Farben hinzu, damit Kunden die Trikotteile einfärben können.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               {/* Part Details Tab */}
@@ -609,6 +712,81 @@ export default function AdminProductEditor() {
                         <Label className="text-xs sm:text-sm">Sortierung</Label>
                         <Input type="number" className="h-8 sm:h-9" defaultValue={activePart.sortOrder} onBlur={(e) => updatePartMut.mutate({ id: activePart.id, sortOrder: parseInt(e.target.value) || 0 })} />
                       </div>
+
+                      {/* Default Color - nur für Sublimation */}
+                      {isSublimation && (
+                        <>
+                          <Separator />
+                          <div>
+                            <Label className="text-xs sm:text-sm flex items-center gap-1.5">
+                              <Droplets className="w-3.5 h-3.5" />
+                              Standardfarbe für dieses Teil
+                            </Label>
+                            <p className="text-[10px] text-muted-foreground mb-2">
+                              Diese Farbe wird als Voreinstellung für Kunden verwendet.
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                className="w-8 h-8 rounded border cursor-pointer"
+                                value={activePart.defaultColor || "#ffffff"}
+                                onChange={(e) => {
+                                  updatePartMut.mutate({ id: activePart.id, defaultColor: e.target.value });
+                                }}
+                              />
+                              <Input
+                                className="h-8 text-xs font-mono flex-1"
+                                value={activePart.defaultColor || ""}
+                                placeholder="Keine Farbe (transparent)"
+                                onChange={(e) => {
+                                  if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value) || e.target.value === "") {
+                                    // Allow typing
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  const val = e.target.value.trim();
+                                  if (val === "") {
+                                    updatePartMut.mutate({ id: activePart.id, defaultColor: null });
+                                  } else if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+                                    updatePartMut.mutate({ id: activePart.id, defaultColor: val });
+                                  }
+                                }}
+                              />
+                              {activePart.defaultColor && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                  onClick={() => updatePartMut.mutate({ id: activePart.id, defaultColor: null })}
+                                  title="Farbe entfernen"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                            </div>
+
+                            {/* Quick-Select from Palette */}
+                            {colorPalette.length > 0 && (
+                              <div className="mt-2">
+                                <Label className="text-[10px] text-muted-foreground mb-1 block">Aus Palette wählen:</Label>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {colorPalette.map((color, idx) => (
+                                    <button
+                                      key={idx}
+                                      className={`w-6 h-6 rounded border-2 transition-all hover:scale-110 ${
+                                        activePart.defaultColor === color ? "border-primary ring-1 ring-primary" : "border-border"
+                                      }`}
+                                      style={{ backgroundColor: color }}
+                                      title={color}
+                                      onClick={() => updatePartMut.mutate({ id: activePart.id, defaultColor: color })}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>

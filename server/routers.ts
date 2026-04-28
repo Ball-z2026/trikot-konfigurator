@@ -143,6 +143,7 @@ export const appRouter = router({
           category: z.string().optional(),
           frontImageUrl: z.string().optional(),
           backImageUrl: z.string().optional(),
+          colorPalette: z.array(z.string()).nullable().optional(),
           published: z.boolean().optional(),
         })
       )
@@ -190,6 +191,7 @@ export const appRouter = router({
           key: z.string().min(1).optional(),
           label: z.string().min(1).optional(),
           imageUrl: z.string().optional(),
+          defaultColor: z.string().nullable().optional(),
           sortOrder: z.number().optional(),
         })
       )

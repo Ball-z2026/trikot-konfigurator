@@ -29,6 +29,8 @@ export const products = mysqlTable("products", {
   frontImageUrl: text("frontImageUrl"),
   backImageUrl: text("backImageUrl"),
   templateId: varchar("templateId", { length: 100 }),
+  /** Farbpalette für Sublimation – JSON-Array von Hex-Farben, z.B. ["#ff0000","#0000ff","#ffffff"] */
+  colorPalette: json("colorPalette").$type<string[]>(),
   published: boolean("published").default(false).notNull(),
   createdBy: int("createdBy"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -47,6 +49,8 @@ export const productParts = mysqlTable("product_parts", {
   key: varchar("key", { length: 100 }).notNull(),
   label: varchar("label", { length: 255 }).notNull(),
   imageUrl: text("imageUrl"),
+  /** Standardfarbe für dieses Teil (Hex, z.B. "#ffffff") – nur bei Sublimation relevant */
+  defaultColor: varchar("defaultColor", { length: 20 }),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

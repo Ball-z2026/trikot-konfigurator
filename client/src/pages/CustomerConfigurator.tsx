@@ -26,7 +26,10 @@ import {
   LayoutGrid,
   Shield,
   Type,
+  Droplets,
+  Palette,
 } from "lucide-react";
+import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
@@ -51,6 +54,7 @@ type PartData = {
   label: string;
   imageUrl: string | null;
   sortOrder: number;
+  defaultColor: string | null;
 };
 
 type ZoneData = {
@@ -139,7 +143,7 @@ export default function CustomerConfigurator() {
   );
 
   const [activePartId, setActivePartId] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"parts" | "overview">("parts");
+  const [viewMode, setViewMode] = useState<"parts" | "overview" | "composite">("parts");
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [zoneContents, setZoneContents] = useState<Record<number, ZoneContent>>({});
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
@@ -149,12 +153,59 @@ export default function CustomerConfigurator() {
   const [newPlayerName, setNewPlayerName] = useState("");
   const [activePlayerIdx, setActivePlayerIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [partColors, setPartColors] = useState<Record<number, string>>({});
+  const [dtfBaseColor, setDtfBaseColor] = useState<string | null>(null);
+  const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
 
   const parts: PartData[] = (productData?.parts as PartData[]) || [];
   const hasParts = parts.length > 0;
   const allZones: ZoneData[] = (productData?.zones as ZoneData[]) || [];
+
+  // Druckverfahren erkennen (auch alte templateIds und Part-Anzahl berücksichtigen)
+  const isSublimation = useMemo(() => {
+    if (!productData?.templateId) return false;
+    const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
+    if (tmpl) return tmpl.printMethod === "sublimation";
+    // Fallback: Wenn templateId nicht in TEXTIL_TEMPLATES gefunden wird,
+    // prüfe ob es ein Sublimation-Produkt ist anhand der Part-Keys
+    const partKeys = parts.map((p) => p.key);
+    const hasSublimationParts = partKeys.includes("kragen") || partKeys.includes("buendchen_links");
+    if (hasSublimationParts) return true;
+    // Wenn 5+ Parts vorhanden sind, ist es wahrscheinlich Sublimation
+    if (parts.length >= 5) return true;
+    return false;
+  }, [productData?.templateId, parts]);
+
+  const isDtf = useMemo(() => {
+    if (!productData?.templateId) return false;
+    const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
+    if (tmpl) return tmpl.printMethod === "dtf";
+    // Fallback: Wenn templateId nicht in TEXTIL_TEMPLATES gefunden wird,
+    // und es kein Sublimation ist, prüfe ob es DTF sein könnte
+    const partKeys = parts.map((p) => p.key);
+    const hasSublimationParts = partKeys.includes("kragen") || partKeys.includes("buendchen_links");
+    if (!hasSublimationParts && parts.length > 0 && parts.length <= 4) return true;
+    return false;
+  }, [productData?.templateId, parts]);
+
+  const colorPalette: string[] = (productData as any)?.colorPalette || [];
+
+  // Initialize partColors from defaultColor
+  useEffect(() => {
+    if (parts.length > 0 && Object.keys(partColors).length === 0) {
+      const defaults: Record<number, string> = {};
+      for (const part of parts) {
+        if (part.defaultColor) {
+          defaults[part.id] = part.defaultColor;
+        }
+      }
+      if (Object.keys(defaults).length > 0) {
+        setPartColors(defaults);
+      }
+    }
+  }, [parts]);
 
   // Load Google Fonts used by zones
   useGoogleFonts(allZones);
@@ -319,6 +370,8 @@ export default function CustomerConfigurator() {
 
   const handleExportSingle = useCallback(async () => {
     if (!canvasRef.current) return;
+    // Ensure we're in parts view for correct rendering (incl. DTF overlay)
+    if (viewMode !== "parts") setViewMode("parts");
     setExporting(true);
     try {
       const { toPng } = await import("html-to-image");
@@ -338,7 +391,7 @@ export default function CustomerConfigurator() {
     } finally {
       setExporting(false);
     }
-  }, [hasParts, activePart, activeSide, productData]);
+  }, [hasParts, activePart, activeSide, productData, viewMode]);
 
   const handleExportBatch = useCallback(async () => {
     if (players.length === 0) {
@@ -346,8 +399,10 @@ export default function CustomerConfigurator() {
       return;
     }
     setExporting(true);
+    // Ensure we're in parts view for correct rendering (incl. DTF overlay)
+    if (viewMode !== "parts") setViewMode("parts");
+    await waitForRepaint();
     toast.info(`Batch-Export für ${players.length} Spieler wird vorbereitet...`);
-
     try {
       const JSZip = (await import("jszip")).default;
       const { toPng } = await import("html-to-image");
@@ -419,7 +474,7 @@ export default function CustomerConfigurator() {
       setExporting(false);
       setActivePlayerIdx(null);
     }
-  }, [players, productData, hasParts, sortedParts, allZones, waitForRepaint]);
+  }, [players, productData, hasParts, sortedParts, allZones, waitForRepaint, viewMode]);
 
   // ─── Zone Colors ────────────────────────────────────────────────────────
   const zoneBorderColors = [
@@ -676,7 +731,7 @@ export default function CustomerConfigurator() {
 
             {/* Overview Toggle */}
             {hasParts && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   variant={viewMode === "parts" ? "default" : "outline"}
                   size="sm"
@@ -694,6 +749,15 @@ export default function CustomerConfigurator() {
                 >
                   <Shirt className="w-3.5 h-3.5 mr-1.5" />
                   Gesamtübersicht
+                </Button>
+                <Button
+                  variant={viewMode === "composite" ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => setViewMode("composite")}
+                >
+                  <Shirt className="w-3.5 h-3.5 mr-1.5" />
+                  2D-Trikot
                 </Button>
               </div>
             )}
@@ -750,6 +814,199 @@ export default function CustomerConfigurator() {
               </Card>
             )}
 
+            {/* 2D Composite View */}
+            {hasParts && viewMode === "composite" && (
+              <Card className="overflow-hidden">
+                <div className="bg-[#f8f9fa] p-4 sm:p-6">
+                  <div className="relative mx-auto" style={{ width: "100%", maxWidth: "500px", aspectRatio: "3/4" }}>
+                    {/* Trikot-Zusammenstellung: Teile werden relativ positioniert */}
+                    {/* Vorderteil / Rückteil - Zentral */}
+                    {sortedParts.filter(p => p.key === "vorderteil" || p.key === "rueckteil").map((part) => {
+                      const partZones = allZones.filter((z) => z.partId === part.id);
+                      return (
+                        <div
+                          key={part.id}
+                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
+                          style={{
+                            left: "20%",
+                            top: part.key === "vorderteil" ? "15%" : "15%",
+                            width: "60%",
+                            height: "65%",
+                            display: part.key === "rueckteil" ? "none" : "block",
+                          }}
+                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
+                        >
+                          <div className="relative w-full h-full">
+                            {isSublimation && partColors[part.id] && (
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                            )}
+                            {part.imageUrl ? (
+                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
+                                <Shirt className="w-8 h-8 text-muted-foreground/20" />
+                              </div>
+                            )}
+                            {partZones.map((zone, zIdx) => (
+                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
+                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.5} interactive={false} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Ärmel Links */}
+                    {sortedParts.filter(p => p.key === "aermel_links").map((part) => {
+                      const partZones = allZones.filter((z) => z.partId === part.id);
+                      return (
+                        <div
+                          key={part.id}
+                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
+                          style={{ left: "0%", top: "15%", width: "22%", height: "40%" }}
+                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
+                        >
+                          <div className="relative w-full h-full">
+                            {isSublimation && partColors[part.id] && (
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                            )}
+                            {part.imageUrl ? (
+                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
+                                <span className="text-[8px] text-muted-foreground">ÄL</span>
+                              </div>
+                            )}
+                            {partZones.map((zone, zIdx) => (
+                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
+                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.3} interactive={false} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Ärmel Rechts */}
+                    {sortedParts.filter(p => p.key === "aermel_rechts").map((part) => {
+                      const partZones = allZones.filter((z) => z.partId === part.id);
+                      return (
+                        <div
+                          key={part.id}
+                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
+                          style={{ right: "0%", top: "15%", width: "22%", height: "40%" }}
+                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
+                        >
+                          <div className="relative w-full h-full">
+                            {isSublimation && partColors[part.id] && (
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                            )}
+                            {part.imageUrl ? (
+                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
+                                <span className="text-[8px] text-muted-foreground">ÄR</span>
+                              </div>
+                            )}
+                            {partZones.map((zone, zIdx) => (
+                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
+                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.3} interactive={false} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Kragen */}
+                    {sortedParts.filter(p => p.key === "kragen").map((part) => {
+                      const partZones = allZones.filter((z) => z.partId === part.id);
+                      return (
+                        <div
+                          key={part.id}
+                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
+                          style={{ left: "30%", top: "5%", width: "40%", height: "12%" }}
+                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
+                        >
+                          <div className="relative w-full h-full">
+                            {isSublimation && partColors[part.id] && (
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                            )}
+                            {part.imageUrl ? (
+                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
+                                <span className="text-[8px] text-muted-foreground">Kragen</span>
+                              </div>
+                            )}
+                            {partZones.map((zone, zIdx) => (
+                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
+                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.25} interactive={false} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Bündchen Links */}
+                    {sortedParts.filter(p => p.key === "buendchen_links").map((part) => (
+                      <div
+                        key={part.id}
+                        className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
+                        style={{ left: "0%", top: "52%", width: "18%", height: "10%" }}
+                        onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
+                      >
+                        <div className="relative w-full h-full">
+                          {isSublimation && partColors[part.id] && (
+                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                          )}
+                          {part.imageUrl ? (
+                            <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
+                              <span className="text-[8px] text-muted-foreground">BL</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Bündchen Rechts */}
+                    {sortedParts.filter(p => p.key === "buendchen_rechts").map((part) => (
+                      <div
+                        key={part.id}
+                        className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
+                        style={{ right: "0%", top: "52%", width: "18%", height: "10%" }}
+                        onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
+                      >
+                        <div className="relative w-full h-full">
+                          {isSublimation && partColors[part.id] && (
+                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                          )}
+                          {part.imageUrl ? (
+                            <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
+                              <span className="text-[8px] text-muted-foreground">BR</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Labels */}
+                    <div className="absolute bottom-2 left-0 right-0 text-center">
+                      <span className="text-[10px] sm:text-xs text-muted-foreground">
+                        Klicke auf ein Teil, um es zu bearbeiten
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Single Part Canvas */}
             {(viewMode === "parts" || !hasParts) && (
               <Card className="overflow-hidden">
@@ -758,22 +1015,52 @@ export default function CustomerConfigurator() {
                   className="relative bg-[#f8f9fa] aspect-[3/4]"
                   onClick={() => setSelectedZoneId(null)}
                 >
+                  {/* Color Overlay for Sublimation */}
+                  {isSublimation && activePartId && partColors[activePartId] && (
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{ backgroundColor: partColors[activePartId], opacity: 0.35, mixBlendMode: "multiply" }}
+                    />
+                  )}
                   {currentImage ? (
                     <img
                       src={currentImage}
                       alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
                       className="w-full h-full object-contain pointer-events-none"
+                      style={{
+                        position: "relative",
+                        zIndex: 1,
+                        ...(isSublimation && activePartId && partColors[activePartId]
+                          ? { mixBlendMode: "multiply" as any }
+                          : {}),
+                      }}
                       draggable={false}
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
+                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground" style={{ position: "relative", zIndex: 1 }}>
                       <Shirt className="w-12 h-12 sm:w-16 sm:h-16 opacity-20" />
                       <p className="text-xs text-muted-foreground/50 mt-2">
                         {hasParts && activePart ? activePart.label : "Keine Ansicht verfügbar"}
                       </p>
                     </div>
                   )}
-
+                  {/* DTF Base Color Overlay */}
+                  {isDtf && dtfBaseColor && !dtfBrandImage && (
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{ backgroundColor: dtfBaseColor, opacity: 0.45, zIndex: 2 }}
+                    />
+                  )}
+                  {/* DTF Brand Image Background */}
+                  {isDtf && dtfBrandImage && (
+                    <img
+                      src={dtfBrandImage}
+                      alt="Markentrikot"
+                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                      style={{ opacity: 0.85, zIndex: 2 }}
+                      draggable={false}
+                    />
+                  )}
                   {/* Zone Overlays */}
                   {currentZones.map((zone, idx) => (
                     <ZoneOverlay key={zone.id} zone={zone} idx={idx} scale={1} interactive={true} />
@@ -787,6 +1074,12 @@ export default function CustomerConfigurator() {
           <div className="space-y-4">
             <Tabs defaultValue="zones">
               <TabsList className="w-full">
+                {(isSublimation || isDtf) && (
+                  <TabsTrigger value="colors" className="flex-1 text-xs sm:text-sm">
+                    <Palette className="w-3.5 h-3.5 mr-1 sm:mr-1.5" />
+                    Farben
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="zones" className="flex-1 text-xs sm:text-sm">
                   <Image className="w-3.5 h-3.5 mr-1 sm:mr-1.5" />
                   Zonen
@@ -796,6 +1089,185 @@ export default function CustomerConfigurator() {
                   Mannschaft
                 </TabsTrigger>
               </TabsList>
+
+              {/* Colors Tab */}
+              {(isSublimation || isDtf) && (
+                <TabsContent value="colors" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                  {/* Sublimation: Per-Part Color Selection */}
+                  {isSublimation && (
+                    <Card>
+                      <CardHeader className="pb-2 sm:pb-3">
+                        <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                          <Droplets className="w-4 h-4" />
+                          Trikotfarben
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
+                          Wähle für jedes Teil eine Farbe aus. Die Farbe wird als Overlay auf dem Teil angezeigt.
+                        </p>
+                        {sortedParts.map((part) => (
+                          <div key={part.id} className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-xs sm:text-sm font-medium">{part.label}</Label>
+                              {partColors[part.id] && (
+                                <button
+                                  className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+                                  onClick={() => {
+                                    const updated = { ...partColors };
+                                    delete updated[part.id];
+                                    setPartColors(updated);
+                                  }}
+                                >
+                                  Zurücksetzen
+                                </button>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {colorPalette.length > 0 ? (
+                                colorPalette.map((color, idx) => (
+                                  <button
+                                    key={idx}
+                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg border-2 transition-all hover:scale-110 ${
+                                      partColors[part.id] === color
+                                        ? "border-primary ring-2 ring-primary/30 scale-110"
+                                        : "border-border hover:border-muted-foreground"
+                                    }`}
+                                    style={{ backgroundColor: color }}
+                                    title={color}
+                                    onClick={() => setPartColors((prev) => ({ ...prev, [part.id]: color }))}
+                                  />
+                                ))
+                              ) : (
+                                <p className="text-[10px] text-muted-foreground italic">
+                                  Keine Farbpalette definiert. Der Admin muss zuerst Farben festlegen.
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* DTF: Base Color or Brand Jersey Upload */}
+                  {isDtf && (
+                    <Card>
+                      <CardHeader className="pb-2 sm:pb-3">
+                        <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                          <Shirt className="w-4 h-4" />
+                          Grundtrikot
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
+                          Wähle eine Grundfarbe für das Trikot oder lade ein Foto eines leeren Markentrikots hoch.
+                        </p>
+
+                        {/* Option 1: Base Color */}
+                        <div className="space-y-2">
+                          <Label className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                            <Palette className="w-3.5 h-3.5" />
+                            Grundfarbe
+                          </Label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {["#ffffff", "#000000", "#1e3a5f", "#dc2626", "#16a34a", "#eab308", "#7c3aed", "#f97316", "#ec4899", "#6b7280"].map((color) => (
+                              <button
+                                key={color}
+                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg border-2 transition-all hover:scale-110 ${
+                                  dtfBaseColor === color && !dtfBrandImage
+                                    ? "border-primary ring-2 ring-primary/30 scale-110"
+                                    : "border-border hover:border-muted-foreground"
+                                }`}
+                                style={{ backgroundColor: color }}
+                                title={color}
+                                onClick={() => {
+                                  setDtfBaseColor(color);
+                                  setDtfBrandImage(null);
+                                }}
+                              />
+                            ))}
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="color"
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded border cursor-pointer"
+                                value={dtfBaseColor || "#ffffff"}
+                                onChange={(e) => {
+                                  setDtfBaseColor(e.target.value);
+                                  setDtfBrandImage(null);
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {dtfBaseColor && !dtfBrandImage && (
+                            <button
+                              className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+                              onClick={() => setDtfBaseColor(null)}
+                            >
+                              Grundfarbe entfernen
+                            </button>
+                          )}
+                        </div>
+
+                        <Separator />
+
+                        {/* Option 2: Brand Jersey Upload */}
+                        <div className="space-y-2">
+                          <Label className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                            <Upload className="w-3.5 h-3.5" />
+                            Markentrikot hochladen
+                          </Label>
+                          <p className="text-[10px] text-muted-foreground">
+                            Lade ein Foto eines leeren Markentrikots hoch (z.B. Nike, Adidas, Puma). Die Druckzonen werden darauf platziert.
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 h-8 text-xs"
+                              onClick={() => {
+                                const input = document.createElement("input");
+                                input.type = "file";
+                                input.accept = "image/*";
+                                input.onchange = (e) => {
+                                  const file = (e.target as HTMLInputElement).files?.[0];
+                                  if (!file) return;
+                                  const reader = new FileReader();
+                                  reader.onload = () => {
+                                    setDtfBrandImage(reader.result as string);
+                                    setDtfBaseColor(null);
+                                    toast.success("Markentrikot geladen");
+                                  };
+                                  reader.readAsDataURL(file);
+                                };
+                                input.click();
+                              }}
+                            >
+                              <Upload className="w-3.5 h-3.5 mr-1.5" />
+                              {dtfBrandImage ? "Bild ändern" : "Trikot-Foto wählen"}
+                            </Button>
+                            {dtfBrandImage && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setDtfBrandImage(null)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </Button>
+                            )}
+                          </div>
+                          {dtfBrandImage && (
+                            <div className="w-full aspect-[3/4] bg-muted/30 rounded-lg border overflow-hidden">
+                              <img src={dtfBrandImage} alt="Markentrikot" className="w-full h-full object-contain" />
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+              )}
 
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
