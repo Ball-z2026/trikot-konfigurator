@@ -1,0 +1,108 @@
+[2026-04-28T11:44:48.578Z] Dev server process group stopped
+[2026-04-28T11:44:48.580Z] ELIFECYCLE  Command failed.
+[2026-04-28T11:44:48.581Z] WARN   Local package.json exists, but node_modules missing, did you mean to install?
+[2026-04-28T11:44:48.615Z] Dev server exited with code -15
+[2026-04-28T11:45:02.847Z] Starting dev server with command: pnpm run dev
+[2026-04-28T11:45:03.242Z] ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND  No package.json (or package.yaml, or package.json5) was found in "/home/ubuntu/trikot-konfigurator".
+[2026-04-28T11:45:03.264Z] Dev server exited with code 1
+[2026-04-28T11:47:35.104Z] Starting dev server with command: pnpm run dev
+[2026-04-28T11:47:35.489Z] 
+[2026-04-28T11:47:35.490Z] > trikot-konfigurator@1.0.0 dev /home/ubuntu/trikot-konfigurator
+[2026-04-28T11:47:35.491Z] > vite
+[2026-04-28T11:47:35.491Z] 
+[2026-04-28T11:47:35.959Z] 
+[2026-04-28T11:47:35.960Z] VITE v6.4.2  ready in 422 ms
+[2026-04-28T11:47:35.960Z] 
+[2026-04-28T11:47:35.961Z] ➜  Local:   http://localhost:5173/
+[2026-04-28T11:47:35.962Z] ➜  Network: http://169.254.0.21:5173/
+[2026-04-28T11:56:35.671Z] 7:56:35 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-28T11:56:41.778Z] Dev server process group stopped
+[2026-04-28T11:56:41.798Z] ELIFECYCLE  Command failed.
+[2026-04-28T11:56:41.808Z] Dev server exited with code -15
+[2026-04-28T11:56:44.793Z] Starting dev server with command: pnpm run dev
+[2026-04-28T11:56:45.212Z] 
+[2026-04-28T11:56:45.212Z] > trikot-konfigurator@1.0.0 dev /home/ubuntu/trikot-konfigurator
+[2026-04-28T11:56:45.213Z] > vite
+[2026-04-28T11:56:45.213Z] 
+[2026-04-28T11:56:45.559Z] 
+[2026-04-28T11:56:45.560Z] VITE v6.4.2  ready in 306 ms
+[2026-04-28T11:56:45.560Z] 
+[2026-04-28T11:56:45.560Z] ➜  Local:   http://localhost:5173/
+[2026-04-28T11:56:45.561Z] ➜  Network: http://169.254.0.21:5173/
+[2026-04-28T11:56:48.018Z] 7:56:48 AM [vite] (client) ✨ new dependencies optimized: html-to-image, file-saver, jszip, papaparse
+[2026-04-28T11:56:48.019Z] 7:56:48 AM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-04-28T11:59:27.507Z] 7:59:27 AM [vite] (client) hmr update /src/components/TeamRoster.tsx, /src/index.css
+[2026-04-28T12:01:32.134Z] 8:01:32 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-28T12:01:50.644Z] 8:01:50 AM [vite] (client) hmr update /src/index.css
+[2026-04-28T12:01:50.794Z] [vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+[2026-04-28T12:01:50.795Z] 1003|    }
+[2026-04-28T12:01:50.795Z] 1004|  }
+[2026-04-28T12:01:50.796Z] 1005|  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Anton&display=swap');
+[2026-04-28T12:01:50.796Z] |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-04-28T12:01:50.796Z] 1006|  * {
+[2026-04-28T12:01:50.797Z] 1007|    box-sizing: border-box;
+[2026-04-28T12:02:00.284Z] 8:02:00 AM [vite] (client) page reload index.html
+[2026-04-28T12:02:00.398Z] [vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+[2026-04-28T12:02:00.399Z] 1003|    }
+[2026-04-28T12:02:00.399Z] 1004|  }
+[2026-04-28T12:02:00.399Z] 1005|  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Anton&display=swap');
+[2026-04-28T12:02:00.400Z] |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-04-28T12:02:00.400Z] 1006|  * {
+[2026-04-28T12:02:00.400Z] 1007|    box-sizing: border-box;
+[2026-04-28T12:05:31.095Z] 8:05:31 AM [vite] (client) hmr update /src/components/TextilCanvas.tsx, /src/index.css
+[2026-04-28T12:05:31.163Z] [vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+[2026-04-28T12:05:31.166Z] 1037|    }
+[2026-04-28T12:05:31.166Z] 1038|  }
+[2026-04-28T12:05:31.167Z] 1039|  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Anton&display=swap');
+[2026-04-28T12:05:31.167Z] |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-04-28T12:05:31.168Z] 1040|  * {
+[2026-04-28T12:05:31.168Z] 1041|    box-sizing: border-box;
+[2026-04-28T12:06:13.615Z] 8:06:13 AM [vite] (client) hmr update /src/components/ExportPanel.tsx, /src/index.css
+[2026-04-28T12:06:13.675Z] [vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+[2026-04-28T12:06:13.676Z] 1070|    }
+[2026-04-28T12:06:13.677Z] 1071|  }
+[2026-04-28T12:06:13.677Z] 1072|  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Anton&display=swap');
+[2026-04-28T12:06:13.677Z] |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-04-28T12:06:13.678Z] 1073|  * {
+[2026-04-28T12:06:13.678Z] 1074|    box-sizing: border-box;
+[2026-04-28T12:09:48.874Z] 8:09:48 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-28T12:09:48.967Z] [vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+[2026-04-28T12:09:48.967Z] 1074|    }
+[2026-04-28T12:09:48.968Z] 1075|  }
+[2026-04-28T12:09:48.968Z] 1076|  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Anton&display=swap');
+[2026-04-28T12:09:48.968Z] |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026-04-28T12:09:48.969Z] 1077|  * {
+[2026-04-28T12:09:48.969Z] 1078|    box-sizing: border-box;
+[2026-04-28T12:11:54.995Z] 8:11:54 AM [vite] (client) page reload asset-urls.txt
+[2026-04-28T12:11:54.995Z] 8:11:54 AM [vite] (client) page reload ideas.md
+[2026-04-28T12:11:54.996Z] 8:11:54 AM [vite] (client) page reload index.html
+[2026-04-28T12:11:55.025Z] 8:11:55 AM [vite] (client) page reload client/index.html
+[2026-04-28T12:11:55.076Z] 8:11:55 AM [vite] Internal server error: Cannot find module '/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@6.4.2_@types+node@25.6.0_jiti@2.6.1_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/dep-CvfTChi5.js' imported from /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@6.4.2_@types+node@25.6.0_jiti@2.6.1_lightningcss@1.32.0/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js
+[2026-04-28T12:11:55.077Z] at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+[2026-04-28T12:11:55.077Z] at moduleResolve (node:internal/modules/esm/resolve:932:10)
+[2026-04-28T12:11:55.078Z] at defaultResolve (node:internal/modules/esm/resolve:1056:11)
+[2026-04-28T12:11:55.078Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-04-28T12:11:55.079Z] at o (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@tailwindcss+node@4.2.4/node_modules/@tailwindcss/node/dist/esm-cache.loader.mjs:1:69)
+[2026-04-28T12:11:55.079Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-04-28T12:11:55.080Z] at Hooks.resolve (node:internal/modules/esm/hooks:240:30)
+[2026-04-28T12:11:55.080Z] at MessagePort.handleMessage (node:internal/modules/esm/worker:199:24)
+[2026-04-28T12:11:55.081Z] at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)
+[2026-04-28T12:11:55.081Z] at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+[2026-04-28T12:11:56.497Z] 8:11:56 AM [vite] (client) page reload package.json
+[2026-04-28T12:11:56.499Z] 8:11:56 AM [vite] (client) page reload pnpm-workspace.yaml
+[2026-04-28T12:11:56.500Z] 8:11:56 AM [vite] changed tsconfig file detected: /home/ubuntu/trikot-konfigurator/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2026-04-28T12:11:56.500Z] 8:11:56 AM [vite] (client) page reload tsconfig.json
+[2026-04-28T12:11:56.501Z] 8:11:56 AM [vite] vite.config.ts changed, restarting server...
+[2026-04-28T12:11:56.506Z] 8:11:56 AM [vite] (client) hmr update /src/App.tsx
+[2026-04-28T12:11:56.507Z] 8:11:56 AM [vite] (client) hmr update /src/index.css
+[2026-04-28T12:11:56.507Z] 8:11:56 AM [vite] (client) page reload src/main.tsx
+[2026-04-28T12:11:56.507Z] 8:11:56 AM [vite] (client) page reload src/vite-env.d.ts
+[2026-04-28T12:11:56.511Z] 8:11:56 AM [vite] (client) hmr update /src/components/ExportPanel.tsx
+[2026-04-28T12:11:56.511Z] 8:11:56 AM [vite] (client) hmr update /src/components/TeamRoster.tsx
+[2026-04-28T12:11:56.512Z] 8:11:56 AM [vite] (client) hmr update /src/components/TextilCanvas.tsx
+[2026-04-28T12:11:56.512Z] 8:11:56 AM [vite] (client) hmr update /src/components/TextilSelector.tsx
+[2026-04-28T12:11:56.512Z] 8:11:56 AM [vite] (client) hmr update /src/components/ZoneEditor.tsx
+[2026-04-28T12:11:56.513Z] 8:11:56 AM [vite] (client) page reload src/data/templates.ts
+[2026-04-28T12:11:56.513Z] 8:11:56 AM [vite] (client) page reload src/types/index.ts
+[2026-04-28T12:11:56.514Z] 8:11:56 AM [vite] (client) page reload src/utils/helpers.ts
+[2026-04-28T12:11:56.551Z] 8:11:56 AM [vite] server restarted.
