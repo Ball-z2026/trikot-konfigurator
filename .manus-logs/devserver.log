@@ -1453,3 +1453,6 @@
 [2026-04-28T21:01:10.176Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
 [2026-04-28T21:01:21.595Z] 5:01:21 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-28T21:02:11.766Z] 5:02:11 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-28T21:40:56.201Z] 5:40:56 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-04-28T21:41:23.644Z] 5:41:23 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-04-28T21:42:32.314Z] 5:42:32 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css

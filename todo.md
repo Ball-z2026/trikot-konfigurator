@@ -77,3 +77,9 @@
 - [x] Alle Einzelteile visuell als zusammengesetztes Trikot in 2D darstellen (Vorderteil mittig, Ärmel seitlich, Kragen oben, Bündchen an den Ärmeln)
 - [x] Composite View im Kunden-Konfigurator nutzbar
 - [x] Composite View: Klick auf ein Teil wechselt zur Einzelteil-Ansicht (onClick setzt activePartId und viewMode='parts')
+
+## Sportart-Auswahl bei Produkterstellung
+- [x] Template-System: Sportarten definieren (Fußball, Handball, Volleyball, Basketball)
+- [x] Jede Sportart hat eigene Trikot-Templates (Sublimation/DTF) mit passenden Teilen
+- [x] Admin-Produkterstellung: Sportart-Auswahl als erster Schritt vor Template-Wahl
+- [x] UI: Sportart-Karten mit Icons (Fußball, Handball, Volleyball, Basketball)

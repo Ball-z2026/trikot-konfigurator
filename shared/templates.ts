@@ -26,11 +26,49 @@ export interface TemplatePart {
   zones: TemplateZone[];
 }
 
+export type SportType = "fussball" | "handball" | "volleyball" | "basketball";
+
+export interface SportTypeInfo {
+  id: SportType;
+  name: string;
+  description: string;
+  icon: string; // Emoji als einfaches Icon
+}
+
+export const SPORT_TYPES: SportTypeInfo[] = [
+  {
+    id: "fussball",
+    name: "Fußball",
+    description: "Fußballtrikots mit klassischem Schnitt",
+    icon: "\u26BD",
+  },
+  {
+    id: "handball",
+    name: "Handball",
+    description: "Handballtrikots mit engem Schnitt und kurzen Ärmeln",
+    icon: "\u{1F93E}",
+  },
+  {
+    id: "volleyball",
+    name: "Volleyball",
+    description: "Volleyballtrikots – leicht und atmungsaktiv",
+    icon: "\u{1F3D0}",
+  },
+  {
+    id: "basketball",
+    name: "Basketball",
+    description: "Basketballtrikots – ärmellos mit weitem Schnitt",
+    icon: "\u{1F3C0}",
+  },
+];
+
 export interface TextilTemplate {
   id: string;
   name: string;
   description: string;
   category: string;
+  /** Sportart */
+  sport: SportType;
   /** Druckverfahren */
   printMethod: "sublimation" | "dtf";
   /** Vorschaubild für die Auswahl */
@@ -194,12 +232,130 @@ const BUENDCHEN_RECHTS: TemplatePart = {
 // ===== Templates =====
 
 export const TEXTIL_TEMPLATES: TextilTemplate[] = [
+  // ===== Fußball =====
+  {
+    id: "fussball_sublimation",
+    name: "Fußballtrikot – Sublimation",
+    description:
+      "Sublimations-Fußballtrikot: Alle Teile sind vollflächig bedruckbar. Vorderteil, Rückteil, Ärmel, Kragen und Bündchen können individuell gestaltet werden.",
+    category: "Trikot",
+    sport: "fussball",
+    printMethod: "sublimation",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [
+      VORDERTEIL,
+      RUECKTEIL,
+      AERMEL_LINKS,
+      AERMEL_RECHTS,
+      KRAGEN,
+      BUENDCHEN_LINKS,
+      BUENDCHEN_RECHTS,
+    ],
+  },
+  {
+    id: "fussball_dtf",
+    name: "Fußballtrikot – DTF",
+    description:
+      "DTF-Fußballtrikot (Direct-to-Film): Bedruckung auf Vorderteil, Rückteil und Ärmel. Kragen und Bündchen sind nicht konfigurierbar.",
+    category: "Trikot",
+    sport: "fussball",
+    printMethod: "dtf",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
+  },
+  // ===== Handball =====
+  {
+    id: "handball_sublimation",
+    name: "Handballtrikot – Sublimation",
+    description:
+      "Sublimations-Handballtrikot: Enger Schnitt, alle Teile vollflächig bedruckbar.",
+    category: "Trikot",
+    sport: "handball",
+    printMethod: "sublimation",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [
+      VORDERTEIL,
+      RUECKTEIL,
+      AERMEL_LINKS,
+      AERMEL_RECHTS,
+      KRAGEN,
+      BUENDCHEN_LINKS,
+      BUENDCHEN_RECHTS,
+    ],
+  },
+  {
+    id: "handball_dtf",
+    name: "Handballtrikot – DTF",
+    description:
+      "DTF-Handballtrikot: Bedruckung auf Vorderteil, Rückteil und Ärmel.",
+    category: "Trikot",
+    sport: "handball",
+    printMethod: "dtf",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
+  },
+  // ===== Volleyball =====
+  {
+    id: "volleyball_sublimation",
+    name: "Volleyballtrikot – Sublimation",
+    description:
+      "Sublimations-Volleyballtrikot: Leichter Stoff, alle Teile vollflächig bedruckbar.",
+    category: "Trikot",
+    sport: "volleyball",
+    printMethod: "sublimation",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [
+      VORDERTEIL,
+      RUECKTEIL,
+      AERMEL_LINKS,
+      AERMEL_RECHTS,
+      KRAGEN,
+      BUENDCHEN_LINKS,
+      BUENDCHEN_RECHTS,
+    ],
+  },
+  {
+    id: "volleyball_dtf",
+    name: "Volleyballtrikot – DTF",
+    description:
+      "DTF-Volleyballtrikot: Bedruckung auf Vorderteil, Rückteil und Ärmel.",
+    category: "Trikot",
+    sport: "volleyball",
+    printMethod: "dtf",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
+  },
+  // ===== Basketball =====
+  {
+    id: "basketball_sublimation",
+    name: "Basketballtrikot – Sublimation",
+    description:
+      "Sublimations-Basketballtrikot: Ärmelloser Schnitt, Vorderteil und Rückteil vollflächig bedruckbar.",
+    category: "Trikot",
+    sport: "basketball",
+    printMethod: "sublimation",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [VORDERTEIL, RUECKTEIL],
+  },
+  {
+    id: "basketball_dtf",
+    name: "Basketballtrikot – DTF",
+    description:
+      "DTF-Basketballtrikot: Ärmellos, Bedruckung auf Vorderteil und Rückteil.",
+    category: "Trikot",
+    sport: "basketball",
+    printMethod: "dtf",
+    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    parts: [VORDERTEIL, RUECKTEIL],
+  },
+  // ===== Legacy (für bestehende Produkte) =====
   {
     id: "trikot_sublimation",
-    name: "Trikot – Sublimation",
+    name: "Trikot – Sublimation (Legacy)",
     description:
-      "Sublimationstrikot: Alle Teile sind vollflächig bedruckbar. Vorderteil, Rückteil, Ärmel, Kragen und Bündchen können individuell gestaltet werden.",
+      "Sublimationstrikot: Alle Teile sind vollflächig bedruckbar.",
     category: "Trikot",
+    sport: "fussball",
     printMethod: "sublimation",
     previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
     parts: [
@@ -214,10 +370,11 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
   },
   {
     id: "trikot_dtf",
-    name: "Trikot – DTF",
+    name: "Trikot – DTF (Legacy)",
     description:
-      "DTF-Trikot (Direct-to-Film): Bedruckung auf Vorderteil, Rückteil und Ärmel. Kragen und Bündchen sind nicht konfigurierbar.",
+      "DTF-Trikot: Bedruckung auf Vorderteil, Rückteil und Ärmel.",
     category: "Trikot",
+    sport: "fussball",
     printMethod: "dtf",
     previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
     parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],

@@ -30,9 +30,9 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
-import { TEXTIL_TEMPLATES } from "@shared/templates";
+import { TEXTIL_TEMPLATES, SPORT_TYPES, type SportType } from "@shared/templates";
 
-type CreateMode = "choose" | "template" | "blank";
+type CreateMode = "choose" | "sport" | "template" | "blank";
 
 export default function AdminProducts() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -81,18 +81,25 @@ export default function AdminProducts() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createMode, setCreateMode] = useState<CreateMode>("choose");
+  const [selectedSport, setSelectedSport] = useState<SportType | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("");
 
   const resetDialog = () => {
     setCreateMode("choose");
+    setSelectedSport(null);
     setSelectedTemplateId(null);
     setNewName("");
     setNewCategory("");
   };
 
   const selectedTemplate = TEXTIL_TEMPLATES.find((t) => t.id === selectedTemplateId);
+
+  // Filter templates by selected sport (exclude legacy templates from selection)
+  const filteredTemplates = selectedSport
+    ? TEXTIL_TEMPLATES.filter((t) => t.sport === selectedSport && !t.id.startsWith("trikot_"))
+    : [];
 
   const handleCreateFromTemplate = () => {
     if (!selectedTemplate || !newName.trim()) return;
@@ -188,7 +195,8 @@ export default function AdminProducts() {
               <DialogHeader>
                 <DialogTitle>
                   {createMode === "choose" && "Neues Produkt erstellen"}
-                  {createMode === "template" && !selectedTemplateId && "Vorlage auswählen"}
+                  {createMode === "sport" && "Sportart wählen"}
+                  {createMode === "template" && !selectedTemplateId && "Druckverfahren wählen"}
                   {createMode === "template" && selectedTemplateId && "Produkt aus Vorlage"}
                   {createMode === "blank" && "Leeres Produkt erstellen"}
                 </DialogTitle>
@@ -199,7 +207,7 @@ export default function AdminProducts() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                   <button
                     className="group relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-dashed hover:border-primary hover:bg-primary/5 transition-all text-left"
-                    onClick={() => setCreateMode("template")}
+                    onClick={() => setCreateMode("sport")}
                   >
                     <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                       <LayoutTemplate className="w-7 h-7 text-primary" />
@@ -207,7 +215,7 @@ export default function AdminProducts() {
                     <div className="text-center">
                       <h3 className="font-semibold text-base">Aus Vorlage</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Wähle ein vordefiniertes Template mit Teilen und Platzierungszonen
+                        Wähle Sportart und Druckverfahren mit vordefinierten Teilen und Zonen
                       </p>
                     </div>
                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -231,8 +239,8 @@ export default function AdminProducts() {
                 </div>
               )}
 
-              {/* Step 2a: Template selection */}
-              {createMode === "template" && !selectedTemplateId && (
+              {/* Step 2: Sport type selection */}
+              {createMode === "sport" && (
                 <div className="space-y-4 pt-4">
                   <Button
                     variant="ghost"
@@ -243,8 +251,58 @@ export default function AdminProducts() {
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     Zurück
                   </Button>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {SPORT_TYPES.map((sport) => (
+                      <button
+                        key={sport.id}
+                        className="group flex flex-col items-center gap-3 p-5 rounded-xl border-2 hover:border-primary hover:bg-primary/5 transition-all"
+                        onClick={() => {
+                          setSelectedSport(sport.id);
+                          setCreateMode("template");
+                        }}
+                      >
+                        <span className="text-4xl">{sport.icon}</span>
+                        <div className="text-center">
+                          <h4 className="font-semibold text-sm">{sport.name}</h4>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {sport.description}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Template selection (filtered by sport) */}
+              {createMode === "template" && !selectedTemplateId && (
+                <div className="space-y-4 pt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedSport(null);
+                      setCreateMode("sport");
+                    }}
+                    className="mb-2"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Andere Sportart
+                  </Button>
+
+                  {selectedSport && (
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-2xl">
+                        {SPORT_TYPES.find((s) => s.id === selectedSport)?.icon}
+                      </span>
+                      <span className="font-semibold">
+                        {SPORT_TYPES.find((s) => s.id === selectedSport)?.name}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {TEXTIL_TEMPLATES.map((template) => (
+                    {filteredTemplates.map((template) => (
                       <button
                         key={template.id}
                         className="group flex flex-col overflow-hidden rounded-xl border-2 hover:border-primary transition-all"
@@ -289,7 +347,7 @@ export default function AdminProducts() {
                 </div>
               )}
 
-              {/* Step 2b: Template selected – enter name */}
+              {/* Step 4: Template selected – enter name */}
               {createMode === "template" && selectedTemplateId && selectedTemplate && (
                 <div className="space-y-4 pt-4">
                   <Button
@@ -299,7 +357,7 @@ export default function AdminProducts() {
                     className="mb-2"
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
-                    Andere Vorlage
+                    Anderes Druckverfahren
                   </Button>
 
                   <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
@@ -349,17 +407,12 @@ export default function AdminProducts() {
                     disabled={!newName.trim() || createFromTemplate.isPending}
                     onClick={handleCreateFromTemplate}
                   >
-                    {createFromTemplate.isPending ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    ) : (
-                      <LayoutTemplate className="w-4 h-4 mr-2" />
-                    )}
-                    Aus Vorlage erstellen
+                    {createFromTemplate.isPending ? "Wird erstellt..." : "Produkt erstellen"}
                   </Button>
                 </div>
               )}
 
-              {/* Step 2c: Blank product */}
+              {/* Blank product mode */}
               {createMode === "blank" && (
                 <div className="space-y-4 pt-4">
                   <Button
@@ -375,17 +428,17 @@ export default function AdminProducts() {
                     <Label htmlFor="blank-name">Produktname</Label>
                     <Input
                       id="blank-name"
-                      placeholder="z.B. Trikot Modell A"
+                      placeholder="z.B. Hoodie Basic"
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       autoFocus
                     />
                   </div>
                   <div>
-                    <Label htmlFor="blank-category">Kategorie</Label>
+                    <Label htmlFor="blank-category">Kategorie (optional)</Label>
                     <Input
                       id="blank-category"
-                      placeholder="z.B. Trikot, Hoodie, Jacke..."
+                      placeholder="z.B. Hoodie, Jacke, T-Shirt"
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
                     />
@@ -395,12 +448,7 @@ export default function AdminProducts() {
                     disabled={!newName.trim() || createProduct.isPending}
                     onClick={handleCreateBlank}
                   >
-                    {createProduct.isPending ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    ) : (
-                      <Plus className="w-4 h-4 mr-2" />
-                    )}
-                    Leeres Produkt erstellen
+                    {createProduct.isPending ? "Wird erstellt..." : "Leeres Produkt erstellen"}
                   </Button>
                 </div>
               )}
@@ -410,99 +458,104 @@ export default function AdminProducts() {
       </header>
 
       {/* Product List */}
-      <main className="container py-8">
+      <main className="container py-6">
         {isLoading ? (
-          <div className="flex justify-center py-16">
+          <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
-        ) : !products?.length ? (
-          <div className="text-center py-20 bg-muted/30 rounded-xl border border-dashed">
+        ) : !products || products.length === 0 ? (
+          <div className="text-center py-16">
             <Shirt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Keine Produkte vorhanden</h3>
+            <h2 className="text-xl font-bold mb-2">Noch keine Produkte</h2>
             <p className="text-muted-foreground mb-6">
-              Erstelle dein erstes Produkt – wähle eine Vorlage oder starte von Null.
+              Erstelle dein erstes Produkt, um loszulegen.
             </p>
             <Button onClick={() => setDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Erstes Produkt erstellen
+              Neues Produkt
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <Card key={product.id} className="group overflow-hidden">
-                <div className="aspect-[4/3] bg-muted/30 relative overflow-hidden">
-                  {product.frontImageUrl ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {products.map((product: any) => (
+              <Card
+                key={product.id}
+                className="group overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="aspect-[4/3] bg-muted/20 overflow-hidden relative">
+                  {product.imageUrl ? (
                     <img
-                      src={product.frontImageUrl}
+                      src={product.imageUrl}
                       alt={product.name}
                       className="w-full h-full object-contain p-4"
                     />
+                  ) : product.templateId ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Shirt className="w-16 h-16 text-primary/30" />
+                    </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Shirt className="w-16 h-16 text-muted-foreground/20" />
+                      <FileText className="w-12 h-12 text-muted-foreground/30" />
                     </div>
                   )}
-                  <div className="absolute top-3 right-3 flex gap-1">
-                    {(product as any).templateId && (
-                      <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
-                        <LayoutTemplate className="w-3 h-3 mr-1" />
-                        Vorlage
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    {product.published ? (
+                      <Badge variant="default" className="text-xs">
+                        <Eye className="w-3 h-3 mr-1" />
+                        Aktiv
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        <EyeOff className="w-3 h-3 mr-1" />
+                        Entwurf
                       </Badge>
                     )}
-                    <Badge variant={product.published ? "default" : "secondary"}>
-                      {product.published ? "Veröffentlicht" : "Entwurf"}
-                    </Badge>
                   </div>
                 </div>
-                <CardContent className="pt-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-semibold text-lg">{product.name}</h3>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold truncate">{product.name}</h3>
                       {product.category && (
                         <p className="text-sm text-muted-foreground">{product.category}</p>
                       )}
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setLocation(`/admin/products/${product.id}`)}
-                    >
-                      <Pencil className="w-3.5 h-3.5 mr-1.5" />
-                      Bearbeiten
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="shrink-0"
-                      onClick={() =>
-                        togglePublish.mutate({
-                          id: product.id,
-                          published: !product.published,
-                        })
-                      }
-                    >
-                      {product.published ? (
-                        <EyeOff className="w-3.5 h-3.5" />
-                      ) : (
-                        <Eye className="w-3.5 h-3.5" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="shrink-0 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => {
-                        if (confirm("Produkt wirklich löschen?")) {
-                          deleteProduct.mutate({ id: product.id });
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() =>
+                          togglePublish.mutate({
+                            id: product.id,
+                            published: !product.published,
+                          })
                         }
-                      }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                      >
+                        {product.published ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Link href={`/admin/products/${product.id}`}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => {
+                          if (confirm("Produkt wirklich löschen?")) {
+                            deleteProduct.mutate({ id: product.id });
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
