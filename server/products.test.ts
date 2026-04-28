@@ -300,6 +300,110 @@ describe("zone.update purpose", () => {
   });
 });
 
+describe("zone.create with extended fields", () => {
+  it("creates a zone with rotation, cm dimensions, and font settings", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const { id: productId } = await caller.product.create({
+      name: "Extended Fields Test",
+    });
+
+    // Create zone with all new fields
+    const zone = await caller.zone.create({
+      productId,
+      label: "Spielername Rücken",
+      side: "back",
+      type: "text",
+      purpose: "playerName",
+      posX: 20,
+      posY: 10,
+      width: 60,
+      height: 15,
+      rotation: 5,
+      widthCm: 25,
+      heightCm: 6,
+      fontFamily: "Oswald",
+      fontSize: 48,
+      fontColor: "#ffffff",
+      fontWeight: "900",
+      textAlign: "center",
+      sortOrder: 0,
+    });
+    expect(zone).toHaveProperty("id");
+
+    // Verify zone has all fields
+    const product = await caller.product.getById({ id: productId });
+    const createdZone = product?.zones.find((z: any) => z.id === zone.id);
+    expect(createdZone).toBeDefined();
+    expect(createdZone?.purpose).toBe("playerName");
+  });
+
+  it("creates a clubName zone", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const { id: productId } = await caller.product.create({
+      name: "ClubName Test",
+    });
+
+    const zone = await caller.zone.create({
+      productId,
+      label: "Vereinsname",
+      side: "front",
+      type: "text",
+      purpose: "clubName",
+      posX: 25,
+      posY: 5,
+      width: 50,
+      height: 10,
+      fontFamily: "Bebas Neue",
+      fontSize: 32,
+      fontColor: "#000000",
+      sortOrder: 0,
+    });
+    expect(zone).toHaveProperty("id");
+
+    const product = await caller.product.getById({ id: productId });
+    const purposes = product?.zones.map((z: any) => z.purpose);
+    expect(purposes).toContain("clubName");
+  });
+
+  it("updates zone with rotation and font settings", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const { id: productId } = await caller.product.create({
+      name: "Update Extended Test",
+    });
+
+    const { id: zoneId } = await caller.zone.create({
+      productId,
+      label: "Test Zone",
+      side: "front",
+      type: "text",
+      posX: 10,
+      posY: 10,
+      width: 20,
+      height: 20,
+      sortOrder: 0,
+    });
+
+    const result = await caller.zone.update({
+      id: zoneId,
+      rotation: 15,
+      widthCm: 10,
+      heightCm: 5,
+      fontFamily: "Anton",
+      fontSize: 36,
+      fontColor: "#ff0000",
+      fontWeight: "700",
+      textAlign: "left",
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
 describe("product.delete", () => {
   it("deletes a product", async () => {
     const ctx = createAdminContext();

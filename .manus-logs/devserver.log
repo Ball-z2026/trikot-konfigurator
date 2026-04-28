@@ -262,3 +262,22 @@
 [2026-04-28T19:45:51.786Z] 3:45:51 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
 [2026-04-28T19:46:04.201Z] 3:46:04 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
 [2026-04-28T19:46:48.685Z] [Auth] Missing session cookie
+[2026-04-28T20:02:25.702Z] 4:02:25 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-28T20:02:27.166Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T20:02:27.417Z] Server running on http://localhost:3000/
+[2026-04-28T20:03:35.985Z] 4:03:35 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-28T20:03:37.685Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T20:03:37.968Z] Server running on http://localhost:3000/
+[2026-04-28T20:04:11.659Z] 4:04:11 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-28T20:04:13.131Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T20:04:13.390Z] Server running on http://localhost:3000/
+[2026-04-28T20:04:46.474Z] Dev server process group stopped
+[2026-04-28T20:04:46.534Z] Dev server exited with code -15
+[2026-04-28T20:04:49.509Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-28T20:04:51.387Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-28T20:04:51.669Z] Server running on http://localhost:3000/
+[2026-04-28T20:04:56.734Z] [Auth] Missing session cookie
+[2026-04-28T20:09:34.132Z] 4:09:34 PM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-04-28T20:09:36.757Z] 4:09:36 PM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-slider
+[2026-04-28T20:09:36.758Z] 4:09:36 PM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-04-28T20:14:13.412Z] 4:14:13 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css

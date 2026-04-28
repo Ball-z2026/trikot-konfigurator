@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -32,6 +34,10 @@ import {
   PenTool,
   Loader2,
   LayoutGrid,
+  RotateCw,
+  Ruler,
+  Palette,
+  Building2,
 } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useParams } from "wouter";
@@ -51,20 +57,58 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "playerName" | "playerNumber" | "custom";
+  purpose: "logo" | "playerName" | "playerNumber" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
   height: number;
+  widthCm: number | null;
+  heightCm: number | null;
+  rotation: number;
+  fontFamily: string | null;
+  fontSize: number | null;
+  fontColor: string | null;
+  fontWeight: string | null;
+  textAlign: string | null;
   sortOrder: number;
 };
 
 const PURPOSE_CONFIG = {
-  logo: { label: "Logo", icon: FileImage, description: "Bild-Upload (Logo, Sponsor)" },
-  playerName: { label: "Spielername", icon: User, description: "Automatisch: Spielername" },
-  playerNumber: { label: "Nummer", icon: Hash, description: "Automatisch: Spielernummer" },
-  custom: { label: "Freitext", icon: PenTool, description: "Freie Texteingabe" },
+  logo: { label: "Logo", icon: FileImage, description: "Bild-Upload (Logo, Sponsor)", autoType: "image" as const },
+  playerName: { label: "Spielername", icon: User, description: "Automatisch aus Mannschaftsliste", autoType: "text" as const },
+  playerNumber: { label: "Nummer", icon: Hash, description: "Automatisch aus Mannschaftsliste", autoType: "text" as const },
+  clubName: { label: "Vereinsname", icon: Building2, description: "Fester Vereinsname für alle Trikots", autoType: "text" as const },
+  custom: { label: "Freitext", icon: PenTool, description: "Freie Texteingabe durch Kunde", autoType: "text" as const },
 };
+
+const FONT_OPTIONS = [
+  { value: "Inter", label: "Inter (Standard)" },
+  { value: "Oswald", label: "Oswald (Sportlich)" },
+  { value: "Bebas Neue", label: "Bebas Neue (Block)" },
+  { value: "Roboto Condensed", label: "Roboto Condensed" },
+  { value: "Montserrat", label: "Montserrat" },
+  { value: "Anton", label: "Anton (Impact)" },
+  { value: "Barlow Condensed", label: "Barlow Condensed" },
+  { value: "Teko", label: "Teko (Schmal)" },
+  { value: "Rajdhani", label: "Rajdhani" },
+  { value: "Russo One", label: "Russo One" },
+];
+
+const FONT_WEIGHT_OPTIONS = [
+  { value: "normal", label: "Normal" },
+  { value: "bold", label: "Fett" },
+  { value: "100", label: "Dünn (100)" },
+  { value: "300", label: "Leicht (300)" },
+  { value: "500", label: "Medium (500)" },
+  { value: "700", label: "Fett (700)" },
+  { value: "900", label: "Schwarz (900)" },
+];
+
+const TEXT_ALIGN_OPTIONS = [
+  { value: "left", label: "Links" },
+  { value: "center", label: "Zentriert" },
+  { value: "right", label: "Rechts" },
+];
 
 export default function AdminProductEditor() {
   const { id } = useParams<{ id: string }>();
@@ -153,9 +197,16 @@ export default function AdminProductEditor() {
         (productData.zones as ZoneData[]).map((z) => ({
           ...z,
           purpose: z.purpose || "logo",
+          rotation: z.rotation ?? 0,
+          widthCm: z.widthCm ?? null,
+          heightCm: z.heightCm ?? null,
+          fontFamily: z.fontFamily ?? null,
+          fontSize: z.fontSize ?? null,
+          fontColor: z.fontColor ?? null,
+          fontWeight: z.fontWeight ?? null,
+          textAlign: z.textAlign ?? null,
         }))
       );
-      // Auto-select first part if none selected
       if (activePartId === null && productData.parts?.length) {
         setActivePartId((productData.parts as PartData[])[0].id);
       }
@@ -163,12 +214,11 @@ export default function AdminProductEditor() {
   }, [productData]);
 
   const activePart = parts.find((p) => p.id === activePartId);
-  const currentImage = hasParts
-    ? activePart?.imageUrl || null
-    : null;
+  const currentImage = hasParts ? activePart?.imageUrl || null : null;
   const currentZones = hasParts
     ? localZones.filter((z) => z.partId === activePartId)
     : localZones;
+  const selectedZone = localZones.find((z) => z.id === selectedZoneId);
 
   // ─── Image Upload for Part ─────────────────────────────────────────────
   const handlePartImageUpload = useCallback(
@@ -179,59 +229,11 @@ export default function AdminProductEditor() {
       input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (!file) return;
-
         const maxSize = 10 * 1024 * 1024;
         if (file.size > maxSize) {
           toast.error(`Datei zu groß (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum: 10 MB`);
           return;
         }
-
-        setUploading(true);
-        setUploadProgress("Wird gelesen...");
-        try {
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve((reader.result as string).split(",")[1]);
-            reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden"));
-            reader.readAsDataURL(file);
-          });
-
-          setUploadProgress("Wird hochgeladen...");
-          const resp = await fetch("/api/upload", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fileName: file.name, data: base64, contentType: file.type }),
-          });
-
-          if (!resp.ok) {
-            const errData = await resp.json().catch(() => ({}));
-            throw new Error(errData.error || `Upload fehlgeschlagen (${resp.status})`);
-          }
-
-          const { url } = await resp.json();
-          await updatePartMut.mutateAsync({ id: partId, imageUrl: url });
-          toast.success("Bild hochgeladen");
-        } catch (err: any) {
-          toast.error(err.message || "Upload fehlgeschlagen");
-        } finally {
-          setUploading(false);
-          setUploadProgress("");
-        }
-      };
-      input.click();
-    },
-    [updatePartMut]
-  );
-
-  // ─── Legacy Image Upload (for products without parts) ──────────────────
-  const handleLegacyImageUpload = useCallback(
-    async (side: "front" | "back") => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/jpeg,image/png,image/webp,image/svg+xml,image/gif";
-      input.onchange = async (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) return;
         setUploading(true);
         setUploadProgress("Wird hochgeladen...");
         try {
@@ -246,12 +248,13 @@ export default function AdminProductEditor() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ fileName: file.name, data: base64, contentType: file.type }),
           });
-          if (!resp.ok) throw new Error("Upload fehlgeschlagen");
+          if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            throw new Error(errData.error || `Upload fehlgeschlagen (${resp.status})`);
+          }
           const { url } = await resp.json();
-          await updateProduct.mutateAsync({
-            id: productId,
-            ...(side === "front" ? { frontImageUrl: url } : { backImageUrl: url }),
-          });
+          await updatePartMut.mutateAsync({ id: partId, imageUrl: url });
+          toast.success("Bild hochgeladen");
         } catch (err: any) {
           toast.error(err.message || "Upload fehlgeschlagen");
         } finally {
@@ -261,7 +264,7 @@ export default function AdminProductEditor() {
       };
       input.click();
     },
-    [productId, updateProduct]
+    [updatePartMut]
   );
 
   // ─── Zone Drag & Drop ──────────────────────────────────────────────────
@@ -308,7 +311,7 @@ export default function AdminProductEditor() {
         setLocalZones((prev) =>
           prev.map((z) =>
             z.id === resizingZone
-              ? { ...z, width: Math.max(5, Math.min(100 - z.posX, dragStart.zoneW + dx)), height: Math.max(5, Math.min(100 - z.posY, dragStart.zoneH + dy)) }
+              ? { ...z, width: Math.max(3, Math.min(100 - z.posX, dragStart.zoneW + dx)), height: Math.max(3, Math.min(100 - z.posY, dragStart.zoneH + dy)) }
               : z
           )
         );
@@ -346,6 +349,15 @@ export default function AdminProductEditor() {
       };
     }
   }, [draggingZone, resizingZone, dragStart, localZones, productData, bulkUpdatePositions, getRelativePosition]);
+
+  // ─── Zone update helper ────────────────────────────────────────────────
+  const updateLocalZone = (zoneId: number, updates: Partial<ZoneData>) => {
+    setLocalZones((prev) => prev.map((z) => z.id === zoneId ? { ...z, ...updates } : z));
+  };
+
+  const saveZoneField = (zoneId: number, field: string, value: any) => {
+    updateZoneMut.mutate({ id: zoneId, [field]: value });
+  };
 
   // ─── Zone Colors ────────────────────────────────────────────────────────
   const zoneColors = [
@@ -399,11 +411,11 @@ export default function AdminProductEditor() {
       </header>
 
       <main className="container py-4 sm:py-6 px-3 sm:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-4 sm:gap-6">
           {/* Left: Canvas */}
           <div className="space-y-3">
             {/* Part Tabs / Navigation */}
-            {hasParts ? (
+            {hasParts && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <LayoutGrid className="w-4 h-4 text-muted-foreground" />
@@ -411,53 +423,34 @@ export default function AdminProductEditor() {
                 </div>
                 <ScrollArea className="w-full">
                   <div className="flex gap-2 pb-2">
-                    {parts
-                      .sort((a, b) => a.sortOrder - b.sortOrder)
-                      .map((part) => {
-                        const isActive = activePartId === part.id;
-                        const partZones = localZones.filter((z) => z.partId === part.id);
-                        return (
-                          <button
-                            key={part.id}
-                            className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all min-w-[90px] sm:min-w-[110px] ${
-                              isActive
-                                ? "border-primary bg-primary/5 shadow-sm"
-                                : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
-                            }`}
-                            onClick={() => {
-                              setActivePartId(part.id);
-                              setSelectedZoneId(null);
-                            }}
-                          >
-                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-muted/30 rounded overflow-hidden">
-                              {part.imageUrl ? (
-                                <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Image className="w-5 h-5 text-muted-foreground/30" />
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{part.label}</span>
-                            {partZones.length > 0 && (
-                              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
-                                {partZones.length} {partZones.length === 1 ? "Zone" : "Zonen"}
-                              </Badge>
+                    {parts.sort((a, b) => a.sortOrder - b.sortOrder).map((part) => {
+                      const isActive = activePartId === part.id;
+                      const partZones = localZones.filter((z) => z.partId === part.id);
+                      return (
+                        <button
+                          key={part.id}
+                          className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all min-w-[90px] sm:min-w-[110px] ${
+                            isActive ? "border-primary bg-primary/5 shadow-sm" : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
+                          }`}
+                          onClick={() => { setActivePartId(part.id); setSelectedZoneId(null); }}
+                        >
+                          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-muted/30 rounded overflow-hidden">
+                            {part.imageUrl ? (
+                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center"><Image className="w-5 h-5 text-muted-foreground/30" /></div>
                             )}
-                          </button>
-                        );
-                      })}
-                    {/* Add Part Button */}
+                          </div>
+                          <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{part.label}</span>
+                          {partZones.length > 0 && (
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">{partZones.length} {partZones.length === 1 ? "Zone" : "Zonen"}</Badge>
+                          )}
+                        </button>
+                      );
+                    })}
                     <button
                       className="flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 border-dashed border-muted-foreground/20 hover:border-primary/50 hover:bg-primary/5 transition-all min-w-[90px] sm:min-w-[110px]"
-                      onClick={() => {
-                        createPart.mutate({
-                          productId,
-                          key: `teil_${parts.length + 1}`,
-                          label: `Teil ${parts.length + 1}`,
-                          sortOrder: parts.length,
-                        });
-                      }}
+                      onClick={() => createPart.mutate({ productId, key: `teil_${parts.length + 1}`, label: `Teil ${parts.length + 1}`, sortOrder: parts.length })}
                     >
                       <Plus className="w-5 h-5 text-muted-foreground" />
                       <span className="text-[10px] sm:text-xs text-muted-foreground">Neues Teil</span>
@@ -466,47 +459,16 @@ export default function AdminProductEditor() {
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
 
-                {/* Upload Button for active part */}
                 {activePart && (
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs sm:text-sm"
-                      onClick={() => handlePartImageUpload(activePart.id)}
-                      disabled={uploading}
-                    >
-                      {uploading ? (
-                        <><Loader2 className="w-3.5 h-3.5 sm:mr-1.5 animate-spin" /><span className="hidden sm:inline">{uploadProgress}</span></>
-                      ) : (
-                        <><Upload className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Bild für {activePart.label} hochladen</span></>
-                      )}
+                    <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm" onClick={() => handlePartImageUpload(activePart.id)} disabled={uploading}>
+                      {uploading ? <><Loader2 className="w-3.5 h-3.5 sm:mr-1.5 animate-spin" /><span className="hidden sm:inline">{uploadProgress}</span></> : <><Upload className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Bild für {activePart.label}</span></>}
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => {
-                        if (confirm(`"${activePart.label}" wirklich löschen?`)) {
-                          deletePartMut.mutate({ id: activePart.id });
-                          setActivePartId(parts.find((p) => p.id !== activePart.id)?.id || null);
-                        }
-                      }}
-                    >
+                    <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={() => { if (confirm(`"${activePart.label}" wirklich löschen?`)) { deletePartMut.mutate({ id: activePart.id }); setActivePartId(parts.find((p) => p.id !== activePart.id)?.id || null); } }}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 )}
-              </div>
-            ) : (
-              /* Legacy: front/back toggle for products without parts */
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button variant="outline" size="sm" className="h-8" onClick={() => handleLegacyImageUpload("front")} disabled={uploading}>
-                  <Upload className="w-3.5 h-3.5 mr-1.5" />Vorderseite
-                </Button>
-                <Button variant="outline" size="sm" className="h-8" onClick={() => handleLegacyImageUpload("back")} disabled={uploading}>
-                  <Upload className="w-3.5 h-3.5 mr-1.5" />Rückseite
-                </Button>
               </div>
             )}
 
@@ -524,9 +486,7 @@ export default function AdminProductEditor() {
                   <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground px-4">
                     <Upload className="w-10 h-10 sm:w-12 sm:h-12 mb-3 opacity-30" />
                     <p className="text-xs sm:text-sm text-center">
-                      {hasParts && activePart
-                        ? `Klicke oben auf "Bild hochladen" um ein Bild für "${activePart.label}" hinzuzufügen`
-                        : "Kein Teil ausgewählt"}
+                      {hasParts && activePart ? `Klicke oben auf "Bild hochladen" um ein Bild für "${activePart.label}" hinzuzufügen` : "Kein Teil ausgewählt"}
                     </p>
                   </div>
                 )}
@@ -544,18 +504,54 @@ export default function AdminProductEditor() {
                         left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`,
                         backgroundColor: isSelected ? zoneColors[colorIdx].replace("0.3", "0.5") : zoneColors[colorIdx],
                         border: `2px ${isSelected ? "solid" : "dashed"} ${zoneBorderColors[colorIdx]}`,
-                        borderRadius: "4px", cursor: draggingZone === zone.id ? "grabbing" : "grab", zIndex: isSelected ? 10 : 1,
+                        borderRadius: "4px",
+                        cursor: draggingZone === zone.id ? "grabbing" : "grab",
+                        zIndex: isSelected ? 10 : 1,
+                        transform: `rotate(${zone.rotation || 0}deg)`,
+                        transformOrigin: "center center",
                       }}
                       onMouseDown={(e) => handleZoneMouseDown(e, zone.id)}
                       onClick={(e) => { e.stopPropagation(); setSelectedZoneId(zone.id); }}
                     >
-                      <div className="absolute -top-5 sm:-top-6 left-0 text-[10px] sm:text-xs font-medium px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap flex items-center gap-1" style={{ backgroundColor: zoneBorderColors[colorIdx], color: "white" }}>
+                      {/* Zone Label */}
+                      <div
+                        className="absolute -top-5 sm:-top-6 left-0 text-[10px] sm:text-xs font-medium px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap flex items-center gap-1"
+                        style={{ backgroundColor: zoneBorderColors[colorIdx], color: "white", transform: `rotate(${-(zone.rotation || 0)}deg)` }}
+                      >
                         <PurposeIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{zone.label}
                       </div>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-60 transition-opacity pointer-events-none">
-                        <Move className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow" />
+
+                      {/* Zone Content Preview */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        {zone.type === "text" || zone.type === "both" ? (
+                          <span
+                            className="text-[10px] sm:text-xs opacity-60 truncate px-1"
+                            style={{
+                              fontFamily: zone.fontFamily || "Inter",
+                              fontWeight: zone.fontWeight || "normal",
+                              color: zone.fontColor || "#333",
+                              textAlign: (zone.textAlign as any) || "center",
+                            }}
+                          >
+                            {zone.purpose === "playerName" ? "MÜLLER" :
+                             zone.purpose === "playerNumber" ? "10" :
+                             zone.purpose === "clubName" ? "FC Muster" :
+                             "Abc"}
+                          </span>
+                        ) : (
+                          <Move className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow opacity-0 group-hover:opacity-60 transition-opacity" />
+                        )}
                       </div>
+
+                      {/* Resize Handle */}
                       <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-sm cursor-se-resize" style={{ backgroundColor: zoneBorderColors[colorIdx] }} onMouseDown={(e) => handleZoneMouseDown(e, zone.id, true)} />
+
+                      {/* Rotation indicator */}
+                      {(zone.rotation || 0) !== 0 && (
+                        <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-mono opacity-70 whitespace-nowrap" style={{ color: zoneBorderColors[colorIdx], transform: `rotate(${-(zone.rotation || 0)}deg)` }}>
+                          {zone.rotation}°
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -565,7 +561,7 @@ export default function AdminProductEditor() {
 
           {/* Right: Settings Panel */}
           <div className="space-y-4">
-            <Tabs defaultValue="details">
+            <Tabs defaultValue="zones">
               <TabsList className="w-full">
                 <TabsTrigger value="details" className="flex-1 text-xs sm:text-sm">Details</TabsTrigger>
                 {hasParts && activePart && (
@@ -603,33 +599,15 @@ export default function AdminProductEditor() {
                     <CardContent className="space-y-3 sm:space-y-4">
                       <div>
                         <Label className="text-xs sm:text-sm">Bezeichnung</Label>
-                        <Input
-                          value={activePart.label}
-                          className="h-8 sm:h-9"
-                          onChange={(e) => {
-                            // Optimistic local update
-                          }}
-                          onBlur={(e) => updatePartMut.mutate({ id: activePart.id, label: e.target.value })}
-                          defaultValue={activePart.label}
-                        />
+                        <Input className="h-8 sm:h-9" defaultValue={activePart.label} onBlur={(e) => updatePartMut.mutate({ id: activePart.id, label: e.target.value })} />
                       </div>
                       <div>
                         <Label className="text-xs sm:text-sm">Schlüssel</Label>
-                        <Input
-                          value={activePart.key}
-                          className="h-8 sm:h-9 font-mono text-xs"
-                          onBlur={(e) => updatePartMut.mutate({ id: activePart.id, key: e.target.value })}
-                          defaultValue={activePart.key}
-                        />
+                        <Input className="h-8 sm:h-9 font-mono text-xs" defaultValue={activePart.key} onBlur={(e) => updatePartMut.mutate({ id: activePart.id, key: e.target.value })} />
                       </div>
                       <div>
                         <Label className="text-xs sm:text-sm">Sortierung</Label>
-                        <Input
-                          type="number"
-                          className="h-8 sm:h-9"
-                          defaultValue={activePart.sortOrder}
-                          onBlur={(e) => updatePartMut.mutate({ id: activePart.id, sortOrder: parseInt(e.target.value) || 0 })}
-                        />
+                        <Input type="number" className="h-8 sm:h-9" defaultValue={activePart.sortOrder} onBlur={(e) => updatePartMut.mutate({ id: activePart.id, sortOrder: parseInt(e.target.value) || 0 })} />
                       </div>
                     </CardContent>
                   </Card>
@@ -638,124 +616,336 @@ export default function AdminProductEditor() {
 
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
-                <Card>
-                  <CardHeader className="pb-2 sm:pb-3 flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm sm:text-base">Platzierungszonen</CardTitle>
-                    <Button
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={() =>
-                        createZone.mutate({
-                          productId,
-                          partId: activePartId || undefined,
-                          label: `Zone ${currentZones.length + 1}`,
-                          side: "front",
-                          type: "image",
-                          purpose: "logo",
-                          posX: 30,
-                          posY: 30,
-                          width: 25,
-                          height: 20,
-                          sortOrder: currentZones.length,
-                        })
-                      }
-                    >
-                      <Plus className="w-3.5 h-3.5 mr-1" />Zone hinzufügen
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    {currentZones.length === 0 ? (
-                      <div className="text-center py-6 sm:py-8 text-muted-foreground text-xs sm:text-sm">
+                {/* Add Zone Button */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Platzierungszonen</span>
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() =>
+                      createZone.mutate({
+                        productId,
+                        partId: activePartId || undefined,
+                        label: `Zone ${currentZones.length + 1}`,
+                        side: "front",
+                        type: "image",
+                        purpose: "logo",
+                        posX: 25,
+                        posY: 25,
+                        width: 25,
+                        height: 20,
+                        rotation: 0,
+                        sortOrder: currentZones.length,
+                      })
+                    }
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1" />Zone hinzufügen
+                  </Button>
+                </div>
+
+                {/* Zone List */}
+                {currentZones.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-8">
+                      <div className="text-center text-muted-foreground text-xs sm:text-sm">
                         <Layers className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-30" />
-                        {hasParts && activePart
-                          ? `Noch keine Zonen für "${activePart.label}".`
-                          : "Noch keine Zonen vorhanden."}
+                        {hasParts && activePart ? `Noch keine Zonen für "${activePart.label}".` : "Noch keine Zonen vorhanden."}
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {currentZones.map((zone, idx) => {
-                          const colorIdx = idx % zoneBorderColors.length;
-                          const isSelected = selectedZoneId === zone.id;
-                          return (
-                            <div
-                              key={zone.id}
-                              className={`p-2.5 sm:p-3 rounded-lg border-2 transition-colors cursor-pointer ${isSelected ? "bg-accent" : "hover:bg-accent/50"}`}
-                              style={{ borderColor: isSelected ? zoneBorderColors[colorIdx] : "transparent" }}
-                              onClick={() => setSelectedZoneId(zone.id)}
-                            >
-                              {/* Row 1: Label + Delete */}
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0" style={{ backgroundColor: zoneBorderColors[colorIdx] }} />
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <ScrollArea className="max-h-[calc(100vh-280px)]">
+                    <div className="space-y-3 pr-2">
+                      {currentZones.map((zone, idx) => {
+                        const colorIdx = idx % zoneBorderColors.length;
+                        const isSelected = selectedZoneId === zone.id;
+                        const PurposeIcon = PURPOSE_CONFIG[zone.purpose]?.icon || FileImage;
+                        const isTextZone = zone.type === "text" || zone.type === "both";
+
+                        return (
+                          <Card
+                            key={zone.id}
+                            className={`transition-all cursor-pointer ${isSelected ? "ring-2 shadow-md" : "hover:shadow-sm"}`}
+                            style={{ borderColor: isSelected ? zoneBorderColors[colorIdx] : undefined, ...(isSelected ? { ringColor: zoneBorderColors[colorIdx] } : {}) }}
+                            onClick={() => setSelectedZoneId(zone.id)}
+                          >
+                            <CardContent className="p-3 space-y-3">
+                              {/* Header: Name + Purpose Badge + Delete */}
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: zoneBorderColors[colorIdx] }} />
                                 <Input
                                   value={zone.label}
-                                  className="h-7 text-xs sm:text-sm font-medium"
-                                  onChange={(e) => setLocalZones((prev) => prev.map((z) => z.id === zone.id ? { ...z, label: e.target.value } : z))}
-                                  onBlur={() => updateZoneMut.mutate({ id: zone.id, label: zone.label })}
+                                  className="h-7 text-xs sm:text-sm font-semibold flex-1"
+                                  onChange={(e) => updateLocalZone(zone.id, { label: e.target.value })}
+                                  onBlur={() => saveZoneField(zone.id, "label", zone.label)}
+                                  onClick={(e) => e.stopPropagation()}
                                 />
+                                <Badge variant="outline" className="text-[10px] shrink-0 gap-1">
+                                  <PurposeIcon className="w-2.5 h-2.5" />
+                                  {PURPOSE_CONFIG[zone.purpose]?.label}
+                                </Badge>
                                 <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); deleteZoneMut.mutate({ id: zone.id }); }}>
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </Button>
                               </div>
 
-                              {/* Row 2: Type */}
-                              <div className="flex items-center gap-2 mb-2">
-                                <Label className="text-[10px] sm:text-xs text-muted-foreground shrink-0 w-8 sm:w-10">Typ</Label>
-                                <Select
-                                  value={zone.type}
-                                  onValueChange={(val: "image" | "text" | "both") => {
-                                    setLocalZones((prev) => prev.map((z) => z.id === zone.id ? { ...z, type: val } : z));
-                                    updateZoneMut.mutate({ id: zone.id, type: val });
-                                  }}
-                                >
-                                  <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="image"><div className="flex items-center gap-1.5"><Image className="w-3 h-3" />Bild</div></SelectItem>
-                                    <SelectItem value="text"><div className="flex items-center gap-1.5"><Type className="w-3 h-3" />Text</div></SelectItem>
-                                    <SelectItem value="both"><div className="flex items-center gap-1.5"><Layers className="w-3 h-3" />Beides</div></SelectItem>
-                                  </SelectContent>
-                                </Select>
+                              {/* Row: Type + Purpose */}
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground mb-1 block">Typ</Label>
+                                  <Select
+                                    value={zone.type}
+                                    onValueChange={(val: "image" | "text" | "both") => {
+                                      updateLocalZone(zone.id, { type: val });
+                                      saveZoneField(zone.id, "type", val);
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="image"><div className="flex items-center gap-1.5"><Image className="w-3 h-3" />Bild</div></SelectItem>
+                                      <SelectItem value="text"><div className="flex items-center gap-1.5"><Type className="w-3 h-3" />Text</div></SelectItem>
+                                      <SelectItem value="both"><div className="flex items-center gap-1.5"><Layers className="w-3 h-3" />Beides</div></SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground mb-1 block">Zweck</Label>
+                                  <Select
+                                    value={zone.purpose}
+                                    onValueChange={(val: "logo" | "playerName" | "playerNumber" | "clubName" | "custom") => {
+                                      const autoType = PURPOSE_CONFIG[val]?.autoType || zone.type;
+                                      updateLocalZone(zone.id, { purpose: val, type: autoType });
+                                      updateZoneMut.mutate({ id: zone.id, purpose: val, type: autoType });
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      {Object.entries(PURPOSE_CONFIG).map(([key, cfg]) => {
+                                        const Icon = cfg.icon;
+                                        return (
+                                          <SelectItem key={key} value={key}>
+                                            <div className="flex items-center gap-1.5"><Icon className="w-3 h-3" />{cfg.label}</div>
+                                          </SelectItem>
+                                        );
+                                      })}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </div>
 
-                              {/* Row 3: Purpose */}
-                              <div className="flex items-center gap-2 mb-2">
-                                <Label className="text-[10px] sm:text-xs text-muted-foreground shrink-0 w-8 sm:w-10">Zweck</Label>
-                                <Select
-                                  value={zone.purpose}
-                                  onValueChange={(val: "logo" | "playerName" | "playerNumber" | "custom") => {
-                                    let newType = zone.type;
-                                    if (val === "playerName" || val === "playerNumber" || val === "custom") newType = "text";
-                                    else if (val === "logo") newType = "image";
-                                    setLocalZones((prev) => prev.map((z) => z.id === zone.id ? { ...z, purpose: val, type: newType } : z));
-                                    updateZoneMut.mutate({ id: zone.id, purpose: val, type: newType });
-                                  }}
-                                >
-                                  <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-                                  <SelectContent>
-                                    {Object.entries(PURPOSE_CONFIG).map(([key, cfg]) => {
-                                      const Icon = cfg.icon;
-                                      return (
-                                        <SelectItem key={key} value={key}>
-                                          <div className="flex items-center gap-1.5"><Icon className="w-3 h-3" />{cfg.label}</div>
-                                        </SelectItem>
-                                      );
-                                    })}
-                                  </SelectContent>
-                                </Select>
-                              </div>
+                              {/* Expanded details when selected */}
+                              {isSelected && (
+                                <>
+                                  <Separator className="my-1" />
 
-                              {/* Row 4: Position */}
-                              <div className="text-[10px] sm:text-xs text-muted-foreground text-right">
-                                {Math.round(zone.posX)}%, {Math.round(zone.posY)}% | {Math.round(zone.width)}x{Math.round(zone.height)}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                                  {/* Size in cm */}
+                                  <div>
+                                    <Label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1"><Ruler className="w-3 h-3" />Druckmaße (cm)</Label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div className="relative">
+                                        <Input
+                                          type="number"
+                                          step="0.1"
+                                          min="0"
+                                          placeholder="Breite"
+                                          className="h-7 text-xs pr-8"
+                                          value={zone.widthCm ?? ""}
+                                          onChange={(e) => updateLocalZone(zone.id, { widthCm: e.target.value ? parseFloat(e.target.value) : null })}
+                                          onBlur={() => saveZoneField(zone.id, "widthCm", zone.widthCm)}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">cm</span>
+                                      </div>
+                                      <div className="relative">
+                                        <Input
+                                          type="number"
+                                          step="0.1"
+                                          min="0"
+                                          placeholder="Höhe"
+                                          className="h-7 text-xs pr-8"
+                                          value={zone.heightCm ?? ""}
+                                          onChange={(e) => updateLocalZone(zone.id, { heightCm: e.target.value ? parseFloat(e.target.value) : null })}
+                                          onBlur={() => saveZoneField(zone.id, "heightCm", zone.heightCm)}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">cm</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Rotation */}
+                                  <div>
+                                    <Label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1"><RotateCw className="w-3 h-3" />Rotation</Label>
+                                    <div className="flex items-center gap-3">
+                                      <Slider
+                                        min={0}
+                                        max={360}
+                                        value={[zone.rotation || 0]}
+                                        onValueChange={([val]) => updateLocalZone(zone.id, { rotation: val })}
+                                        onValueCommit={([val]) => saveZoneField(zone.id, "rotation", val)}
+                                        className="flex-1"
+                                      />
+                                      <div className="relative w-16 shrink-0">
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          max="360"
+                                          className="h-7 text-xs pr-5"
+                                          value={zone.rotation || 0}
+                                          onChange={(e) => updateLocalZone(zone.id, { rotation: parseInt(e.target.value) || 0 })}
+                                          onBlur={() => saveZoneField(zone.id, "rotation", zone.rotation)}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">°</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Position info */}
+                                  <div className="grid grid-cols-4 gap-1.5">
+                                    <div>
+                                      <Label className="text-[10px] text-muted-foreground">X %</Label>
+                                      <Input type="number" min="0" max="100" step="0.5" className="h-7 text-xs" value={Math.round(zone.posX * 10) / 10} onChange={(e) => { const v = parseFloat(e.target.value) || 0; updateLocalZone(zone.id, { posX: v }); }} onBlur={() => saveZoneField(zone.id, "posX", zone.posX)} onClick={(e) => e.stopPropagation()} />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-muted-foreground">Y %</Label>
+                                      <Input type="number" min="0" max="100" step="0.5" className="h-7 text-xs" value={Math.round(zone.posY * 10) / 10} onChange={(e) => { const v = parseFloat(e.target.value) || 0; updateLocalZone(zone.id, { posY: v }); }} onBlur={() => saveZoneField(zone.id, "posY", zone.posY)} onClick={(e) => e.stopPropagation()} />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-muted-foreground">B %</Label>
+                                      <Input type="number" min="1" max="100" step="0.5" className="h-7 text-xs" value={Math.round(zone.width * 10) / 10} onChange={(e) => { const v = parseFloat(e.target.value) || 1; updateLocalZone(zone.id, { width: v }); }} onBlur={() => saveZoneField(zone.id, "width", zone.width)} onClick={(e) => e.stopPropagation()} />
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px] text-muted-foreground">H %</Label>
+                                      <Input type="number" min="1" max="100" step="0.5" className="h-7 text-xs" value={Math.round(zone.height * 10) / 10} onChange={(e) => { const v = parseFloat(e.target.value) || 1; updateLocalZone(zone.id, { height: v }); }} onBlur={() => saveZoneField(zone.id, "height", zone.height)} onClick={(e) => e.stopPropagation()} />
+                                    </div>
+                                  </div>
+
+                                  {/* Font Settings (only for text zones) */}
+                                  {isTextZone && (
+                                    <>
+                                      <Separator className="my-1" />
+                                      <div>
+                                        <Label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1"><Palette className="w-3 h-3" />Schrift-Einstellungen</Label>
+                                        <div className="space-y-2">
+                                          {/* Font Family */}
+                                          <Select
+                                            value={zone.fontFamily || "Inter"}
+                                            onValueChange={(val) => {
+                                              updateLocalZone(zone.id, { fontFamily: val });
+                                              saveZoneField(zone.id, "fontFamily", val);
+                                            }}
+                                          >
+                                            <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="Schriftart..." /></SelectTrigger>
+                                            <SelectContent>
+                                              {FONT_OPTIONS.map((f) => (
+                                                <SelectItem key={f.value} value={f.value}>
+                                                  <span style={{ fontFamily: f.value }}>{f.label}</span>
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+
+                                          {/* Font Size + Weight + Align */}
+                                          <div className="grid grid-cols-3 gap-2">
+                                            <div className="relative">
+                                              <Input
+                                                type="number"
+                                                min="8"
+                                                max="200"
+                                                placeholder="Größe"
+                                                className="h-7 text-xs pr-6"
+                                                value={zone.fontSize ?? ""}
+                                                onChange={(e) => updateLocalZone(zone.id, { fontSize: e.target.value ? parseInt(e.target.value) : null })}
+                                                onBlur={() => saveZoneField(zone.id, "fontSize", zone.fontSize)}
+                                                onClick={(e) => e.stopPropagation()}
+                                              />
+                                              <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">px</span>
+                                            </div>
+                                            <Select
+                                              value={zone.fontWeight || "normal"}
+                                              onValueChange={(val) => {
+                                                updateLocalZone(zone.id, { fontWeight: val });
+                                                saveZoneField(zone.id, "fontWeight", val);
+                                              }}
+                                            >
+                                              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                              <SelectContent>
+                                                {FONT_WEIGHT_OPTIONS.map((w) => (
+                                                  <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                            <Select
+                                              value={zone.textAlign || "center"}
+                                              onValueChange={(val) => {
+                                                updateLocalZone(zone.id, { textAlign: val });
+                                                saveZoneField(zone.id, "textAlign", val);
+                                              }}
+                                            >
+                                              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                              <SelectContent>
+                                                {TEXT_ALIGN_OPTIONS.map((a) => (
+                                                  <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                          </div>
+
+                                          {/* Font Color */}
+                                          <div className="flex items-center gap-2">
+                                            <Label className="text-[10px] text-muted-foreground shrink-0">Farbe</Label>
+                                            <input
+                                              type="color"
+                                              className="w-7 h-7 rounded border cursor-pointer"
+                                              value={zone.fontColor || "#000000"}
+                                              onChange={(e) => {
+                                                updateLocalZone(zone.id, { fontColor: e.target.value });
+                                                saveZoneField(zone.id, "fontColor", e.target.value);
+                                              }}
+                                              onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <Input
+                                              className="h-7 text-xs font-mono flex-1"
+                                              value={zone.fontColor || "#000000"}
+                                              onChange={(e) => updateLocalZone(zone.id, { fontColor: e.target.value })}
+                                              onBlur={() => saveZoneField(zone.id, "fontColor", zone.fontColor)}
+                                              onClick={(e) => e.stopPropagation()}
+                                            />
+                                          </div>
+
+                                          {/* Font Preview */}
+                                          <div
+                                            className="p-2 rounded border bg-muted/30 text-center"
+                                            style={{
+                                              fontFamily: zone.fontFamily || "Inter",
+                                              fontSize: `${Math.min(zone.fontSize || 24, 48)}px`,
+                                              fontWeight: zone.fontWeight || "normal",
+                                              color: zone.fontColor || "#000",
+                                              textAlign: (zone.textAlign as any) || "center",
+                                            }}
+                                          >
+                                            {zone.purpose === "playerName" ? "MÜLLER" :
+                                             zone.purpose === "playerNumber" ? "10" :
+                                             zone.purpose === "clubName" ? "FC Muster" :
+                                             "Vorschau"}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </>
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                )}
+
                 <p className="text-[10px] sm:text-xs text-muted-foreground text-center px-4">
-                  Ziehe die Zonen auf dem Bild, um sie zu positionieren. Nutze den Griff unten rechts zum Skalieren.
+                  Ziehe die Zonen auf dem Bild, um sie zu positionieren. Klicke eine Zone an, um alle Einstellungen zu sehen.
                 </p>
               </TabsContent>
             </Tabs>

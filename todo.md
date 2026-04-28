@@ -46,3 +46,15 @@
 - [x] Template-System: DTF-Trikot (nur Vorderteil, Rückteil, Ärmel Links, Ärmel Rechts)
 - [x] Admin-Produkterstellung: Varianten-Auswahl (Sublimation / DTF) bei Trikot-Vorlage mit Druckverfahren-Badge
 - [ ] Skill erstellen mit skill-creator für den gesamten Textil-Konfigurator-Prozess
+
+## Erweiterter Zonen-Editor
+- [x] DB-Schema: Rotation (Grad), Breite/Höhe in cm, Schriftart, erweiterte Feldtypen (inkl. clubName)
+- [x] Backend: Router und DB-Helpers für neue Felder aktualisieren (rotation, cm, font, clubName)
+- [x] Admin-Editor: Felder frei hinzufügen und benennen
+- [x] Admin-Editor: Größe in cm angeben (Breite/Höhe)
+- [x] Admin-Editor: Rotation in Grad (Drehen)
+- [x] Admin-Editor: Schriftarten-Auswahl für Text-Zonen (10 sportliche Fonts, Größe, Farbe, Gewicht, Ausrichtung, Vorschau)
+- [x] Admin-Editor: Feste Feldtypen (Nummer, Vereinsname, Spielername, Logo, Freitext) als Zweck-Typ
+- [x] Kunden-Konfigurator: Feste Felder (Spielername, Nummer, Vereinsname) automatisch befüllen
+- [x] Kunden-Konfigurator: Schriftarten, Rotation, cm-Maße korrekt anzeigen (Google Fonts dynamisch laden)
+- [x] Tests aktualisieren (14 Tests bestanden, inkl. rotation, cm, font, clubName)

@@ -23,6 +23,10 @@ import {
   bulkUpdateZones,
 } from "./db";
 
+// Shared zone schema for reuse
+const zonePurpose = z.enum(["logo", "playerName", "playerNumber", "clubName", "custom"]);
+const zoneType = z.enum(["image", "text", "both"]);
+
 // Admin-only procedure guard
 const adminProcedure = publicProcedure.use(({ ctx, next }) => {
   if (!ctx.user || ctx.user.role !== "admin") {
@@ -95,12 +99,20 @@ export const appRouter = router({
               zones: z.array(
                 z.object({
                   label: z.string(),
-                  type: z.enum(["image", "text", "both"]),
-                  purpose: z.enum(["logo", "playerName", "playerNumber", "custom"]),
+                  type: zoneType,
+                  purpose: zonePurpose,
                   posX: z.number(),
                   posY: z.number(),
                   width: z.number(),
                   height: z.number(),
+                  widthCm: z.number().optional(),
+                  heightCm: z.number().optional(),
+                  rotation: z.number().optional(),
+                  fontFamily: z.string().optional(),
+                  fontSize: z.number().optional(),
+                  fontColor: z.string().optional(),
+                  fontWeight: z.string().optional(),
+                  textAlign: z.string().optional(),
                   sortOrder: z.number(),
                 })
               ),
@@ -216,12 +228,20 @@ export const appRouter = router({
           partId: z.number().optional(),
           label: z.string().min(1),
           side: z.enum(["front", "back"]).default("front"),
-          type: z.enum(["image", "text", "both"]).default("image"),
-          purpose: z.enum(["logo", "playerName", "playerNumber", "custom"]).default("logo"),
+          type: zoneType.default("image"),
+          purpose: zonePurpose.default("logo"),
           posX: z.number().min(0).max(100).default(10),
           posY: z.number().min(0).max(100).default(10),
           width: z.number().min(1).max(100).default(20),
           height: z.number().min(1).max(100).default(15),
+          widthCm: z.number().optional(),
+          heightCm: z.number().optional(),
+          rotation: z.number().min(0).max(360).default(0),
+          fontFamily: z.string().optional(),
+          fontSize: z.number().optional(),
+          fontColor: z.string().optional(),
+          fontWeight: z.string().optional(),
+          textAlign: z.string().optional(),
           sortOrder: z.number().default(0),
         })
       )
@@ -237,12 +257,20 @@ export const appRouter = router({
           label: z.string().min(1).optional(),
           partId: z.number().optional(),
           side: z.enum(["front", "back"]).optional(),
-          type: z.enum(["image", "text", "both"]).optional(),
-          purpose: z.enum(["logo", "playerName", "playerNumber", "custom"]).optional(),
+          type: zoneType.optional(),
+          purpose: zonePurpose.optional(),
           posX: z.number().min(0).max(100).optional(),
           posY: z.number().min(0).max(100).optional(),
           width: z.number().min(1).max(100).optional(),
           height: z.number().min(1).max(100).optional(),
+          widthCm: z.number().nullable().optional(),
+          heightCm: z.number().nullable().optional(),
+          rotation: z.number().min(0).max(360).optional(),
+          fontFamily: z.string().nullable().optional(),
+          fontSize: z.number().nullable().optional(),
+          fontColor: z.string().nullable().optional(),
+          fontWeight: z.string().nullable().optional(),
+          textAlign: z.string().nullable().optional(),
           sortOrder: z.number().optional(),
         })
       )
@@ -269,6 +297,7 @@ export const appRouter = router({
               posY: z.number(),
               width: z.number(),
               height: z.number(),
+              rotation: z.number().optional(),
             })
           ),
         })

@@ -24,10 +24,26 @@ import {
   Hash,
   PenTool,
   LayoutGrid,
+  Shield,
+  Type,
 } from "lucide-react";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
+
+// ─── Google Fonts for sport typography ────────────────────────────────────
+const FONT_OPTIONS = [
+  { value: "Inter", label: "Inter" },
+  { value: "Oswald", label: "Oswald" },
+  { value: "Bebas Neue", label: "Bebas Neue" },
+  { value: "Anton", label: "Anton" },
+  { value: "Teko", label: "Teko" },
+  { value: "Russo One", label: "Russo One" },
+  { value: "Black Ops One", label: "Black Ops One" },
+  { value: "Orbitron", label: "Orbitron" },
+  { value: "Rajdhani", label: "Rajdhani" },
+  { value: "Saira Condensed", label: "Saira Condensed" },
+];
 
 type PartData = {
   id: number;
@@ -43,11 +59,19 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "playerName" | "playerNumber" | "custom";
+  purpose: "logo" | "playerName" | "playerNumber" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
   height: number;
+  rotation: number;
+  widthCm: number | null;
+  heightCm: number | null;
+  fontFamily: string | null;
+  fontSize: number | null;
+  fontColor: string | null;
+  fontWeight: string | null;
+  textAlign: string | null;
   sortOrder: number;
 };
 
@@ -57,6 +81,9 @@ type ZoneContent = {
   text?: string;
   fontSize?: number;
   fontColor?: string;
+  fontFamily?: string;
+  fontWeight?: string;
+  textAlign?: string;
 };
 
 type Player = {
@@ -68,8 +95,39 @@ const PURPOSE_ICONS: Record<string, typeof FileImage> = {
   logo: FileImage,
   playerName: User,
   playerNumber: Hash,
+  clubName: Shield,
   custom: PenTool,
 };
+
+const PURPOSE_LABELS: Record<string, string> = {
+  logo: "Logo",
+  playerName: "Spielername",
+  playerNumber: "Nummer",
+  clubName: "Vereinsname",
+  custom: "Freitext",
+};
+
+// Load Google Fonts dynamically
+function useGoogleFonts(zones: ZoneData[]) {
+  useEffect(() => {
+    const families = new Set<string>();
+    for (const z of zones) {
+      if (z.fontFamily && z.fontFamily !== "Inter") families.add(z.fontFamily);
+    }
+    if (families.size === 0) return;
+
+    const existing = document.getElementById("konfig-google-fonts");
+    if (existing) existing.remove();
+
+    const link = document.createElement("link");
+    link.id = "konfig-google-fonts";
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?${[...families]
+      .map((f) => `family=${f.replace(/ /g, "+")}:wght@400;700;900`)
+      .join("&")}&display=swap`;
+    document.head.appendChild(link);
+  }, [zones]);
+}
 
 export default function CustomerConfigurator() {
   const { id } = useParams<{ id: string }>();
@@ -82,10 +140,10 @@ export default function CustomerConfigurator() {
 
   const [activePartId, setActivePartId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"parts" | "overview">("parts");
-  // Legacy fallback for products without parts
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [zoneContents, setZoneContents] = useState<Record<number, ZoneContent>>({});
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
+  const [clubName, setClubName] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerNumber, setNewPlayerNumber] = useState("");
   const [newPlayerName, setNewPlayerName] = useState("");
@@ -98,7 +156,10 @@ export default function CustomerConfigurator() {
   const hasParts = parts.length > 0;
   const allZones: ZoneData[] = (productData?.zones as ZoneData[]) || [];
 
-  // Auto-select first part when data loads
+  // Load Google Fonts used by zones
+  useGoogleFonts(allZones);
+
+  // Auto-select first part
   useEffect(() => {
     if (hasParts && activePartId === null && parts.length > 0) {
       const sorted = [...parts].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -109,7 +170,6 @@ export default function CustomerConfigurator() {
   const activePart = parts.find((p) => p.id === activePartId);
   const sortedParts = useMemo(() => [...parts].sort((a, b) => a.sortOrder - b.sortOrder), [parts]);
 
-  // Determine current image and zones based on parts vs legacy
   const currentImage = hasParts
     ? activePart?.imageUrl || null
     : activeSide === "front"
@@ -200,23 +260,52 @@ export default function CustomerConfigurator() {
   const activePlayer = activePlayerIdx !== null ? players[activePlayerIdx] : null;
 
   const getEffectiveContent = useCallback(
-    (zoneId: number) => {
-      const zone = allZones.find((z) => z.id === zoneId);
-      const content = zoneContents[zoneId];
+    (zone: ZoneData): ZoneContent => {
+      const content = zoneContents[zone.id] || { zoneId: zone.id };
+      const purpose = zone.purpose || "custom";
 
-      if (activePlayer && zone) {
-        const purpose = zone.purpose || "custom";
-        if (purpose === "playerName") {
-          return { ...content, text: activePlayer.name };
-        }
-        if (purpose === "playerNumber") {
-          return { ...content, text: activePlayer.number };
-        }
+      // Merge admin-defined font defaults
+      const merged: ZoneContent = {
+        ...content,
+        fontFamily: content.fontFamily || zone.fontFamily || "Inter",
+        fontSize: content.fontSize || zone.fontSize || 24,
+        fontColor: content.fontColor || zone.fontColor || "#ffffff",
+        fontWeight: content.fontWeight || zone.fontWeight || "700",
+        textAlign: content.textAlign || zone.textAlign || "center",
+      };
+
+      if (purpose === "playerName" && activePlayer) {
+        return { ...merged, text: activePlayer.name };
+      }
+      if (purpose === "playerNumber" && activePlayer) {
+        return { ...merged, text: activePlayer.number };
+      }
+      if (purpose === "clubName" && clubName) {
+        return { ...merged, text: clubName };
       }
 
-      return content;
+      return merged;
     },
-    [activePlayer, zoneContents, allZones]
+    [activePlayer, clubName, zoneContents, allZones]
+  );
+
+  // ─── Render Zone Text ──────────────────────────────────────────────────
+  const renderZoneText = (content: ZoneContent, scale = 1) => (
+    <span
+      className="text-center leading-tight block w-full"
+      style={{
+        fontFamily: content.fontFamily || "Inter",
+        fontSize: `${Math.max(6, (content.fontSize || 24) * scale)}px`,
+        color: content.fontColor || "#ffffff",
+        fontWeight: (content.fontWeight as any) || "700",
+        textAlign: (content.textAlign as any) || "center",
+        textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+        wordBreak: "break-word",
+        lineHeight: 1.1,
+      }}
+    >
+      {content.text}
+    </span>
   );
 
   // ─── Export ─────────────────────────────────────────────────────────────
@@ -265,19 +354,12 @@ export default function CustomerConfigurator() {
       const zip = new JSZip();
       let exported = 0;
 
-      // Determine which parts/sides to export
       const exportTargets: { label: string; setView: () => void }[] = [];
 
       if (hasParts) {
-        const sortedParts = [...parts].sort((a, b) => a.sortOrder - b.sortOrder);
         for (const part of sortedParts) {
-          // Only export parts that have zones with playerName or playerNumber
           const partZones = allZones.filter((z) => z.partId === part.id);
-          const hasPlayerZones = partZones.some(
-            (z) => z.purpose === "playerName" || z.purpose === "playerNumber"
-          );
-          // Export all parts that have any zones or player-relevant zones
-          if (partZones.length > 0 || hasPlayerZones) {
+          if (partZones.length > 0) {
             exportTargets.push({
               label: part.key,
               setView: () => setActivePartId(part.id),
@@ -337,7 +419,7 @@ export default function CustomerConfigurator() {
       setExporting(false);
       setActivePlayerIdx(null);
     }
-  }, [players, productData, hasParts, parts, allZones, waitForRepaint]);
+  }, [players, productData, hasParts, sortedParts, allZones, waitForRepaint]);
 
   // ─── Zone Colors ────────────────────────────────────────────────────────
   const zoneBorderColors = [
@@ -348,6 +430,81 @@ export default function CustomerConfigurator() {
     "rgb(139, 92, 246)",
     "rgb(236, 72, 153)",
   ];
+
+  // ─── Zone Overlay Component ─────────────────────────────────────────────
+  const ZoneOverlay = ({
+    zone,
+    idx,
+    scale = 1,
+    interactive = true,
+  }: {
+    zone: ZoneData;
+    idx: number;
+    scale?: number;
+    interactive?: boolean;
+  }) => {
+    const content = getEffectiveContent(zone);
+    const colorIdx = idx % zoneBorderColors.length;
+    const isSelected = interactive && selectedZoneId === zone.id;
+    const purpose = zone.purpose || "custom";
+    const PurposeIcon = PURPOSE_ICONS[purpose] || PenTool;
+    const rotation = zone.rotation || 0;
+
+    return (
+      <div
+        className="absolute overflow-hidden flex items-center justify-center"
+        style={{
+          left: `${zone.posX}%`,
+          top: `${zone.posY}%`,
+          width: `${zone.width}%`,
+          height: `${zone.height}%`,
+          transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
+          border: isSelected
+            ? `2px solid ${zoneBorderColors[colorIdx]}`
+            : content?.imageDataUrl || content?.text
+            ? "none"
+            : `1px dashed ${zoneBorderColors[colorIdx]}40`,
+          borderRadius: "2px",
+          cursor: interactive ? "pointer" : "default",
+        }}
+        onClick={
+          interactive
+            ? (e) => {
+                e.stopPropagation();
+                setSelectedZoneId(zone.id);
+              }
+            : undefined
+        }
+      >
+        {content?.imageDataUrl && (
+          <img
+            src={content.imageDataUrl}
+            alt=""
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        )}
+        {content?.text && !content?.imageDataUrl && renderZoneText(content, scale)}
+        {!content?.imageDataUrl && !content?.text && (
+          <div className="text-center opacity-40">
+            <PurposeIcon
+              className="mx-auto"
+              style={{
+                width: `${Math.max(10, 16 * scale)}px`,
+                height: `${Math.max(10, 16 * scale)}px`,
+              }}
+            />
+            <span
+              className="block mt-0.5"
+              style={{ fontSize: `${Math.max(7, 10 * scale)}px` }}
+            >
+              {zone.label}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -430,7 +587,7 @@ export default function CustomerConfigurator() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6">
           {/* Left: Canvas */}
           <div className="space-y-3">
-            {/* Part Navigation (for template-based products) */}
+            {/* Part Navigation */}
             {hasParts ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -445,54 +602,52 @@ export default function CustomerConfigurator() {
                 </div>
                 <ScrollArea className="w-full">
                   <div className="flex gap-2 pb-2">
-                    {[...parts]
-                      .sort((a, b) => a.sortOrder - b.sortOrder)
-                      .map((part) => {
-                        const isActive = activePartId === part.id;
-                        const partZones = allZones.filter((z) => z.partId === part.id);
-                        return (
-                          <button
-                            key={part.id}
-                            className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all min-w-[80px] sm:min-w-[100px] ${
-                              isActive
-                                ? "border-primary bg-primary/5 shadow-sm"
-                                : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
-                            }`}
-                            onClick={() => {
-                              setActivePartId(part.id);
-                              setSelectedZoneId(null);
-                            }}
-                          >
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted/30 rounded overflow-hidden">
-                              {part.imageUrl ? (
-                                <img
-                                  src={part.imageUrl}
-                                  alt={part.label}
-                                  className="w-full h-full object-contain"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Image className="w-4 h-4 text-muted-foreground/30" />
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">
-                              {part.label}
-                            </span>
-                            {partZones.length > 0 && (
-                              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
-                                {partZones.length} {partZones.length === 1 ? "Zone" : "Zonen"}
-                              </Badge>
+                    {sortedParts.map((part) => {
+                      const isActive = activePartId === part.id;
+                      const partZones = allZones.filter((z) => z.partId === part.id);
+                      return (
+                        <button
+                          key={part.id}
+                          className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all min-w-[80px] sm:min-w-[100px] ${
+                            isActive
+                              ? "border-primary bg-primary/5 shadow-sm"
+                              : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
+                          }`}
+                          onClick={() => {
+                            setActivePartId(part.id);
+                            setSelectedZoneId(null);
+                            setViewMode("parts");
+                          }}
+                        >
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted/30 rounded overflow-hidden">
+                            {part.imageUrl ? (
+                              <img
+                                src={part.imageUrl}
+                                alt={part.label}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Image className="w-4 h-4 text-muted-foreground/30" />
+                              </div>
                             )}
-                          </button>
-                        );
-                      })}
+                          </div>
+                          <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">
+                            {part.label}
+                          </span>
+                          {partZones.length > 0 && (
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                              {partZones.length} {partZones.length === 1 ? "Zone" : "Zonen"}
+                            </Badge>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
               </div>
             ) : (
-              /* Legacy: front/back toggle */
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   variant={activeSide === "front" ? "default" : "outline"}
@@ -543,7 +698,7 @@ export default function CustomerConfigurator() {
               </div>
             )}
 
-            {/* Overview Mode: All parts in a grid */}
+            {/* Overview Mode */}
             {hasParts && viewMode === "overview" && (
               <Card className="overflow-hidden">
                 <div ref={overviewRef} className="bg-[#f8f9fa] p-3 sm:p-4">
@@ -572,49 +727,15 @@ export default function CustomerConfigurator() {
                                 <Image className="w-6 h-6 text-muted-foreground/20" />
                               </div>
                             )}
-                            {/* Mini zone overlays */}
-                            {partZones.map((zone, zIdx) => {
-                              const content = getEffectiveContent(zone.id);
-                              const colorIdx = zIdx % zoneBorderColors.length;
-                              return (
-                                <div
-                                  key={zone.id}
-                                  className="absolute overflow-hidden flex items-center justify-center"
-                                  style={{
-                                    left: `${zone.posX}%`,
-                                    top: `${zone.posY}%`,
-                                    width: `${zone.width}%`,
-                                    height: `${zone.height}%`,
-                                    border: content?.imageDataUrl || content?.text
-                                      ? "none"
-                                      : `1px dashed ${zoneBorderColors[colorIdx]}40`,
-                                    borderRadius: "1px",
-                                  }}
-                                >
-                                  {content?.imageDataUrl && (
-                                    <img
-                                      src={content.imageDataUrl}
-                                      alt=""
-                                      className="w-full h-full object-contain"
-                                      draggable={false}
-                                    />
-                                  )}
-                                  {content?.text && !content?.imageDataUrl && (
-                                    <span
-                                      className="font-bold text-center leading-tight"
-                                      style={{
-                                        fontSize: `${Math.max(8, (content.fontSize || 24) * 0.4)}px`,
-                                        color: content.fontColor || "#ffffff",
-                                        textShadow: "1px 1px 1px rgba(0,0,0,0.4)",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {content.text}
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })}
+                            {partZones.map((zone, zIdx) => (
+                              <ZoneOverlay
+                                key={zone.id}
+                                zone={zone}
+                                idx={zIdx}
+                                scale={0.4}
+                                interactive={false}
+                              />
+                            ))}
                           </div>
                           <div className="px-2 py-1.5 bg-muted/30 border-t">
                             <span className="text-[10px] sm:text-xs font-medium block text-center truncate">
@@ -631,93 +752,34 @@ export default function CustomerConfigurator() {
 
             {/* Single Part Canvas */}
             {(viewMode === "parts" || !hasParts) && (
-            <Card className="overflow-hidden">
-              <div
-                ref={canvasRef}
-                className="relative bg-[#f8f9fa] aspect-[3/4]"
-                onClick={() => setSelectedZoneId(null)}
-              >
-                {currentImage ? (
-                  <img
-                    src={currentImage}
-                    alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
-                    className="w-full h-full object-contain pointer-events-none"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
-                    <Shirt className="w-12 h-12 sm:w-16 sm:h-16 opacity-20" />
-                    <p className="text-xs text-muted-foreground/50 mt-2">
-                      {hasParts && activePart ? activePart.label : "Keine Ansicht verfügbar"}
-                    </p>
-                  </div>
-                )}
-
-                {/* Zone Overlays */}
-                {currentZones.map((zone, idx) => {
-                  const content = getEffectiveContent(zone.id);
-                  const colorIdx = idx % zoneBorderColors.length;
-                  const isSelected = selectedZoneId === zone.id;
-                  const purpose = zone.purpose || "custom";
-                  const PurposeIcon = PURPOSE_ICONS[purpose] || PenTool;
-
-                  return (
-                    <div
-                      key={zone.id}
-                      className="absolute overflow-hidden flex items-center justify-center"
-                      style={{
-                        left: `${zone.posX}%`,
-                        top: `${zone.posY}%`,
-                        width: `${zone.width}%`,
-                        height: `${zone.height}%`,
-                        border:
-                          isSelected
-                            ? `2px solid ${zoneBorderColors[colorIdx]}`
-                            : content?.imageDataUrl || content?.text
-                            ? "none"
-                            : `1px dashed ${zoneBorderColors[colorIdx]}40`,
-                        borderRadius: "2px",
-                        cursor: "pointer",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedZoneId(zone.id);
-                      }}
-                    >
-                      {content?.imageDataUrl && (
-                        <img
-                          src={content.imageDataUrl}
-                          alt=""
-                          className="w-full h-full object-contain"
-                          draggable={false}
-                        />
-                      )}
-                      {content?.text && !content?.imageDataUrl && (
-                        <span
-                          className="font-bold text-center leading-tight"
-                          style={{
-                            fontSize: `${content.fontSize || 24}px`,
-                            color: content.fontColor || "#ffffff",
-                            textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {content.text}
-                        </span>
-                      )}
-                      {!content?.imageDataUrl && !content?.text && (
-                        <div className="text-center opacity-40">
-                          <PurposeIcon className="w-3 h-3 sm:w-4 sm:h-4 mx-auto" />
-                          <span className="text-[8px] sm:text-[10px] block mt-0.5">
-                            {zone.label}
-                          </span>
-                        </div>
-                      )}
+              <Card className="overflow-hidden">
+                <div
+                  ref={canvasRef}
+                  className="relative bg-[#f8f9fa] aspect-[3/4]"
+                  onClick={() => setSelectedZoneId(null)}
+                >
+                  {currentImage ? (
+                    <img
+                      src={currentImage}
+                      alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
+                      className="w-full h-full object-contain pointer-events-none"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
+                      <Shirt className="w-12 h-12 sm:w-16 sm:h-16 opacity-20" />
+                      <p className="text-xs text-muted-foreground/50 mt-2">
+                        {hasParts && activePart ? activePart.label : "Keine Ansicht verfügbar"}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            </Card>
+                  )}
+
+                  {/* Zone Overlays */}
+                  {currentZones.map((zone, idx) => (
+                    <ZoneOverlay key={zone.id} zone={zone} idx={idx} scale={1} interactive={true} />
+                  ))}
+                </div>
+              </Card>
             )}
           </div>
 
@@ -737,6 +799,27 @@ export default function CustomerConfigurator() {
 
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                {/* Club Name Input (if any zone uses clubName) */}
+                {allZones.some((z) => z.purpose === "clubName") && (
+                  <Card>
+                    <CardContent className="pt-3 sm:pt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-4 h-4 text-primary" />
+                        <Label className="text-sm font-medium">Vereinsname</Label>
+                      </div>
+                      <Input
+                        placeholder="z.B. FC Musterstadt"
+                        value={clubName}
+                        onChange={(e) => setClubName(e.target.value)}
+                        className="h-9"
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-1.5">
+                        Wird automatisch in allen Vereinsname-Feldern platziert.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {currentZones.length === 0 ? (
                   <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm">
                     {hasParts && activePart
@@ -745,7 +828,7 @@ export default function CustomerConfigurator() {
                   </div>
                 ) : (
                   currentZones.map((zone, idx) => {
-                    const content = getEffectiveContent(zone.id);
+                    const content = getEffectiveContent(zone);
                     const colorIdx = idx % zoneBorderColors.length;
                     const isSelected = selectedZoneId === zone.id;
                     const purpose = zone.purpose || "custom";
@@ -771,15 +854,34 @@ export default function CustomerConfigurator() {
                             <PurposeIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
                             <span className="font-medium text-xs sm:text-sm">{zone.label}</span>
                             <Badge variant="outline" className="text-[10px] sm:text-xs ml-auto">
-                              {purpose === "logo"
-                                ? "Logo"
-                                : purpose === "playerName"
-                                ? "Spielername"
-                                : purpose === "playerNumber"
-                                ? "Nummer"
-                                : "Freitext"}
+                              {PURPOSE_LABELS[purpose] || "Freitext"}
                             </Badge>
                           </div>
+
+                          {/* Dimensions info */}
+                          {(zone.widthCm || zone.heightCm) && (
+                            <p className="text-[10px] text-muted-foreground">
+                              Druckfläche: {zone.widthCm ? `${zone.widthCm} cm` : "–"} ×{" "}
+                              {zone.heightCm ? `${zone.heightCm} cm` : "–"}
+                              {zone.rotation ? ` · ${zone.rotation}°` : ""}
+                            </p>
+                          )}
+
+                          {/* Font preview for text zones */}
+                          {zone.fontFamily && purpose !== "logo" && (
+                            <div
+                              className="text-xs px-2 py-1 bg-muted/30 rounded border"
+                              style={{
+                                fontFamily: zone.fontFamily,
+                                fontWeight: (zone.fontWeight as any) || "700",
+                                color: zone.fontColor || undefined,
+                              }}
+                            >
+                              <Type className="w-3 h-3 inline mr-1 opacity-50" />
+                              {zone.fontFamily}
+                              {zone.fontSize ? ` · ${zone.fontSize}px` : ""}
+                            </div>
+                          )}
 
                           {/* Logo zones: Image Upload */}
                           {purpose === "logo" && (
@@ -812,11 +914,17 @@ export default function CustomerConfigurator() {
                             </div>
                           )}
 
-                          {/* Player Name/Number zones: Auto-filled info */}
+                          {/* Player Name/Number: Auto-filled */}
                           {(purpose === "playerName" || purpose === "playerNumber") && (
                             <div className="text-xs text-muted-foreground bg-accent/50 rounded-md p-2">
                               {activePlayer ? (
-                                <span className="text-foreground font-medium">
+                                <span
+                                  className="text-foreground font-medium"
+                                  style={{
+                                    fontFamily: zone.fontFamily || undefined,
+                                    fontWeight: (zone.fontWeight as any) || "700",
+                                  }}
+                                >
                                   {purpose === "playerName"
                                     ? activePlayer.name
                                     : activePlayer.number}
@@ -831,13 +939,35 @@ export default function CustomerConfigurator() {
                             </div>
                           )}
 
+                          {/* Club Name: Auto-filled */}
+                          {purpose === "clubName" && (
+                            <div className="text-xs text-muted-foreground bg-accent/50 rounded-md p-2">
+                              {clubName ? (
+                                <span
+                                  className="text-foreground font-medium"
+                                  style={{
+                                    fontFamily: zone.fontFamily || undefined,
+                                    fontWeight: (zone.fontWeight as any) || "700",
+                                  }}
+                                >
+                                  {clubName}
+                                </span>
+                              ) : (
+                                <span>
+                                  Gib oben den Vereinsnamen ein, um ihn automatisch zu platzieren.
+                                </span>
+                              )}
+                            </div>
+                          )}
+
                           {/* Custom zones: Free text input */}
-                          {purpose === "custom" && (
+                          {purpose === "custom" && (zone.type === "text" || zone.type === "both") && (
                             <div className="space-y-2">
                               <Input
                                 placeholder="Text eingeben..."
                                 value={content?.text || ""}
                                 className="h-8 text-xs sm:text-sm"
+                                style={{ fontFamily: zone.fontFamily || undefined }}
                                 onChange={(e) =>
                                   updateZoneContent(zone.id, { text: e.target.value })
                                 }
@@ -850,7 +980,7 @@ export default function CustomerConfigurator() {
                                     type="number"
                                     min={8}
                                     max={120}
-                                    value={content?.fontSize || 24}
+                                    value={content?.fontSize || zone.fontSize || 24}
                                     className="h-7 w-14 sm:w-16 text-xs"
                                     onChange={(e) =>
                                       updateZoneContent(zone.id, {
@@ -864,7 +994,7 @@ export default function CustomerConfigurator() {
                                   <Label className="text-xs">Farbe</Label>
                                   <input
                                     type="color"
-                                    value={content?.fontColor || "#ffffff"}
+                                    value={content?.fontColor || zone.fontColor || "#ffffff"}
                                     className="w-7 h-7 rounded border cursor-pointer"
                                     onChange={(e) =>
                                       updateZoneContent(zone.id, { fontColor: e.target.value })
@@ -876,7 +1006,7 @@ export default function CustomerConfigurator() {
                             </div>
                           )}
 
-                          {/* Both zones: Image Upload + Text */}
+                          {/* Both zones: Image Upload option */}
                           {purpose === "custom" && zone.type === "both" && !content?.text && (
                             <div className="flex gap-2 mt-1">
                               <Button

@@ -145,7 +145,6 @@ export async function updateProduct(
 export async function deleteProduct(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  // Delete zones first, then parts, then product
   await db.delete(productZones).where(eq(productZones.productId, id));
   await db.delete(productParts).where(eq(productParts.productId, id));
   await db.delete(products).where(eq(products.id, id));
@@ -179,14 +178,13 @@ export async function updatePart(id: number, data: Partial<InsertProductPart>) {
 export async function deletePart(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  // Delete zones belonging to this part first
   await db.delete(productZones).where(eq(productZones.partId, id));
   await db.delete(productParts).where(eq(productParts.id, id));
 }
 
 /**
  * Create a product from a template: creates the product, all parts, and all predefined zones.
- * Returns the new product ID.
+ * Now supports all extended zone fields (rotation, cm, font, clubName).
  */
 export async function createProductFromTemplate(
   productData: InsertProduct,
@@ -198,11 +196,19 @@ export async function createProductFromTemplate(
     zones: Array<{
       label: string;
       type: "image" | "text" | "both";
-      purpose: "logo" | "playerName" | "playerNumber" | "custom";
+      purpose: "logo" | "playerName" | "playerNumber" | "clubName" | "custom";
       posX: number;
       posY: number;
       width: number;
       height: number;
+      widthCm?: number;
+      heightCm?: number;
+      rotation?: number;
+      fontFamily?: string;
+      fontSize?: number;
+      fontColor?: string;
+      fontWeight?: string;
+      textAlign?: string;
       sortOrder: number;
     }>;
   }>
@@ -225,19 +231,27 @@ export async function createProductFromTemplate(
     });
     const partId = partResult[0].insertId;
 
-    // 3. Create zones for this part
+    // 3. Create zones for this part with all extended fields
     for (const zone of part.zones) {
       await db.insert(productZones).values({
         productId,
         partId,
         label: zone.label,
-        side: "front", // default, not used for part-based products
+        side: "front",
         type: zone.type,
         purpose: zone.purpose,
         posX: zone.posX,
         posY: zone.posY,
         width: zone.width,
         height: zone.height,
+        widthCm: zone.widthCm ?? null,
+        heightCm: zone.heightCm ?? null,
+        rotation: zone.rotation ?? 0,
+        fontFamily: zone.fontFamily ?? null,
+        fontSize: zone.fontSize ?? null,
+        fontColor: zone.fontColor ?? null,
+        fontWeight: zone.fontWeight ?? null,
+        textAlign: zone.textAlign ?? null,
         sortOrder: zone.sortOrder,
       });
     }
@@ -291,14 +305,23 @@ export async function deleteZone(id: number) {
 }
 
 export async function bulkUpdateZones(
-  zones: { id: number; posX: number; posY: number; width: number; height: number }[]
+  zones: { id: number; posX: number; posY: number; width: number; height: number; rotation?: number }[]
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   for (const z of zones) {
+    const updateData: Record<string, number> = {
+      posX: z.posX,
+      posY: z.posY,
+      width: z.width,
+      height: z.height,
+    };
+    if (z.rotation !== undefined) {
+      updateData.rotation = z.rotation;
+    }
     await db
       .update(productZones)
-      .set({ posX: z.posX, posY: z.posY, width: z.width, height: z.height })
+      .set(updateData)
       .where(eq(productZones.id, z.id));
   }
 }
