@@ -23,6 +23,8 @@ import {
   LayoutTemplate,
   FileText,
   ChevronRight,
+  Layers,
+  Stamp,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -251,12 +253,22 @@ export default function AdminProducts() {
                           setNewCategory(template.category);
                         }}
                       >
-                        <div className="aspect-[4/3] bg-muted/30 overflow-hidden p-4">
+                        <div className="aspect-[4/3] bg-muted/30 overflow-hidden p-4 relative">
                           <img
                             src={template.previewUrl}
                             alt={template.name}
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                           />
+                          <Badge
+                            variant={template.printMethod === "sublimation" ? "default" : "secondary"}
+                            className="absolute top-2 right-2"
+                          >
+                            {template.printMethod === "sublimation" ? (
+                              <><Layers className="w-3 h-3 mr-1" />Sublimation</>
+                            ) : (
+                              <><Stamp className="w-3 h-3 mr-1" />DTF</>
+                            )}
+                          </Badge>
                         </div>
                         <div className="p-4 text-left">
                           <h4 className="font-semibold">{template.name}</h4>
@@ -297,7 +309,15 @@ export default function AdminProducts() {
                       className="w-20 h-20 object-contain"
                     />
                     <div>
-                      <h4 className="font-semibold">{selectedTemplate.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold">{selectedTemplate.name}</h4>
+                        <Badge
+                          variant={selectedTemplate.printMethod === "sublimation" ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {selectedTemplate.printMethod === "sublimation" ? "Sublimation" : "DTF"}
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {selectedTemplate.parts.length} Teile,{" "}
                         {selectedTemplate.parts.reduce((sum, p) => sum + p.zones.length, 0)} vordefinierte Zonen

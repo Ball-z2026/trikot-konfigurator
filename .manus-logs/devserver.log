@@ -257,3 +257,8 @@
 [2026-04-28T17:55:19.983Z] 1:55:19 PM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
 [2026-04-28T17:57:35.354Z] 1:57:35 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-28T17:58:07.180Z] [Auth] Missing session cookie
+[2026-04-28T18:26:44.806Z] [Auth] Missing session cookie
+[2026-04-28T19:44:49.045Z] 3:44:49 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx
+[2026-04-28T19:45:51.786Z] 3:45:51 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-04-28T19:46:04.201Z] 3:46:04 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-04-28T19:46:48.685Z] [Auth] Missing session cookie

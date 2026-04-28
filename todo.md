@@ -40,3 +40,9 @@
 - [x] Konfigurator: Zusammengebaute Trikot-Gesamtvorschau (alle Teile gleichzeitig in einem Grid-Layout)
 - [x] UI-Toggle zwischen Einzelteil-Bearbeitung und Gesamtvorschau (Einzelteile / Gesamtübersicht Buttons)
 - [x] Home-Seite: Vorschau für Parts-basierte Produkte (Template-Icon Fallback)
+
+## Sublimation vs. DTF Varianten
+- [x] Template-System: Sublimationstrikot (alle 7 Teile konfigurierbar)
+- [x] Template-System: DTF-Trikot (nur Vorderteil, Rückteil, Ärmel Links, Ärmel Rechts)
+- [x] Admin-Produkterstellung: Varianten-Auswahl (Sublimation / DTF) bei Trikot-Vorlage mit Druckverfahren-Badge
+- [ ] Skill erstellen mit skill-creator für den gesamten Textil-Konfigurator-Prozess

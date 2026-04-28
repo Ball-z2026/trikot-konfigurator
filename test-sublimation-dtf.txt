@@ -1,0 +1,23 @@
+Sublimation/DTF Template-Auswahl Test:
+
+1. Dialog "Neues Produkt erstellen" zeigt korrekt "Aus Vorlage" und "Leeres Produkt"
+2. Nach Klick auf "Aus Vorlage" werden zwei Templates angezeigt:
+   - "Trikot – Sublimation" mit Badge "Sublimation" (blau/primary)
+     - Beschreibung: "Sublimationstrikot: Alle Teile sind vollflächig bedruckbar..."
+     - Teile: Vorderteil, Rückteil, Ärmel Links, Ärmel Rechts, Kragen, Bündchen Links, Bündchen Rechts (7 Teile)
+   - "Trikot – DTF" mit Badge "DTF" (grau/secondary)
+     - Beschreibung: "DTF-Trikot (Direct-to-Film): Bedruckung auf Vorderteil, Rückteil und Ärmel..."
+     - Teile: Vorderteil, Rückteil, Ärmel Links, Ärmel Rechts (4 Teile)
+3. Badges sind korrekt farblich unterschieden
+4. Teile-Badges zeigen die richtige Anzahl an
+
+ERGEBNIS: Sublimation/DTF Varianten-Auswahl funktioniert korrekt!
+
+DTF-Produkt erstellt (ID 90001):
+- Zeigt korrekt 4 Teile: Vorderteil (3 Zonen), Rückteil (3 Zonen), Ärmel Links (1 Zone), Ärmel Rechts (1 Zone)
+- Kein Kragen, keine Bündchen – genau wie gewünscht!
+- DTF-Badge wird korrekt angezeigt
+- Beschreibung: "DTF-Trikot (Direct-to-Film): Bedruckung auf Vorderteil, Rückteil und Ärmel..."
+- Zonen sind korrekt platziert (Brust Logo, Brust Sponsor, Bauch Sponsor auf Vorderteil)
+
+ALLES FUNKTIONIERT KORREKT!
