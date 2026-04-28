@@ -187,46 +187,75 @@ export default function CustomerConfigurator() {
     toast.success("Bild exportiert");
   }, [activeSide, exportCanvas, productData]);
 
+  // Wait for DOM to repaint after state change
+  const waitForRepaint = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Double rAF ensures the browser has painted the new frame
+          resolve();
+        });
+      });
+    });
+  }, []);
+
   const handleExportBatch = useCallback(async () => {
     if (players.length === 0) {
       toast.error("Keine Spieler vorhanden");
       return;
     }
     setExporting(true);
-    toast.info("Batch-Export wird vorbereitet...");
+    toast.info(`Batch-Export für ${players.length} Spieler wird vorbereitet...`);
 
     try {
       const JSZip = (await import("jszip")).default;
       const { toPng } = await import("html-to-image");
       const zip = new JSZip();
+      let exported = 0;
 
       for (let i = 0; i < players.length; i++) {
         setActivePlayerIdx(i);
-        await new Promise((r) => setTimeout(r, 400));
+        // Wait for React to render the new player data
+        await waitForRepaint();
+        // Small additional delay for image loading
+        await new Promise((r) => setTimeout(r, 150));
 
         for (const side of ["front", "back"] as const) {
           setActiveSide(side);
-          await new Promise((r) => setTimeout(r, 400));
+          await waitForRepaint();
+          await new Promise((r) => setTimeout(r, 150));
 
           if (canvasRef.current) {
-            const dataUrl = await toPng(canvasRef.current, { quality: 1, pixelRatio: 2, backgroundColor: "#f8f9fa" });
-            const base64 = dataUrl.split(",")[1];
-            zip.file(`${players[i].number || i + 1}_${players[i].name}_${side}.png`, base64, { base64: true });
+            try {
+              const dataUrl = await toPng(canvasRef.current, { quality: 1, pixelRatio: 2, backgroundColor: "#f8f9fa" });
+              const base64 = dataUrl.split(",")[1];
+              const safeName = players[i].name.replace(/[^a-zA-Z0-9äöüÄÖÜß_-]/g, "_");
+              zip.file(`${players[i].number || i + 1}_${safeName}_${side}.png`, base64, { base64: true });
+              exported++;
+            } catch {
+              console.warn(`Export fehlgeschlagen für Spieler ${i + 1} (${side})`);
+            }
           }
         }
+      }
+
+      if (exported === 0) {
+        toast.error("Kein Bild konnte exportiert werden");
+        return;
       }
 
       const blob = await zip.generateAsync({ type: "blob" });
       const { saveAs } = await import("file-saver");
       saveAs(blob, `${productData?.name || "textil"}_mannschaft.zip`);
-      toast.success("Batch-Export abgeschlossen");
-    } catch {
+      toast.success(`Batch-Export abgeschlossen (${exported} Bilder)`);
+    } catch (err) {
+      console.error("Batch-Export Fehler:", err);
       toast.error("Batch-Export fehlgeschlagen");
     } finally {
       setExporting(false);
       setActivePlayerIdx(null);
     }
-  }, [players, productData]);
+  }, [players, productData, waitForRepaint]);
 
   // ─── Zone Colors ────────────────────────────────────────────────────────
   const zoneBorderColors = [

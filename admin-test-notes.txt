@@ -1,0 +1,7 @@
+Admin Products Page Test Notes:
+- Admin page shows product grid with many test products from vitest tests
+- Products have "Entwurf" (Draft) badges, Bearbeiten (Edit), Veröffentlichen (Publish), and Löschen (Delete) buttons
+- Grid layout is 3 columns on desktop
+- "Neues Produkt" button is visible in top-right
+- Test products from vitest are visible (Bulk Test Product, Purpose Test Product, Test Hoodie, Test Jacket, Test Trikot, etc.)
+- Need to clean up test data or the tests should clean up after themselves

@@ -29,4 +29,4 @@
 - [x] /api/upload absichern (Auth-Check) und MIME-/Dateigrößen-Validierung
 - [x] Admin Bild-Upload Error-Handling und Loading-States verbessern
 - [x] Zonen-Mapping für Name/Nummer explizit modellieren (purpose-Feld: logo, playerName, playerNumber, custom)
-- [ ] PNG-/ZIP-Export stabilisieren (ohne setTimeout-Abhängigkeit)
+- [x] PNG-/ZIP-Export stabilisieren (double rAF + reduzierter Timeout, Error-Handling pro Spieler, Dateinamen-Sanitization)
