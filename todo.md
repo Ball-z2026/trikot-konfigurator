@@ -100,3 +100,40 @@
 
 ## Bug: Logos/Texte in Einzelansicht nicht sichtbar
 - [x] Logos, Texte und andere Zonen-Inhalte werden jetzt in der Einzelansicht angezeigt (z-index: 10 auf ZoneOverlay Komponente)
+
+## Rollen- und Berechtigungssystem
+
+### Datenbank-Schema
+- [x] Organisation-Tabelle (Verein/Firma): id, name, type, createdAt, ownerId
+- [x] Abteilung/Sparte-Tabelle: id, orgId, name, createdAt
+- [x] Mitgliedschaft-Tabelle: userId, orgId, departmentId, role (owner/department_lead/trainer)
+- [x] Logo-Varianten-Tabelle: id, orgId, name, imageUrl, storageKey, isDefault, sortOrder
+- [x] Schriftarten-Freigabe-Tabelle: id, departmentId, fontFamily, fontUrl, isDefault, approvedBy, createdAt
+
+### Rolle: Hauptverantwortlicher (Vereins-/Firmenadmin)
+- [x] Kann alles im Verein/Firma sehen und verwalten (Backend: requireOrgOwner Guard)
+- [x] Einziger der Vereins-/Firmenlogos hochladen darf (Backend: orgLogo.upload mit Owner-Check)
+- [ ] Logo-Varianten werden automatisch in allen Produkten bei Vereins-/Firmenlogo-Zonen gesetzt
+- [x] Kann Spartenleiter und Trainer einladen/zuweisen (Backend: membership.add mit Owner-Check)
+
+### Rolle: Spartenleiter / Abteilungsleiter
+- [x] Sieht nur seine eigene Sparte/Abteilung (Backend: department.listByOrg filtert nach Rolle)
+- [x] Kann Schriftarten für seine Sparte freigeben (Backend: deptFont.approve mit Lead-Check)
+- [ ] Freigegebene Schriften werden automatisch in Produkten der Sparte verwendet
+
+### Frontend
+- [x] Organisations-Dashboard für Hauptverantwortlichen (Logo-Management, Mitglieder-Verwaltung)
+- [x] Abteilungs-Dashboard für Spartenleiter (Schriftarten-Freigabe, Mitglieder-Übersicht)
+- [ ] Auto-Zuweisung von Logos in Konfigurator-Zonen (Vereinslogo automatisch gesetzt)
+- [ ] Auto-Zuweisung von Schriften in Konfigurator (Abteilungs-Schrift automatisch verwendet)
+
+### Bug-Fixes & Verbesserungen
+- [x] org.listMine -> org.list Aufruf in OrgDashboard korrigiert
+- [x] department.getById Route im Backend hinzugefügt
+- [x] CustomerConfigurator: Infinite-Loop-Bug behoben (parts/allZones mit useMemo stabilisiert)
+- [x] Navigation: Organisation-Link in Home.tsx Header hinzugefügt
+- [x] Vitest: 30 Tests bestanden (auth, products, org-roles)
+
+### Offene Punkte
+- [ ] OrgDashboard: Logo-Management im Browser verifizieren (Upload, Default-Setzen, Löschen)
+- [ ] Trainer-Rolle definieren und Ablauf festlegen (nächster Schritt mit Benutzer)

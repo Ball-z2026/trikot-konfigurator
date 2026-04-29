@@ -9,6 +9,16 @@ import {
   InsertProduct,
   InsertProductPart,
   InsertProductZone,
+  organizations,
+  departments,
+  memberships,
+  orgLogos,
+  departmentFonts,
+  InsertOrganization,
+  InsertDepartment,
+  InsertMembership,
+  InsertOrgLogo,
+  InsertDepartmentFont,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -324,4 +334,268 @@ export async function bulkUpdateZones(
       .set(updateData)
       .where(eq(productZones.id, z.id));
   }
+}
+
+// ─── Organization Helpers ──────────────────────────────────────────────────
+
+export async function createOrganization(data: InsertOrganization) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(organizations).values(data);
+  return result[0].insertId;
+}
+
+export async function getOrganizationById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(organizations).where(eq(organizations.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateOrganization(id: number, data: Partial<InsertOrganization>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(organizations).set(data).where(eq(organizations.id, id));
+}
+
+export async function listOrganizationsByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const userMemberships = await db
+    .select()
+    .from(memberships)
+    .where(eq(memberships.userId, userId));
+  if (userMemberships.length === 0) return [];
+  const orgIds = [...new Set(userMemberships.map((m) => m.orgId))];
+  const orgs = [];
+  for (const orgId of orgIds) {
+    const org = await getOrganizationById(orgId);
+    if (org) {
+      const membership = userMemberships.find((m) => m.orgId === orgId);
+      orgs.push({ ...org, userRole: membership?.role });
+    }
+  }
+  return orgs;
+}
+
+// ─── Department Helpers ────────────────────────────────────────────────────
+
+export async function createDepartment(data: InsertDepartment) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(departments).values(data);
+  return result[0].insertId;
+}
+
+export async function getDepartmentById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(departments).where(eq(departments.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function listDepartmentsByOrg(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(departments).where(eq(departments.orgId, orgId)).orderBy(asc(departments.name));
+}
+
+export async function updateDepartment(id: number, data: Partial<InsertDepartment>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(departments).set(data).where(eq(departments.id, id));
+}
+
+export async function deleteDepartment(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(departmentFonts).where(eq(departmentFonts.departmentId, id));
+  await db.delete(memberships).where(eq(memberships.departmentId, id));
+  await db.delete(departments).where(eq(departments.id, id));
+}
+
+// ─── Membership Helpers ────────────────────────────────────────────────────
+
+export async function createMembership(data: InsertMembership) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(memberships).values(data);
+  return result[0].insertId;
+}
+
+export async function getMembershipByUserAndOrg(userId: number, orgId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(memberships)
+    .where(and(eq(memberships.userId, userId), eq(memberships.orgId, orgId)))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function listMembershipsByOrg(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const mems = await db.select().from(memberships).where(eq(memberships.orgId, orgId));
+  // Enrich with user data
+  const enriched = [];
+  for (const mem of mems) {
+    const user = await db.select().from(users).where(eq(users.id, mem.userId)).limit(1);
+    enriched.push({
+      ...mem,
+      userName: user[0]?.name || "Unbekannt",
+      userEmail: user[0]?.email || null,
+    });
+  }
+  return enriched;
+}
+
+export async function listMembershipsByDepartment(departmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const mems = await db.select().from(memberships).where(eq(memberships.departmentId, departmentId));
+  const enriched = [];
+  for (const mem of mems) {
+    const user = await db.select().from(users).where(eq(users.id, mem.userId)).limit(1);
+    enriched.push({
+      ...mem,
+      userName: user[0]?.name || "Unbekannt",
+      userEmail: user[0]?.email || null,
+    });
+  }
+  return enriched;
+}
+
+export async function updateMembership(id: number, data: Partial<InsertMembership>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(memberships).set(data).where(eq(memberships.id, id));
+}
+
+export async function deleteMembership(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(memberships).where(eq(memberships.id, id));
+}
+
+// ─── Organization Logo Helpers ─────────────────────────────────────────────
+
+export async function createOrgLogo(data: InsertOrgLogo) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(orgLogos).values(data);
+  return result[0].insertId;
+}
+
+export async function listOrgLogos(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(orgLogos).where(eq(orgLogos.orgId, orgId)).orderBy(asc(orgLogos.sortOrder));
+}
+
+export async function getDefaultOrgLogo(orgId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(orgLogos)
+    .where(and(eq(orgLogos.orgId, orgId), eq(orgLogos.isDefault, true)))
+    .limit(1);
+  if (result.length > 0) return result[0];
+  // Fallback: erstes Logo
+  const fallback = await db
+    .select()
+    .from(orgLogos)
+    .where(eq(orgLogos.orgId, orgId))
+    .orderBy(asc(orgLogos.sortOrder))
+    .limit(1);
+  return fallback.length > 0 ? fallback[0] : undefined;
+}
+
+export async function updateOrgLogo(id: number, data: Partial<InsertOrgLogo>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(orgLogos).set(data).where(eq(orgLogos.id, id));
+}
+
+export async function deleteOrgLogo(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(orgLogos).where(eq(orgLogos.id, id));
+}
+
+export async function setDefaultOrgLogo(orgId: number, logoId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Alle Logos der Org auf nicht-default setzen
+  await db.update(orgLogos).set({ isDefault: false }).where(eq(orgLogos.orgId, orgId));
+  // Gewähltes Logo auf default setzen
+  await db.update(orgLogos).set({ isDefault: true }).where(eq(orgLogos.id, logoId));
+}
+
+// ─── Department Font Helpers ───────────────────────────────────────────────
+
+export async function createDepartmentFont(data: InsertDepartmentFont) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(departmentFonts).values(data);
+  return result[0].insertId;
+}
+
+export async function listDepartmentFonts(departmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(departmentFonts).where(eq(departmentFonts.departmentId, departmentId));
+}
+
+export async function getDefaultDepartmentFont(departmentId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(departmentFonts)
+    .where(and(eq(departmentFonts.departmentId, departmentId), eq(departmentFonts.isDefault, true)))
+    .limit(1);
+  if (result.length > 0) return result[0];
+  const fallback = await db
+    .select()
+    .from(departmentFonts)
+    .where(eq(departmentFonts.departmentId, departmentId))
+    .limit(1);
+  return fallback.length > 0 ? fallback[0] : undefined;
+}
+
+export async function updateDepartmentFont(id: number, data: Partial<InsertDepartmentFont>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(departmentFonts).set(data).where(eq(departmentFonts.id, id));
+}
+
+export async function deleteDepartmentFont(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(departmentFonts).where(eq(departmentFonts.id, id));
+}
+
+export async function setDefaultDepartmentFont(departmentId: number, fontId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(departmentFonts).set({ isDefault: false }).where(eq(departmentFonts.departmentId, departmentId));
+  await db.update(departmentFonts).set({ isDefault: true }).where(eq(departmentFonts.id, fontId));
+}
+
+// ─── User lookup by email ──────────────────────────────────────────────────
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function listAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: users.id, name: users.name, email: users.email, openId: users.openId }).from(users);
 }

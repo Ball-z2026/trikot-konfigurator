@@ -1855,3 +1855,96 @@
 [2026-04-29T07:01:17.603Z] 3:01:17 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T07:01:32.404Z] 3:01:32 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T07:11:24.080Z] 3:11:24 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T07:55:20.723Z] 3:55:20 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-29T07:55:22.593Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T07:55:22.937Z] Server running on http://localhost:3000/
+[2026-04-29T07:56:20.984Z] 3:56:20 AM [tsx] change in ./server/db.ts Restarting...
+[2026-04-29T07:56:22.567Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T07:56:22.835Z] Server running on http://localhost:3000/
+[2026-04-29T07:56:53.395Z] 3:56:53 AM [tsx] change in ./server/db.ts Restarting...
+[2026-04-29T07:56:54.775Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T07:56:55.007Z] Server running on http://localhost:3000/
+[2026-04-29T07:59:01.576Z] 3:59:01 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T07:59:03.145Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T07:59:03.404Z] Server running on http://localhost:3000/
+[2026-04-29T08:08:56.784Z] 4:08:56 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:09:11.169Z] 4:09:11 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:09:18.151Z] 4:09:18 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:10:24.319Z] 4:10:24 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-29T08:10:24.701Z] 4:10:24 AM [vite] Internal server error: Failed to resolve import "./pages/DeptFonts" from "client/src/App.tsx". Does the file exist?
+[2026-04-29T08:10:24.702Z] Plugin: vite:import-analysis
+[2026-04-29T08:10:24.702Z] File: /home/ubuntu/trikot-konfigurator/client/src/App.tsx:12:22
+[2026-04-29T08:10:24.703Z] 11 |  import CustomerConfigurator from "./pages/CustomerConfigurator";
+[2026-04-29T08:10:24.703Z] 12 |  import OrgDashboard from "./pages/OrgDashboard";
+[2026-04-29T08:10:24.703Z] 13 |  import DeptFonts from "./pages/DeptFonts";
+[2026-04-29T08:10:24.703Z] |                         ^
+[2026-04-29T08:10:24.704Z] 14 |  function Router() {
+[2026-04-29T08:10:24.704Z] 15 |    return /* @__PURE__ */ jsxDEV(Switch, { "data-loc": "client/src/App.tsx:16", children: [
+[2026-04-29T08:10:24.704Z] at TransformPluginContext._formatLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:29003:43)
+[2026-04-29T08:10:24.705Z] at TransformPluginContext.error (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:29000:14)
+[2026-04-29T08:10:24.705Z] at normalizeUrl (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:27123:18)
+[2026-04-29T08:10:24.705Z] at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2026-04-29T08:10:24.706Z] at async <anonymous> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:27181:32)
+[2026-04-29T08:10:24.706Z] at async Promise.all (index 12)
+[2026-04-29T08:10:24.706Z] at async TransformPluginContext.transform (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:27149:4)
+[2026-04-29T08:10:24.706Z] at async EnvironmentPluginContainer.transform (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:28801:14)
+[2026-04-29T08:10:24.707Z] at async loadAndTransform (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:22670:26)
+[2026-04-29T08:10:24.707Z] at async viteTransformMiddleware (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/vite@7.3.2_@types+node@24.12.2_jiti@2.6.1_lightningcss@1.32.0_tsx@4.21.0/node_modules/vite/dist/node/chunks/config.js:24546:20)
+[2026-04-29T08:10:24.957Z] 4:10:24 AM [vite] (client) Pre-transform error: Failed to resolve import "./pages/DeptFonts" from "client/src/App.tsx". Does the file exist?
+[2026-04-29T08:10:24.958Z] Plugin: vite:import-analysis
+[2026-04-29T08:10:24.958Z] File: /home/ubuntu/trikot-konfigurator/client/src/App.tsx:12:22
+[2026-04-29T08:10:24.958Z] 11 |  import CustomerConfigurator from "./pages/CustomerConfigurator";
+[2026-04-29T08:10:24.959Z] 12 |  import OrgDashboard from "./pages/OrgDashboard";
+[2026-04-29T08:10:24.959Z] 13 |  import DeptFonts from "./pages/DeptFonts";
+[2026-04-29T08:10:24.959Z] |                         ^
+[2026-04-29T08:10:24.959Z] 14 |  function Router() {
+[2026-04-29T08:10:24.960Z] 15 |    return /* @__PURE__ */ jsxDEV(Switch, { "data-loc": "client/src/App.tsx:16", children: [
+[2026-04-29T08:20:34.620Z] 4:20:34 AM [vite] (client) page reload src/pages/DeptFonts.tsx
+[2026-04-29T08:21:14.207Z] 4:21:14 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T08:21:16.377Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T08:21:16.779Z] Server running on http://localhost:3000/
+[2026-04-29T08:21:18.786Z] Dev server process group stopped
+[2026-04-29T08:21:19.291Z] 4:21:19 AM [vite] (client) Pre-transform error: The service was stopped: write EPIPE
+[2026-04-29T08:21:19.292Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.292Z] File: /home/ubuntu/trikot-konfigurator/client/src/components/ErrorBoundary.tsx
+[2026-04-29T08:21:19.293Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.293Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.293Z] File: /home/ubuntu/trikot-konfigurator/client/src/contexts/ThemeContext.tsx
+[2026-04-29T08:21:19.297Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.298Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.299Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/Home.tsx
+[2026-04-29T08:21:19.299Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.299Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.300Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProducts.tsx
+[2026-04-29T08:21:19.300Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.300Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.301Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProductEditor.tsx
+[2026-04-29T08:21:19.301Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.301Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.301Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx
+[2026-04-29T08:21:19.302Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.302Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.302Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx
+[2026-04-29T08:21:19.303Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.303Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.303Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/DeptFonts.tsx
+[2026-04-29T08:21:19.303Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.304Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.304Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/NotFound.tsx
+[2026-04-29T08:21:19.305Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.305Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.306Z] File: /home/ubuntu/trikot-konfigurator/client/src/components/ui/sonner.tsx
+[2026-04-29T08:21:19.306Z] 4:21:19 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-04-29T08:21:19.306Z] Plugin: vite:esbuild
+[2026-04-29T08:21:19.306Z] File: /home/ubuntu/trikot-konfigurator/client/src/components/ui/tooltip.tsx
+[2026-04-29T08:21:19.366Z] Dev server exited with code -15
+[2026-04-29T08:21:21.834Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T08:21:23.636Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T08:21:23.926Z] Server running on http://localhost:3000/
+[2026-04-29T08:22:05.525Z] 4:22:05 AM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-04-29T08:23:52.220Z] 4:23:52 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:24:11.412Z] 4:24:11 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:24:20.731Z] 4:24:20 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:24:30.796Z] 4:24:30 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:24:35.614Z] 4:24:35 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:26:13.861Z] 4:26:13 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css

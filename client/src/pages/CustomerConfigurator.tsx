@@ -133,6 +133,7 @@ function useGoogleFonts(zones: ZoneData[]) {
   }, [zones]);
 }
 
+const DEFAULT_JERSEY_COLOR = "#d4d4d8";
 export default function CustomerConfigurator() {
   const { id } = useParams<{ id: string }>();
   const productId = parseInt(id || "0");
@@ -160,10 +161,9 @@ export default function CustomerConfigurator() {
   const [processedPartImages, setProcessedPartImages] = useState<Record<number, string>>({});
   const canvasRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
-
-  const parts: PartData[] = (productData?.parts as PartData[]) || [];
+  const parts: PartData[] = useMemo(() => (productData?.parts as PartData[]) || [], [productData?.parts]);
   const hasParts = parts.length > 0;
-  const allZones: ZoneData[] = (productData?.zones as ZoneData[]) || [];
+  const allZones: ZoneData[] = useMemo(() => (productData?.zones as ZoneData[]) || [], [productData?.zones]);
 
   // Druckverfahren erkennen (auch alte templateIds und Part-Anzahl berücksichtigen)
   const isSublimation = useMemo(() => {
@@ -230,7 +230,7 @@ export default function CustomerConfigurator() {
     : productData?.backImageUrl;
 
    // Always process images to make jersey shape visible; use selected color or default light gray
-  const DEFAULT_JERSEY_COLOR = '#d4d4d8';
+  // DEFAULT_JERSEY_COLOR is defined outside the component
   const activeColor = isSublimation && activePartId && partColors[activePartId]
     ? partColors[activePartId]
     : isDtf && dtfBaseColor && !dtfBrandImage
@@ -240,7 +240,7 @@ export default function CustomerConfigurator() {
 
   useEffect(() => {
     if (!needsProcessing || !rawCurrentImage || !activeColor) {
-      setProcessedImageUrl(null);
+      setProcessedImageUrl((prev) => prev === null ? prev : null);
       return;
     }
     const img = document.createElement("img");

@@ -19,6 +19,104 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 /**
+ * Organizations – Vereine und Firmen
+ */
+export const organizations = mysqlTable("organizations", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  /** Typ: Verein oder Firma */
+  type: mysqlEnum("type", ["verein", "firma"]).default("verein").notNull(),
+  /** Ersteller (Hauptverantwortlicher) */
+  ownerId: int("ownerId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = typeof organizations.$inferInsert;
+
+/**
+ * Departments – Sparten / Abteilungen innerhalb einer Organisation
+ */
+export const departments = mysqlTable("departments", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Department = typeof departments.$inferSelect;
+export type InsertDepartment = typeof departments.$inferInsert;
+
+/**
+ * Memberships – Zuordnung von Benutzern zu Organisationen und Abteilungen mit Rollen.
+ * 
+ * Rollen:
+ * - owner: Hauptverantwortlicher – kann alles sehen, Logos hochladen, Mitglieder verwalten
+ * - department_lead: Spartenleiter – sieht nur seine Abteilung, kann Schriften freigeben
+ * - trainer: Trainer – wird später definiert
+ */
+export const memberships = mysqlTable("memberships", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  orgId: int("orgId").notNull(),
+  /** Optional: Abteilungszuordnung (null = organisationsweit) */
+  departmentId: int("departmentId"),
+  role: mysqlEnum("role", ["owner", "department_lead", "trainer"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Membership = typeof memberships.$inferSelect;
+export type InsertMembership = typeof memberships.$inferInsert;
+
+/**
+ * Organization Logos – Mehrere Logo-Varianten pro Organisation.
+ * z.B. Farb-Logo, SW-Logo, Mini-Logo, Wappen etc.
+ * Nur der Hauptverantwortliche darf Logos hochladen.
+ */
+export const orgLogos = mysqlTable("org_logos", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  /** Name der Variante (z.B. "Farb-Logo", "SW-Logo", "Mini-Logo") */
+  name: varchar("name", { length: 255 }).notNull(),
+  /** URL zum gespeicherten Logo-Bild */
+  imageUrl: text("imageUrl").notNull(),
+  /** Storage-Key für S3 */
+  storageKey: text("storageKey"),
+  /** Ist dieses Logo die Standard-Variante? */
+  isDefault: boolean("isDefault").default(false).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type OrgLogo = typeof orgLogos.$inferSelect;
+export type InsertOrgLogo = typeof orgLogos.$inferInsert;
+
+/**
+ * Department Fonts – Freigegebene Schriftarten pro Abteilung.
+ * Der Spartenleiter gibt Schriften frei, die dann automatisch in der Abteilung verwendet werden.
+ */
+export const departmentFonts = mysqlTable("department_fonts", {
+  id: int("id").autoincrement().primaryKey(),
+  departmentId: int("departmentId").notNull(),
+  /** Schriftart-Name (z.B. "Inter", "Oswald", "Bebas Neue") */
+  fontFamily: varchar("fontFamily", { length: 255 }).notNull(),
+  /** Optional: URL zu einer Custom-Font-Datei */
+  fontUrl: text("fontUrl"),
+  /** Ist diese Schrift die Standard-Schrift der Abteilung? */
+  isDefault: boolean("isDefault").default(false).notNull(),
+  /** Freigegeben durch (userId) */
+  approvedBy: int("approvedBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DepartmentFont = typeof departmentFonts.$inferSelect;
+export type InsertDepartmentFont = typeof departmentFonts.$inferInsert;
+
+/**
  * Products – Textilien die der Admin anlegt (Trikot, Hoodie, Jacke, etc.)
  */
 export const products = mysqlTable("products", {

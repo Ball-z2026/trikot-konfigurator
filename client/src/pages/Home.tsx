@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Shirt, Shield, Settings, ArrowRight, LogIn, LogOut, Menu } from "lucide-react";
+import { Shirt, Shield, Settings, ArrowRight, LogIn, LogOut, Menu, Building2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
@@ -33,6 +33,14 @@ export default function Home() {
 
           {/* Desktop Nav */}
           <div className="hidden sm:flex items-center gap-3">
+            {isAuthenticated && (
+              <Link href="/org">
+                <Button variant="outline" size="sm">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Organisation
+                </Button>
+              </Link>
+            )}
             {isAdmin && (
               <Link href="/admin/products">
                 <Button variant="outline" size="sm">
@@ -70,6 +78,13 @@ export default function Home() {
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
           <div className="sm:hidden border-t bg-card px-4 py-3 space-y-2">
+            {isAuthenticated && (
+              <Link href="/org">
+                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setMobileMenuOpen(false)}>
+                  <Building2 className="w-4 h-4 mr-2" />Organisation
+                </Button>
+              </Link>
+            )}
             {isAdmin && (
               <Link href="/admin/products">
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setMobileMenuOpen(false)}>
