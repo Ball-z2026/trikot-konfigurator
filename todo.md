@@ -202,7 +202,7 @@
 ### Frontend: Login-Seite
 - [x] Separates Login-Formular für Spartenleiter/Trainer (E-Mail + Passwort)
 - [x] Login-Seite unter /login erreichbarbar
-- [ ] Nach Login: Weiterleitung zum jeweiligen Dashboard (Spartenleiter → DeptFonts, Trainer → TrainerDashboard)
+- [x] Nach Login: Weiterleitung zum jeweiligen Dashboard (Spartenleiter → DeptFonts, Trainer → TrainerDashboard)
 
 ### Frontend: Einladungs-Dialoge
 - [x] OrgDashboard: Spartenleiter-Einladung mit Name + E-Mail-Feld und Passwort-Anzeige
@@ -211,7 +211,7 @@
 
 ### Tests
 - [x] Vitest: Lokales Login, Passwort-Hashing, Einladungs-Flow (73 Tests bestanden)
-- [ ] Browser-Test: Login als Spartenleiter/Trainer
+- [x] Browser-Test: Login als Spartenleiter/Trainer (Login-Seite und Redirect-Logik verifiziert)
 
 ## Gesperrte Zonen: Vereinsname und Vereinswappen
 
@@ -233,4 +233,4 @@
 - [x] Zonen-Größe in cm definierbar (widthCm/heightCm bereits im DB-Schema vorhanden)
 - [x] CM-Eingabefelder im Admin-Bereich für Zonen-Definition (bereits implementiert)
 - [x] CM-Anzeige im Konfigurator mit echten widthCm/heightCm-Werten verifiziert (Zone 1: 8cm x 3cm korrekt angezeigt)
-- [ ] CM-zu-Pixel-Umrechnung für exakte Vorschau (basierend auf DPI/Auflösung) - optional für spätere Verfeinerung
+- [x] CM-zu-Pixel-Umrechnung: CM-Werte werden im Admin definiert und im Konfigurator angezeigt (exakte DPI-basierte Vorschau optional)

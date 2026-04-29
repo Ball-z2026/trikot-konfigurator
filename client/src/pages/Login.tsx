@@ -50,7 +50,30 @@ export default function Login() {
       }
 
       toast.success("Erfolgreich angemeldet");
-      // Redirect to home - the auth state will be picked up by useAuth
+      // Intelligente Weiterleitung basierend auf Rolle
+      // Lade Mitgliedschaften um die richtige Seite zu bestimmen
+      try {
+        const meRes = await fetch("/api/trpc/membership.mine", { credentials: "include" });
+        const meData = await meRes.json();
+        const memberships = meData?.result?.data;
+        if (Array.isArray(memberships) && memberships.length > 0) {
+          const first = memberships[0];
+          if (first.role === "trainer") {
+            window.location.href = `/trainer/${first.orgId}/${first.departmentId}`;
+            return;
+          }
+          if (first.role === "department_lead") {
+            window.location.href = `/org/${first.orgId}/dept/${first.departmentId}`;
+            return;
+          }
+          if (first.role === "owner") {
+            window.location.href = `/org/${first.orgId}`;
+            return;
+          }
+        }
+      } catch {
+        // Fallback: Zur Startseite
+      }
       window.location.href = "/";
     } catch (error) {
       toast.error("Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.");
@@ -87,6 +110,29 @@ export default function Login() {
       }
 
       toast.success("Passwort erfolgreich geändert");
+      // Intelligente Weiterleitung nach Passwort-Änderung
+      try {
+        const meRes = await fetch("/api/trpc/membership.mine", { credentials: "include" });
+        const meData = await meRes.json();
+        const memberships = meData?.result?.data;
+        if (Array.isArray(memberships) && memberships.length > 0) {
+          const first = memberships[0];
+          if (first.role === "trainer") {
+            window.location.href = `/trainer/${first.orgId}/${first.departmentId}`;
+            return;
+          }
+          if (first.role === "department_lead") {
+            window.location.href = `/org/${first.orgId}/dept/${first.departmentId}`;
+            return;
+          }
+          if (first.role === "owner") {
+            window.location.href = `/org/${first.orgId}`;
+            return;
+          }
+        }
+      } catch {
+        // Fallback
+      }
       window.location.href = "/";
     } catch (error) {
       toast.error("Passwort-Änderung fehlgeschlagen");
