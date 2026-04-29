@@ -1756,3 +1756,93 @@
 [2026-04-29T05:48:31.454Z] 1:48:31 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T05:48:51.115Z] 1:48:51 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T05:49:10.374Z] 1:49:10 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T06:05:50.095Z] 2:05:50 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T06:05:58.013Z] 2:05:58 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T06:06:18.760Z] 2:06:18 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T06:06:29.267Z] 2:06:29 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T06:06:52.508Z] 2:06:52 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T06:06:52.588Z] 2:06:52 AM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx: Unexpected token (395:3)
+[2026-04-29T06:06:52.588Z] 
+[2026-04-29T06:06:52.589Z] 393 |       img.src = part.imageUrl!;
+[2026-04-29T06:06:52.589Z] 394 |     }
+[2026-04-29T06:06:52.590Z] > 395 |   }, [hasParts, isDtf, isSublimation, dtfBaseColor, dtfBrandImage, sortedParts, partColors]);
+[2026-04-29T06:06:52.590Z] |    ^
+[2026-04-29T06:06:52.590Z] 396 |
+[2026-04-29T06:06:52.591Z] 397 |   const currentZones = hasParts
+[2026-04-29T06:06:52.591Z] 398 |     ? allZones.filter((z) => z.partId === activePartId)
+[2026-04-29T06:06:52.591Z] Plugin: vite:react-babel
+[2026-04-29T06:06:52.592Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:395:3
+[2026-04-29T06:06:52.593Z] 393 |        img.src = part.imageUrl!;
+[2026-04-29T06:06:52.594Z] 394 |      }
+[2026-04-29T06:06:52.595Z] 395 |    }, [hasParts, isDtf, isSublimation, dtfBaseColor, dtfBrandImage, sortedParts, partColors]);
+[2026-04-29T06:06:52.595Z] |     ^
+[2026-04-29T06:06:52.596Z] 396 |
+[2026-04-29T06:06:52.596Z] 397 |    const currentZones = hasParts
+[2026-04-29T06:06:52.596Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-04-29T06:06:52.596Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-04-29T06:06:52.597Z] at unexpected (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1544:16)
+[2026-04-29T06:06:52.597Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1358:22)
+[2026-04-29T06:06:52.597Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+[2026-04-29T06:06:52.598Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+[2026-04-29T06:06:52.598Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-04-29T06:06:52.598Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-04-29T06:06:52.599Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-04-29T06:06:52.599Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-04-29T06:06:52.599Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-04-29T06:06:52.600Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-04-29T06:06:52.600Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-04-29T06:06:52.601Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-04-29T06:06:52.601Z] at parseExpressionBase (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:226:23)
+[2026-04-29T06:06:52.601Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:39)
+[2026-04-29T06:06:52.602Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3192:16)
+[2026-04-29T06:06:52.602Z] at parseExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:17)
+[2026-04-29T06:06:52.603Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:688:23)
+[2026-04-29T06:06:52.603Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-04-29T06:06:52.603Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-04-29T06:06:52.604Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-04-29T06:06:52.604Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-04-29T06:06:52.605Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-04-29T06:06:52.605Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-04-29T06:06:52.606Z] at parseFunctionBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2621:24)
+[2026-04-29T06:06:52.606Z] at parseArrowExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2562:10)
+[2026-04-29T06:06:52.607Z] at parseParenAndDistinguishExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1850:12)
+[2026-04-29T06:06:52.607Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1170:21)
+[2026-04-29T06:06:52.608Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+[2026-04-29T06:06:52.608Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+[2026-04-29T06:06:52.609Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-04-29T06:06:52.609Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-04-29T06:06:52.610Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-04-29T06:06:52.610Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-04-29T06:06:52.611Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-04-29T06:06:52.611Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-04-29T06:06:52.612Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-04-29T06:06:52.612Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-04-29T06:06:52.613Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-04-29T06:06:52.613Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3197:12)
+[2026-04-29T06:06:52.614Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-04-29T06:06:52.614Z] at parseMaybeAssignAllowInOrVoidPattern (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3311:17)
+[2026-04-29T06:06:52.615Z] at parseExprListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2793:18)
+[2026-04-29T06:06:52.615Z] at parseCallExpressionArguments (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1042:14)
+[2026-04-29T06:06:52.616Z] at parseCoverCallAndAsyncArrowHead (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:922:29)
+[2026-04-29T06:06:52.616Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:804:19)
+[2026-04-29T06:06:52.617Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2809:20)
+[2026-04-29T06:06:52.617Z] at parseSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:763:19)
+[2026-04-29T06:06:52.618Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:748:17)
+[2026-04-29T06:06:52.704Z] 2:06:52 AM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx: Unexpected token (395:3)
+[2026-04-29T06:06:52.705Z] 
+[2026-04-29T06:06:52.706Z] 393 |       img.src = part.imageUrl!;
+[2026-04-29T06:06:52.707Z] 394 |     }
+[2026-04-29T06:06:52.708Z] > 395 |   }, [hasParts, isDtf, isSublimation, dtfBaseColor, dtfBrandImage, sortedParts, partColors]);
+[2026-04-29T06:06:52.709Z] |    ^
+[2026-04-29T06:06:52.709Z] 396 |
+[2026-04-29T06:06:52.710Z] 397 |   const currentZones = hasParts
+[2026-04-29T06:06:52.710Z] 398 |     ? allZones.filter((z) => z.partId === activePartId)
+[2026-04-29T06:06:52.710Z] Plugin: vite:react-babel
+[2026-04-29T06:06:52.711Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:395:3
+[2026-04-29T06:06:52.711Z] 393 |        img.src = part.imageUrl!;
+[2026-04-29T06:06:52.712Z] 394 |      }
+[2026-04-29T06:06:52.712Z] 395 |    }, [hasParts, isDtf, isSublimation, dtfBaseColor, dtfBrandImage, sortedParts, partColors]);
+[2026-04-29T06:06:52.712Z] |     ^
+[2026-04-29T06:06:52.713Z] 396 |
+[2026-04-29T06:06:52.713Z] 397 |    const currentZones = hasParts
+[2026-04-29T06:07:06.467Z] 2:07:06 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css

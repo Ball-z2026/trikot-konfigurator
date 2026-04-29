@@ -88,3 +88,6 @@
 - [x] DTF-Grundfarbe nur auf den Trikot-Teilen anzeigen (Flood-Fill-Algorithmus färbt nur Innenfläche)
 - [x] Teilbild als Maske verwenden (BFS von Rändern erkennt Außenbereich, Innenfläche wird eingefärbt)
 - [x] Auch in Composite View, Overview und Teil-Navigation korrekt dargestellt (processedPartImages)
+
+## Bug: Einzelteile-Ansicht zeigt nichts an
+- [x] Einzelteile-Ansicht im Kunden-Konfigurator zeigt jetzt Bild an (Flood-Fill mit Standard-Graufarbe färbt Innenfläche)

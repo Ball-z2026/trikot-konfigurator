@@ -223,19 +223,22 @@ export default function CustomerConfigurator() {
   const activePart = parts.find((p) => p.id === activePartId);
   const sortedParts = useMemo(() => [...parts].sort((a, b) => a.sortOrder - b.sortOrder), [parts]);
 
-  const needsProcessing = (isSublimation && activePartId && partColors[activePartId]) || (isDtf && dtfBaseColor && !dtfBrandImage);
   const rawCurrentImage = hasParts
     ? activePart?.imageUrl || null
     : activeSide === "front"
     ? productData?.frontImageUrl
     : productData?.backImageUrl;
 
-  // Determine the active color for processing
+  // Always process images when we have parts - use default gray if no color selected
+  const needsProcessing = hasParts && !!rawCurrentImage;
+
+  // Determine the active color for processing - default to light gray if no color selected
+  const DEFAULT_JERSEY_COLOR = '#e5e7eb';
   const activeColor = isSublimation && activePartId && partColors[activePartId]
     ? partColors[activePartId]
     : isDtf && dtfBaseColor && !dtfBrandImage
     ? dtfBaseColor
-    : null;
+    : DEFAULT_JERSEY_COLOR;
 
   useEffect(() => {
     if (!needsProcessing || !rawCurrentImage || !activeColor) {
@@ -320,9 +323,9 @@ export default function CustomerConfigurator() {
 
   const currentImage = needsProcessing && processedImageUrl ? processedImageUrl : rawCurrentImage;
 
-  // Process all part images for composite view (DTF base color applies to all parts)
+   // Process all part images for composite/overview view (flood-fill with color or default gray)
   useEffect(() => {
-    if (!isDtf || !dtfBaseColor || dtfBrandImage) {
+    if (!hasParts || (isDtf && dtfBrandImage)) {
       setProcessedPartImages({});
       return;
     }
@@ -331,18 +334,22 @@ export default function CustomerConfigurator() {
     const partsWithImages = sortedParts.filter(p => p.imageUrl);
     if (partsWithImages.length === 0) return;
     pending = partsWithImages.length;
-
-    // Parse target color once
-    const tc = document.createElement("canvas").getContext("2d")!;
-    tc.fillStyle = dtfBaseColor;
-    tc.fillRect(0, 0, 1, 1);
-    const cp = tc.getImageData(0, 0, 1, 1).data;
-    const cr = cp[0], cg = cp[1], cb = cp[2];
-
     for (const part of partsWithImages) {
+      // Determine color per part: sublimation uses individual partColors, DTF uses base color
+      const partColor = isSublimation && partColors[part.id]
+        ? partColors[part.id]
+        : isDtf && dtfBaseColor
+        ? dtfBaseColor
+        : DEFAULT_JERSEY_COLOR;
       const img = document.createElement("img");
       img.crossOrigin = "anonymous";
       img.onload = () => {
+        // Parse the target color for this part
+        const tc = document.createElement("canvas").getContext("2d")!;
+        tc.fillStyle = partColor;
+        tc.fillRect(0, 0, 1, 1);
+        const cp = tc.getImageData(0, 0, 1, 1).data;
+        const cr = cp[0], cg = cp[1], cb = cp[2];
         const w = img.naturalWidth;
         const h = img.naturalHeight;
         const canvas = document.createElement("canvas");
@@ -391,7 +398,7 @@ export default function CustomerConfigurator() {
       img.onerror = () => { pending--; if (pending === 0) setProcessedPartImages({ ...results }); };
       img.src = part.imageUrl!;
     }
-  }, [isDtf, dtfBaseColor, dtfBrandImage, sortedParts]);
+  }, [hasParts, isDtf, isSublimation, dtfBaseColor, dtfBrandImage, sortedParts, partColors]);
 
   const currentZones = hasParts
     ? allZones.filter((z) => z.partId === activePartId)
