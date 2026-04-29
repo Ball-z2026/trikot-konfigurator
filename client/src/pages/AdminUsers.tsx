@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -45,9 +45,10 @@ import {
   Copy,
   Check,
   Shield,
-  UserCog,
   Search,
   Lock,
+  Pencil,
+  X,
 } from "lucide-react";
 
 type RoleBadge = {
@@ -75,6 +76,109 @@ function getLoginMethodBadge(method: string | null): RoleBadge {
   return { label: "OAuth (Manus)", variant: "outline" };
 }
 
+/** Inline-editable text cell */
+function EditableCell({
+  value,
+  onSave,
+  type = "text",
+  placeholder = "",
+}: {
+  value: string;
+  onSave: (newValue: string) => void;
+  type?: "text" | "email";
+  placeholder?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const handleSave = () => {
+    const trimmed = editValue.trim();
+    if (!trimmed) {
+      toast.error("Feld darf nicht leer sein");
+      setEditValue(value);
+      setEditing(false);
+      return;
+    }
+    if (type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Bitte geben Sie eine gültige E-Mail-Adresse ein");
+      setEditValue(value);
+      setEditing(false);
+      return;
+    }
+    if (trimmed !== value) {
+      onSave(trimmed);
+    }
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 -my-1">
+        <Input
+          ref={inputRef}
+          type={type}
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          className="h-7 text-sm min-w-[140px]"
+          placeholder={placeholder}
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 shrink-0"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            handleCancel();
+          }}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      className="group flex items-center gap-1.5 text-left hover:bg-muted/50 rounded px-1.5 py-0.5 -mx-1.5 -my-0.5 transition-colors cursor-pointer"
+      onClick={() => {
+        setEditValue(value);
+        setEditing(true);
+      }}
+      title="Klicken zum Bearbeiten"
+    >
+      <span className={type === "email" ? "text-muted-foreground" : "font-medium"}>
+        {value || "—"}
+      </span>
+      <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+    </button>
+  );
+}
+
 export default function AdminUsers() {
   const { user, isAuthenticated, loading } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -90,6 +194,14 @@ export default function AdminUsers() {
       setCreatedCredentials({ password: data.password });
       setCreateDialogOpen(false);
       toast.success("Benutzer erfolgreich angelegt");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const updateUser = trpc.adminUsers.update.useMutation({
+    onSuccess: () => {
+      utils.adminUsers.list.invalidate();
+      toast.success("Benutzer aktualisiert");
     },
     onError: (err) => toast.error(err.message),
   });
@@ -140,6 +252,14 @@ export default function AdminUsers() {
     setCopiedPassword(true);
     toast.success("Passwort kopiert");
     setTimeout(() => setCopiedPassword(false), 2000);
+  };
+
+  const handleUpdateName = (userId: number, name: string) => {
+    updateUser.mutate({ userId, name });
+  };
+
+  const handleUpdateEmail = (userId: number, email: string) => {
+    updateUser.mutate({ userId, email });
   };
 
   const filteredUsers = allUsers?.filter((u) => {
@@ -324,15 +444,21 @@ export default function AdminUsers() {
       {/* Main content */}
       <main className="container py-6">
         {/* Search */}
-        <div className="mb-6">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Benutzer suchen..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Benutzer suchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <Pencil className="inline h-3 w-3 mr-1" />
+              Klicken Sie auf Name oder E-Mail zum Bearbeiten
+            </p>
           </div>
         </div>
 
@@ -373,23 +499,32 @@ export default function AdminUsers() {
 
                     return (
                       <TableRow key={u.id}>
-                        <TableCell className="font-medium">
+                        <TableCell>
                           <div className="flex items-center gap-2">
-                            {u.name || "—"}
+                            <EditableCell
+                              value={u.name || ""}
+                              onSave={(name) => handleUpdateName(u.id, name)}
+                              placeholder="Name eingeben"
+                            />
                             {u.role === "admin" && (
-                              <Badge variant="destructive" className="text-xs">
+                              <Badge variant="destructive" className="text-xs shrink-0">
                                 Admin
                               </Badge>
                             )}
                             {isCurrentUser && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs shrink-0">
                                 Du
                               </Badge>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {u.email || "—"}
+                        <TableCell>
+                          <EditableCell
+                            value={u.email || ""}
+                            onSave={(email) => handleUpdateEmail(u.id, email)}
+                            type="email"
+                            placeholder="E-Mail eingeben"
+                          />
                         </TableCell>
                         <TableCell>
                           <Badge variant={loginBadge.variant}>{loginBadge.label}</Badge>

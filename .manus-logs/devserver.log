@@ -3273,3 +3273,87 @@
 [2026-04-29T18:14:25.304Z] [Auth] Missing session cookie
 [2026-04-29T18:14:25.687Z] [Auth] Missing session cookie
 [2026-04-29T18:14:25.689Z] [Auth] Missing session cookie
+[2026-04-29T18:23:38.091Z] 2:23:38 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-29T18:23:38.396Z] c
+[2026-04-29T18:23:38.397Z] node:internal/modules/run_main:122
+[2026-04-29T18:23:38.397Z] triggerUncaughtException(
+[2026-04-29T18:23:38.398Z] ^
+[2026-04-29T18:23:38.398Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-29T18:23:38.398Z] /home/ubuntu/trikot-konfigurator/server/db.ts:741:0: ERROR: Unexpected "}"
+[2026-04-29T18:23:38.399Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-29T18:23:38.399Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-29T18:23:38.399Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-29T18:23:38.400Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-29T18:23:38.400Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-29T18:23:38.400Z] at Socket.emit (node:events:524:28)
+[2026-04-29T18:23:38.400Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-29T18:23:38.401Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-29T18:23:38.401Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-29T18:23:38.401Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-29T18:23:38.402Z] 
+[2026-04-29T18:23:38.402Z] Node.js v22.13.0
+[2026-04-29T18:23:48.960Z] 2:23:48 PM [tsx] change in ./server/db.ts Rerunning...
+[2026-04-29T18:23:49.256Z] c
+[2026-04-29T18:23:49.257Z] node:internal/modules/run_main:122
+[2026-04-29T18:23:49.257Z] triggerUncaughtException(
+[2026-04-29T18:23:49.258Z] ^
+[2026-04-29T18:23:49.258Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-29T18:23:49.258Z] /home/ubuntu/trikot-konfigurator/server/db.ts:741:0: ERROR: Unexpected "}"
+[2026-04-29T18:23:49.258Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-29T18:23:49.259Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-29T18:23:49.259Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-29T18:23:49.259Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-29T18:23:49.260Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-29T18:23:49.260Z] at Socket.emit (node:events:524:28)
+[2026-04-29T18:23:49.260Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-29T18:23:49.260Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-29T18:23:49.261Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-29T18:23:49.261Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-29T18:23:49.262Z] 
+[2026-04-29T18:23:49.262Z] Node.js v22.13.0
+[2026-04-29T18:24:07.236Z] 2:24:07 PM [tsx] change in ./server/db.ts Rerunning...
+[2026-04-29T18:24:07.483Z] c
+[2026-04-29T18:24:07.483Z] node:internal/modules/run_main:122
+[2026-04-29T18:24:07.484Z] triggerUncaughtException(
+[2026-04-29T18:24:07.484Z] ^
+[2026-04-29T18:24:07.485Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-29T18:24:07.485Z] /home/ubuntu/trikot-konfigurator/server/db.ts:722:0: ERROR: Unexpected "export"
+[2026-04-29T18:24:07.485Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-29T18:24:07.486Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-29T18:24:07.486Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-29T18:24:07.486Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-29T18:24:07.487Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-29T18:24:07.487Z] at Socket.emit (node:events:524:28)
+[2026-04-29T18:24:07.487Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-29T18:24:07.488Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-29T18:24:07.488Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-29T18:24:07.488Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-29T18:24:07.488Z] 
+[2026-04-29T18:24:07.489Z] Node.js v22.13.0
+[2026-04-29T18:24:31.237Z] 2:24:31 PM [tsx] change in ./server/db.ts Rerunning...
+[2026-04-29T18:24:32.662Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T18:24:32.908Z] Server running on http://localhost:3000/
+[2026-04-29T18:24:52.797Z] 2:24:52 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T18:24:54.300Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T18:24:54.592Z] Server running on http://localhost:3000/
+[2026-04-29T18:24:57.555Z] Dev server process group stopped
+[2026-04-29T18:24:57.633Z] Dev server exited with code -15
+[2026-04-29T18:25:00.596Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T18:25:02.222Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T18:25:02.459Z] Server running on http://localhost:3000/
+[2026-04-29T18:26:34.597Z] 2:26:34 PM [vite] (client) hmr update /src/pages/AdminUsers.tsx, /src/index.css
+[2026-04-29T18:26:41.643Z] Dev server process group stopped
+[2026-04-29T18:26:41.713Z] Dev server exited with code -15
+[2026-04-29T18:26:44.686Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T18:26:46.312Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T18:26:46.577Z] Server running on http://localhost:3000/
+[2026-04-29T18:28:12.136Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.164Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.170Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.174Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.180Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.185Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.192Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.198Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.679Z] [Auth] Missing session cookie
+[2026-04-29T18:28:12.684Z] [Auth] Missing session cookie

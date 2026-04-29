@@ -277,3 +277,18 @@
 - [x] Admin kann im Benutzerverwaltung Hauptverantwortliche mit E-Mail + Passwort anlegen (adminUsers.create)
 - [x] Login-Seite: OAuth-Button entfernt (alle nutzen jetzt E-Mail + Passwort)
 - [x] Bestehende OAuth-Benutzer: Passwort nachträglich setzen können (adminUsers.setPassword)
+
+## Inline-Bearbeitung in Benutzerverwaltung
+
+### Backend
+- [x] tRPC-Prozedur: adminUsers.update (Name und E-Mail eines Benutzers ändern)
+- [x] DB-Helper: updateUserInfo (Name, E-Mail aktualisieren mit Duplikat-Prüfung)
+
+### Frontend
+- [x] Inline-Editing: Klick auf Name/E-Mail macht Feld editierbar (EditableCell-Komponente)
+- [x] Speichern per Enter oder Blur, Abbrechen per Escape
+- [x] Validierung: E-Mail-Format prüfen, leere Namen verhindern
+- [x] Erfolgs-/Fehlermeldung nach Speichern (Toast: "Benutzer aktualisiert")
+
+### Tests
+- [x] Vitest: adminUsers.update Berechtigungsprüfung (88 Tests bestanden)

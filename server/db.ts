@@ -1,4 +1,4 @@
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, not } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -692,8 +692,35 @@ export async function setUserPassword(userId: number, passwordHash: string) {
     mustChangePassword: true,
   }).where(eq(users.id, userId));
 }
+/**
+ * Benutzer-Name und/oder E-Mail aktualisieren (Admin-Funktion).
+ * Prüft auf E-Mail-Duplikate.
+ */
+export async function updateUserInfo(userId: number, data: { name?: string; email?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
 
-// ─── User Memberships (for auto-assignment in configurator) ──────────────
+  // Prüfe E-Mail-Duplikat falls E-Mail geändert wird
+  if (data.email) {
+    const existing = await db.select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.email, data.email), not(eq(users.id, userId))))
+      .limit(1);
+    if (existing.length > 0) {
+      throw new Error("Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet");
+    }
+  }
+
+  const updateData: Record<string, unknown> = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.email !== undefined) updateData.email = data.email;
+
+  if (Object.keys(updateData).length === 0) return;
+
+  await db.update(users).set(updateData).where(eq(users.id, userId));
+}
+
+// ─── User Memberships (for auto-assignment in configurator) ────────────────────────────────
 
 export async function listMembershipsByUser(userId: number) {
   const db = await getDb();

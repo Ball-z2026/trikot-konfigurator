@@ -69,6 +69,7 @@ import {
   deleteUser,
   adminResetUserPassword,
   setUserPassword,
+  updateUserInfo,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1165,6 +1166,28 @@ export const appRouter = router({
         const hash = await bcrypt.hash(password, 12);
         await setUserPassword(input.userId, hash);
         return { password };
+      }),
+
+    /** Benutzer-Name und/oder E-Mail aktualisieren */
+    update: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        name: z.string().min(1).optional(),
+        email: z.string().email().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await updateUserInfo(input.userId, {
+            name: input.name,
+            email: input.email,
+          });
+          return { success: true };
+        } catch (err: any) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: err.message || "Fehler beim Aktualisieren",
+          });
+        }
       }),
 
     /** Benutzer löschen (inkl. Mitgliedschaften) */
