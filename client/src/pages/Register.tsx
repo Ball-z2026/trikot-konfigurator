@@ -65,9 +65,9 @@ export default function Register() {
       if (selectedRole === "verein") {
         navigate("/org");
       } else if (selectedRole === "sparte") {
-        navigate("/org");
+        navigate(data.deptId ? "/dept-dashboard" : "/org");
       } else if (selectedRole === "trainer") {
-        navigate("/trainer");
+        navigate(data.orgId && data.deptId ? `/trainer/${data.orgId}/${data.deptId}` : "/");
       }
     } catch (error) {
       toast.error("Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.");

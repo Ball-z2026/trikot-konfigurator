@@ -80,18 +80,19 @@ export function registerLocalAuthRoutes(app: Express) {
       // Create organization
       const orgId = Number(await db.createOrganization({ name: orgName, type: "verein", ownerId: userId }));
 
+      let createdDeptId: number | null = null;
       if (role === "verein") {
         // Owner membership
         await db.createMembership({ userId, orgId, role: "owner", departmentId: null });
       } else if (role === "sparte") {
         // Create department + department_lead membership
-        const deptId = Number(await db.createDepartment({ orgId, name: deptName }));
-        await db.createMembership({ userId, orgId, role: "department_lead", departmentId: deptId });
+        createdDeptId = Number(await db.createDepartment({ orgId, name: deptName }));
+        await db.createMembership({ userId, orgId, role: "department_lead", departmentId: createdDeptId });
       } else if (role === "trainer") {
         // Create department + team + trainer membership
-        const deptId = Number(await db.createDepartment({ orgId, name: deptName }));
-        await db.createMembership({ userId, orgId, role: "trainer", departmentId: deptId });
-        await db.createTeam({ name: teamName, departmentId: deptId, orgId, trainerId: userId });
+        createdDeptId = Number(await db.createDepartment({ orgId, name: deptName }));
+        await db.createMembership({ userId, orgId, role: "trainer", departmentId: createdDeptId });
+        await db.createTeam({ name: teamName, departmentId: createdDeptId, orgId, trainerId: userId });
       }
 
       // Create session token
@@ -107,6 +108,8 @@ export function registerLocalAuthRoutes(app: Express) {
       res.json({
         success: true,
         user: { id: userId, name, email: email.toLowerCase().trim(), role: "user" },
+        orgId,
+        deptId: createdDeptId,
       });
     } catch (error) {
       console.error("[LocalAuth] Registration failed:", error);

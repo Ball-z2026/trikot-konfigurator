@@ -385,3 +385,15 @@
 - [x] Frontend: Trainer-Dashboard zeigt Logo-Upload nur für selbstregistrierte Trainer (TrainerLogoSection)
 - [x] Frontend: Eingeladene Trainer sehen das Logo des Spartenleiter read-only (InvitedTrainerLogoDisplay)
 - [x] Frontend: Hinweistext für eingeladene Trainer dass Logo vom Spartenleiter verwaltet wird
+
+## Konfigurator-Integration: Logo automatisch vorauswählen
+
+- [x] Backend: API-Endpunkt der das Standard-Logo der Organisation zurückgibt (orgLogo.getDefault)
+- [x] Frontend: Konfigurator lädt beim Öffnen automatisch das Standard-Logo der Organisation
+- [x] Frontend: Logo wird auf dem Trikot-Design vorplatziert wenn verfügbar (Auto-Zuweisung in Logo-Zonen)
+
+## Selbstregistrierung testen
+
+- [x] Test: Neuen Trainer über Registrierungsseite anlegen (eigen.trainer@test.com -> /trainer/180002/180002)
+- [x] Test: Prüfen ob selbstregistrierter Trainer volle Logo-Upload-Rechte hat (Logo-Upload-Button sichtbar)
+- [x] Test: Eingeladener Trainer sieht Logo read-only ("Das Logo wird vom Spartenleiter verwaltet")
