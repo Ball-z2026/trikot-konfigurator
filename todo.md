@@ -334,3 +334,17 @@
 
 - [x] Bug: Spartenleiter kann keine Trainer einladen (Fehler beim Einladen) - war ein Problem der deployed Version, nicht des Codes
 - [x] Bug: Logo wird im Spartenleiter-Dashboard nicht angezeigt - storageProxy geändert: Bild wird jetzt direkt gestreamt statt 307-Redirect
+
+## Trainer-Dashboard
+
+- [x] Datenbank-Schema: teams-Tabelle (Name, Abteilung, Trainer-Zuordnung)
+- [x] Datenbank-Schema: players-Tabelle (Name, Trikotnummer, Mannschaft-Zuordnung)
+- [x] Backend: CRUD-Prozeduren für Mannschaften (erstellen, bearbeiten, löschen, auflisten)
+- [x] Backend: CRUD-Prozeduren für Spieler (erstellen, bearbeiten, löschen, auflisten)
+- [x] Backend: Berechtigungsprüfung - nur zugewiesene Trainer dürfen ihre Mannschaften verwalten
+- [x] Frontend: Trainer-Dashboard-Seite unter /trainer/:orgId/:deptId
+- [x] Frontend: Mannschafts-Übersicht mit Erstellen/Bearbeiten/Löschen
+- [x] Frontend: Spieler-Liste pro Mannschaft mit Erstellen/Bearbeiten/Löschen
+- [x] Frontend: Spieler-Details (Name, Trikotnummer, Position)
+- [x] Routing: Login-Weiterleitung für Trainer-Rolle zu /trainer/:orgId/:deptId
+- [x] Tests: Vitest-Tests für Mannschafts- und Spieler-Prozeduren (88 Tests bestehen)
