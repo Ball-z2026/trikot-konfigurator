@@ -136,7 +136,9 @@
 
 ### Offene Punkte
 - [x] OrgDashboard: Organisation erstellt, Abteilung erstellt, Schrift freigegeben (im Browser verifiziert)
-- [ ] OrgDashboard: Logo-Upload, Default-Setzen und Löschen im Browser vollständig testen
+- [x] OrgDashboard: Logo-Upload im Browser durchgeführt (SW-Logo hochgeladen, erscheint als zweite Variante)
+- [x] OrgDashboard: Nicht-Standard-Logo als Standard gesetzt (Badge wechselt korrekt von LOGO! zu SW-Logo)
+- [x] OrgDashboard: Logo-Löschen im Browser ausgeführt (LOGO! gelöscht, nur SW-Logo mit Standard-Badge übrig)
 - [x] Trainer-Rolle definiert und implementiert (Mannschaften, Spieler, Einladungskette)
 
 ## Trainer/Betreuer-Rolle & Mannschaften
