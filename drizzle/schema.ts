@@ -264,3 +264,74 @@ export const passwordResetTokens = mysqlTable("password_reset_tokens", {
 });
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+/**
+ * Team Payment Config – Zahlungsmodell pro Mannschaft.
+ * 
+ * paymentType:
+ * - club: Verein zahlt (Bestätigung durch Spartenleiter erforderlich)
+ * - sponsor: Sponsor zahlt (Bestätigung durch Sponsor erforderlich)
+ * - self: Selbstzahler (jeder Spieler/Trainer zahlt selbst)
+ */
+export const teamPayments = mysqlTable("team_payments", {
+  id: int("id").autoincrement().primaryKey(),
+  teamId: int("teamId").notNull(),
+  paymentType: mysqlEnum("paymentType", ["club", "sponsor", "self"]).notNull(),
+  /** Status: pending = ausstehend, confirmed = bestätigt/freigegeben */
+  status: mysqlEnum("status", ["pending", "confirmed"]).default("pending").notNull(),
+  /** Token für E-Mail-Bestätigung */
+  confirmationToken: varchar("confirmationToken", { length: 64 }),
+  confirmedAt: timestamp("confirmedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TeamPayment = typeof teamPayments.$inferSelect;
+export type InsertTeamPayment = typeof teamPayments.$inferInsert;
+
+/**
+ * Sponsors – Sponsoren-Daten für das Zahlungsmodell "Sponsor zahlt".
+ * Enthält alle relevanten Kontaktdaten des Sponsors.
+ */
+export const sponsors = mysqlTable("sponsors", {
+  id: int("id").autoincrement().primaryKey(),
+  teamId: int("teamId").notNull(),
+  /** Ansprechpartner-Name */
+  contactName: varchar("contactName", { length: 255 }).notNull(),
+  /** Firmenname des Sponsors */
+  companyName: varchar("companyName", { length: 255 }).notNull(),
+  /** E-Mail-Adresse für Bestätigungslink */
+  email: varchar("email", { length: 320 }).notNull(),
+  /** Telefonnummer */
+  phone: varchar("phone", { length: 50 }),
+  /** Straße und Hausnummer */
+  street: varchar("street", { length: 255 }),
+  /** PLZ */
+  zip: varchar("zip", { length: 10 }),
+  /** Stadt */
+  city: varchar("city", { length: 255 }),
+  /** Zusätzliche Notizen */
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Sponsor = typeof sponsors.$inferSelect;
+export type InsertSponsor = typeof sponsors.$inferInsert;
+
+/**
+ * Player Payments – Bezahlt-Status pro Spieler (für Selbstzahler-Modell).
+ */
+export const playerPayments = mysqlTable("player_payments", {
+  id: int("id").autoincrement().primaryKey(),
+  playerId: int("playerId").notNull(),
+  teamId: int("teamId").notNull(),
+  /** Hat der Spieler bezahlt? */
+  paid: boolean("paid").default(false).notNull(),
+  paidAt: timestamp("paidAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PlayerPayment = typeof playerPayments.$inferSelect;
+export type InsertPlayerPayment = typeof playerPayments.$inferInsert;

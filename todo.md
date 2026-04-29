@@ -348,3 +348,30 @@
 - [x] Frontend: Spieler-Details (Name, Trikotnummer, Position)
 - [x] Routing: Login-Weiterleitung für Trainer-Rolle zu /trainer/:orgId/:deptId
 - [x] Tests: Vitest-Tests für Mannschafts- und Spieler-Prozeduren (88 Tests bestehen)
+
+## Abrechnung im Trainer-Dashboard
+
+### Zahlungsmodell 1: Verein zahlt
+- [x] DB: payment_type Feld pro Mannschaft (club, sponsor, self)
+- [x] DB: payment_confirmations Tabelle (teamId, type, status, token, confirmedAt)
+- [x] Backend: Prozedur zum Setzen des Zahlungstyps "Verein zahlt"
+- [x] Backend: Bestätigungslink generieren (Token-basiert, zum Kopieren/Teilen)
+- [x] Backend: Bestätigungs-Endpunkt für Spartenleiter (Token-basiert)
+- [x] Backend: Status auf "bestätigt" setzen bei Klick auf Bestätigungslink
+- [x] Frontend: Auswahl "Verein zahlt" im Abrechnungs-Bereich
+- [x] Frontend: Status-Anzeige (ausstehend/bestätigt) im Dashboard
+
+### Zahlungsmodell 2: Sponsor zahlt
+- [x] DB: sponsors Tabelle (id, teamId, name, firma, email, telefon, adresse, status, token)
+- [x] Backend: CRUD-Prozeduren für Sponsoren-Daten
+- [x] Backend: Bestätigungslink generieren (Token-basiert, zum Kopieren/Teilen)
+- [x] Backend: Bestätigungs-Endpunkt für Sponsor (Token-basiert)
+- [x] Backend: Status auf "freigegeben" setzen bei Sponsor-Bestätigung
+- [x] Frontend: Sponsor-Formular mit allen relevanten Feldern (Name, Firma, E-Mail, Telefon, Adresse)
+- [x] Frontend: Status-Anzeige (ausstehend/freigegeben) im Dashboard
+
+### Zahlungsmodell 3: Selbstzahler
+- [x] DB: player_payments Tabelle (playerId, teamId, paid, paidAt)
+- [x] Backend: Prozedur zum Markieren einzelner Spieler/Trainer als "bezahlt"
+- [x] Frontend: Bezahlt-Switch pro Spieler in der Spielerliste
+- [x] Frontend: Übersicht wer bezahlt hat und wer noch aussteht (z.B. 1/1 bezahlt)

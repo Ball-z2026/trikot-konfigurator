@@ -852,3 +852,96 @@ export async function deleteAllPlayersByTeam(teamId: number) {
   if (!db) return;
   await db.delete(players).where(eq(players.teamId, teamId));
 }
+
+// ─── Payment Helpers ────────────────────────────────────────────────────────
+import { teamPayments, sponsors, playerPayments, InsertTeamPayment, InsertSponsor, InsertPlayerPayment } from "../drizzle/schema";
+
+export async function getTeamPayment(teamId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(teamPayments).where(eq(teamPayments.teamId, teamId));
+  return rows[0] || null;
+}
+
+export async function upsertTeamPayment(data: { teamId: number; paymentType: "club" | "sponsor" | "self"; status?: "pending" | "confirmed"; confirmationToken?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const existing = await getTeamPayment(data.teamId);
+  if (existing) {
+    await db.update(teamPayments).set({
+      paymentType: data.paymentType,
+      status: data.status || "pending",
+      confirmationToken: data.confirmationToken || null,
+      confirmedAt: null,
+    }).where(eq(teamPayments.id, existing.id));
+  } else {
+    await db.insert(teamPayments).values({
+      teamId: data.teamId,
+      paymentType: data.paymentType,
+      status: data.status || "pending",
+      confirmationToken: data.confirmationToken || null,
+    });
+  }
+  return getTeamPayment(data.teamId);
+}
+
+export async function confirmTeamPayment(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(teamPayments).where(eq(teamPayments.confirmationToken, token));
+  if (rows.length === 0) return null;
+  await db.update(teamPayments).set({ status: "confirmed", confirmedAt: new Date() }).where(eq(teamPayments.id, rows[0].id));
+  return { ...rows[0], status: "confirmed" as const };
+}
+
+// ─── Sponsor Helpers ────────────────────────────────────────────────────────
+
+export async function getSponsorByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(sponsors).where(eq(sponsors.teamId, teamId));
+  return rows[0] || null;
+}
+
+export async function upsertSponsor(data: Omit<InsertSponsor, "id" | "createdAt" | "updatedAt">) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const existing = await getSponsorByTeam(data.teamId);
+  if (existing) {
+    await db.update(sponsors).set(data).where(eq(sponsors.id, existing.id));
+  } else {
+    await db.insert(sponsors).values(data);
+  }
+  return getSponsorByTeam(data.teamId);
+}
+
+export async function deleteSponsor(teamId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(sponsors).where(eq(sponsors.teamId, teamId));
+}
+
+// ─── Player Payment Helpers ─────────────────────────────────────────────────
+
+export async function listPlayerPayments(teamId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(playerPayments).where(eq(playerPayments.teamId, teamId));
+}
+
+export async function setPlayerPaid(playerId: number, teamId: number, paid: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const existing = await db.select().from(playerPayments).where(and(eq(playerPayments.playerId, playerId), eq(playerPayments.teamId, teamId)));
+  if (existing.length > 0) {
+    await db.update(playerPayments).set({ paid, paidAt: paid ? new Date() : null }).where(eq(playerPayments.id, existing[0].id));
+  } else {
+    await db.insert(playerPayments).values({ playerId, teamId, paid, paidAt: paid ? new Date() : null });
+  }
+}
+
+export async function deletePlayerPayments(teamId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(playerPayments).where(eq(playerPayments.teamId, teamId));
+}

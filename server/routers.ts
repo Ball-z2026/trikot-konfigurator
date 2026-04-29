@@ -71,10 +71,21 @@ import {
   adminResetUserPassword,
   setUserPassword,
   updateUserInfo,
+  getTeamPayment,
+  upsertTeamPayment,
+  confirmTeamPayment,
+  getSponsorByTeam,
+  upsertSponsor,
+  deleteSponsor,
+  listPlayerPayments,
+  setPlayerPaid,
+  deletePlayerPayments,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
 import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
+import { notifyOwner } from "./_core/notification";
 
 // Shared zone schema for reuse
 const zonePurpose = z.enum(["logo", "playerName", "playerNumber", "clubName", "custom"]);
@@ -1143,7 +1154,146 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── Admin User Management ───────────────────────────────────────────────────
+  // ─── Payment / Abrechnung ───────────────────────────────────────────────────────────────
+  payment: router({
+    /** Zahlungsmodell für eine Mannschaft abrufen */
+    getByTeam: protectedProcedure
+      .input(z.object({ teamId: z.number(), orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) return null;
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff auf diese Mannschaft" });
+        }
+        const payment = await getTeamPayment(input.teamId);
+        const sponsor = await getSponsorByTeam(input.teamId);
+        const playerPaymentsList = await listPlayerPayments(input.teamId);
+        return { payment, sponsor, playerPayments: playerPaymentsList };
+      }),
+
+    /** Zahlungsmodell setzen: Verein zahlt */
+    setClubPayment: protectedProcedure
+      .input(z.object({ teamId: z.number(), orgId: z.number(), origin: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        }
+        const token = nanoid(32);
+        const result = await upsertTeamPayment({ teamId: input.teamId, paymentType: "club", confirmationToken: token });
+        // Benachrichtigung an Owner/Spartenleiter mit Bestätigungslink
+        const confirmUrl = `${input.origin}/payment/confirm/${token}`;
+        await notifyOwner({
+          title: `Zahlungsbestätigung angefordert: ${team.name}`,
+          content: `Der Trainer hat für die Mannschaft "${team.name}" das Zahlungsmodell "Verein zahlt" ausgewählt.\n\nBitte bestätigen Sie die Kostenübernahme über folgenden Link:\n\n${confirmUrl}\n\nDer Link kann auch an den zuständigen Spartenleiter weitergeleitet werden.`,
+        });
+        return { success: true, token, confirmUrl, payment: result };
+      }),
+
+    /** Zahlungsmodell setzen: Sponsor zahlt */
+    setSponsorPayment: protectedProcedure
+      .input(z.object({
+        teamId: z.number(),
+        orgId: z.number(),
+        origin: z.string(),
+        sponsor: z.object({
+          contactName: z.string().min(1),
+          companyName: z.string().min(1),
+          email: z.string().email(),
+          phone: z.string().optional(),
+          street: z.string().optional(),
+          zip: z.string().optional(),
+          city: z.string().optional(),
+          notes: z.string().optional(),
+        }),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        }
+        const token = nanoid(32);
+        await upsertTeamPayment({ teamId: input.teamId, paymentType: "sponsor", confirmationToken: token });
+        await upsertSponsor({ teamId: input.teamId, ...input.sponsor });
+        // Benachrichtigung mit Bestätigungslink für den Sponsor
+        const confirmUrl = `${input.origin}/payment/confirm/${token}`;
+        await notifyOwner({
+          title: `Sponsor-Bestätigung angefordert: ${team.name}`,
+          content: `Für die Mannschaft "${team.name}" wurde der Sponsor "${input.sponsor.companyName}" (${input.sponsor.contactName}, ${input.sponsor.email}) eingetragen.\n\nBitte leiten Sie folgenden Bestätigungslink an den Sponsor weiter:\n\n${confirmUrl}\n\nMit dem Klick auf den Link bestätigt der Sponsor die Kostenübernahme.`,
+        });
+        const payment = await getTeamPayment(input.teamId);
+        const sponsor = await getSponsorByTeam(input.teamId);
+        return { success: true, token, confirmUrl, payment, sponsor };
+      }),
+
+    /** Zahlungsmodell setzen: Selbstzahler */
+    setSelfPayment: protectedProcedure
+      .input(z.object({ teamId: z.number(), orgId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        }
+        // Bei Selbstzahler: Status sofort auf confirmed (keine externe Bestätigung nötig)
+        const result = await upsertTeamPayment({ teamId: input.teamId, paymentType: "self", status: "confirmed" });
+        return { success: true, payment: result };
+      }),
+
+    /** Bestätigungslink einlösen (Spartenleiter oder Sponsor) */
+    confirm: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ input }) => {
+        const result = await confirmTeamPayment(input.token);
+        if (!result) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Ungültiger oder bereits verwendeter Bestätigungslink" });
+        }
+        return { success: true, teamId: result.teamId, paymentType: result.paymentType };
+      }),
+
+    /** Spieler als bezahlt markieren (Selbstzahler-Modell) */
+    setPlayerPaid: protectedProcedure
+      .input(z.object({ playerId: z.number(), teamId: z.number(), orgId: z.number(), paid: z.boolean() }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        }
+        await setPlayerPaid(input.playerId, input.teamId, input.paid);
+        return { success: true };
+      }),
+
+    /** Alle Spieler-Zahlungen einer Mannschaft abrufen */
+    listPlayerPayments: protectedProcedure
+      .input(z.object({ teamId: z.number(), orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) return [];
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        }
+        return listPlayerPayments(input.teamId);
+      }),
+  }),
+
+  // ─── Admin User Management ───────────────────────────────────────────────────────────────
   adminUsers: router({
     /** Alle Benutzer mit Mitgliedschaften auflisten */
     list: adminProcedure.query(async () => {

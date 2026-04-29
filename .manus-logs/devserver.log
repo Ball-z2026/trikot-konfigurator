@@ -3528,3 +3528,40 @@
 [2026-04-29T20:25:10.182Z] [Auth] Missing session cookie
 [2026-04-29T20:25:10.632Z] [Auth] Missing session cookie
 [2026-04-29T20:25:10.637Z] [Auth] Missing session cookie
+[2026-04-29T20:46:07.201Z] 4:46:07 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-29T20:46:09.453Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T20:46:09.866Z] Server running on http://localhost:3000/
+[2026-04-29T20:47:01.426Z] 4:47:01 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-29T20:47:03.437Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T20:47:03.808Z] Server running on http://localhost:3000/
+[2026-04-29T20:49:36.205Z] 4:49:36 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T20:49:37.912Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T20:49:38.212Z] Server running on http://localhost:3000/
+[2026-04-29T20:49:40.641Z] Dev server process group stopped
+[2026-04-29T20:49:40.726Z] Dev server exited with code -15
+[2026-04-29T20:49:43.689Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T20:49:45.337Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T20:49:45.606Z] Server running on http://localhost:3000/
+[2026-04-29T20:51:05.911Z] 4:51:05 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-04-29T20:51:16.268Z] 4:51:16 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-04-29T20:51:26.179Z] 4:51:26 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-04-29T20:53:00.776Z] 4:53:00 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-04-29T20:53:33.792Z] 4:53:33 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-04-29T20:54:13.482Z] 4:54:13 PM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-29T20:54:28.239Z] Dev server process group stopped
+[2026-04-29T20:54:28.297Z] Dev server exited with code -15
+[2026-04-29T20:54:31.252Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T20:54:32.944Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T20:54:33.197Z] Server running on http://localhost:3000/
+[2026-04-29T20:54:36.398Z] 4:54:36 PM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-switch
+[2026-04-29T20:54:36.399Z] 4:54:36 PM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-04-29T20:54:47.320Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.350Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.357Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.362Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.368Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.374Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.379Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.385Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.839Z] [Auth] Missing session cookie
+[2026-04-29T20:54:47.844Z] [Auth] Missing session cookie

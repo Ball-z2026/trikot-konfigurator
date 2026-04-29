@@ -37,10 +37,18 @@ import {
   Shirt,
   ChevronRight,
   Download,
+  CreditCard,
+  Building2,
+  HandCoins,
+  CheckCircle2,
+  Clock,
+  Copy,
+  Mail,
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
+import { PaymentSection } from "./PaymentSection";
 
 // ─── Team List (Trainer sieht seine Mannschaften) ─────────────────────────────
 function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
@@ -767,6 +775,8 @@ function TeamDetail({
             ))}
           </div>
         )}
+        {/* Abrechnungs-Bereich */}
+        <PaymentSection teamId={teamId} orgId={orgId} players={players} />
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Register from "./pages/Register";
 import DeptDashboard from "./pages/DeptDashboard";
+import PaymentConfirm from "./pages/PaymentConfirm";
 
 function Router() {
   return (
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/org/:id/dept/:deptId" component={DeptFonts} />
       <Route path="/trainer/:id/:deptId" component={TrainerDashboard} />
       <Route path="/trainer/:id/:deptId/team/:teamId" component={TrainerDashboard} />
+      <Route path="/payment/confirm/:token" component={PaymentConfirm} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
