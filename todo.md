@@ -320,3 +320,12 @@
 ### Berechtigungen
 - [x] Spartenleiter: Logo-Berechtigung hinzugefügt (requireOrgOwnerOrDeptLead für orgLogo.upload/update/delete)
 - [x] Trainer: Volle Konfigurator-Berechtigungen (alle Felder editierbar, nur Vereinsname/Logo gesperrt via isZoneLocked)
+
+## Spartenleiter-Dashboard
+
+- [x] Dedizierte Dashboard-Seite für Spartenleiter unter /dept-dashboard
+- [x] Logo-Upload-Bereich: Logos für die Organisation hochladen/verwalten
+- [x] Schriftarten-Freigabe: Schriftarten für die Abteilung verwalten
+- [x] Trainer-Verwaltung: Trainer einladen, auflisten, entfernen
+- [x] Navigation: Spartenleiter wird nach Login zu /dept-dashboard weitergeleitet
+- [x] Übersichtliche Karten-Ansicht mit allen Verwaltungsbereichen

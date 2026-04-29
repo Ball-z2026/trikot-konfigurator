@@ -16,6 +16,7 @@ import AdminUsers from "./pages/AdminUsers";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Register from "./pages/Register";
+import DeptDashboard from "./pages/DeptDashboard";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/konfigurator/:id" component={CustomerConfigurator} />
       <Route path="/org" component={OrgDashboard} />
       <Route path="/org/:id" component={OrgDashboard} />
+      <Route path="/dept-dashboard" component={DeptDashboard} />
       <Route path="/org/:id/dept/:deptId" component={DeptFonts} />
       <Route path="/trainer/:id/:deptId" component={TrainerDashboard} />
       <Route path="/trainer/:id/:deptId/team/:teamId" component={TrainerDashboard} />

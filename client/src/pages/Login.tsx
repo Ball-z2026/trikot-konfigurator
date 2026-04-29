@@ -53,7 +53,7 @@ export default function Login() {
       try {
         const meRes = await fetch("/api/trpc/membership.mine", { credentials: "include" });
         const meData = await meRes.json();
-        const memberships = meData?.result?.data;
+        const memberships = meData?.result?.data?.json || meData?.result?.data;
         if (Array.isArray(memberships) && memberships.length > 0) {
           const first = memberships[0];
           if (first.role === "trainer") {
@@ -61,7 +61,7 @@ export default function Login() {
             return;
           }
           if (first.role === "department_lead") {
-            window.location.href = `/org/${first.orgId}/dept/${first.departmentId}`;
+            window.location.href = `/dept-dashboard`;
             return;
           }
           if (first.role === "owner") {
@@ -112,7 +112,7 @@ export default function Login() {
       try {
         const meRes = await fetch("/api/trpc/membership.mine", { credentials: "include" });
         const meData = await meRes.json();
-        const memberships = meData?.result?.data;
+        const memberships = meData?.result?.data?.json || meData?.result?.data;
         if (Array.isArray(memberships) && memberships.length > 0) {
           const first = memberships[0];
           if (first.role === "trainer") {
@@ -120,7 +120,7 @@ export default function Login() {
             return;
           }
           if (first.role === "department_lead") {
-            window.location.href = `/org/${first.orgId}/dept/${first.departmentId}`;
+            window.location.href = `/dept-dashboard`;
             return;
           }
           if (first.role === "owner") {
