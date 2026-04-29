@@ -229,16 +229,14 @@ export default function CustomerConfigurator() {
     ? productData?.frontImageUrl
     : productData?.backImageUrl;
 
-  // Always process images when we have parts - use default gray if no color selected
-  const needsProcessing = hasParts && !!rawCurrentImage;
-
-  // Determine the active color for processing - default to light gray if no color selected
-  const DEFAULT_JERSEY_COLOR = '#e5e7eb';
+   // Always process images to make jersey shape visible; use selected color or default light gray
+  const DEFAULT_JERSEY_COLOR = '#d4d4d8';
   const activeColor = isSublimation && activePartId && partColors[activePartId]
     ? partColors[activePartId]
     : isDtf && dtfBaseColor && !dtfBrandImage
     ? dtfBaseColor
     : DEFAULT_JERSEY_COLOR;
+  const needsProcessing = hasParts && !!rawCurrentImage;
 
   useEffect(() => {
     if (!needsProcessing || !rawCurrentImage || !activeColor) {
@@ -323,7 +321,7 @@ export default function CustomerConfigurator() {
 
   const currentImage = needsProcessing && processedImageUrl ? processedImageUrl : rawCurrentImage;
 
-   // Process all part images for composite/overview view (flood-fill with color or default gray)
+   // Process all part images for composite/overview view (flood-fill always to make shape visible)
   useEffect(() => {
     if (!hasParts || (isDtf && dtfBrandImage)) {
       setProcessedPartImages({});
@@ -1197,6 +1195,7 @@ export default function CustomerConfigurator() {
                       style={{
                         position: "relative",
                         zIndex: 1,
+
                       }}
                       draggable={false}
                     />

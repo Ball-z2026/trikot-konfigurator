@@ -91,3 +91,9 @@
 
 ## Bug: Einzelteile-Ansicht zeigt nichts an
 - [x] Einzelteile-Ansicht im Kunden-Konfigurator zeigt jetzt Bild an (Flood-Fill mit Standard-Graufarbe färbt Innenfläche)
+
+## Bug: Farben können nicht mehr ausgewählt werden
+- [x] Farbauswahl im Kunden-Konfigurator funktioniert (getestet auf Preview + deployed Version - Rot wird korrekt angezeigt)
+
+## Bug: Einzelteile-Ansicht zeigt nichts an (deployed Version)
+- [x] Einzelteile-Ansicht zeigt jetzt Bild an (Flood-Fill immer mit Standard-Grau #d4d4d8, Farbe nur bei Auswahl)
