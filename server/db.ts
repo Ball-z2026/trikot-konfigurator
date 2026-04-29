@@ -601,7 +601,96 @@ export async function getUserByEmail(email: string) {
 export async function listAllUsers() {
   const db = await getDb();
   if (!db) return [];
-  return db.select({ id: users.id, name: users.name, email: users.email, openId: users.openId }).from(users);
+  return db.select({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    openId: users.openId,
+    loginMethod: users.loginMethod,
+    role: users.role,
+    mustChangePassword: users.mustChangePassword,
+    createdAt: users.createdAt,
+    lastSignedIn: users.lastSignedIn,
+  }).from(users);
+}
+
+/**
+ * Alle Benutzer mit ihren Mitgliedschaften laden (für Admin-Benutzerverwaltung).
+ */
+export async function listAllUsersWithMemberships() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Lade alle Benutzer
+  const allUsers = await db.select({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    openId: users.openId,
+    loginMethod: users.loginMethod,
+    role: users.role,
+    mustChangePassword: users.mustChangePassword,
+    createdAt: users.createdAt,
+    lastSignedIn: users.lastSignedIn,
+  }).from(users).orderBy(users.createdAt);
+
+  // Lade alle Mitgliedschaften mit Org/Dept-Namen
+  const allMemberships = await db
+    .select({
+      id: memberships.id,
+      userId: memberships.userId,
+      orgId: memberships.orgId,
+      departmentId: memberships.departmentId,
+      role: memberships.role,
+      orgName: organizations.name,
+      departmentName: departments.name,
+    })
+    .from(memberships)
+    .innerJoin(organizations, eq(memberships.orgId, organizations.id))
+    .leftJoin(departments, eq(memberships.departmentId, departments.id));
+
+  // Zusammenführen
+  return allUsers.map(u => ({
+    ...u,
+    memberships: allMemberships.filter(m => m.userId === u.id),
+  }));
+}
+
+/**
+ * Benutzer löschen (inkl. Mitgliedschaften).
+ */
+export async function deleteUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  // Erst Mitgliedschaften löschen
+  await db.delete(memberships).where(eq(memberships.userId, userId));
+  // Dann Benutzer löschen
+  await db.delete(users).where(eq(users.id, userId));
+}
+
+/**
+ * Passwort eines Benutzers zurücksetzen (Admin-Funktion).
+ */
+export async function adminResetUserPassword(userId: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(users).set({
+    passwordHash,
+    mustChangePassword: true,
+  }).where(eq(users.id, userId));
+}
+
+/**
+ * Passwort für einen bestehenden OAuth-Benutzer setzen (damit er auch lokal einloggen kann).
+ */
+export async function setUserPassword(userId: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(users).set({
+    passwordHash,
+    loginMethod: "local",
+    mustChangePassword: true,
+  }).where(eq(users.id, userId));
 }
 
 // ─── User Memberships (for auto-assignment in configurator) ──────────────

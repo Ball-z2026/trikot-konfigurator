@@ -65,9 +65,14 @@ import {
   deletePlayer,
   bulkCreatePlayers,
   deleteAllPlayersByTeam,
+  listAllUsersWithMemberships,
+  deleteUser,
+  adminResetUserPassword,
+  setUserPassword,
 } from "./db";
 import { storagePut } from "./storage";
-import { createLocalUser } from "./localUserHelpers";
+import { createLocalUser, generatePassword } from "./localUserHelpers";
+import bcrypt from "bcryptjs";
 
 // Shared zone schema for reuse
 const zonePurpose = z.enum(["logo", "playerName", "playerNumber", "clubName", "custom"]);
@@ -1113,6 +1118,65 @@ export const appRouter = router({
         }
         const result = await bulkCreatePlayers(input.teamId, input.players);
         return { count: result.length, players: result };
+      }),
+  }),
+
+  // ─── Admin User Management ───────────────────────────────────────────────────
+  adminUsers: router({
+    /** Alle Benutzer mit Mitgliedschaften auflisten */
+    list: adminProcedure.query(async () => {
+      return listAllUsersWithMemberships();
+    }),
+
+    /** Neuen lokalen Benutzer anlegen (Hauptverantwortlicher, Spartenleiter, Trainer) */
+    create: adminProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        password: z.string().min(6).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await createLocalUser({
+          name: input.name,
+          email: input.email,
+          password: input.password,
+        });
+        return result;
+      }),
+
+    /** Passwort eines Benutzers zurücksetzen (neues Passwort generieren) */
+    resetPassword: adminProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ input }) => {
+        const newPassword = generatePassword();
+        const hash = await bcrypt.hash(newPassword, 12);
+        await adminResetUserPassword(input.userId, hash);
+        return { password: newPassword };
+      }),
+
+    /** Passwort für einen OAuth-Benutzer setzen (damit er auch lokal einloggen kann) */
+    setPassword: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        password: z.string().min(6).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const password = input.password || generatePassword();
+        const hash = await bcrypt.hash(password, 12);
+        await setUserPassword(input.userId, hash);
+        return { password };
+      }),
+
+    /** Benutzer löschen (inkl. Mitgliedschaften) */
+    delete: adminProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        // Verhindere Selbstlöschung
+        if (input.userId === ctx.user.id) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Sie können sich nicht selbst löschen" });
+        }
+        await deleteUser(input.userId);
+        return { success: true };
       }),
   }),
 });

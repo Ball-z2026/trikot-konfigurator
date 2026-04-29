@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Layers,
   Stamp,
+  UserCog,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -177,6 +178,14 @@ export default function AdminProducts() {
               </Button>
             </Link>
             <h1 className="text-lg font-bold">Produktverwaltung</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/admin/users">
+              <Button variant="outline" size="sm">
+                <UserCog className="w-4 h-4 mr-2" />
+                Benutzer
+              </Button>
+            </Link>
           </div>
           <Dialog
             open={dialogOpen}

@@ -251,3 +251,29 @@
 
 ### Tests
 - [x] Vitest: Token-Generierung, Token-Validierung, Passwort-Reset-Flow (80 Tests bestanden)
+
+## Admin-Benutzerverwaltung
+
+### Backend
+- [x] tRPC-Prozedur: Alle Benutzer mit Mitgliedschaften auflisten (adminUsers.list)
+- [x] tRPC-Prozedur: Passwort eines Benutzers zurücksetzen (adminUsers.resetPassword)
+- [x] tRPC-Prozedur: Benutzer löschen (adminUsers.delete)
+- [x] tRPC-Prozedur: Neuen Benutzer anlegen (adminUsers.create)
+- [x] tRPC-Prozedur: Passwort für OAuth-Benutzer setzen (adminUsers.setPassword)
+- [x] DB-Helper: listAllUsersWithMemberships, deleteUser, adminResetUserPassword, setUserPassword
+
+### Frontend
+- [x] Admin-Benutzerverwaltungsseite unter /admin/users
+- [x] Tabelle mit allen Benutzern (Name, E-Mail, Login-Methode, Rolle, Organisation/Sparte, letzter Login, erstellt)
+- [x] Aktionen: Passwort zurücksetzen, Benutzer löschen, Passwort setzen für OAuth-User
+- [x] Navigation: Link zur Benutzerverwaltung im Admin-Header ("Benutzer" Button)
+
+### Tests
+- [x] Vitest: Admin-User-Endpunkte Berechtigungsprüfung (85 Tests bestanden)
+
+## Hauptverantwortlicher: Lokales Login
+
+- [x] Hauptverantwortlicher kann sich per E-Mail + Passwort anmelden (lokales Login funktioniert für alle Rollen)
+- [x] Admin kann im Benutzerverwaltung Hauptverantwortliche mit E-Mail + Passwort anlegen (adminUsers.create)
+- [x] Login-Seite: OAuth-Button entfernt (alle nutzen jetzt E-Mail + Passwort)
+- [x] Bestehende OAuth-Benutzer: Passwort nachträglich setzen können (adminUsers.setPassword)

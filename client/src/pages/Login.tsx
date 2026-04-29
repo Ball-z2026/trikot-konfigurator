@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { getLoginUrl } from "@/const";
 import { Shirt, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export default function Login() {
@@ -263,24 +261,8 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="relative">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-              oder
-            </span>
-          </div>
-
-          {/* OAuth login button */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => { window.location.href = getLoginUrl(); }}
-          >
-            Als Vereinsverantwortlicher anmelden
-          </Button>
-
           <p className="text-center text-xs text-muted-foreground">
-            Spartenleiter und Trainer erhalten ihre Zugangsdaten vom Vereinsverantwortlichen.
+            Alle Benutzer (Vereinsverantwortliche, Spartenleiter, Trainer) melden sich mit E-Mail und Passwort an.
           </p>
 
           <Button

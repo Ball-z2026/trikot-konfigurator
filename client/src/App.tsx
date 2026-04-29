@@ -12,6 +12,7 @@ import OrgDashboard from "./pages/OrgDashboard";
 import DeptFonts from "./pages/DeptFonts";
 import TrainerDashboard from "./pages/TrainerDashboard";
 import Login from "./pages/Login";
+import AdminUsers from "./pages/AdminUsers";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin/products" component={AdminProducts} />
       <Route path="/admin/products/:id" component={AdminProductEditor} />
+      <Route path="/admin/users" component={AdminUsers} />
       <Route path="/konfigurator/:id" component={CustomerConfigurator} />
       <Route path="/org" component={OrgDashboard} />
       <Route path="/org/:id" component={OrgDashboard} />
