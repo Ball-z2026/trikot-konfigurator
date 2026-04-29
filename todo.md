@@ -179,3 +179,58 @@
 - [x] Konfigurator: Beim Wechsel der Org-/Abt.-Auswahl auto-gesetzte Logos/Schriften korrekt überschreiben (prevAutoLogoUrl/prevAutoFontFamily Refs)
 - [x] Vitest-Test für membership.mine mit orgName/departmentName Feldern (66 Tests bestanden)
 - [x] Konfigurator: Beim Wechsel zu Org ohne Default-Logo/Schrift vorherige auto-gesetzte Werte zurücksetzen (onChange Handler räumt Zonen auf)
+
+## Eigenständiges Login-System für Spartenleiter/Trainer
+
+### DB-Schema
+- [x] E-Mail-Feld zur memberships-Tabelle hinzufügen (oder separate localUsers-Tabelle)
+- [x] Passwort-Hash-Feld für lokale Benutzer (passwordHash in users-Tabelle)
+- [x] Einladungs-Token für Erstanmeldung (mustChangePassword Flag)
+
+### Backend: Lokales Auth-System
+- [x] Passwort-Hashing mit bcryptjs
+- [x] Login-Route: POST /api/auth/local-login (E-Mail + Passwort)
+- [x] Session-Cookie setzen nach erfolgreichem Login (kompatibel mit bestehendem Auth-System)
+- [x] Lokale User in ctx.user verfügbar machen (gleiche Struktur wie OAuth-User)
+
+### Backend: Einladungs-Flow
+- [x] Vereinsverantwortlicher: Spartenleiter anlegen (Name, E-Mail, Sparte) → Passwort generieren
+- [x] Spartenleiter: Trainer anlegen (Name, E-Mail, Mannschaft) → Passwort generieren
+- [x] Generiertes Passwort wird im Dialog angezeigt (statt E-Mail)
+- [x] Passwort-Änderung nach Erstanmeldung ermöglichen (POST /api/auth/change-password)
+
+### Frontend: Login-Seite
+- [x] Separates Login-Formular für Spartenleiter/Trainer (E-Mail + Passwort)
+- [x] Login-Seite unter /login erreichbarbar
+- [ ] Nach Login: Weiterleitung zum jeweiligen Dashboard (Spartenleiter → DeptFonts, Trainer → TrainerDashboard)
+
+### Frontend: Einladungs-Dialoge
+- [x] OrgDashboard: Spartenleiter-Einladung mit Name + E-Mail-Feld und Passwort-Anzeige
+- [x] DeptFonts: Trainer-Einladung mit Name + E-Mail-Feld und Passwort-Anzeige
+- [x] Einladungs-Bestätigung mit kopierbarem Passwort (Credentials-Dialog)
+
+### Tests
+- [x] Vitest: Lokales Login, Passwort-Hashing, Einladungs-Flow (73 Tests bestanden)
+- [ ] Browser-Test: Login als Spartenleiter/Trainer
+
+## Gesperrte Zonen: Vereinsname und Vereinswappen
+
+- [x] Vereinsname-Zonen (purpose=clubName) automatisch mit Organisationsname befüllen
+- [x] Vereinsname-Zonen verwenden automatisch die vom Spartenleiter freigegebene Standard-Schrift
+- [x] Vereinswappen/Logo-Zonen (purpose=logo) automatisch mit Standard-Logo der Organisation befüllen
+- [x] Vereinsname und Vereinswappen sind für Trainer NICHT änderbar (gesperrt/readonly)
+- [x] Visuelle Kennzeichnung gesperrter Zonen im Konfigurator (Schloss-Icon, amber Rahmen, Gesperrt-Badge)
+
+## Automatische Skalierung und CM-Feldgrößen
+
+### Skalierung auf volle Feldhöhe
+- [x] Schriften/Text (playerName, clubName, custom) auf volle Höhe des Feldes skalieren (SVG viewBox implementiert)
+- [x] PlayerNumber-Rendering: Nummern nutzen gleichen renderZoneText-Pfad mit SVG viewBox (volle Zonenhöhe)
+- [x] Logo-Rendering: Logos nutzen object-contain + w-full h-full (maximale Zonenhöhe bei erhaltener Aspect Ratio)
+- [x] Render-Konsistenz: Export nutzt html-to-image toPng auf dem gleichen DOM-Element (canvasRef) wie die Vorschau - SVG-Text wird korrekt gerendert
+
+### CM-basierte Feldgrößen
+- [x] Zonen-Größe in cm definierbar (widthCm/heightCm bereits im DB-Schema vorhanden)
+- [x] CM-Eingabefelder im Admin-Bereich für Zonen-Definition (bereits implementiert)
+- [x] CM-Anzeige im Konfigurator mit echten widthCm/heightCm-Werten verifiziert (Zone 1: 8cm x 3cm korrekt angezeigt)
+- [ ] CM-zu-Pixel-Umrechnung für exakte Vorschau (basierend auf DPI/Auflösung) - optional für spätere Verfeinerung

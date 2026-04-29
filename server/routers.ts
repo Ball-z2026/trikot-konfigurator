@@ -67,6 +67,7 @@ import {
   deleteAllPlayersByTeam,
 } from "./db";
 import { storagePut } from "./storage";
+import { createLocalUser } from "./localUserHelpers";
 
 // Shared zone schema for reuse
 const zonePurpose = z.enum(["logo", "playerName", "playerNumber", "clubName", "custom"]);
@@ -541,36 +542,53 @@ export const appRouter = router({
     addDepartmentLead: protectedProcedure
       .input(z.object({
         orgId: z.number(),
+        userName: z.string().min(1),
         userEmail: z.string().email(),
         departmentId: z.number(),
       }))
       .mutation(async ({ input, ctx }) => {
         await requireOrgOwner(ctx.user.id, input.orgId);
-        const user = await getUserByEmail(input.userEmail);
-        if (!user) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer mit dieser E-Mail nicht gefunden. Der Benutzer muss sich zuerst registrieren." });
+
+        // Prüfe ob E-Mail bereits existiert
+        let user = await getUserByEmail(input.userEmail);
+        let generatedPassword: string | null = null;
+
+        if (user) {
+          // User existiert bereits - prüfe ob schon Mitglied
+          const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
+          if (existing) {
+            throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
+          }
+        } else {
+          // Neuen lokalen Benutzer erstellen
+          const localUser = await createLocalUser({
+            name: input.userName,
+            email: input.userEmail,
+          });
+          generatedPassword = localUser.password;
+          user = await getUserByEmail(input.userEmail);
+          if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Benutzer konnte nicht erstellt werden" });
         }
-        const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
-        if (existing) {
-          throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
-        }
+
         const id = await createMembership({
           userId: user.id,
           orgId: input.orgId,
           role: "department_lead",
           departmentId: input.departmentId,
         });
-        // Benachrichtigung an den Owner über die Einladung
+
+        // Benachrichtigung mit Login-Daten
         try {
           const { notifyOwner } = await import("./_core/notification");
           const org = await getOrganizationById(input.orgId);
           const dept = await getDepartmentById(input.departmentId);
+          const pwInfo = generatedPassword ? `\nLogin-Daten: E-Mail: ${input.userEmail}, Passwort: ${generatedPassword}` : "";
           await notifyOwner({
             title: `Neuer Spartenleiter eingeladen`,
-            content: `${user.name || user.email} wurde als Spartenleiter für die Abteilung "${dept?.name}" in "${org?.name}" eingeladen.`,
+            content: `${input.userName} wurde als Spartenleiter für die Abteilung "${dept?.name}" in "${org?.name}" eingeladen.${pwInfo}`,
           });
         } catch (e) { /* Notification ist optional */ }
-        return { id, userName: user.name, userEmail: user.email };
+        return { id, userName: user.name, userEmail: user.email, generatedPassword };
       }),
 
     /**
@@ -581,36 +599,52 @@ export const appRouter = router({
       .input(z.object({
         orgId: z.number(),
         departmentId: z.number(),
+        userName: z.string().min(1),
         userEmail: z.string().email(),
       }))
       .mutation(async ({ input, ctx }) => {
         // Spartenleiter oder Owner dürfen Trainer anlegen
         await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
-        const user = await getUserByEmail(input.userEmail);
-        if (!user) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer mit dieser E-Mail nicht gefunden. Der Benutzer muss sich zuerst registrieren." });
+
+        // Prüfe ob E-Mail bereits existiert
+        let user = await getUserByEmail(input.userEmail);
+        let generatedPassword: string | null = null;
+
+        if (user) {
+          const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
+          if (existing) {
+            throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
+          }
+        } else {
+          // Neuen lokalen Benutzer erstellen
+          const localUser = await createLocalUser({
+            name: input.userName,
+            email: input.userEmail,
+          });
+          generatedPassword = localUser.password;
+          user = await getUserByEmail(input.userEmail);
+          if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Benutzer konnte nicht erstellt werden" });
         }
-        const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
-        if (existing) {
-          throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
-        }
+
         const id = await createMembership({
           userId: user.id,
           orgId: input.orgId,
           role: "trainer",
           departmentId: input.departmentId,
         });
-        // Benachrichtigung
+
+        // Benachrichtigung mit Login-Daten
         try {
           const { notifyOwner } = await import("./_core/notification");
           const org = await getOrganizationById(input.orgId);
           const dept = await getDepartmentById(input.departmentId);
+          const pwInfo = generatedPassword ? `\nLogin-Daten: E-Mail: ${input.userEmail}, Passwort: ${generatedPassword}` : "";
           await notifyOwner({
             title: `Neuer Trainer eingeladen`,
-            content: `${user.name || user.email} wurde als Trainer für die Abteilung "${dept?.name}" in "${org?.name}" eingeladen.`,
+            content: `${input.userName} wurde als Trainer für die Abteilung "${dept?.name}" in "${org?.name}" eingeladen.${pwInfo}`,
           });
         } catch (e) { /* Notification ist optional */ }
-        return { id, userName: user.name, userEmail: user.email };
+        return { id, userName: user.name, userEmail: user.email, generatedPassword };
       }),
 
     /**
@@ -623,6 +657,7 @@ export const appRouter = router({
     add: protectedProcedure
       .input(z.object({
         orgId: z.number(),
+        userName: z.string().min(1).optional(),
         userEmail: z.string().email(),
         role: z.enum(["owner", "department_lead", "trainer"]),
         departmentId: z.number().optional(),
@@ -642,19 +677,27 @@ export const appRouter = router({
             throw new TRPCError({ code: "FORBIDDEN", message: "Spartenleiter dürfen nur Trainer in ihrer eigenen Abteilung einladen" });
           }
         }
-        if (callerMembership.role === "owner") {
-          // Owner darf alles außer Trainer direkt (dafür gibt es addTrainer)
-          // Aber für Kompatibilität erlauben wir es
+
+        // Prüfe ob E-Mail bereits existiert
+        let user = await getUserByEmail(input.userEmail);
+        let generatedPassword: string | null = null;
+
+        if (user) {
+          const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
+          if (existing) {
+            throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
+          }
+        } else {
+          // Neuen lokalen Benutzer erstellen
+          const localUser = await createLocalUser({
+            name: input.userName || input.userEmail,
+            email: input.userEmail,
+          });
+          generatedPassword = localUser.password;
+          user = await getUserByEmail(input.userEmail);
+          if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Benutzer konnte nicht erstellt werden" });
         }
 
-        const user = await getUserByEmail(input.userEmail);
-        if (!user) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer mit dieser E-Mail nicht gefunden. Der Benutzer muss sich zuerst registrieren." });
-        }
-        const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
-        if (existing) {
-          throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
-        }
         const id = await createMembership({
           userId: user.id,
           orgId: input.orgId,
@@ -666,12 +709,13 @@ export const appRouter = router({
           const { notifyOwner } = await import("./_core/notification");
           const org = await getOrganizationById(input.orgId);
           const roleLabel = input.role === "owner" ? "Hauptverantwortlicher" : input.role === "department_lead" ? "Spartenleiter" : "Trainer";
+          const pwInfo = generatedPassword ? `\nLogin-Daten: E-Mail: ${input.userEmail}, Passwort: ${generatedPassword}` : "";
           await notifyOwner({
             title: `Neues Mitglied eingeladen`,
-            content: `${user.name || user.email} wurde als ${roleLabel} in "${org?.name}" eingeladen.`,
+            content: `${user.name || user.email} wurde als ${roleLabel} in "${org?.name}" eingeladen.${pwInfo}`,
           });
         } catch (e) { /* Notification ist optional */ }
-        return { id, userName: user.name, userEmail: user.email };
+        return { id, userName: user.name, userEmail: user.email, generatedPassword };
       }),
 
     /** Mitgliedschaft aktualisieren (nur Owner) */

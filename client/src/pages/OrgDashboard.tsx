@@ -59,9 +59,9 @@ function OrgList() {
             <CardDescription>Bitte melden Sie sich an, um Ihre Organisation zu verwalten.</CardDescription>
           </CardHeader>
           <CardContent>
-            <a href={getLoginUrl()}>
+            <Link href="/login">
               <Button className="w-full"><LogIn className="w-4 h-4 mr-2" />Anmelden</Button>
-            </a>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -197,15 +197,30 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   // ─── Member CRUD ───
   const [showAddMember, setShowAddMember] = useState(false);
+  const [memberName, setMemberName] = useState("");
   const [memberEmail, setMemberEmail] = useState("");
   const [memberDeptId, setMemberDeptId] = useState<number | undefined>(undefined);
+  const [showCredentials, setShowCredentials] = useState(false);
+  const [credentials, setCredentials] = useState<{ email: string; password: string; name: string } | null>(null);
   const addDeptLead = trpc.membership.addDepartmentLead.useMutation({
     onSuccess: (data) => {
       utils.membership.listByOrg.invalidate({ orgId });
-      setShowAddMember(false);
+      if (data.generatedPassword) {
+        // Zeige die generierten Zugangsdaten an
+        setCredentials({
+          email: data.userEmail || memberEmail,
+          password: data.generatedPassword,
+          name: data.userName || memberName,
+        });
+        setShowAddMember(false);
+        setShowCredentials(true);
+      } else {
+        setShowAddMember(false);
+        toast.success(`${data.userName || data.userEmail} als Spartenleiter eingeladen`);
+      }
+      setMemberName("");
       setMemberEmail("");
       setMemberDeptId(undefined);
-      toast.success(`${data.userName || data.userEmail} als Spartenleiter eingeladen`);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -585,10 +600,19 @@ function OrgDetail({ orgId }: { orgId: number }) {
                       <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
                         <p className="font-medium text-foreground mb-1">Einladungskette:</p>
                         <p>Sie (Hauptverantwortlicher) → Spartenleiter → Trainer</p>
-                        <p className="mt-1">Spartenleiter können anschließend selbst Trainer für ihre Abteilung einladen.</p>
+                        <p className="mt-1">Der Spartenleiter erhält automatisch Zugangsdaten (E-Mail + Passwort) und kann sich damit anmelden.</p>
                       </div>
                       <div className="space-y-2">
-                        <Label>E-Mail-Adresse</Label>
+                        <Label>Name <span className="text-destructive">*</span></Label>
+                        <Input
+                          type="text"
+                          value={memberName}
+                          onChange={(e) => setMemberName(e.target.value)}
+                          placeholder="Max Mustermann"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>E-Mail-Adresse <span className="text-destructive">*</span></Label>
                         <Input
                           type="email"
                           value={memberEmail}
@@ -620,11 +644,12 @@ function OrgDetail({ orgId }: { orgId: number }) {
                           if (!memberDeptId) { toast.error("Bitte wählen Sie eine Abteilung"); return; }
                           addDeptLead.mutate({
                             orgId,
+                            userName: memberName,
                             userEmail: memberEmail,
                             departmentId: memberDeptId,
                           });
                         }}
-                        disabled={!memberEmail.trim() || !memberDeptId || addDeptLead.isPending}
+                        disabled={!memberName.trim() || !memberEmail.trim() || !memberDeptId || addDeptLead.isPending}
                       >
                         {addDeptLead.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                         Einladen
@@ -633,6 +658,59 @@ function OrgDetail({ orgId }: { orgId: number }) {
                   </DialogContent>
                 </Dialog>
               )}
+
+              {/* Zugangsdaten-Dialog nach erfolgreicher Einladung */}
+              <Dialog open={showCredentials} onOpenChange={setShowCredentials}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Zugangsdaten erstellt</DialogTitle>
+                    <DialogDescription>
+                      Der Benutzer wurde erfolgreich eingeladen. Bitte teilen Sie die folgenden Zugangsdaten mit.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {credentials && (
+                    <div className="space-y-4 py-4">
+                      <div className="rounded-lg bg-green-50 border border-green-200 p-4 space-y-3">
+                        <div>
+                          <p className="text-sm font-medium text-green-800">Name</p>
+                          <p className="text-sm text-green-700 font-mono">{credentials.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-green-800">E-Mail</p>
+                          <p className="text-sm text-green-700 font-mono">{credentials.email}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-green-800">Passwort</p>
+                          <p className="text-lg text-green-700 font-mono font-bold tracking-wider">{credentials.password}</p>
+                        </div>
+                      </div>
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+                        <p className="font-medium">Wichtig:</p>
+                        <ul className="list-disc list-inside mt-1 space-y-1">
+                          <li>Notieren Sie das Passwort jetzt – es wird nicht erneut angezeigt.</li>
+                          <li>Der Benutzer wird beim ersten Login aufgefordert, das Passwort zu ändern.</li>
+                          <li>Login-Seite: <span className="font-mono">/login</span></li>
+                        </ul>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `Zugangsdaten f\u00fcr den Textil-Konfigurator:\nName: ${credentials.name}\nE-Mail: ${credentials.email}\nPasswort: ${credentials.password}\nLogin: ${window.location.origin}/login`
+                          );
+                          toast.success("Zugangsdaten in die Zwischenablage kopiert");
+                        }}
+                      >
+                        Zugangsdaten kopieren
+                      </Button>
+                    </div>
+                  )}
+                  <DialogFooter>
+                    <Button onClick={() => { setShowCredentials(false); setCredentials(null); }}>Schlie\u00dfen</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {(!members || members.length === 0) ? (

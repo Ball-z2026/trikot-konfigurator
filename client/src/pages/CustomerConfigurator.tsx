@@ -28,6 +28,7 @@ import {
   Type,
   Droplets,
   Palette,
+  Lock,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
@@ -169,7 +170,15 @@ export default function CustomerConfigurator() {
   const primaryMembership = useMemo(() => myMemberships?.[selectedMembershipIdx] ?? myMemberships?.[0] ?? null, [myMemberships, selectedMembershipIdx]);
   const userOrgId = primaryMembership?.orgId ?? null;
   const userDeptId = primaryMembership?.departmentId ?? null;
+  const userRole = primaryMembership?.role ?? null;
+  const isTrainer = userRole === "trainer";
   const hasMultipleMemberships = (myMemberships?.length ?? 0) > 1;
+
+  // Gesperrte Zonen: Vereinsname und Logo sind für Trainer nicht änderbar
+  const isZoneLocked = useCallback((zone: ZoneData) => {
+    if (!isTrainer) return false;
+    return zone.purpose === "clubName" || zone.purpose === "logo";
+  }, [isTrainer]);
 
   // Standard-Logo der Organisation laden
   const { data: orgDefaultLogo } = trpc.orgLogo.getDefault.useQuery(
@@ -241,6 +250,12 @@ export default function CustomerConfigurator() {
    // Track previous auto-assigned values so we can overwrite on org switch
   const prevAutoLogoUrl = useRef<string | null>(null);
   const prevAutoFontFamily = useRef<string | null>(null);
+  // ─── Auto-Zuweisung: Vereinsname aus Organisation setzen ───
+  useEffect(() => {
+    if (!primaryMembership?.orgName) return;
+    setClubName(primaryMembership.orgName);
+  }, [primaryMembership?.orgName]);
+
   // ─── Auto-Zuweisung: Org-Logo in alle Logo-Zonen setzen ───
   useEffect(() => {
     if (autoLogoApplied || !orgDefaultLogo?.imageUrl || allZones.length === 0) return;
@@ -592,27 +607,43 @@ export default function CustomerConfigurator() {
     },
     [activePlayer, clubName, zoneContents, allZones]
   );
-
-  // ─── Render Zone Text ──────────────────────────────────────────────────
-  const renderZoneText = (content: ZoneContent, scale = 1) => (
+  // ─── Render Zone Text (volle Feldhöhe) ─────────────────────────────────────────────────────────
+  const renderZoneText = (content: ZoneContent, _scale = 1) => (
     <span
-      className="text-center leading-tight block w-full"
+      className="text-center leading-none block w-full h-full flex items-center justify-center"
       style={{
         fontFamily: content.fontFamily || "Inter",
-        fontSize: `${Math.max(6, (content.fontSize || 24) * scale)}px`,
+        fontSize: "100%",
         color: content.fontColor || "#ffffff",
         fontWeight: (content.fontWeight as any) || "700",
         textAlign: (content.textAlign as any) || "center",
         textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
         wordBreak: "break-word",
-        lineHeight: 1.1,
+        lineHeight: 1,
+        // SVG-basierte Skalierung: Text füllt die volle Höhe der Zone
+        display: "flex",
+        alignItems: "center",
+        justifyContent: (content.textAlign as any) === "left" ? "flex-start" : (content.textAlign as any) === "right" ? "flex-end" : "center",
       }}
     >
-      {content.text}
+      <svg viewBox={`0 0 ${(content.text?.length || 1) * 60} 100`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+        <text
+          x="50%"
+          y="50%"
+          dominantBaseline="central"
+          textAnchor={content.textAlign === "left" ? "start" : content.textAlign === "right" ? "end" : "middle"}
+          fill={content.fontColor || "#ffffff"}
+          fontFamily={content.fontFamily || "Inter"}
+          fontWeight={(content.fontWeight as any) || "700"}
+          fontSize="90"
+          style={{ filter: "drop-shadow(1px 1px 2px rgba(0,0,0,0.5))" }}
+        >
+          {content.text}
+        </text>
+      </svg>
     </span>
   );
-
-  // ─── Export ─────────────────────────────────────────────────────────────
+  // ─── Export ───────────────────────────────────────────────────────────────────────
   const waitForRepaint = useCallback(() => {
     return new Promise<void>((resolve) => {
       requestAnimationFrame(() => {
@@ -1556,20 +1587,24 @@ export default function CustomerConfigurator() {
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
                 {/* Club Name Input (if any zone uses clubName) */}
                 {allZones.some((z) => z.purpose === "clubName") && (
-                  <Card>
+                  <Card className={isTrainer ? "border-amber-200 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-950/20" : ""}>
                     <CardContent className="pt-3 sm:pt-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-4 h-4 text-primary" />
+                        {isTrainer ? <Lock className="w-4 h-4 text-amber-600" /> : <Shield className="w-4 h-4 text-primary" />}
                         <Label className="text-sm font-medium">Vereinsname</Label>
+                        {isTrainer && <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-700 ml-auto">Gesperrt</Badge>}
                       </div>
                       <Input
                         placeholder="z.B. FC Musterstadt"
                         value={clubName}
-                        onChange={(e) => setClubName(e.target.value)}
-                        className="h-9"
+                        onChange={(e) => !isTrainer && setClubName(e.target.value)}
+                        readOnly={isTrainer}
+                        className={`h-9 ${isTrainer ? "bg-muted cursor-not-allowed" : ""}`}
                       />
                       <p className="text-[10px] text-muted-foreground mt-1.5">
-                        Wird automatisch in allen Vereinsname-Feldern platziert.
+                        {isTrainer
+                          ? "Vom Verein festgelegt. Kann nicht ge\u00e4ndert werden."
+                          : "Wird automatisch in allen Vereinsname-Feldern platziert."}
                       </p>
                     </CardContent>
                   </Card>
@@ -1592,7 +1627,7 @@ export default function CustomerConfigurator() {
                     return (
                       <Card
                         key={zone.id}
-                        className={`cursor-pointer transition-all ${isSelected ? "ring-2" : ""}`}
+                        className={`cursor-pointer transition-all ${isSelected ? "ring-2" : ""} ${isZoneLocked(zone) ? "border-amber-200 dark:border-amber-800" : ""}`}
                         style={
                           isSelected
                             ? ({ "--tw-ring-color": zoneBorderColors[colorIdx] } as any)
@@ -1606,11 +1641,15 @@ export default function CustomerConfigurator() {
                               className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
                               style={{ backgroundColor: zoneBorderColors[colorIdx] }}
                             />
-                            <PurposeIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
+                            {isZoneLocked(zone) ? <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-600" /> : <PurposeIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground" />}
                             <span className="font-medium text-xs sm:text-sm">{zone.label}</span>
-                            <Badge variant="outline" className="text-[10px] sm:text-xs ml-auto">
-                              {PURPOSE_LABELS[purpose] || "Freitext"}
-                            </Badge>
+                            {isZoneLocked(zone) ? (
+                              <Badge variant="outline" className="text-[10px] sm:text-xs ml-auto border-amber-300 text-amber-700">Gesperrt</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] sm:text-xs ml-auto">
+                                {PURPOSE_LABELS[purpose] || "Freitext"}
+                              </Badge>
+                            )}
                           </div>
 
                           {/* Dimensions info */}
@@ -1640,33 +1679,44 @@ export default function CustomerConfigurator() {
 
                           {/* Logo zones: Image Upload */}
                           {purpose === "logo" && (
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1 h-8 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleImageUploadToZone(zone.id);
-                                }}
-                              >
-                                <Upload className="w-3.5 h-3.5 mr-1.5" />
-                                {content?.imageDataUrl ? "Bild ändern" : "Logo hochladen"}
-                              </Button>
-                              {content?.imageDataUrl && (
+                            isZoneLocked(zone) ? (
+                              <div className="text-xs text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-md p-2 flex items-center gap-2">
+                                <Lock className="w-3.5 h-3.5 shrink-0" />
+                                <span>
+                                  {content?.imageDataUrl
+                                    ? "Vereinswappen vom Verein festgelegt."
+                                    : "Vereinswappen wird automatisch gesetzt."}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
                                 <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="shrink-0 h-8 w-8"
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 h-8 text-xs"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    updateZoneContent(zone.id, { imageDataUrl: undefined });
+                                    handleImageUploadToZone(zone.id);
                                   }}
                                 >
-                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                                  {content?.imageDataUrl ? "Bild \u00e4ndern" : "Logo hochladen"}
                                 </Button>
-                              )}
-                            </div>
+                                {content?.imageDataUrl && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="shrink-0 h-8 w-8"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateZoneContent(zone.id, { imageDataUrl: undefined });
+                                    }}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                  </Button>
+                                )}
+                              </div>
+                            )
                           )}
 
                           {/* Player Name/Number: Auto-filled */}
@@ -1696,7 +1746,13 @@ export default function CustomerConfigurator() {
 
                           {/* Club Name: Auto-filled */}
                           {purpose === "clubName" && (
-                            <div className="text-xs text-muted-foreground bg-accent/50 rounded-md p-2">
+                            <div className={`text-xs rounded-md p-2 ${isZoneLocked(zone) ? "text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400" : "text-muted-foreground bg-accent/50"}`}>
+                              {isZoneLocked(zone) && (
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <Lock className="w-3 h-3" />
+                                  <span className="font-medium">Vom Verein festgelegt</span>
+                                </div>
+                              )}
                               {clubName ? (
                                 <span
                                   className="text-foreground font-medium"
@@ -1709,7 +1765,9 @@ export default function CustomerConfigurator() {
                                 </span>
                               ) : (
                                 <span>
-                                  Gib oben den Vereinsnamen ein, um ihn automatisch zu platzieren.
+                                  {isZoneLocked(zone)
+                                    ? "Vereinsname wird automatisch gesetzt."
+                                    : "Gib oben den Vereinsnamen ein, um ihn automatisch zu platzieren."}
                                 </span>
                               )}
                             </div>
@@ -1729,22 +1787,15 @@ export default function CustomerConfigurator() {
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <div className="flex gap-2 flex-wrap">
-                                <div className="flex items-center gap-1.5">
-                                  <Label className="text-xs">Größe</Label>
-                                  <Input
-                                    type="number"
-                                    min={8}
-                                    max={120}
-                                    value={content?.fontSize || zone.fontSize || 24}
-                                    className="h-7 w-14 sm:w-16 text-xs"
-                                    onChange={(e) =>
-                                      updateZoneContent(zone.id, {
-                                        fontSize: parseInt(e.target.value) || 24,
-                                      })
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </div>
+                                {/* Feldgröße in cm (nur Anzeige - wird im Admin definiert) */}
+                                {(zone.widthCm || zone.heightCm) && (
+                                  <div className="flex items-center gap-1.5">
+                                    <Label className="text-xs text-muted-foreground">Feld:</Label>
+                                    <span className="text-xs text-muted-foreground">
+                                      {zone.widthCm ? `${zone.widthCm}` : "–"} × {zone.heightCm ? `${zone.heightCm}` : "–"} cm
+                                    </span>
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-1.5">
                                   <Label className="text-xs">Farbe</Label>
                                   <input

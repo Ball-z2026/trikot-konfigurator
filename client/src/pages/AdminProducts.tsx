@@ -138,9 +138,9 @@ export default function AdminProducts() {
             <p className="text-muted-foreground mb-4">
               Bitte melde dich an, um auf den Admin-Bereich zuzugreifen.
             </p>
-            <a href={getLoginUrl("/admin/products")}>
+            <Link href="/login">
               <Button>Anmelden</Button>
-            </a>
+            </Link>
           </CardContent>
         </Card>
       </div>

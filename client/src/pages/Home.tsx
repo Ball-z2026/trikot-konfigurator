@@ -91,12 +91,12 @@ export default function Home() {
                 </Button>
               </div>
             ) : (
-              <a href={getLoginUrl()}>
+              <Link href="/login">
                 <Button size="sm">
                   <LogIn className="w-4 h-4 mr-2" />
                   Anmelden
                 </Button>
-              </a>
+              </Link>
             )}
           </div>
 
@@ -134,11 +134,11 @@ export default function Home() {
                 </Button>
               </>
             ) : (
-              <a href={getLoginUrl()}>
+              <Link href="/login">
                 <Button size="sm" className="w-full justify-start">
                   <LogIn className="w-4 h-4 mr-2" />Anmelden
                 </Button>
-              </a>
+              </Link>
             )}
           </div>
         )}

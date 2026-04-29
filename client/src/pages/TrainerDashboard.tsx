@@ -805,12 +805,12 @@ export default function TrainerDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <a href={getLoginUrl()}>
+            <Link href="/login">
               <Button className="w-full">
                 <LogIn className="w-4 h-4 mr-2" />
                 Anmelden
               </Button>
-            </a>
+            </Link>
           </CardContent>
         </Card>
       </div>

@@ -11,11 +11,13 @@ import CustomerConfigurator from "./pages/CustomerConfigurator";
 import OrgDashboard from "./pages/OrgDashboard";
 import DeptFonts from "./pages/DeptFonts";
 import TrainerDashboard from "./pages/TrainerDashboard";
+import Login from "./pages/Login";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
       <Route path="/admin/products" component={AdminProducts} />
       <Route path="/admin/products/:id" component={AdminProductEditor} />
       <Route path="/konfigurator/:id" component={CustomerConfigurator} />

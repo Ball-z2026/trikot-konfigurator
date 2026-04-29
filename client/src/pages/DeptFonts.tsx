@@ -88,14 +88,28 @@ function MembersTab({
 }) {
   const utils = trpc.useUtils();
   const [showInvite, setShowInvite] = useState(false);
+  const [trainerName, setTrainerName] = useState("");
   const [trainerEmail, setTrainerEmail] = useState("");
+  const [showCredentials, setShowCredentials] = useState(false);
+  const [credentials, setCredentials] = useState<{ email: string; password: string; name: string } | null>(null);
 
   const addTrainer = trpc.membership.addTrainer.useMutation({
     onSuccess: (data) => {
       utils.membership.listByDepartment.invalidate({ departmentId: deptId, orgId });
-      setShowInvite(false);
+      if (data.generatedPassword) {
+        setCredentials({
+          email: data.userEmail || trainerEmail,
+          password: data.generatedPassword,
+          name: data.userName || trainerName,
+        });
+        setShowInvite(false);
+        setShowCredentials(true);
+      } else {
+        setShowInvite(false);
+        toast.success(`${data.userName || data.userEmail} als Trainer eingeladen`);
+      }
+      setTrainerName("");
       setTrainerEmail("");
-      toast.success(`${data.userName || data.userEmail} als Trainer eingeladen`);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -146,18 +160,25 @@ function MembersTab({
                     <li>Trikot-Konfigurationen erstellen</li>
                     <li>Vereinslogo und Schriften werden automatisch zugewiesen</li>
                   </ul>
+                  <p className="mt-2">Der Trainer erhält automatisch Zugangsdaten (E-Mail + Passwort).</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>E-Mail-Adresse des Trainers</Label>
+                  <Label>Name des Trainers <span className="text-destructive">*</span></Label>
+                  <Input
+                    type="text"
+                    value={trainerName}
+                    onChange={(e) => setTrainerName(e.target.value)}
+                    placeholder="Max Mustermann"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>E-Mail-Adresse des Trainers <span className="text-destructive">*</span></Label>
                   <Input
                     type="email"
                     value={trainerEmail}
                     onChange={(e) => setTrainerEmail(e.target.value)}
                     placeholder="trainer@beispiel.de"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Der Benutzer muss sich vorher registriert haben.
-                  </p>
                 </div>
               </div>
               <DialogFooter>
@@ -166,9 +187,10 @@ function MembersTab({
                   onClick={() => addTrainer.mutate({
                     orgId,
                     departmentId: deptId,
+                    userName: trainerName,
                     userEmail: trainerEmail,
                   })}
-                  disabled={!trainerEmail.trim() || addTrainer.isPending}
+                  disabled={!trainerName.trim() || !trainerEmail.trim() || addTrainer.isPending}
                 >
                   {addTrainer.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                   Einladen
@@ -177,6 +199,59 @@ function MembersTab({
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Zugangsdaten-Dialog nach erfolgreicher Einladung */}
+        <Dialog open={showCredentials} onOpenChange={setShowCredentials}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Zugangsdaten erstellt</DialogTitle>
+              <DialogDescription>
+                Der Trainer wurde erfolgreich eingeladen. Bitte teilen Sie die folgenden Zugangsdaten mit.
+              </DialogDescription>
+            </DialogHeader>
+            {credentials && (
+              <div className="space-y-4 py-4">
+                <div className="rounded-lg bg-green-50 border border-green-200 p-4 space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Name</p>
+                    <p className="text-sm text-green-700 font-mono">{credentials.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-green-800">E-Mail</p>
+                    <p className="text-sm text-green-700 font-mono">{credentials.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Passwort</p>
+                    <p className="text-lg text-green-700 font-mono font-bold tracking-wider">{credentials.password}</p>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+                  <p className="font-medium">Wichtig:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>Notieren Sie das Passwort jetzt – es wird nicht erneut angezeigt.</li>
+                    <li>Der Trainer wird beim ersten Login aufgefordert, das Passwort zu ändern.</li>
+                    <li>Login-Seite: <span className="font-mono">/login</span></li>
+                  </ul>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `Zugangsdaten f\u00fcr den Textil-Konfigurator:\nName: ${credentials.name}\nE-Mail: ${credentials.email}\nPasswort: ${credentials.password}\nLogin: ${window.location.origin}/login`
+                    );
+                    toast.success("Zugangsdaten in die Zwischenablage kopiert");
+                  }}
+                >
+                  Zugangsdaten kopieren
+                </Button>
+              </div>
+            )}
+            <DialogFooter>
+              <Button onClick={() => { setShowCredentials(false); setCredentials(null); }}>Schlie\u00dfen</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Einladungskette-Info */}
@@ -390,12 +465,12 @@ export default function DeptFonts() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <a href={getLoginUrl()}>
+            <Link href="/login">
               <Button className="w-full">
                 <LogIn className="w-4 h-4 mr-2" />
                 Anmelden
               </Button>
-            </a>
+            </Link>
           </CardContent>
         </Card>
       </div>
