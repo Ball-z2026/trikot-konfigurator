@@ -21,6 +21,100 @@ import * as db from "./db";
 
 export function registerLocalAuthRoutes(app: Express) {
   /**
+   * POST /api/auth/register
+   * Body: { role: "verein" | "sparte" | "trainer", name, email, password, orgName, deptName?, teamName? }
+   * 
+   * Self-registration with role selection.
+   */
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
+    try {
+      const { role, name, email, password, orgName, deptName, teamName } = req.body;
+
+      if (!role || !name || !email || !password) {
+        res.status(400).json({ error: "Name, E-Mail, Passwort und Rolle sind erforderlich" });
+        return;
+      }
+      if (password.length < 6) {
+        res.status(400).json({ error: "Passwort muss mindestens 6 Zeichen lang sein" });
+        return;
+      }
+      if (!orgName) {
+        res.status(400).json({ error: "Vereinsname ist erforderlich" });
+        return;
+      }
+      if (role === "sparte" && !deptName) {
+        res.status(400).json({ error: "Spartenname ist erforderlich" });
+        return;
+      }
+      if (role === "trainer" && (!deptName || !teamName)) {
+        res.status(400).json({ error: "Sparten- und Mannschaftsname sind erforderlich" });
+        return;
+      }
+
+      // Check if email already exists
+      const existing = await db.getUserByEmail(email.toLowerCase().trim());
+      if (existing) {
+        res.status(409).json({ error: "Ein Benutzer mit dieser E-Mail existiert bereits" });
+        return;
+      }
+
+      // Create user
+      const passwordHash = await bcrypt.hash(password, 12);
+      const openId = `local_${nanoid(16)}`;
+      const { users } = await import("../drizzle/schema");
+      const dbConn = await db.getDb();
+      if (!dbConn) throw new Error("Database not available");
+
+      const userResult = await dbConn.insert(users).values({
+        openId,
+        name,
+        email: email.toLowerCase().trim(),
+        loginMethod: "local",
+        passwordHash,
+        mustChangePassword: false,
+        role: "user",
+        lastSignedIn: new Date(),
+      });
+      const userId = Number(userResult[0].insertId);
+
+      // Create organization
+      const orgId = Number(await db.createOrganization({ name: orgName, type: "verein", ownerId: userId }));
+
+      if (role === "verein") {
+        // Owner membership
+        await db.createMembership({ userId, orgId, role: "owner", departmentId: null });
+      } else if (role === "sparte") {
+        // Create department + department_lead membership
+        const deptId = Number(await db.createDepartment({ orgId, name: deptName }));
+        await db.createMembership({ userId, orgId, role: "department_lead", departmentId: deptId });
+      } else if (role === "trainer") {
+        // Create department + team + trainer membership
+        const deptId = Number(await db.createDepartment({ orgId, name: deptName }));
+        await db.createMembership({ userId, orgId, role: "trainer", departmentId: deptId });
+        await db.createTeam({ name: teamName, departmentId: deptId, orgId, trainerId: userId });
+      }
+
+      // Create session token
+      const sessionToken = await sdk.createSessionToken(openId, {
+        name,
+        expiresInMs: ONE_YEAR_MS,
+      });
+
+      // Set session cookie
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+      res.json({
+        success: true,
+        user: { id: userId, name, email: email.toLowerCase().trim(), role: "user" },
+      });
+    } catch (error) {
+      console.error("[LocalAuth] Registration failed:", error);
+      res.status(500).json({ error: "Registrierung fehlgeschlagen" });
+    }
+  });
+
+  /**
    * POST /api/auth/local-login
    * Body: { email: string, password: string }
    * 

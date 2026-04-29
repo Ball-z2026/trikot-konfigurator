@@ -182,6 +182,8 @@ function OrgDetail({ orgId }: { orgId: number }) {
   const { data: logos } = trpc.orgLogo.list.useQuery({ orgId });
 
   const isOwner = org?.userRole === "owner";
+  const isDeptLead = org?.userRole === "department_lead";
+  const canManageLogos = isOwner || isDeptLead;
 
   // ─── Department CRUD ───
   const [showAddDept, setShowAddDept] = useState(false);
@@ -348,7 +350,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
                 <h2 className="text-xl font-bold">Logo-Varianten</h2>
                 <p className="text-sm text-muted-foreground">Laden Sie verschiedene Logo-Varianten hoch (Farb-Logo, SW-Logo, Mini-Logo etc.)</p>
               </div>
-              {isOwner && (
+              {canManageLogos && (
                 <Dialog open={showUploadLogo} onOpenChange={setShowUploadLogo}>
                   <DialogTrigger asChild>
                     <Button size="sm"><Upload className="w-4 h-4 mr-2" />Logo hochladen</Button>
@@ -420,7 +422,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
               <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed">
                 <Image className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">Noch keine Logos hochgeladen</p>
-                {isOwner && (
+                {canManageLogos && (
                   <Button className="mt-4" size="sm" onClick={() => setShowUploadLogo(true)}>
                     <Upload className="w-4 h-4 mr-2" />Erstes Logo hochladen
                   </Button>
@@ -441,7 +443,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
                     <CardContent className="pt-3">
                       <div className="flex items-center justify-between">
                         <p className="font-medium text-sm">{logo.name}</p>
-                        {isOwner && (
+                        {canManageLogos && (
                           <div className="flex items-center gap-1">
                             {!logo.isDefault && (
                               <Button

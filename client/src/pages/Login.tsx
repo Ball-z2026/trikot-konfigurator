@@ -261,6 +261,16 @@ export default function Login() {
             </button>
           </form>
 
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Noch kein Konto?{" "}
+            <button
+              type="button"
+              onClick={() => navigate("/register")}
+              className="text-primary hover:underline font-medium"
+            >
+              Jetzt registrieren
+            </button>
+          </p>
           <p className="text-center text-xs text-muted-foreground">
             Alle Benutzer (Vereinsverantwortliche, Spartenleiter, Trainer) melden sich mit E-Mail und Passwort an.
           </p>

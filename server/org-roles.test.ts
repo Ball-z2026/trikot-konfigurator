@@ -204,7 +204,7 @@ describe("Organization role-based access", () => {
           mimeType: "image/png",
           isDefault: false,
         })
-      ).rejects.toThrow(/Hauptverantwortliche|FORBIDDEN/i);
+      ).rejects.toThrow(/Vereinsverantwortliche|Spartenleiter|FORBIDDEN/i);
     });
   });
 

@@ -32,6 +32,7 @@ import {
   deleteDepartment,
   createMembership,
   getMembershipByUserAndOrg,
+  getAllMembershipsByUserAndOrg,
   listMembershipsByOrg,
   listMembershipsByDepartment,
   updateMembership,
@@ -104,23 +105,40 @@ async function requireOrgOwner(userId: number, orgId: number) {
   return membership;
 }
 
+// Owner or Department Lead guard: checks that user is owner or department_lead
+async function requireOrgOwnerOrDeptLead(userId: number, orgId: number) {
+  const allMemberships = await getAllMembershipsByUserAndOrg(userId, orgId);
+  const hasAccess = allMemberships.some(m => m.role === "owner" || m.role === "department_lead");
+  if (!hasAccess) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Nur Vereinsverantwortliche und Spartenleiter dürfen diese Aktion ausführen" });
+  }
+  return allMemberships[0];
+}
+
 // Org-member guard: checks that user is a member of the given org
+// Returns the membership with the highest role (owner > department_lead > trainer)
 async function requireOrgMember(userId: number, orgId: number) {
-  const membership = await getMembershipByUserAndOrg(userId, orgId);
-  if (!membership) {
+  const allMemberships = await getAllMembershipsByUserAndOrg(userId, orgId);
+  if (allMemberships.length === 0) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Sie sind kein Mitglied dieser Organisation" });
   }
-  return membership;
+  const roleOrder = ["owner", "department_lead", "trainer"];
+  const sorted = [...allMemberships].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
+  return sorted[0];
 }
 
 // Department-lead guard: checks that user is lead of the given department
 async function requireDepartmentLead(userId: number, orgId: number, departmentId: number) {
-  const membership = await getMembershipByUserAndOrg(userId, orgId);
-  if (!membership) {
+  const allMemberships = await getAllMembershipsByUserAndOrg(userId, orgId);
+  if (allMemberships.length === 0) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Sie sind kein Mitglied dieser Organisation" });
   }
-  if (membership.role === "owner") return membership; // Owner can do everything
-  if (membership.role === "department_lead" && membership.departmentId === departmentId) return membership;
+  // Owner can do everything
+  const ownerMembership = allMemberships.find(m => m.role === "owner");
+  if (ownerMembership) return ownerMembership;
+  // Department lead for this specific department
+  const deptLeadMembership = allMemberships.find(m => m.role === "department_lead" && m.departmentId === departmentId);
+  if (deptLeadMembership) return deptLeadMembership;
   throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Spartenleiter darf diese Aktion ausf\u00fchren" });
 }
 
@@ -448,8 +466,11 @@ export const appRouter = router({
         await requireOrgMember(ctx.user.id, input.id);
         const org = await getOrganizationById(input.id);
         if (!org) throw new TRPCError({ code: "NOT_FOUND" });
-        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.id);
-        return { ...org, userRole: membership?.role };
+        const allMemberships = await getAllMembershipsByUserAndOrg(ctx.user.id, input.id);
+        // Return highest role: owner > department_lead > trainer
+        const roleOrder = ["owner", "department_lead", "trainer"];
+        const highestRole = roleOrder.find(r => allMemberships.some(m => m.role === r));
+        return { ...org, userRole: highestRole || allMemberships[0]?.role };
       }),
   }),
 
@@ -559,11 +580,12 @@ export const appRouter = router({
         let user = await getUserByEmail(input.userEmail);
         let generatedPassword: string | null = null;
 
-        if (user) {
-          // User existiert bereits - prüfe ob schon Mitglied
-          const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
-          if (existing) {
-            throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
+         if (user) {
+          // Prüfe ob bereits als department_lead in DIESER Abteilung
+          const allExisting = await getAllMembershipsByUserAndOrg(user.id, input.orgId);
+          const alreadyLeadInDept = allExisting.some(m => m.role === "department_lead" && m.departmentId === input.departmentId);
+          if (alreadyLeadInDept) {
+            throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Spartenleiter in dieser Abteilung" });
           }
         } else {
           // Neuen lokalen Benutzer erstellen
@@ -575,7 +597,6 @@ export const appRouter = router({
           user = await getUserByEmail(input.userEmail);
           if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Benutzer konnte nicht erstellt werden" });
         }
-
         const id = await createMembership({
           userId: user.id,
           orgId: input.orgId,
@@ -608,18 +629,18 @@ export const appRouter = router({
         userName: z.string().min(1),
         userEmail: z.string().email(),
       }))
-      .mutation(async ({ input, ctx }) => {
+       .mutation(async ({ input, ctx }) => {
         // Spartenleiter oder Owner dürfen Trainer anlegen
         await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
-
         // Prüfe ob E-Mail bereits existiert
         let user = await getUserByEmail(input.userEmail);
         let generatedPassword: string | null = null;
-
         if (user) {
-          const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
-          if (existing) {
-            throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
+          // Prüfe ob bereits als Trainer in DIESER Abteilung
+          const allExisting = await getAllMembershipsByUserAndOrg(user.id, input.orgId);
+          const alreadyTrainerInDept = allExisting.some(m => m.role === "trainer" && m.departmentId === input.departmentId);
+          if (alreadyTrainerInDept) {
+            throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Trainer in dieser Abteilung" });
           }
         } else {
           // Neuen lokalen Benutzer erstellen
@@ -777,7 +798,7 @@ export const appRouter = router({
         return getDefaultOrgLogo(input.orgId);
       }),
 
-    /** Logo hochladen (nur Owner) */
+    /** Logo hochladen (Owner oder Spartenleiter) */
     upload: protectedProcedure
       .input(z.object({
         orgId: z.number(),
@@ -787,7 +808,7 @@ export const appRouter = router({
         isDefault: z.boolean().default(false),
       }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwner(ctx.user.id, input.orgId);
+        await requireOrgOwnerOrDeptLead(ctx.user.id, input.orgId);
         // Decode base64 and upload to S3
         const buffer = Buffer.from(input.imageBase64, "base64");
         const key = `org-logos/${input.orgId}/${input.name.replace(/\s+/g, "-").toLowerCase()}`;
@@ -810,7 +831,7 @@ export const appRouter = router({
         return { id: logoId, imageUrl: url };
       }),
 
-    /** Logo aktualisieren (nur Owner) */
+    /** Logo aktualisieren (Owner oder Spartenleiter) */
     update: protectedProcedure
       .input(z.object({
         id: z.number(),
@@ -820,7 +841,7 @@ export const appRouter = router({
         sortOrder: z.number().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwner(ctx.user.id, input.orgId);
+        await requireOrgOwnerOrDeptLead(ctx.user.id, input.orgId);
         const { id, orgId, ...data } = input;
         if (data.isDefault) {
           await setDefaultOrgLogo(orgId, id);
@@ -830,11 +851,11 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    /** Logo l\u00f6schen (nur Owner) */
+      /** Logo löschen (Owner oder Spartenleiter) */
     delete: protectedProcedure
       .input(z.object({ id: z.number(), orgId: z.number() }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwner(ctx.user.id, input.orgId);
+        await requireOrgOwnerOrDeptLead(ctx.user.id, input.orgId);
         await deleteOrgLogo(input.id);
         return { success: true };
       }),

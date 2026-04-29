@@ -298,3 +298,25 @@
 - [x] CSV-Export-Button im Header der Benutzerverwaltung
 - [x] CSV-Generierung im Frontend aus vorhandenen Daten (Name, E-Mail, Login-Methode, Rollen, Organisation/Sparte, Letzter Login, Erstellt)
 - [x] CSV-Download als Datei mit deutschem Datumsformat und Semikolon-Trennung (Excel-kompatibel, UTF-8 BOM)
+
+## Bugfixes: Spartenleiter
+
+- [x] Bug: Spartenleiter kann keine Trainer einladen (requireDepartmentLead prüft jetzt alle Mitgliedschaften via getAllMembershipsByUserAndOrg)
+- [x] Bug: Konfigurator zeigt für Spartenleiter nicht richtig an (requireOrgMember gibt jetzt höchste Rolle zurück)
+- [x] Bug: Duplikat-Prüfung bei addTrainer/addDepartmentLead erlaubt jetzt User mit anderen Rollen in gleicher Org
+
+## Selbstregistrierung mit Rollen-Auswahl
+
+### Backend
+- [x] POST /api/auth/register - Selbstregistrierung mit Rollen-Auswahl
+- [x] Rolle "verein": Erstellt Organisation + User als Owner
+- [x] Rolle "sparte": Erstellt User als Spartenleiter (erstellt Org + Abteilung)
+- [x] Rolle "trainer": Erstellt User als Trainer einer Mannschaft (erstellt Org + Abteilung + Team)
+### Frontend
+- [x] Registrierungs-Seite unter /register mit Rollen-Auswahl (3 Karten: Verein, Sparte, Trainer)
+- [x] Formular je nach Rolle: Name, E-Mail, Passwort + rollenspezifische Felder (Vereinsname, Spartenname, Mannschaftsname)
+- [x] Link von Login-Seite zur Registrierung und umgekehrt
+
+### Berechtigungen
+- [x] Spartenleiter: Logo-Berechtigung hinzugefügt (requireOrgOwnerOrDeptLead für orgLogo.upload/update/delete)
+- [x] Trainer: Volle Konfigurator-Berechtigungen (alle Felder editierbar, nur Vereinsname/Logo gesperrt via isZoneLocked)

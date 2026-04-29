@@ -438,6 +438,15 @@ export async function getMembershipByUserAndOrg(userId: number, orgId: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getAllMembershipsByUserAndOrg(userId: number, orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db
+    .select()
+    .from(memberships)
+    .where(and(eq(memberships.userId, userId), eq(memberships.orgId, orgId)));
+}
+
 export async function listMembershipsByOrg(orgId: number) {
   const db = await getDb();
   if (!db) return [];
