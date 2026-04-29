@@ -599,3 +599,11 @@ export async function listAllUsers() {
   if (!db) return [];
   return db.select({ id: users.id, name: users.name, email: users.email, openId: users.openId }).from(users);
 }
+
+// ─── User Memberships (for auto-assignment in configurator) ──────────────
+
+export async function listMembershipsByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(memberships).where(eq(memberships.userId, userId));
+}

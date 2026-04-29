@@ -1948,3 +1948,21 @@
 [2026-04-29T08:24:30.796Z] 4:24:30 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T08:24:35.614Z] 4:24:35 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T08:26:13.861Z] 4:26:13 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-04-29T08:34:32.717Z] 4:34:32 AM [tsx] change in ./server/db.ts Restarting...
+[2026-04-29T08:34:34.236Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T08:34:34.499Z] Server running on http://localhost:3000/
+[2026-04-29T08:34:43.593Z] 4:34:43 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T08:34:45.035Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T08:34:45.284Z] Server running on http://localhost:3000/
+[2026-04-29T08:34:55.194Z] 4:34:55 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T08:34:56.771Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T08:34:57.041Z] Server running on http://localhost:3000/
+[2026-04-29T08:34:59.718Z] Dev server process group stopped
+[2026-04-29T08:34:59.780Z] Dev server exited with code -15
+[2026-04-29T08:35:02.755Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T08:35:04.570Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T08:35:04.853Z] Server running on http://localhost:3000/
+[2026-04-29T08:36:33.669Z] 4:36:33 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:36:57.486Z] 4:36:57 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:37:27.223Z] 4:37:27 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T08:37:43.576Z] 4:37:43 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css

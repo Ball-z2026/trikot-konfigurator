@@ -33,6 +33,7 @@ import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 // ─── Google Fonts for sport typography ────────────────────────────────────
 const FONT_OPTIONS = [
@@ -159,6 +160,29 @@ export default function CustomerConfigurator() {
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const [processedPartImages, setProcessedPartImages] = useState<Record<number, string>>({});
+
+  // ─── Auto-Zuweisung: Org-Logo & Abt.-Schrift ─────────────────────────
+  const { user, isAuthenticated } = useAuth();
+  const { data: myMemberships } = trpc.membership.mine.useQuery(undefined, { enabled: isAuthenticated });
+  // Erste Mitgliedschaft als Kontext (User kann mehreren Orgs angehören)
+  const primaryMembership = useMemo(() => myMemberships?.[0] ?? null, [myMemberships]);
+  const userOrgId = primaryMembership?.orgId ?? null;
+  const userDeptId = primaryMembership?.departmentId ?? null;
+
+  // Standard-Logo der Organisation laden
+  const { data: orgDefaultLogo } = trpc.orgLogo.getDefault.useQuery(
+    { orgId: userOrgId! },
+    { enabled: !!userOrgId }
+  );
+  // Standard-Schrift der Abteilung laden
+  const { data: deptDefaultFont } = trpc.deptFont.getDefault.useQuery(
+    { departmentId: userDeptId! },
+    { enabled: !!userDeptId }
+  );
+
+  const [autoLogoApplied, setAutoLogoApplied] = useState(false);
+  const [autoFontApplied, setAutoFontApplied] = useState(false);
+
   const canvasRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
   const parts: PartData[] = useMemo(() => (productData?.parts as PartData[]) || [], [productData?.parts]);
@@ -212,7 +236,55 @@ export default function CustomerConfigurator() {
   // Load Google Fonts used by zones
   useGoogleFonts(allZones);
 
-  // Auto-select first part
+  // ─── Auto-Zuweisung: Org-Logo in alle Logo-Zonen setzen (einmalig) ───
+  useEffect(() => {
+    if (autoLogoApplied || !orgDefaultLogo?.imageUrl || allZones.length === 0) return;
+    const logoZones = allZones.filter((z) => z.purpose === "logo");
+    if (logoZones.length === 0) return;
+    setZoneContents((prev) => {
+      const updated = { ...prev };
+      for (const zone of logoZones) {
+        if (!updated[zone.id]?.imageDataUrl) {
+          updated[zone.id] = {
+            ...updated[zone.id],
+            zoneId: zone.id,
+            imageDataUrl: orgDefaultLogo.imageUrl,
+          };
+        }
+      }
+      return updated;
+    });
+    setAutoLogoApplied(true);
+  }, [orgDefaultLogo, allZones, autoLogoApplied]);
+
+  // ─── Auto-Zuweisung: Abt.-Schrift in alle Text-Zonen setzen (einmalig) ───
+  useEffect(() => {
+    if (autoFontApplied || !deptDefaultFont?.fontFamily || allZones.length === 0) return;
+    const textZones = allZones.filter((z) => z.purpose !== "logo");
+    if (textZones.length === 0) return;
+    setZoneContents((prev) => {
+      const updated = { ...prev };
+      for (const zone of textZones) {
+        if (!updated[zone.id]?.fontFamily) {
+          updated[zone.id] = {
+            ...updated[zone.id],
+            zoneId: zone.id,
+            fontFamily: deptDefaultFont.fontFamily,
+          };
+        }
+      }
+      return updated;
+    });
+    setAutoFontApplied(true);
+    if (deptDefaultFont.fontFamily !== "Inter") {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${deptDefaultFont.fontFamily.replace(/ /g, "+")}:wght@400;700;900&display=swap`;
+      document.head.appendChild(link);
+    }
+  }, [deptDefaultFont, allZones, autoFontApplied]);
+
+  // Auto-select first partt
   useEffect(() => {
     if (hasParts && activePartId === null && parts.length > 0) {
       const sorted = [...parts].sort((a, b) => a.sortOrder - b.sortOrder);

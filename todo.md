@@ -113,27 +113,30 @@
 ### Rolle: Hauptverantwortlicher (Vereins-/Firmenadmin)
 - [x] Kann alles im Verein/Firma sehen und verwalten (Backend: requireOrgOwner Guard)
 - [x] Einziger der Vereins-/Firmenlogos hochladen darf (Backend: orgLogo.upload mit Owner-Check)
-- [ ] Logo-Varianten werden automatisch in allen Produkten bei Vereins-/Firmenlogo-Zonen gesetzt
+- [x] Logo-Varianten werden automatisch im Konfigurator bei Logo-Zonen gesetzt (basierend auf User-Mitgliedschaft)
 - [x] Kann Spartenleiter und Trainer einladen/zuweisen (Backend: membership.add mit Owner-Check)
 
 ### Rolle: Spartenleiter / Abteilungsleiter
 - [x] Sieht nur seine eigene Sparte/Abteilung (Backend: department.listByOrg filtert nach Rolle)
 - [x] Kann Schriftarten für seine Sparte freigeben (Backend: deptFont.approve mit Lead-Check)
-- [ ] Freigegebene Schriften werden automatisch in Produkten der Sparte verwendet
+- [x] Freigegebene Schriften werden automatisch im Konfigurator für Text-Zonen verwendet (basierend auf User-Mitgliedschaft)
 
 ### Frontend
 - [x] Organisations-Dashboard für Hauptverantwortlichen (Logo-Management, Mitglieder-Verwaltung)
 - [x] Abteilungs-Dashboard für Spartenleiter (Schriftarten-Freigabe, Mitglieder-Übersicht)
-- [ ] Auto-Zuweisung von Logos in Konfigurator-Zonen (Vereinslogo automatisch gesetzt)
-- [ ] Auto-Zuweisung von Schriften in Konfigurator (Abteilungs-Schrift automatisch verwendet)
+- [x] Auto-Zuweisung von Logos in Konfigurator-Zonen (Vereinslogo basierend auf erster Mitgliedschaft gesetzt)
+- [x] Auto-Zuweisung von Schriften in Konfigurator (Abteilungs-Schrift basierend auf erster Mitgliedschaft verwendet)
 
 ### Bug-Fixes & Verbesserungen
 - [x] org.listMine -> org.list Aufruf in OrgDashboard korrigiert
 - [x] department.getById Route im Backend hinzugefügt
 - [x] CustomerConfigurator: Infinite-Loop-Bug behoben (parts/allZones mit useMemo stabilisiert)
 - [x] Navigation: Organisation-Link in Home.tsx Header hinzugefügt
-- [x] Vitest: 30 Tests bestanden (auth, products, org-roles)
+- [x] Vitest: 36 Tests bestanden (auth, products, org-roles inkl. membership.mine, orgLogo.getDefault, deptFont.getDefault)
 
 ### Offene Punkte
-- [ ] OrgDashboard: Logo-Management im Browser verifizieren (Upload, Default-Setzen, Löschen)
+- [x] OrgDashboard: Organisation erstellt, Abteilung erstellt, Schrift freigegeben (im Browser verifiziert)
+- [ ] OrgDashboard: Logo-Upload, Default-Setzen und Löschen im Browser vollständig testen
 - [ ] Trainer-Rolle definieren und Ablauf festlegen (nächster Schritt mit Benutzer)
+- [ ] Produkte/Konfigurator mit orgId/departmentId verknüpfen statt nur erste Mitgliedschaft zu verwenden
+- [ ] Org-Auswahl im Konfigurator wenn User mehreren Organisationen angehört

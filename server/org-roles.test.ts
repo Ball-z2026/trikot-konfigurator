@@ -153,4 +153,46 @@ describe("Organization role-based access", () => {
       ).rejects.toThrow();
     });
   });
+
+  describe("membership.mine", () => {
+    it("requires authentication", async () => {
+      const caller = appRouter.createCaller(createPublicContext());
+      await expect(caller.membership.mine()).rejects.toThrow();
+    });
+
+    it("returns an array for authenticated users", async () => {
+      const caller = appRouter.createCaller(createUserContext());
+      const result = await caller.membership.mine();
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
+
+  describe("orgLogo.getDefault (public)", () => {
+    it("works without authentication", async () => {
+      const caller = appRouter.createCaller(createPublicContext());
+      const result = await caller.orgLogo.getDefault({ orgId: 99999 });
+      // Returns undefined/null for non-existent org
+      expect(result === null || result === undefined).toBe(true);
+    });
+
+    it("returns null for non-existent org", async () => {
+      const caller = appRouter.createCaller(createUserContext());
+      const result = await caller.orgLogo.getDefault({ orgId: 99999 });
+      expect(result === null || result === undefined).toBe(true);
+    });
+  });
+
+  describe("deptFont.getDefault (public)", () => {
+    it("works without authentication", async () => {
+      const caller = appRouter.createCaller(createPublicContext());
+      const result = await caller.deptFont.getDefault({ departmentId: 99999 });
+      expect(result === null || result === undefined).toBe(true);
+    });
+
+    it("returns null for non-existent department", async () => {
+      const caller = appRouter.createCaller(createUserContext());
+      const result = await caller.deptFont.getDefault({ departmentId: 99999 });
+      expect(result === null || result === undefined).toBe(true);
+    });
+  });
 });

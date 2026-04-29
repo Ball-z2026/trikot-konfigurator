@@ -50,6 +50,7 @@ import {
   setDefaultDepartmentFont,
   getUserByEmail,
   listAllUsers,
+  listMembershipsByUser,
 } from "./db";
 import { storagePut } from "./storage";
 
@@ -498,6 +499,11 @@ export const appRouter = router({
 
   // ─── Memberships (Mitgliedschaften) ───────────────────────────────────────
   membership: router({
+    /** Alle Mitgliedschaften des aktuellen Benutzers (für Auto-Zuweisung im Konfigurator) */
+    mine: protectedProcedure.query(async ({ ctx }) => {
+      return listMembershipsByUser(ctx.user.id);
+    }),
+
     /** Alle Mitglieder einer Organisation */
     listByOrg: protectedProcedure
       .input(z.object({ orgId: z.number() }))
