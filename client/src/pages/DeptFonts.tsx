@@ -34,6 +34,7 @@ import {
   Trash2,
   Type,
   Users,
+  UserPlus,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "wouter";
@@ -69,6 +70,234 @@ function roleLabel(role: string) {
     default:
       return role;
   }
+}
+
+// ─── Members Tab Component (Trainer-Einladung durch Spartenleiter) ───
+function MembersTab({
+  orgId,
+  deptId,
+  members,
+  canManage,
+  isOwner,
+}: {
+  orgId: number;
+  deptId: number;
+  members: any[] | undefined;
+  canManage: boolean;
+  isOwner: boolean;
+}) {
+  const utils = trpc.useUtils();
+  const [showInvite, setShowInvite] = useState(false);
+  const [trainerEmail, setTrainerEmail] = useState("");
+
+  const addTrainer = trpc.membership.addTrainer.useMutation({
+    onSuccess: (data) => {
+      utils.membership.listByDepartment.invalidate({ departmentId: deptId, orgId });
+      setShowInvite(false);
+      setTrainerEmail("");
+      toast.success(`${data.userName || data.userEmail} als Trainer eingeladen`);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const removeMember = trpc.membership.remove.useMutation({
+    onSuccess: () => {
+      utils.membership.listByDepartment.invalidate({ departmentId: deptId, orgId });
+      toast.success("Mitglied entfernt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const trainers = members?.filter((m) => m.role === "trainer") || [];
+  const leads = members?.filter((m) => m.role === "department_lead") || [];
+  const owners = members?.filter((m) => m.role === "owner") || [];
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold">Abteilungsmitglieder</h2>
+          <p className="text-sm text-muted-foreground">
+            Mitglieder, die dieser Abteilung zugeordnet sind
+          </p>
+        </div>
+        {canManage && (
+          <Dialog open={showInvite} onOpenChange={setShowInvite}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Trainer einladen
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Trainer einladen</DialogTitle>
+                <DialogDescription>
+                  Laden Sie einen Trainer für diese Abteilung ein. Der Trainer kann
+                  anschließend Mannschaften anlegen und Spieler verwalten.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground mb-1">Berechtigungen des Trainers:</p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    <li>Mannschaften in dieser Abteilung anlegen</li>
+                    <li>Spieler zur Mannschaft hinzufügen</li>
+                    <li>Trikot-Konfigurationen erstellen</li>
+                    <li>Vereinslogo und Schriften werden automatisch zugewiesen</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <Label>E-Mail-Adresse des Trainers</Label>
+                  <Input
+                    type="email"
+                    value={trainerEmail}
+                    onChange={(e) => setTrainerEmail(e.target.value)}
+                    placeholder="trainer@beispiel.de"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Der Benutzer muss sich vorher registriert haben.
+                  </p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowInvite(false)}>Abbrechen</Button>
+                <Button
+                  onClick={() => addTrainer.mutate({
+                    orgId,
+                    departmentId: deptId,
+                    userEmail: trainerEmail,
+                  })}
+                  disabled={!trainerEmail.trim() || addTrainer.isPending}
+                >
+                  {addTrainer.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Einladen
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      {/* Einladungskette-Info */}
+      {canManage && (
+        <div className="rounded-lg bg-muted/30 border p-4 mb-4">
+          <p className="text-sm font-medium mb-1">Einladungskette</p>
+          <p className="text-xs text-muted-foreground">
+            Hauptverantwortlicher → Spartenleiter → <strong>Trainer</strong> → Mannschaft/Spieler
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Als Spartenleiter können Sie Trainer für Ihre Abteilung einladen und entfernen.
+          </p>
+        </div>
+      )}
+
+      {!members || members.length === 0 ? (
+        <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed">
+          <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">
+            Noch keine Mitglieder in dieser Abteilung
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Laden Sie Trainer ein, damit diese Mannschaften anlegen können.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Spartenleiter */}
+          {leads.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Spartenleiter</h3>
+              <div className="space-y-2">
+                {leads.map((m) => (
+                  <Card key={m.id}>
+                    <CardContent className="flex items-center justify-between py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary">
+                            {(m.userName || m.userEmail || "?").charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{m.userName || m.userEmail}</p>
+                          <Badge className="text-xs mt-0.5">{roleLabel(m.role)}</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Trainer */}
+          {trainers.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Trainer</h3>
+              <div className="space-y-2">
+                {trainers.map((m) => (
+                  <Card key={m.id}>
+                    <CardContent className="flex items-center justify-between py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-blue-600">
+                            {(m.userName || m.userEmail || "?").charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{m.userName || m.userEmail}</p>
+                          <Badge variant="secondary" className="text-xs mt-0.5">{roleLabel(m.role)}</Badge>
+                        </div>
+                      </div>
+                      {canManage && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => {
+                            if (confirm(`Trainer "${m.userName || m.userEmail}" wirklich entfernen?`))
+                              removeMember.mutate({ id: m.id, orgId });
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sonstige (Owner etc.) */}
+          {owners.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Hauptverantwortliche</h3>
+              <div className="space-y-2">
+                {owners.map((m) => (
+                  <Card key={m.id}>
+                    <CardContent className="flex items-center justify-between py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-amber-500/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-amber-600">
+                            {(m.userName || m.userEmail || "?").charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{m.userName || m.userEmail}</p>
+                          <Badge variant="default" className="text-xs mt-0.5">{roleLabel(m.role)}</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
 }
 
 export default function DeptFonts() {
@@ -548,66 +777,13 @@ export default function DeptFonts() {
 
           {/* ─── Members Tab ─── */}
           <TabsContent value="members">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-bold">Abteilungsmitglieder</h2>
-                <p className="text-sm text-muted-foreground">
-                  Mitglieder, die dieser Abteilung zugeordnet sind
-                </p>
-              </div>
-            </div>
-
-            {!members || members.length === 0 ? (
-              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed">
-                <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">
-                  Noch keine Mitglieder in dieser Abteilung
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Mitglieder können vom Hauptverantwortlichen in der
-                  Organisationsübersicht zugewiesen werden.
-                </p>
-                {isOwner && (
-                  <Link href={`/org/${orgId}`}>
-                    <Button className="mt-4" size="sm" variant="outline">
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      Zur Organisationsübersicht
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {members.map((m) => (
-                  <Card key={m.id}>
-                    <CardContent className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-sm font-medium text-primary">
-                            {(m.userName || m.userEmail || "?")
-                              .charAt(0)
-                              .toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {m.userName || m.userEmail}
-                          </p>
-                          <Badge
-                            variant={
-                              m.role === "owner" ? "default" : "secondary"
-                            }
-                            className="text-xs mt-0.5"
-                          >
-                            {roleLabel(m.role)}
-                          </Badge>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <MembersTab
+              orgId={orgId}
+              deptId={deptId}
+              members={members}
+              canManage={canManageFonts}
+              isOwner={isOwner}
+            />
           </TabsContent>
         </Tabs>
       </div>

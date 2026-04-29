@@ -19,6 +19,10 @@ import {
   InsertMembership,
   InsertOrgLogo,
   InsertDepartmentFont,
+  teams,
+  players,
+  InsertTeam,
+  InsertPlayer,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -606,4 +610,106 @@ export async function listMembershipsByUser(userId: number) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(memberships).where(eq(memberships.userId, userId));
+}
+
+// ─── Teams (Mannschaften) ──────────────────────────────────────────────────
+
+export async function createTeam(data: Omit<InsertTeam, "id" | "createdAt" | "updatedAt">) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(teams).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getTeamById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(teams).where(eq(teams.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function listTeamsByDepartment(departmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(teams).where(eq(teams.departmentId, departmentId));
+}
+
+export async function listTeamsByTrainer(trainerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(teams).where(eq(teams.trainerId, trainerId));
+}
+
+export async function listTeamsByTrainerAndOrg(trainerId: number, orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(teams).where(and(eq(teams.trainerId, trainerId), eq(teams.orgId, orgId)));
+}
+
+export async function updateTeam(id: number, data: Partial<Omit<InsertTeam, "id" | "createdAt" | "updatedAt">>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(teams).set(data).where(eq(teams.id, id));
+}
+
+export async function deleteTeam(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  // Delete all players in the team first
+  await db.delete(players).where(eq(players.teamId, id));
+  await db.delete(teams).where(eq(teams.id, id));
+}
+
+// ─── Players (Spieler) ──────────────────────────────────────────────────────
+
+export async function createPlayer(data: Omit<InsertPlayer, "id" | "createdAt" | "updatedAt">) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(players).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getPlayerById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(players).where(eq(players.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function listPlayersByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(players).where(eq(players.teamId, teamId));
+}
+
+export async function updatePlayer(id: number, data: Partial<Omit<InsertPlayer, "id" | "createdAt" | "updatedAt">>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(players).set(data).where(eq(players.id, id));
+}
+
+export async function deletePlayer(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(players).where(eq(players.id, id));
+}
+
+export async function bulkCreatePlayers(teamId: number, playersList: Array<{ name: string; number?: string; position?: string }>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  if (playersList.length === 0) return [];
+  const values = playersList.map((p) => ({
+    teamId,
+    name: p.name,
+    number: p.number || null,
+    position: p.position || null,
+  }));
+  await db.insert(players).values(values);
+  return listPlayersByTeam(teamId);
+}
+
+export async function deleteAllPlayersByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(players).where(eq(players.teamId, teamId));
 }

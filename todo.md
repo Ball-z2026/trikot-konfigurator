@@ -132,11 +132,45 @@
 - [x] department.getById Route im Backend hinzugefügt
 - [x] CustomerConfigurator: Infinite-Loop-Bug behoben (parts/allZones mit useMemo stabilisiert)
 - [x] Navigation: Organisation-Link in Home.tsx Header hinzugefügt
-- [x] Vitest: 36 Tests bestanden (auth, products, org-roles inkl. membership.mine, orgLogo.getDefault, deptFont.getDefault)
+- [x] Vitest: 65 Tests bestanden (auth, products, org-roles inkl. membership, team, player CRUD, Trainer-Verbote, Einladungskette)
 
 ### Offene Punkte
 - [x] OrgDashboard: Organisation erstellt, Abteilung erstellt, Schrift freigegeben (im Browser verifiziert)
 - [ ] OrgDashboard: Logo-Upload, Default-Setzen und Löschen im Browser vollständig testen
-- [ ] Trainer-Rolle definieren und Ablauf festlegen (nächster Schritt mit Benutzer)
+- [x] Trainer-Rolle definiert und implementiert (Mannschaften, Spieler, Einladungskette)
+
+## Trainer/Betreuer-Rolle & Mannschaften
+
+### DB-Schema
+- [x] Mannschaften-Tabelle (teams): id, departmentId, orgId, name, trainerId, createdAt
+- [x] Spieler-Tabelle (players): id, teamId, name, number, position, createdAt
+
+### Einladungskette
+- [x] Owner legt Spartenleiter an (membership.add nur für department_lead durch Owner)
+- [x] Spartenleiter legt Trainer an (membership.addTrainer durch department_lead)
+- [x] Jede Rolle kann nur die nächste Stufe darunter anlegen
+- [x] Zugangslink wird per E-Mail/Benachrichtigung gesendet (notifyOwner bei Einladung)
+- [x] OrgDashboard: Spartenleiter-Einladung durch Owner (mit Abteilungs-Auswahl)
+- [x] DeptFonts: Trainer-Einladung durch Spartenleiter (mit Berechtigungs-Info)
+
+### Backend
+- [x] DB-Helpers für Mannschaften (CRUD) und Spieler (CRUD, CSV-Import)
+- [x] tRPC-Router: team.create, team.list, team.getById, team.update, team.delete
+- [x] tRPC-Router: player.create, player.list, player.update, player.delete, player.importCsv
+- [x] Berechtigungsprüfung: Trainer darf nur eigene Mannschaften sehen/bearbeiten
+- [x] Berechtigungsprüfung: Trainer kann KEINE Logos hochladen und KEINE Schriften freigeben (orgLogo.upload/deptFont.approve prüfen Owner/Lead)
+- [x] Trainer sieht automatisch Vereinslogo und freigegebene Schriften seiner Abteilung (Auto-Zuweisung im Konfigurator)
+
+### Frontend
+- [x] Trainer-Dashboard: Übersicht der eigenen Mannschaft(en)
+- [x] Mannschaft anlegen/bearbeiten/löschen
+- [x] Spieler hinzufügen (manuell + CSV-Import)
+- [x] Spielerliste anzeigen und bearbeiten
+- [x] Direktlink zum Konfigurator mit Mannschaftskontext
+- [x] Navigation: Trainer wird zu seinem Dashboard geleitet (TrainerQuickLink in Home.tsx)
+- [x] Tests für Trainer-Berechtigungen und Mannschafts-CRUD (65 Tests bestanden)
+- [x] Browser-Test: Spieler bearbeiten (Name ändern) funktioniert
+- [x] Browser-Test: CSV-Import (4 Spieler importiert) funktioniert
+- [x] Browser-Test: Spieler löschen (mit Confirm-Dialog) funktioniert
 - [ ] Produkte/Konfigurator mit orgId/departmentId verknüpfen statt nur erste Mitgliedschaft zu verwenden
 - [ ] Org-Auswahl im Konfigurator wenn User mehreren Organisationen angehört

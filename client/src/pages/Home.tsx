@@ -3,9 +3,37 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Shirt, Shield, Settings, ArrowRight, LogIn, LogOut, Menu, Building2 } from "lucide-react";
+import { Shirt, Shield, Settings, ArrowRight, LogIn, LogOut, Menu, Building2, Users } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+
+/** Trainer-Schnelllink: Zeigt den Link zum Trainer-Dashboard wenn der User Trainer ist */
+function TrainerQuickLink() {
+  const { data: memberships } = trpc.membership.mine.useQuery();
+  const trainerMembership = memberships?.find((m) => m.role === "trainer");
+  if (!trainerMembership) return null;
+  return (
+    <Link href={`/trainer/${trainerMembership.orgId}/${trainerMembership.departmentId}`}>
+      <Button variant="outline" size="sm">
+        <Users className="w-4 h-4 mr-2" />
+        Meine Mannschaft
+      </Button>
+    </Link>
+  );
+}
+
+function TrainerQuickLinkMobile({ onClose }: { onClose: () => void }) {
+  const { data: memberships } = trpc.membership.mine.useQuery();
+  const trainerMembership = memberships?.find((m) => m.role === "trainer");
+  if (!trainerMembership) return null;
+  return (
+    <Link href={`/trainer/${trainerMembership.orgId}/${trainerMembership.departmentId}`}>
+      <Button variant="outline" size="sm" className="w-full justify-start" onClick={onClose}>
+        <Users className="w-4 h-4 mr-2" />Meine Mannschaft
+      </Button>
+    </Link>
+  );
+}
 
 export default function Home() {
   const { user, isAuthenticated, loading, logout } = useAuth();
@@ -34,12 +62,15 @@ export default function Home() {
           {/* Desktop Nav */}
           <div className="hidden sm:flex items-center gap-3">
             {isAuthenticated && (
-              <Link href="/org">
-                <Button variant="outline" size="sm">
-                  <Building2 className="w-4 h-4 mr-2" />
-                  Organisation
-                </Button>
-              </Link>
+              <>
+                <Link href="/org">
+                  <Button variant="outline" size="sm">
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Organisation
+                  </Button>
+                </Link>
+                <TrainerQuickLink />
+              </>
             )}
             {isAdmin && (
               <Link href="/admin/products">
@@ -79,11 +110,14 @@ export default function Home() {
         {mobileMenuOpen && (
           <div className="sm:hidden border-t bg-card px-4 py-3 space-y-2">
             {isAuthenticated && (
-              <Link href="/org">
-                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setMobileMenuOpen(false)}>
-                  <Building2 className="w-4 h-4 mr-2" />Organisation
-                </Button>
-              </Link>
+              <>
+                <Link href="/org">
+                  <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setMobileMenuOpen(false)}>
+                    <Building2 className="w-4 h-4 mr-2" />Organisation
+                  </Button>
+                </Link>
+                <TrainerQuickLinkMobile onClose={() => setMobileMenuOpen(false)} />
+              </>
             )}
             {isAdmin && (
               <Link href="/admin/products">

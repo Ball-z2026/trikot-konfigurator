@@ -10,6 +10,7 @@ import AdminProductEditor from "./pages/AdminProductEditor";
 import CustomerConfigurator from "./pages/CustomerConfigurator";
 import OrgDashboard from "./pages/OrgDashboard";
 import DeptFonts from "./pages/DeptFonts";
+import TrainerDashboard from "./pages/TrainerDashboard";
 
 function Router() {
   return (
@@ -21,6 +22,8 @@ function Router() {
       <Route path="/org" component={OrgDashboard} />
       <Route path="/org/:id" component={OrgDashboard} />
       <Route path="/org/:id/dept/:deptId" component={DeptFonts} />
+      <Route path="/trainer/:id/:deptId" component={TrainerDashboard} />
+      <Route path="/trainer/:id/:deptId/team/:teamId" component={TrainerDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

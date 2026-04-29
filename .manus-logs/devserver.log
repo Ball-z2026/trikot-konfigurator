@@ -1966,3 +1966,95 @@
 [2026-04-29T08:36:57.486Z] 4:36:57 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T08:37:27.223Z] 4:37:27 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-04-29T08:37:43.576Z] 4:37:43 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-29T12:15:38.459Z] 8:15:38 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-29T12:15:40.129Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T12:15:40.416Z] Server running on http://localhost:3000/
+[2026-04-29T12:16:41.137Z] 8:16:41 AM [tsx] change in ./server/db.ts Restarting...
+[2026-04-29T12:16:42.866Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T12:16:43.182Z] Server running on http://localhost:3000/
+[2026-04-29T12:16:57.466Z] 8:16:57 AM [tsx] change in ./server/db.ts Restarting...
+[2026-04-29T12:16:59.093Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T12:16:59.380Z] Server running on http://localhost:3000/
+[2026-04-29T12:17:46.306Z] 8:17:46 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T12:17:48.045Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T12:17:48.432Z] Server running on http://localhost:3000/
+[2026-04-29T12:17:52.598Z] Dev server process group stopped
+[2026-04-29T12:17:52.688Z] Dev server exited with code -15
+[2026-04-29T12:17:55.636Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T12:17:57.418Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T12:17:57.691Z] Server running on http://localhost:3000/
+[2026-04-29T12:20:29.434Z] 8:20:29 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-29T12:20:29.796Z] c
+[2026-04-29T12:20:29.797Z] node:internal/modules/run_main:122
+[2026-04-29T12:20:29.798Z] triggerUncaughtException(
+[2026-04-29T12:20:29.798Z] ^
+[2026-04-29T12:20:29.799Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-29T12:20:29.799Z] /home/ubuntu/trikot-konfigurator/server/routers.ts:714:17: ERROR: Expected ";" but found "("
+[2026-04-29T12:20:29.799Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-29T12:20:29.800Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-29T12:20:29.800Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-29T12:20:29.800Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-29T12:20:29.801Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-29T12:20:29.801Z] at Socket.emit (node:events:524:28)
+[2026-04-29T12:20:29.801Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-29T12:20:29.802Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-29T12:20:29.802Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-29T12:20:29.802Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-29T12:20:29.802Z] 
+[2026-04-29T12:20:29.803Z] Node.js v22.13.0
+[2026-04-29T12:20:35.817Z] Dev server process group stopped
+[2026-04-29T12:20:35.843Z] Dev server exited with code -15
+[2026-04-29T12:20:38.865Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T12:20:39.370Z] 
+[2026-04-29T12:20:39.372Z] node:internal/modules/run_main:122
+[2026-04-29T12:20:39.372Z] triggerUncaughtException(
+[2026-04-29T12:20:39.373Z] ^
+[2026-04-29T12:20:39.373Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-29T12:20:39.374Z] /home/ubuntu/trikot-konfigurator/server/routers.ts:714:17: ERROR: Expected ";" but found "("
+[2026-04-29T12:20:39.374Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-29T12:20:39.375Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-29T12:20:39.375Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-29T12:20:39.376Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-29T12:20:39.376Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-29T12:20:39.376Z] at Socket.emit (node:events:524:28)
+[2026-04-29T12:20:39.377Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-29T12:20:39.377Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-29T12:20:39.378Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-29T12:20:39.378Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-29T12:20:39.379Z] 
+[2026-04-29T12:20:39.379Z] Node.js v22.13.0
+[2026-04-29T12:21:13.064Z] Dev server process group stopped
+[2026-04-29T12:21:13.071Z] Dev server exited with code -15
+[2026-04-29T12:21:16.109Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T12:21:16.660Z] 
+[2026-04-29T12:21:16.662Z] node:internal/modules/run_main:122
+[2026-04-29T12:21:16.663Z] triggerUncaughtException(
+[2026-04-29T12:21:16.663Z] ^
+[2026-04-29T12:21:16.664Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-29T12:21:16.664Z] /home/ubuntu/trikot-konfigurator/server/routers.ts:714:17: ERROR: Expected ";" but found "("
+[2026-04-29T12:21:16.665Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-29T12:21:16.665Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-29T12:21:16.666Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-29T12:21:16.666Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-29T12:21:16.666Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-29T12:21:16.667Z] at Socket.emit (node:events:524:28)
+[2026-04-29T12:21:16.667Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-29T12:21:16.668Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-29T12:21:16.668Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-29T12:21:16.668Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-29T12:21:16.668Z] 
+[2026-04-29T12:21:16.669Z] Node.js v22.13.0
+[2026-04-29T12:21:43.600Z] 8:21:43 AM [tsx] change in ./server/routers.ts Rerunning...
+[2026-04-29T12:21:45.279Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T12:21:45.568Z] Server running on http://localhost:3000/
+[2026-04-29T12:21:51.094Z] Dev server process group stopped
+[2026-04-29T12:21:51.175Z] Dev server exited with code -15
+[2026-04-29T12:21:54.130Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T12:21:55.946Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T12:21:56.235Z] Server running on http://localhost:3000/
+[2026-04-29T12:22:58.553Z] 8:22:58 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-04-29T12:23:25.289Z] 8:23:25 AM [vite] (client) hmr update /src/pages/DeptFonts.tsx, /src/index.css
+[2026-04-29T12:23:59.473Z] 8:23:59 AM [vite] (client) hmr update /src/pages/DeptFonts.tsx, /src/index.css
+[2026-04-29T12:26:01.607Z] 8:26:01 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-29T12:26:41.557Z] 8:26:41 AM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-04-29T12:36:08.639Z] 8:36:08 AM [vite] (client) hmr update /src/index.css, /src/pages/TrainerDashboard.tsx

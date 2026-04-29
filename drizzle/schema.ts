@@ -212,3 +212,37 @@ export const productZones = mysqlTable("product_zones", {
 
 export type ProductZone = typeof productZones.$inferSelect;
 export type InsertProductZone = typeof productZones.$inferInsert;
+
+/**
+ * Teams – Mannschaften innerhalb einer Abteilung.
+ * Ein Trainer/Betreuer kann eine oder mehrere Mannschaften anlegen.
+ */
+export const teams = mysqlTable("teams", {
+  id: int("id").autoincrement().primaryKey(),
+  departmentId: int("departmentId").notNull(),
+  orgId: int("orgId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  /** Trainer/Betreuer der diese Mannschaft verwaltet */
+  trainerId: int("trainerId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Team = typeof teams.$inferSelect;
+export type InsertTeam = typeof teams.$inferInsert;
+
+/**
+ * Players – Spieler innerhalb einer Mannschaft.
+ */
+export const players = mysqlTable("players", {
+  id: int("id").autoincrement().primaryKey(),
+  teamId: int("teamId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  number: varchar("number", { length: 10 }),
+  position: varchar("position", { length: 100 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Player = typeof players.$inferSelect;
+export type InsertPlayer = typeof players.$inferInsert;

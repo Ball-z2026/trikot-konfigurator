@@ -51,6 +51,20 @@ import {
   getUserByEmail,
   listAllUsers,
   listMembershipsByUser,
+  createTeam,
+  getTeamById,
+  listTeamsByDepartment,
+  listTeamsByTrainer,
+  listTeamsByTrainerAndOrg,
+  updateTeam,
+  deleteTeam,
+  createPlayer,
+  getPlayerById,
+  listPlayersByTeam,
+  updatePlayer,
+  deletePlayer,
+  bulkCreatePlayers,
+  deleteAllPlayersByTeam,
 } from "./db";
 import { storagePut } from "./storage";
 
@@ -520,7 +534,92 @@ export const appRouter = router({
         return listMembershipsByDepartment(input.departmentId);
       }),
 
-    /** Mitglied hinzuf\u00fcgen (nur Owner) */
+       /**
+     * Spartenleiter einladen (nur Owner/Hauptverantwortlicher)
+     * Der Owner legt Spartenleiter an und weist sie einer Abteilung zu.
+     */
+    addDepartmentLead: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        userEmail: z.string().email(),
+        departmentId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await requireOrgOwner(ctx.user.id, input.orgId);
+        const user = await getUserByEmail(input.userEmail);
+        if (!user) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer mit dieser E-Mail nicht gefunden. Der Benutzer muss sich zuerst registrieren." });
+        }
+        const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
+        if (existing) {
+          throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
+        }
+        const id = await createMembership({
+          userId: user.id,
+          orgId: input.orgId,
+          role: "department_lead",
+          departmentId: input.departmentId,
+        });
+        // Benachrichtigung an den Owner über die Einladung
+        try {
+          const { notifyOwner } = await import("./_core/notification");
+          const org = await getOrganizationById(input.orgId);
+          const dept = await getDepartmentById(input.departmentId);
+          await notifyOwner({
+            title: `Neuer Spartenleiter eingeladen`,
+            content: `${user.name || user.email} wurde als Spartenleiter für die Abteilung "${dept?.name}" in "${org?.name}" eingeladen.`,
+          });
+        } catch (e) { /* Notification ist optional */ }
+        return { id, userName: user.name, userEmail: user.email };
+      }),
+
+    /**
+     * Trainer einladen (Spartenleiter oder Owner)
+     * Der Spartenleiter legt Trainer an und weist sie seiner Abteilung zu.
+     */
+    addTrainer: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        departmentId: z.number(),
+        userEmail: z.string().email(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Spartenleiter oder Owner dürfen Trainer anlegen
+        await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
+        const user = await getUserByEmail(input.userEmail);
+        if (!user) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer mit dieser E-Mail nicht gefunden. Der Benutzer muss sich zuerst registrieren." });
+        }
+        const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
+        if (existing) {
+          throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
+        }
+        const id = await createMembership({
+          userId: user.id,
+          orgId: input.orgId,
+          role: "trainer",
+          departmentId: input.departmentId,
+        });
+        // Benachrichtigung
+        try {
+          const { notifyOwner } = await import("./_core/notification");
+          const org = await getOrganizationById(input.orgId);
+          const dept = await getDepartmentById(input.departmentId);
+          await notifyOwner({
+            title: `Neuer Trainer eingeladen`,
+            content: `${user.name || user.email} wurde als Trainer für die Abteilung "${dept?.name}" in "${org?.name}" eingeladen.`,
+          });
+        } catch (e) { /* Notification ist optional */ }
+        return { id, userName: user.name, userEmail: user.email };
+      }),
+
+    /**
+     * Allgemeine Mitglied-hinzufügen-Route (nur Owner) – für Rückwärtskompatibilität
+     * Erzwingt die Einladungskette:
+     * - Owner darf owner + department_lead anlegen
+     * - department_lead darf nur trainer anlegen (nutzt addTrainer)
+     * - trainer darf niemanden anlegen
+     */
     add: protectedProcedure
       .input(z.object({
         orgId: z.number(),
@@ -529,12 +628,29 @@ export const appRouter = router({
         departmentId: z.number().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwner(ctx.user.id, input.orgId);
+        const callerMembership = await requireOrgMember(ctx.user.id, input.orgId);
+        
+        // Einladungskette prüfen
+        if (callerMembership.role === "trainer") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Trainer dürfen keine Mitglieder einladen" });
+        }
+        if (callerMembership.role === "department_lead") {
+          if (input.role !== "trainer") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Spartenleiter dürfen nur Trainer einladen" });
+          }
+          if (!input.departmentId || callerMembership.departmentId !== input.departmentId) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Spartenleiter dürfen nur Trainer in ihrer eigenen Abteilung einladen" });
+          }
+        }
+        if (callerMembership.role === "owner") {
+          // Owner darf alles außer Trainer direkt (dafür gibt es addTrainer)
+          // Aber für Kompatibilität erlauben wir es
+        }
+
         const user = await getUserByEmail(input.userEmail);
         if (!user) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer mit dieser E-Mail nicht gefunden. Der Benutzer muss sich zuerst registrieren." });
         }
-        // Pr\u00fcfen ob bereits Mitglied
         const existing = await getMembershipByUserAndOrg(user.id, input.orgId);
         if (existing) {
           throw new TRPCError({ code: "CONFLICT", message: "Benutzer ist bereits Mitglied dieser Organisation" });
@@ -545,7 +661,17 @@ export const appRouter = router({
           role: input.role,
           departmentId: input.departmentId || null,
         });
-        return { id };
+        // Benachrichtigung
+        try {
+          const { notifyOwner } = await import("./_core/notification");
+          const org = await getOrganizationById(input.orgId);
+          const roleLabel = input.role === "owner" ? "Hauptverantwortlicher" : input.role === "department_lead" ? "Spartenleiter" : "Trainer";
+          await notifyOwner({
+            title: `Neues Mitglied eingeladen`,
+            content: `${user.name || user.email} wurde als ${roleLabel} in "${org?.name}" eingeladen.`,
+          });
+        } catch (e) { /* Notification ist optional */ }
+        return { id, userName: user.name, userEmail: user.email };
       }),
 
     /** Mitgliedschaft aktualisieren (nur Owner) */
@@ -563,11 +689,22 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    /** Mitglied entfernen (nur Owner) */
+    /** Mitglied entfernen (Owner oder Spartenleiter für eigene Trainer) */
     remove: protectedProcedure
       .input(z.object({ id: z.number(), orgId: z.number() }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwner(ctx.user.id, input.orgId);
+        const callerMembership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (callerMembership.role === "trainer") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Trainer dürfen keine Mitglieder entfernen" });
+        }
+        // Spartenleiter dürfen nur Trainer in ihrer Abteilung entfernen
+        if (callerMembership.role === "department_lead") {
+          const allMembers = await listMembershipsByOrg(input.orgId);
+          const target = allMembers.find(m => m.id === input.id);
+          if (!target || target.role !== "trainer" || target.departmentId !== callerMembership.departmentId) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Spartenleiter dürfen nur Trainer in ihrer eigenen Abteilung entfernen" });
+          }
+        }
         await deleteMembership(input.id);
         return { success: true };
       }),
@@ -722,6 +859,216 @@ export const appRouter = router({
         await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
         await deleteDepartmentFont(input.id);
         return { success: true };
+      }),
+  }),
+
+  // ─── Teams (Mannschaften) ──────────────────────────────────────────────────
+  team: router({
+    /** Mannschaft erstellen (Trainer, Spartenleiter, Owner) */
+    create: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        departmentId: z.number(),
+        name: z.string().min(1),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Trainer dürfen in ihrer eigenen Abteilung Mannschaften erstellen
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && membership.departmentId !== input.departmentId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Trainer dürfen nur in ihrer eigenen Abteilung Mannschaften anlegen" });
+        }
+        const id = await createTeam({
+          orgId: input.orgId,
+          departmentId: input.departmentId,
+          name: input.name,
+          trainerId: ctx.user.id,
+        });
+        return { id };
+      }),
+
+    /** Mannschaft nach ID */
+    getById: protectedProcedure
+      .input(z.object({ id: z.number(), orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const team = await getTeamById(input.id);
+        if (!team || team.orgId !== input.orgId) return null;
+        // Trainer sehen nur ihre eigenen Mannschaften
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Ihre eigenen Mannschaften einsehen" });
+        }
+        const playersList = await listPlayersByTeam(team.id);
+        return { ...team, players: playersList };
+      }),
+
+    /** Mannschaften einer Abteilung (Owner/Spartenleiter sehen alle, Trainer nur eigene) */
+    listByDepartment: protectedProcedure
+      .input(z.object({ departmentId: z.number(), orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer") {
+          // Trainer sehen nur ihre eigenen Mannschaften in der Abteilung
+          const allTeams = await listTeamsByDepartment(input.departmentId);
+          return allTeams.filter(t => t.trainerId === ctx.user.id);
+        }
+        return listTeamsByDepartment(input.departmentId);
+      }),
+
+    /** Alle Mannschaften des aktuellen Trainers */
+    mine: protectedProcedure.query(async ({ ctx }) => {
+      return listTeamsByTrainer(ctx.user.id);
+    }),
+
+    /** Mannschaft aktualisieren (nur eigener Trainer, Spartenleiter, Owner) */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        orgId: z.number(),
+        name: z.string().min(1).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const team = await getTeamById(input.id);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Ihre eigenen Mannschaften bearbeiten" });
+        }
+        const { id, orgId, ...data } = input;
+        await updateTeam(id, data);
+        return { success: true };
+      }),
+
+    /** Mannschaft löschen (nur eigener Trainer, Spartenleiter, Owner) */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number(), orgId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const team = await getTeamById(input.id);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Ihre eigenen Mannschaften löschen" });
+        }
+        await deleteTeam(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ─── Players (Spieler) ───────────────────────────────────────────────────
+  player: router({
+    /** Spieler einer Mannschaft */
+    listByTeam: protectedProcedure
+      .input(z.object({ teamId: z.number(), orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Spieler Ihrer eigenen Mannschaft einsehen" });
+        }
+        return listPlayersByTeam(input.teamId);
+      }),
+
+    /** Spieler hinzufügen */
+    create: protectedProcedure
+      .input(z.object({
+        teamId: z.number(),
+        orgId: z.number(),
+        name: z.string().min(1),
+        number: z.string().optional(),
+        position: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Spieler zu Ihrer eigenen Mannschaft hinzufügen" });
+        }
+        const id = await createPlayer({
+          teamId: input.teamId,
+          name: input.name,
+          number: input.number || null,
+          position: input.position || null,
+        });
+        return { id };
+      }),
+
+    /** Spieler aktualisieren */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        teamId: z.number(),
+        orgId: z.number(),
+        name: z.string().min(1).optional(),
+        number: z.string().nullable().optional(),
+        position: z.string().nullable().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Spieler Ihrer eigenen Mannschaft bearbeiten" });
+        }
+        const { id, teamId, orgId, ...data } = input;
+        await updatePlayer(id, data);
+        return { success: true };
+      }),
+
+    /** Spieler löschen */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number(), teamId: z.number(), orgId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Spieler Ihrer eigenen Mannschaft löschen" });
+        }
+        await deletePlayer(input.id);
+        return { success: true };
+      }),
+
+    /** CSV-Import: Mehrere Spieler auf einmal hinzufügen */
+    importCsv: protectedProcedure
+      .input(z.object({
+        teamId: z.number(),
+        orgId: z.number(),
+        /** CSV-Daten als Array von Objekten */
+        players: z.array(z.object({
+          name: z.string().min(1),
+          number: z.string().optional(),
+          position: z.string().optional(),
+        })),
+        /** Bestehende Spieler vorher löschen? */
+        replaceExisting: z.boolean().default(false),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const team = await getTeamById(input.teamId);
+        if (!team || team.orgId !== input.orgId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        }
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer" && team.trainerId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Sie dürfen nur Spieler zu Ihrer eigenen Mannschaft importieren" });
+        }
+        if (input.replaceExisting) {
+          await deleteAllPlayersByTeam(input.teamId);
+        }
+        const result = await bulkCreatePlayers(input.teamId, input.players);
+        return { count: result.length, players: result };
       }),
   }),
 });

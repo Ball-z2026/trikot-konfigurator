@@ -198,10 +198,15 @@ function OrgDetail({ orgId }: { orgId: number }) {
   // ─── Member CRUD ───
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberEmail, setMemberEmail] = useState("");
-  const [memberRole, setMemberRole] = useState<"department_lead" | "trainer">("trainer");
   const [memberDeptId, setMemberDeptId] = useState<number | undefined>(undefined);
-  const addMember = trpc.membership.add.useMutation({
-    onSuccess: () => { utils.membership.listByOrg.invalidate({ orgId }); setShowAddMember(false); setMemberEmail(""); toast.success("Mitglied hinzugefügt"); },
+  const addDeptLead = trpc.membership.addDepartmentLead.useMutation({
+    onSuccess: (data) => {
+      utils.membership.listByOrg.invalidate({ orgId });
+      setShowAddMember(false);
+      setMemberEmail("");
+      setMemberDeptId(undefined);
+      toast.success(`${data.userName || data.userEmail} als Spartenleiter eingeladen`);
+    },
     onError: (e) => toast.error(e.message),
   });
   const removeMember = trpc.membership.remove.useMutation({
@@ -567,43 +572,39 @@ function OrgDetail({ orgId }: { orgId: number }) {
               {isOwner && (
                 <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
                   <DialogTrigger asChild>
-                    <Button size="sm"><UserPlus className="w-4 h-4 mr-2" />Mitglied hinzufügen</Button>
+                    <Button size="sm"><UserPlus className="w-4 h-4 mr-2" />Spartenleiter einladen</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Mitglied hinzufügen</DialogTitle>
-                      <DialogDescription>Der Benutzer muss sich vorher registriert haben.</DialogDescription>
+                      <DialogTitle>Spartenleiter einladen</DialogTitle>
+                      <DialogDescription>
+                        Laden Sie einen Spartenleiter für eine Abteilung ein. Der Spartenleiter kann dann selbst Trainer für seine Abteilung einladen.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
+                      <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground mb-1">Einladungskette:</p>
+                        <p>Sie (Hauptverantwortlicher) → Spartenleiter → Trainer</p>
+                        <p className="mt-1">Spartenleiter können anschließend selbst Trainer für ihre Abteilung einladen.</p>
+                      </div>
                       <div className="space-y-2">
                         <Label>E-Mail-Adresse</Label>
                         <Input
                           type="email"
                           value={memberEmail}
                           onChange={(e) => setMemberEmail(e.target.value)}
-                          placeholder="benutzer@beispiel.de"
+                          placeholder="spartenleiter@beispiel.de"
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Rolle</Label>
-                        <Select value={memberRole} onValueChange={(v) => setMemberRole(v as "department_lead" | "trainer")}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="department_lead">Spartenleiter</SelectItem>
-                            <SelectItem value="trainer">Trainer</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
                       {departments && departments.length > 0 && (
                         <div className="space-y-2">
-                          <Label>Abteilung (optional)</Label>
+                          <Label>Abteilung <span className="text-destructive">*</span></Label>
                           <Select
-                            value={memberDeptId?.toString() || "none"}
-                            onValueChange={(v) => setMemberDeptId(v === "none" ? undefined : parseInt(v))}
+                            value={memberDeptId?.toString() || ""}
+                            onValueChange={(v) => setMemberDeptId(parseInt(v))}
                           >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder="Abteilung wählen..." /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">Keine Abteilung</SelectItem>
                               {departments.map((d) => (
                                 <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>
                               ))}
@@ -615,16 +616,18 @@ function OrgDetail({ orgId }: { orgId: number }) {
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setShowAddMember(false)}>Abbrechen</Button>
                       <Button
-                        onClick={() => addMember.mutate({
-                          orgId,
-                          userEmail: memberEmail,
-                          role: memberRole,
-                          departmentId: memberDeptId,
-                        })}
-                        disabled={!memberEmail.trim() || addMember.isPending}
+                        onClick={() => {
+                          if (!memberDeptId) { toast.error("Bitte wählen Sie eine Abteilung"); return; }
+                          addDeptLead.mutate({
+                            orgId,
+                            userEmail: memberEmail,
+                            departmentId: memberDeptId,
+                          });
+                        }}
+                        disabled={!memberEmail.trim() || !memberDeptId || addDeptLead.isPending}
                       >
-                        {addMember.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        Hinzufügen
+                        {addDeptLead.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                        Einladen
                       </Button>
                     </DialogFooter>
                   </DialogContent>
