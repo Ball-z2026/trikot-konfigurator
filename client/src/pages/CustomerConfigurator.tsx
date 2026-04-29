@@ -684,6 +684,7 @@ export default function CustomerConfigurator() {
           top: `${zone.posY}%`,
           width: `${zone.width}%`,
           height: `${zone.height}%`,
+          zIndex: 10,
           transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
           border: isSelected
             ? `2px solid ${zoneBorderColors[colorIdx]}`

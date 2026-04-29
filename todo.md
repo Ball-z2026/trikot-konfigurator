@@ -97,3 +97,6 @@
 
 ## Bug: Einzelteile-Ansicht zeigt nichts an (deployed Version)
 - [x] Einzelteile-Ansicht zeigt jetzt Bild an (Flood-Fill immer mit Standard-Grau #d4d4d8, Farbe nur bei Auswahl)
+
+## Bug: Logos/Texte in Einzelansicht nicht sichtbar
+- [x] Logos, Texte und andere Zonen-Inhalte werden jetzt in der Einzelansicht angezeigt (z-index: 10 auf ZoneOverlay Komponente)
