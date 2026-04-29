@@ -49,6 +49,7 @@ import {
   Lock,
   Pencil,
   X,
+  Download,
 } from "lucide-react";
 
 type RoleBadge = {
@@ -262,6 +263,75 @@ export default function AdminUsers() {
     updateUser.mutate({ userId, email });
   };
 
+  const handleExportCSV = () => {
+    if (!allUsers || allUsers.length === 0) {
+      toast.error("Keine Benutzer zum Exportieren vorhanden");
+      return;
+    }
+
+    const formatDate = (d: string | number | null) => {
+      if (!d) return "";
+      return new Date(d).toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const getRoles = (memberships: typeof allUsers[0]["memberships"]) => {
+      if (memberships.length === 0) return "";
+      return memberships.map((m) => {
+        switch (m.role) {
+          case "owner": return "Hauptverantwortlicher";
+          case "department_lead": return "Spartenleiter";
+          case "trainer": return "Trainer";
+          default: return m.role;
+        }
+      }).join(", ");
+    };
+
+    const getOrgSparte = (memberships: typeof allUsers[0]["memberships"]) => {
+      if (memberships.length === 0) return "";
+      return memberships.map((m) => {
+        let s = m.orgName || "";
+        if (m.departmentName) s += " / " + m.departmentName;
+        return s;
+      }).join(", ");
+    };
+
+    const escape = (val: string) => {
+      if (val.includes('"') || val.includes(";") || val.includes("\n")) {
+        return '"' + val.replace(/"/g, '""') + '"';
+      }
+      return val;
+    };
+
+    const header = ["Name", "E-Mail", "Login-Methode", "Rolle(n)", "Organisation / Sparte", "Letzter Login", "Erstellt"];
+    const rows = allUsers.map((u) => [
+      escape(u.name || ""),
+      escape(u.email || ""),
+      u.loginMethod === "local" ? "E-Mail + Passwort" : "OAuth",
+      escape(getRoles(u.memberships)),
+      escape(getOrgSparte(u.memberships)),
+      formatDate(u.lastSignedIn),
+      formatDate(u.createdAt),
+    ]);
+
+    const csvContent = "\uFEFF" + [header.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `benutzerliste_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`${allUsers.length} Benutzer exportiert`);
+  };
+
   const filteredUsers = allUsers?.filter((u) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
@@ -335,6 +405,14 @@ export default function AdminUsers() {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportCSV}
+              disabled={!allUsers || allUsers.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              CSV Export
+            </Button>
             <Dialog
               open={createDialogOpen}
               onOpenChange={(open) => {

@@ -292,3 +292,9 @@
 
 ### Tests
 - [x] Vitest: adminUsers.update Berechtigungsprüfung (88 Tests bestanden)
+
+## CSV-Export Benutzerliste
+
+- [x] CSV-Export-Button im Header der Benutzerverwaltung
+- [x] CSV-Generierung im Frontend aus vorhandenen Daten (Name, E-Mail, Login-Methode, Rollen, Organisation/Sparte, Letzter Login, Erstellt)
+- [x] CSV-Download als Datei mit deutschem Datumsformat und Semikolon-Trennung (Excel-kompatibel, UTF-8 BOM)
