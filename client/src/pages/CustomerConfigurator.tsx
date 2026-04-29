@@ -156,6 +156,8 @@ export default function CustomerConfigurator() {
   const [partColors, setPartColors] = useState<Record<number, string>>({});
   const [dtfBaseColor, setDtfBaseColor] = useState<string | null>(null);
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+  const [processedPartImages, setProcessedPartImages] = useState<Record<number, string>>({});
   const canvasRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
 
@@ -221,11 +223,175 @@ export default function CustomerConfigurator() {
   const activePart = parts.find((p) => p.id === activePartId);
   const sortedParts = useMemo(() => [...parts].sort((a, b) => a.sortOrder - b.sortOrder), [parts]);
 
-  const currentImage = hasParts
+  const needsProcessing = (isSublimation && activePartId && partColors[activePartId]) || (isDtf && dtfBaseColor && !dtfBrandImage);
+  const rawCurrentImage = hasParts
     ? activePart?.imageUrl || null
     : activeSide === "front"
     ? productData?.frontImageUrl
     : productData?.backImageUrl;
+
+  // Determine the active color for processing
+  const activeColor = isSublimation && activePartId && partColors[activePartId]
+    ? partColors[activePartId]
+    : isDtf && dtfBaseColor && !dtfBrandImage
+    ? dtfBaseColor
+    : null;
+
+  useEffect(() => {
+    if (!needsProcessing || !rawCurrentImage || !activeColor) {
+      setProcessedImageUrl(null);
+      return;
+    }
+    const img = document.createElement("img");
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const d = imageData.data;
+
+      // Parse the target color
+      const tc = document.createElement("canvas").getContext("2d")!;
+      tc.fillStyle = activeColor;
+      tc.fillRect(0, 0, 1, 1);
+      const cp = tc.getImageData(0, 0, 1, 1).data;
+      const cr = cp[0], cg = cp[1], cb = cp[2];
+
+      // Mark outside pixels using scanline flood fill from all 4 edges
+      const outside = new Uint8Array(w * h);
+      const threshold = 240;
+      const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
+      const queue: number[] = [];
+
+      // Seed from all border pixels that are white
+      for (let x = 0; x < w; x++) {
+        const topIdx = x;
+        if (isWhitish(topIdx * 4) && !outside[topIdx]) { outside[topIdx] = 1; queue.push(topIdx); }
+        const botIdx = (h - 1) * w + x;
+        if (isWhitish(botIdx * 4) && !outside[botIdx]) { outside[botIdx] = 1; queue.push(botIdx); }
+      }
+      for (let y = 0; y < h; y++) {
+        const leftIdx = y * w;
+        if (isWhitish(leftIdx * 4) && !outside[leftIdx]) { outside[leftIdx] = 1; queue.push(leftIdx); }
+        const rightIdx = y * w + (w - 1);
+        if (isWhitish(rightIdx * 4) && !outside[rightIdx]) { outside[rightIdx] = 1; queue.push(rightIdx); }
+      }
+
+      // BFS flood fill
+      let head = 0;
+      while (head < queue.length) {
+        const pos = queue[head++];
+        const px = pos % w;
+        const py = (pos - px) / w;
+        const neighbors = [
+          py > 0 ? pos - w : -1,
+          py < h - 1 ? pos + w : -1,
+          px > 0 ? pos - 1 : -1,
+          px < w - 1 ? pos + 1 : -1,
+        ];
+        for (const n of neighbors) {
+          if (n >= 0 && !outside[n] && isWhitish(n * 4)) {
+            outside[n] = 1;
+            queue.push(n);
+          }
+        }
+      }
+
+      // Replace inside white pixels with the chosen color
+      for (let i = 0; i < w * h; i++) {
+        if (!outside[i] && isWhitish(i * 4)) {
+          d[i * 4] = cr;
+          d[i * 4 + 1] = cg;
+          d[i * 4 + 2] = cb;
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      setProcessedImageUrl(canvas.toDataURL("image/png"));
+    };
+    img.src = rawCurrentImage;
+  }, [rawCurrentImage, needsProcessing, activeColor]);
+
+  const currentImage = needsProcessing && processedImageUrl ? processedImageUrl : rawCurrentImage;
+
+  // Process all part images for composite view (DTF base color applies to all parts)
+  useEffect(() => {
+    if (!isDtf || !dtfBaseColor || dtfBrandImage) {
+      setProcessedPartImages({});
+      return;
+    }
+    const results: Record<number, string> = {};
+    let pending = 0;
+    const partsWithImages = sortedParts.filter(p => p.imageUrl);
+    if (partsWithImages.length === 0) return;
+    pending = partsWithImages.length;
+
+    // Parse target color once
+    const tc = document.createElement("canvas").getContext("2d")!;
+    tc.fillStyle = dtfBaseColor;
+    tc.fillRect(0, 0, 1, 1);
+    const cp = tc.getImageData(0, 0, 1, 1).data;
+    const cr = cp[0], cg = cp[1], cb = cp[2];
+
+    for (const part of partsWithImages) {
+      const img = document.createElement("img");
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { pending--; return; }
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, w, h);
+        const d = imageData.data;
+        const threshold = 240;
+        const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
+        const outside = new Uint8Array(w * h);
+        const queue: number[] = [];
+        for (let x = 0; x < w; x++) {
+          if (isWhitish(x * 4) && !outside[x]) { outside[x] = 1; queue.push(x); }
+          const b = (h - 1) * w + x;
+          if (isWhitish(b * 4) && !outside[b]) { outside[b] = 1; queue.push(b); }
+        }
+        for (let y = 0; y < h; y++) {
+          const l = y * w;
+          if (isWhitish(l * 4) && !outside[l]) { outside[l] = 1; queue.push(l); }
+          const r = y * w + (w - 1);
+          if (isWhitish(r * 4) && !outside[r]) { outside[r] = 1; queue.push(r); }
+        }
+        let head = 0;
+        while (head < queue.length) {
+          const pos = queue[head++];
+          const px = pos % w;
+          const py = (pos - px) / w;
+          const neighbors = [py > 0 ? pos - w : -1, py < h - 1 ? pos + w : -1, px > 0 ? pos - 1 : -1, px < w - 1 ? pos + 1 : -1];
+          for (const n of neighbors) {
+            if (n >= 0 && !outside[n] && isWhitish(n * 4)) { outside[n] = 1; queue.push(n); }
+          }
+        }
+        for (let i = 0; i < w * h; i++) {
+          if (!outside[i] && isWhitish(i * 4)) {
+            d[i * 4] = cr; d[i * 4 + 1] = cg; d[i * 4 + 2] = cb;
+          }
+        }
+        ctx.putImageData(imageData, 0, 0);
+        results[part.id] = canvas.toDataURL("image/png");
+        pending--;
+        if (pending === 0) setProcessedPartImages({ ...results });
+      };
+      img.onerror = () => { pending--; if (pending === 0) setProcessedPartImages({ ...results }); };
+      img.src = part.imageUrl!;
+    }
+  }, [isDtf, dtfBaseColor, dtfBrandImage, sortedParts]);
 
   const currentZones = hasParts
     ? allZones.filter((z) => z.partId === activePartId)
@@ -677,7 +843,7 @@ export default function CustomerConfigurator() {
                           <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted/30 rounded overflow-hidden">
                             {part.imageUrl ? (
                               <img
-                                src={part.imageUrl}
+                                src={processedPartImages[part.id] || part.imageUrl}
                                 alt={part.label}
                                 className="w-full h-full object-contain"
                               />
@@ -781,7 +947,7 @@ export default function CustomerConfigurator() {
                           <div className="aspect-square relative">
                             {part.imageUrl ? (
                               <img
-                                src={part.imageUrl}
+                                src={processedPartImages[part.id] || part.imageUrl}
                                 alt={part.label}
                                 className="w-full h-full object-contain p-1"
                                 draggable={false}
@@ -838,10 +1004,10 @@ export default function CustomerConfigurator() {
                         >
                           <div className="relative w-full h-full">
                             {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
                             )}
                             {part.imageUrl ? (
-                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
                                 <Shirt className="w-8 h-8 text-muted-foreground/20" />
@@ -869,10 +1035,10 @@ export default function CustomerConfigurator() {
                         >
                           <div className="relative w-full h-full">
                             {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
                             )}
                             {part.imageUrl ? (
-                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
                                 <span className="text-[8px] text-muted-foreground">ÄL</span>
@@ -900,10 +1066,10 @@ export default function CustomerConfigurator() {
                         >
                           <div className="relative w-full h-full">
                             {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
                             )}
                             {part.imageUrl ? (
-                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
                                 <span className="text-[8px] text-muted-foreground">ÄR</span>
@@ -931,10 +1097,10 @@ export default function CustomerConfigurator() {
                         >
                           <div className="relative w-full h-full">
                             {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
                             )}
                             {part.imageUrl ? (
-                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
                                 <span className="text-[8px] text-muted-foreground">Kragen</span>
@@ -960,10 +1126,10 @@ export default function CustomerConfigurator() {
                       >
                         <div className="relative w-full h-full">
                           {isSublimation && partColors[part.id] && (
-                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
                           )}
                           {part.imageUrl ? (
-                            <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                            <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
                               <span className="text-[8px] text-muted-foreground">BL</span>
@@ -983,10 +1149,10 @@ export default function CustomerConfigurator() {
                       >
                         <div className="relative w-full h-full">
                           {isSublimation && partColors[part.id] && (
-                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], opacity: 0.3, mixBlendMode: "multiply" }} />
+                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
                           )}
                           {part.imageUrl ? (
-                            <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1 }} draggable={false} />
+                            <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
                               <span className="text-[8px] text-muted-foreground">BR</span>
@@ -1015,13 +1181,7 @@ export default function CustomerConfigurator() {
                   className="relative bg-[#f8f9fa] aspect-[3/4]"
                   onClick={() => setSelectedZoneId(null)}
                 >
-                  {/* Color Overlay for Sublimation */}
-                  {isSublimation && activePartId && partColors[activePartId] && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{ backgroundColor: partColors[activePartId], opacity: 0.35, mixBlendMode: "multiply" }}
-                    />
-                  )}
+                  {/* Color is now baked into the processed image via flood-fill */}
                   {currentImage ? (
                     <img
                       src={currentImage}
@@ -1030,9 +1190,6 @@ export default function CustomerConfigurator() {
                       style={{
                         position: "relative",
                         zIndex: 1,
-                        ...(isSublimation && activePartId && partColors[activePartId]
-                          ? { mixBlendMode: "multiply" as any }
-                          : {}),
                       }}
                       draggable={false}
                     />
@@ -1040,16 +1197,9 @@ export default function CustomerConfigurator() {
                     <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground" style={{ position: "relative", zIndex: 1 }}>
                       <Shirt className="w-12 h-12 sm:w-16 sm:h-16 opacity-20" />
                       <p className="text-xs text-muted-foreground/50 mt-2">
-                        {hasParts && activePart ? activePart.label : "Keine Ansicht verfügbar"}
+                        {hasParts && activePart ? activePart.label : "Keine Ansicht verf\u00fcgbar"}
                       </p>
                     </div>
-                  )}
-                  {/* DTF Base Color Overlay */}
-                  {isDtf && dtfBaseColor && !dtfBrandImage && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{ backgroundColor: dtfBaseColor, opacity: 0.45, zIndex: 2 }}
-                    />
                   )}
                   {/* DTF Brand Image Background */}
                   {isDtf && dtfBrandImage && (

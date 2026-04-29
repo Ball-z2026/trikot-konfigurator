@@ -83,3 +83,8 @@
 - [x] Jede Sportart hat eigene Trikot-Templates (Sublimation/DTF) mit passenden Teilen
 - [x] Admin-Produkterstellung: Sportart-Auswahl als erster Schritt vor Template-Wahl
 - [x] UI: Sportart-Karten mit Icons (Fußball, Handball, Volleyball, Basketball)
+
+## Bug-Fix: DTF Grundfarbe nur auf Teilen
+- [x] DTF-Grundfarbe nur auf den Trikot-Teilen anzeigen (Flood-Fill-Algorithmus färbt nur Innenfläche)
+- [x] Teilbild als Maske verwenden (BFS von Rändern erkennt Außenbereich, Innenfläche wird eingefärbt)
+- [x] Auch in Composite View, Overview und Teil-Navigation korrekt dargestellt (processedPartImages)
