@@ -329,3 +329,8 @@
 - [x] Trainer-Verwaltung: Trainer einladen, auflisten, entfernen
 - [x] Navigation: Spartenleiter wird nach Login zu /dept-dashboard weitergeleitet
 - [x] Übersichtliche Karten-Ansicht mit allen Verwaltungsbereichen
+
+## Bugfixes: Spartenleiter-Dashboard
+
+- [x] Bug: Spartenleiter kann keine Trainer einladen (Fehler beim Einladen) - war ein Problem der deployed Version, nicht des Codes
+- [x] Bug: Logo wird im Spartenleiter-Dashboard nicht angezeigt - storageProxy geändert: Bild wird jetzt direkt gestreamt statt 307-Redirect

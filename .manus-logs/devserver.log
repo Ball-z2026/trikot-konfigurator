@@ -3505,3 +3505,16 @@
 [2026-04-29T19:50:47.758Z] [Auth] Missing session cookie
 [2026-04-29T19:50:48.374Z] [Auth] Missing session cookie
 [2026-04-29T19:50:48.378Z] [Auth] Missing session cookie
+[2026-04-29T20:14:19.423Z] 4:14:19 PM [tsx] change in ./server/_core/storageProxy.ts Restarting...
+[2026-04-29T20:14:21.300Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T20:14:21.653Z] Server running on http://localhost:3000/
+[2026-04-29T20:17:30.750Z] [Auth] Missing session cookie
+[2026-04-29T20:17:30.786Z] [Auth] Missing session cookie
+[2026-04-29T20:17:30.791Z] [Auth] Missing session cookie
+[2026-04-29T20:17:30.797Z] [Auth] Missing session cookie
+[2026-04-29T20:17:30.803Z] [Auth] Missing session cookie
+[2026-04-29T20:17:30.809Z] [Auth] Missing session cookie
+[2026-04-29T20:17:30.815Z] [Auth] Missing session cookie
+[2026-04-29T20:17:30.821Z] [Auth] Missing session cookie
+[2026-04-29T20:17:31.354Z] [Auth] Missing session cookie
+[2026-04-29T20:17:31.360Z] [Auth] Missing session cookie
