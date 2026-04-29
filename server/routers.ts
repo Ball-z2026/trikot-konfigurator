@@ -121,6 +121,11 @@ async function requireOrgOwnerOrDeptLead(userId: number, orgId: number) {
   const allMemberships = await getAllMembershipsByUserAndOrg(userId, orgId);
   const hasAccess = allMemberships.some(m => m.role === "owner" || m.role === "department_lead");
   if (!hasAccess) {
+    // Selbstregistrierte Trainer sind Owner ihrer eigenen Org
+    const org = await getOrganizationById(orgId);
+    if (org && org.ownerId === userId) {
+      return allMemberships[0];
+    }
     throw new TRPCError({ code: "FORBIDDEN", message: "Nur Vereinsverantwortliche und Spartenleiter dürfen diese Aktion ausführen" });
   }
   return allMemberships[0];

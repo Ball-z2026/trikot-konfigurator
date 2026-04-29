@@ -44,11 +44,263 @@ import {
   Clock,
   Copy,
   Mail,
+  Image,
+  Star,
+  StarOff,
+  Info,
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { PaymentSection } from "./PaymentSection";
+
+// ─── Logo Section für selbstregistrierte Trainer ─────────────────────────────
+function TrainerLogoSection({ orgId }: { orgId: number }) {
+  const utils = trpc.useUtils();
+  const { data: logos } = trpc.orgLogo.list.useQuery({ orgId });
+  const [showUpload, setShowUpload] = useState(false);
+  const [logoName, setLogoName] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isDefault, setIsDefault] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadLogo = trpc.orgLogo.upload.useMutation({
+    onSuccess: () => {
+      utils.orgLogo.list.invalidate({ orgId });
+      setShowUpload(false);
+      setLogoName("");
+      setLogoFile(null);
+      setLogoPreview(null);
+      setIsDefault(false);
+      toast.success("Logo hochgeladen");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteLogo = trpc.orgLogo.delete.useMutation({
+    onSuccess: () => {
+      utils.orgLogo.list.invalidate({ orgId });
+      toast.success("Logo gelöscht");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const setDefaultLogo = trpc.orgLogo.update.useMutation({
+    onSuccess: () => {
+      utils.orgLogo.list.invalidate({ orgId });
+      toast.success("Standard-Logo gesetzt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setLogoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleUpload = useCallback(async () => {
+    if (!logoFile || !logoName.trim()) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const base64 = dataUrl.split(",")[1] || dataUrl;
+      uploadLogo.mutate({
+        orgId,
+        name: logoName,
+        imageBase64: base64,
+        mimeType: logoFile.type,
+        isDefault,
+      });
+    };
+    reader.readAsDataURL(logoFile);
+  }, [logoFile, logoName, isDefault, orgId, uploadLogo]);
+
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Image className="w-5 h-5 text-blue-600" />
+            Vereinslogo
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Laden Sie Ihr Vereinslogo hoch. Es wird automatisch im Konfigurator verwendet.
+          </p>
+        </div>
+        <Dialog open={showUpload} onOpenChange={setShowUpload}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Upload className="w-4 h-4 mr-2" />
+              Logo hochladen
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Logo hochladen</DialogTitle>
+              <DialogDescription>Laden Sie eine neue Logo-Variante hoch.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Bezeichnung</Label>
+                <Input
+                  value={logoName}
+                  onChange={(e) => setLogoName(e.target.value)}
+                  placeholder="z.B. Farb-Logo, SW-Logo"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Bilddatei</Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <div
+                  className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Vorschau" className="max-h-32 mx-auto" />
+                  ) : (
+                    <div>
+                      <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">Klicken zum Auswählen (max. 5 MB)</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isDefaultLogoTrainer"
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="isDefaultLogoTrainer">Als Standard-Logo setzen</Label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowUpload(false)}>Abbrechen</Button>
+              <Button
+                onClick={handleUpload}
+                disabled={!logoName.trim() || !logoFile || uploadLogo.isPending}
+              >
+                {uploadLogo.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Hochladen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      {!logos || logos.length === 0 ? (
+        <div className="text-center py-8 bg-muted/30 rounded-xl border border-dashed">
+          <Image className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">Noch keine Logos hochgeladen</p>
+          <Button className="mt-4" size="sm" onClick={() => setShowUpload(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Erstes Logo hochladen
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {logos.map((logo) => (
+            <Card key={logo.id} className="overflow-hidden">
+              <div className="aspect-square bg-muted/30 flex items-center justify-center p-4 relative">
+                <img src={logo.imageUrl} alt={logo.name} className="max-w-full max-h-full object-contain" />
+                {logo.isDefault && (
+                  <Badge className="absolute top-2 right-2 gap-1">
+                    <Star className="w-3 h-3" />
+                    Standard
+                  </Badge>
+                )}
+              </div>
+              <CardContent className="pt-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-sm">{logo.name}</p>
+                  <div className="flex items-center gap-1">
+                    {!logo.isDefault && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setDefaultLogo.mutate({ id: logo.id, orgId, isDefault: true })}
+                        title="Als Standard setzen"
+                      >
+                        <StarOff className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => {
+                        if (confirm(`Logo "${logo.name}" wirklich löschen?`))
+                          deleteLogo.mutate({ id: logo.id, orgId });
+                      }}
+                      title="Löschen"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Logo-Anzeige für eingeladene Trainer (read-only) ─────────────────────────
+function InvitedTrainerLogoDisplay({ orgId }: { orgId: number }) {
+  const { data: logos } = trpc.orgLogo.list.useQuery({ orgId });
+  const defaultLogo = logos?.find((l) => l.isDefault) || logos?.[0];
+
+  return (
+    <div className="mb-8">
+      <div className="mb-4">
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <Image className="w-5 h-5 text-blue-600" />
+          Vereinslogo
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Das Logo wird vom Spartenleiter verwaltet und automatisch im Konfigurator verwendet.
+        </p>
+      </div>
+      {defaultLogo ? (
+        <Card className="overflow-hidden max-w-xs">
+          <div className="aspect-square bg-muted/30 flex items-center justify-center p-4 relative">
+            <img src={defaultLogo.imageUrl} alt={defaultLogo.name} className="max-w-full max-h-full object-contain" />
+            <Badge className="absolute top-2 right-2 gap-1">
+              <Star className="w-3 h-3" />
+              Vereinslogo
+            </Badge>
+          </div>
+          <CardContent className="pt-3">
+            <p className="font-medium text-sm">{defaultLogo.name}</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex items-start gap-3">
+          <Info className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium text-amber-800 dark:text-amber-200">Kein Logo hinterlegt</p>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+              Ihr Spartenleiter hat noch kein Vereinslogo hochgeladen. Bitte kontaktieren Sie Ihren Spartenleiter.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Team List (Trainer sieht seine Mannschaften) ─────────────────────────────
 function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
@@ -61,6 +313,9 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
     { departmentId: deptId, orgId },
     { enabled: orgId > 0 && deptId > 0 }
   );
+
+  // Prüfe ob Trainer selbstregistriert ist (Owner der Org)
+  const isSelfRegistered = org && user ? org.ownerId === user.id : false;
 
   const [showCreate, setShowCreate] = useState(false);
   const [teamName, setTeamName] = useState("");
@@ -164,6 +419,13 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
       </header>
 
       <div className="container py-8">
+        {/* Logo-Bereich: Selbstregistrierte Trainer können Logo hochladen, eingeladene sehen das Logo vom Spartenleiter */}
+        {isSelfRegistered ? (
+          <TrainerLogoSection orgId={orgId} />
+        ) : (
+          <InvitedTrainerLogoDisplay orgId={orgId} />
+        )}
+
         {!teams || teams.length === 0 ? (
           <div className="text-center py-16 bg-muted/30 rounded-xl border border-dashed">
             <Shirt className="w-12 h-12 text-muted-foreground mx-auto mb-4" />

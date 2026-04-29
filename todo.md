@@ -375,3 +375,13 @@
 - [x] Backend: Prozedur zum Markieren einzelner Spieler/Trainer als "bezahlt"
 - [x] Frontend: Bezahlt-Switch pro Spieler in der Spielerliste
 - [x] Frontend: Übersicht wer bezahlt hat und wer noch aussteht (z.B. 1/1 bezahlt)
+
+## Trainer-Dashboard: Logik selbstregistriert vs. eingeladen
+
+- [x] Backend: Feld/Logik um zu erkennen ob Trainer selbstregistriert oder eingeladen ist (org.ownerId === user.id)
+- [x] Backend: API-Endpunkt der den Trainer-Typ zurückgibt (org.getById liefert ownerId)
+- [x] Backend: Selbstregistrierte Trainer: volle Rechte inkl. Logo-Upload (requireOrgOwnerOrDeptLead erweitert)
+- [x] Backend: Eingeladene Trainer: Logo automatisch vom Spartenleiter übernommen, kein eigener Upload
+- [x] Frontend: Trainer-Dashboard zeigt Logo-Upload nur für selbstregistrierte Trainer (TrainerLogoSection)
+- [x] Frontend: Eingeladene Trainer sehen das Logo des Spartenleiter read-only (InvitedTrainerLogoDisplay)
+- [x] Frontend: Hinweistext für eingeladene Trainer dass Logo vom Spartenleiter verwaltet wird
