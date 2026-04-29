@@ -2630,3 +2630,18 @@
 [2026-04-29T13:58:38.512Z] Server running on http://localhost:3000/
 [2026-04-29T13:58:53.041Z] [Auth] Missing session cookie
 [2026-04-29T13:58:53.047Z] [Auth] Missing session cookie
+[2026-04-29T17:52:11.398Z] 1:52:11 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-29T17:52:15.120Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T17:52:16.890Z] Server running on http://localhost:3000/
+[2026-04-29T17:53:01.705Z] 1:53:01 PM [tsx] change in ./server/localAuth.ts Restarting...
+[2026-04-29T17:53:03.086Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T17:53:03.326Z] Server running on http://localhost:3000/
+[2026-04-29T17:53:42.705Z] 1:53:42 PM [vite] (client) hmr update /src/pages/Login.tsx, /src/index.css
+[2026-04-29T17:54:30.006Z] 1:54:30 PM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-04-29T17:55:38.001Z] Dev server process group stopped
+[2026-04-29T17:55:38.069Z] Dev server exited with code -15
+[2026-04-29T17:55:41.036Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-29T17:55:42.748Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-29T17:55:42.990Z] Server running on http://localhost:3000/
+[2026-04-29T17:55:55.873Z] [Auth] Missing session cookie
+[2026-04-29T17:55:55.879Z] [Auth] Missing session cookie

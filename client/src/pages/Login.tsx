@@ -254,6 +254,13 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Wird angemeldet..." : "Anmelden"}
             </Button>
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Passwort vergessen?
+            </button>
           </form>
 
           <div className="relative">

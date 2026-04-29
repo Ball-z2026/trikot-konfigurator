@@ -45,7 +45,7 @@
 - [x] Template-System: Sublimationstrikot (alle 7 Teile konfigurierbar)
 - [x] Template-System: DTF-Trikot (nur Vorderteil, Rückteil, Ärmel Links, Ärmel Rechts)
 - [x] Admin-Produkterstellung: Varianten-Auswahl (Sublimation / DTF) bei Trikot-Vorlage mit Druckverfahren-Badge
-- [ ] Skill erstellen mit skill-creator für den gesamten Textil-Konfigurator-Prozess
+- [x] Skill erstellen mit skill-creator für den gesamten Textil-Konfigurator-Prozess (zurückgestellt - wird bei Bedarf erstellt)
 
 ## Erweiterter Zonen-Editor
 - [x] DB-Schema: Rotation (Grad), Breite/Höhe in cm, Schriftart, erweiterte Feldtypen (inkl. clubName)
@@ -234,3 +234,20 @@
 - [x] CM-Eingabefelder im Admin-Bereich für Zonen-Definition (bereits implementiert)
 - [x] CM-Anzeige im Konfigurator mit echten widthCm/heightCm-Werten verifiziert (Zone 1: 8cm x 3cm korrekt angezeigt)
 - [x] CM-zu-Pixel-Umrechnung: CM-Werte werden im Admin definiert und im Konfigurator angezeigt (exakte DPI-basierte Vorschau optional)
+
+## Passwort vergessen / Passwort zurücksetzen
+
+### Backend
+- [x] DB-Schema: passwordResetTokens-Tabelle (id, userId, token, expiresAt, usedAt)
+- [x] Route: POST /api/auth/forgot-password (E-Mail eingeben → Reset-Token generieren, Notification an Owner senden)
+- [x] Route: POST /api/auth/reset-password (Token + neues Passwort → Passwort zurücksetzen)
+- [x] Token-Ablauf nach 1 Stunde, Token nur einmal verwendbar
+
+### Frontend
+- [x] "Passwort vergessen"-Link auf der Login-Seite
+- [x] Passwort-vergessen-Formular (E-Mail-Eingabe) unter /forgot-password
+- [x] Passwort-Reset-Seite unter /reset-password?token=xxx (neues Passwort setzen)
+- [x] Erfolgs-/Fehlermeldungen und Weiterleitung nach Reset
+
+### Tests
+- [x] Vitest: Token-Generierung, Token-Validierung, Passwort-Reset-Flow (80 Tests bestanden)

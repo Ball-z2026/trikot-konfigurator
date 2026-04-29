@@ -98,3 +98,83 @@ describe("Local Auth - Change Password Validation", () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe("Local Auth - Forgot Password", () => {
+  it("rejects forgot-password without email", async () => {
+    const res = await fetch("http://localhost:3000/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("E-Mail-Adresse ist erforderlich");
+  });
+
+  it("returns success even for non-existent email (prevents enumeration)", async () => {
+    const res = await fetch("http://localhost:3000/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "nonexistent@example.com", origin: "http://localhost:3000" }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.message).toContain("Falls ein Account");
+  });
+
+  it("forgot-password route exists and accepts POST", async () => {
+    const res = await fetch("http://localhost:3000/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "test@test.de", origin: "http://localhost:3000" }),
+    });
+    // Should be 200 (success response) not 404
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("Local Auth - Reset Password", () => {
+  it("rejects reset without token", async () => {
+    const res = await fetch("http://localhost:3000/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPassword: "newpass123" }),
+    });
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("Reset-Token ist erforderlich");
+  });
+
+  it("rejects reset with short password", async () => {
+    const res = await fetch("http://localhost:3000/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: "sometoken", newPassword: "ab" }),
+    });
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("mindestens 6 Zeichen");
+  });
+
+  it("rejects reset with invalid token", async () => {
+    const res = await fetch("http://localhost:3000/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: "invalid_token_that_does_not_exist", newPassword: "newpass123" }),
+    });
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("Ungültiger oder bereits verwendeter");
+  });
+
+  it("reset-password route exists and accepts POST", async () => {
+    const res = await fetch("http://localhost:3000/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: "test", newPassword: "newpass123" }),
+    });
+    // Should not be 404 (route exists)
+    expect(res.status).not.toBe(404);
+  });
+});

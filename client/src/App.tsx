@@ -12,12 +12,16 @@ import OrgDashboard from "./pages/OrgDashboard";
 import DeptFonts from "./pages/DeptFonts";
 import TrainerDashboard from "./pages/TrainerDashboard";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin/products" component={AdminProducts} />
       <Route path="/admin/products/:id" component={AdminProductEditor} />
       <Route path="/konfigurator/:id" component={CustomerConfigurator} />
