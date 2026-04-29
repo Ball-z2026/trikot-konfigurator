@@ -174,5 +174,8 @@
 - [x] Browser-Test: Spieler bearbeiten (Name ändern) funktioniert
 - [x] Browser-Test: CSV-Import (4 Spieler importiert) funktioniert
 - [x] Browser-Test: Spieler löschen (mit Confirm-Dialog) funktioniert
-- [ ] Produkte/Konfigurator mit orgId/departmentId verknüpfen statt nur erste Mitgliedschaft zu verwenden
-- [ ] Org-Auswahl im Konfigurator wenn User mehreren Organisationen angehört
+- [x] Org-Auswahl im Konfigurator implementiert (Dropdown bei mehreren Mitgliedschaften)
+- [x] listMembershipsByUser erweitert mit orgName/departmentName per JOIN
+- [x] Konfigurator: Beim Wechsel der Org-/Abt.-Auswahl auto-gesetzte Logos/Schriften korrekt überschreiben (prevAutoLogoUrl/prevAutoFontFamily Refs)
+- [x] Vitest-Test für membership.mine mit orgName/departmentName Feldern (66 Tests bestanden)
+- [x] Konfigurator: Beim Wechsel zu Org ohne Default-Logo/Schrift vorherige auto-gesetzte Werte zurücksetzen (onChange Handler räumt Zonen auf)

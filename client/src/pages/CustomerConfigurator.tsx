@@ -164,10 +164,12 @@ export default function CustomerConfigurator() {
   // ─── Auto-Zuweisung: Org-Logo & Abt.-Schrift ─────────────────────────
   const { user, isAuthenticated } = useAuth();
   const { data: myMemberships } = trpc.membership.mine.useQuery(undefined, { enabled: isAuthenticated });
-  // Erste Mitgliedschaft als Kontext (User kann mehreren Orgs angehören)
-  const primaryMembership = useMemo(() => myMemberships?.[0] ?? null, [myMemberships]);
+  // Org-/Abt.-Auswahl wenn User mehreren Orgs angehört
+  const [selectedMembershipIdx, setSelectedMembershipIdx] = useState<number>(0);
+  const primaryMembership = useMemo(() => myMemberships?.[selectedMembershipIdx] ?? myMemberships?.[0] ?? null, [myMemberships, selectedMembershipIdx]);
   const userOrgId = primaryMembership?.orgId ?? null;
   const userDeptId = primaryMembership?.departmentId ?? null;
+  const hasMultipleMemberships = (myMemberships?.length ?? 0) > 1;
 
   // Standard-Logo der Organisation laden
   const { data: orgDefaultLogo } = trpc.orgLogo.getDefault.useQuery(
@@ -236,7 +238,10 @@ export default function CustomerConfigurator() {
   // Load Google Fonts used by zones
   useGoogleFonts(allZones);
 
-  // ─── Auto-Zuweisung: Org-Logo in alle Logo-Zonen setzen (einmalig) ───
+   // Track previous auto-assigned values so we can overwrite on org switch
+  const prevAutoLogoUrl = useRef<string | null>(null);
+  const prevAutoFontFamily = useRef<string | null>(null);
+  // ─── Auto-Zuweisung: Org-Logo in alle Logo-Zonen setzen ───
   useEffect(() => {
     if (autoLogoApplied || !orgDefaultLogo?.imageUrl || allZones.length === 0) return;
     const logoZones = allZones.filter((z) => z.purpose === "logo");
@@ -244,7 +249,9 @@ export default function CustomerConfigurator() {
     setZoneContents((prev) => {
       const updated = { ...prev };
       for (const zone of logoZones) {
-        if (!updated[zone.id]?.imageDataUrl) {
+        const current = updated[zone.id]?.imageDataUrl;
+        // Überschreibe wenn leer ODER wenn es das vorherige auto-gesetzte Logo ist
+        if (!current || current === prevAutoLogoUrl.current) {
           updated[zone.id] = {
             ...updated[zone.id],
             zoneId: zone.id,
@@ -254,10 +261,10 @@ export default function CustomerConfigurator() {
       }
       return updated;
     });
+    prevAutoLogoUrl.current = orgDefaultLogo.imageUrl;
     setAutoLogoApplied(true);
   }, [orgDefaultLogo, allZones, autoLogoApplied]);
-
-  // ─── Auto-Zuweisung: Abt.-Schrift in alle Text-Zonen setzen (einmalig) ───
+  // ─── Auto-Zuweisung: Abt.-Schrift in alle Text-Zonen setzen ───
   useEffect(() => {
     if (autoFontApplied || !deptDefaultFont?.fontFamily || allZones.length === 0) return;
     const textZones = allZones.filter((z) => z.purpose !== "logo");
@@ -265,7 +272,9 @@ export default function CustomerConfigurator() {
     setZoneContents((prev) => {
       const updated = { ...prev };
       for (const zone of textZones) {
-        if (!updated[zone.id]?.fontFamily) {
+        const current = updated[zone.id]?.fontFamily;
+        // Überschreibe wenn leer ODER wenn es die vorherige auto-gesetzte Schrift ist
+        if (!current || current === prevAutoFontFamily.current) {
           updated[zone.id] = {
             ...updated[zone.id],
             zoneId: zone.id,
@@ -275,6 +284,7 @@ export default function CustomerConfigurator() {
       }
       return updated;
     });
+    prevAutoFontFamily.current = deptDefaultFont.fontFamily;
     setAutoFontApplied(true);
     if (deptDefaultFont.fontFamily !== "Inter") {
       const link = document.createElement("link");
@@ -1301,6 +1311,50 @@ export default function CustomerConfigurator() {
 
           {/* Right: Configuration Panel */}
           <div className="space-y-4">
+            {/* Org-/Abt.-Auswahl bei mehreren Mitgliedschaften */}
+            {isAuthenticated && myMemberships && myMemberships.length > 0 && (
+              <Card className="p-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Shield className="w-4 h-4 text-primary" />
+                  <span className="font-medium">
+                    {primaryMembership?.orgName ?? "Organisation"}
+                    {primaryMembership?.departmentName ? ` / ${primaryMembership.departmentName}` : ""}
+                  </span>
+                  {hasMultipleMemberships && (
+                    <select
+                      className="ml-auto text-xs border rounded px-2 py-1 bg-background"
+                      value={selectedMembershipIdx}
+                      onChange={(e) => {
+                        // Vorherige auto-gesetzte Werte aus Logo-/Text-Zonen entfernen
+                        setZoneContents((prev) => {
+                          const updated = { ...prev };
+                          for (const zone of allZones) {
+                            if (zone.purpose === "logo" && updated[zone.id]?.imageDataUrl === prevAutoLogoUrl.current) {
+                              updated[zone.id] = { ...updated[zone.id], zoneId: zone.id, imageDataUrl: undefined as any };
+                            }
+                            if (zone.purpose !== "logo" && updated[zone.id]?.fontFamily === prevAutoFontFamily.current) {
+                              updated[zone.id] = { ...updated[zone.id], zoneId: zone.id, fontFamily: undefined as any };
+                            }
+                          }
+                          return updated;
+                        });
+                        prevAutoLogoUrl.current = null;
+                        prevAutoFontFamily.current = null;
+                        setSelectedMembershipIdx(Number(e.target.value));
+                        setAutoLogoApplied(false);
+                        setAutoFontApplied(false);
+                      }}
+                    >
+                      {myMemberships.map((m, i) => (
+                        <option key={i} value={i}>
+                          {m.orgName}{m.departmentName ? ` / ${m.departmentName}` : ""} ({m.role === "owner" ? "Verantwortlicher" : m.role === "department_lead" ? "Spartenleiter" : "Trainer"})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </Card>
+            )}
             <Tabs defaultValue="zones">
               <TabsList className="w-full">
                 {(isSublimation || isDtf) && (

@@ -609,7 +609,21 @@ export async function listAllUsers() {
 export async function listMembershipsByUser(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(memberships).where(eq(memberships.userId, userId));
+  const rows = await db
+    .select({
+      id: memberships.id,
+      orgId: memberships.orgId,
+      departmentId: memberships.departmentId,
+      userId: memberships.userId,
+      role: memberships.role,
+      orgName: organizations.name,
+      departmentName: departments.name,
+    })
+    .from(memberships)
+    .innerJoin(organizations, eq(memberships.orgId, organizations.id))
+    .leftJoin(departments, eq(memberships.departmentId, departments.id))
+    .where(eq(memberships.userId, userId));
+  return rows;
 }
 
 // ─── Teams (Mannschaften) ──────────────────────────────────────────────────

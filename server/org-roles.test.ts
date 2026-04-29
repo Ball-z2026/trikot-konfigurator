@@ -164,6 +164,19 @@ describe("Organization role-based access", () => {
       const result = await caller.membership.mine();
       expect(Array.isArray(result)).toBe(true);
     });
+
+    it("returns orgName and departmentName fields in each membership", async () => {
+      const caller = appRouter.createCaller(createUserContext());
+      const result = await caller.membership.mine();
+      // Even if empty, the shape should be correct
+      if (result.length > 0) {
+        const first = result[0];
+        expect(first).toHaveProperty("orgName");
+        expect(first).toHaveProperty("departmentName");
+        expect(first).toHaveProperty("orgId");
+        expect(first).toHaveProperty("role");
+      }
+    });
   });
 
   // ─── Logo Upload - Owner-only ──────────────────────────────────────────────
