@@ -243,6 +243,11 @@ export default function DeptDashboard() {
           deptId={deptId}
           members={members}
         />
+
+        <Separator />
+
+        {/* Bestellübersicht */}
+        <OrderOverviewSection orgId={orgId} deptId={deptId} />
       </div>
     </div>
   );
@@ -1165,6 +1170,108 @@ function TrainerSection({
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Order Overview Section (Bestellübersicht) ──────────────────────────────
+function OrderOverviewSection({
+  orgId,
+  deptId,
+}: {
+  orgId: number;
+  deptId: number;
+}) {
+  const { data: overview, isLoading } = trpc.orderOverview.byDepartment.useQuery(
+    { departmentId: deptId, orgId },
+    { enabled: deptId > 0 && orgId > 0 }
+  );
+
+  const paymentTypeLabel = (type: string | null) => {
+    switch (type) {
+      case "club": return "Verein zahlt";
+      case "sponsor": return "Sponsor zahlt";
+      case "self": return "Selbstzahler";
+      default: return "Nicht festgelegt";
+    }
+  };
+
+  const statusBadge = (item: any) => {
+    if (!item.paymentType) {
+      return <Badge variant="outline" className="text-muted-foreground">Offen</Badge>;
+    }
+    if (item.paymentStatus === "confirmed") {
+      return <Badge className="bg-green-600 text-white">Bestätigt</Badge>;
+    }
+    return <Badge variant="outline" className="text-amber-600 border-amber-600">Ausstehend</Badge>;
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Shield className="w-5 h-5 text-indigo-600" />
+            Bestellübersicht
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Übersicht aller Mannschaften mit Zahlungsstatus.
+          </p>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-10">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : !overview || overview.length === 0 ? (
+        <div className="text-center py-10 bg-muted/30 rounded-xl border border-dashed">
+          <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">
+            Noch keine Mannschaften in Ihrer Abteilung
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Sobald Trainer Mannschaften anlegen, erscheint hier die Bestellübersicht.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left">
+                <th className="py-3 px-2 font-medium">Mannschaft</th>
+                <th className="py-3 px-2 font-medium">Trainer</th>
+                <th className="py-3 px-2 font-medium">Spieler</th>
+                <th className="py-3 px-2 font-medium">Zahlungsmodell</th>
+                <th className="py-3 px-2 font-medium">Status</th>
+                <th className="py-3 px-2 font-medium">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {overview.map((item) => (
+                <tr key={item.teamId} className="border-b hover:bg-muted/30">
+                  <td className="py-3 px-2 font-medium">{item.teamName}</td>
+                  <td className="py-3 px-2">{item.trainerName}</td>
+                  <td className="py-3 px-2">{item.playerCount}</td>
+                  <td className="py-3 px-2">{paymentTypeLabel(item.paymentType)}</td>
+                  <td className="py-3 px-2">{statusBadge(item)}</td>
+                  <td className="py-3 px-2 text-muted-foreground text-xs">
+                    {item.paymentType === "self" && item.playersPaid !== null && (
+                      <span>{item.playersPaid}/{item.playersTotal} bezahlt</span>
+                    )}
+                    {item.paymentType === "sponsor" && item.sponsorName && (
+                      <span>Sponsor: {item.sponsorName}</span>
+                    )}
+                    {item.paymentType === "club" && item.paymentStatus === "confirmed" && item.confirmedAt && (
+                      <span>Bestätigt am {new Date(item.confirmedAt).toLocaleDateString("de-DE")}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

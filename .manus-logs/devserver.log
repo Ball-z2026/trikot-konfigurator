@@ -3605,3 +3605,36 @@
 [2026-04-29T21:59:37.916Z] [Auth] Missing session cookie
 [2026-04-29T21:59:38.361Z] [Auth] Missing session cookie
 [2026-04-29T21:59:38.365Z] [Auth] Missing session cookie
+[2026-04-30T03:48:20.493Z] [Auth] Missing session cookie
+[2026-04-30T03:49:59.699Z] 11:49:59 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-04-30T03:51:20.575Z] 11:51:20 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-30T03:51:45.764Z] 11:51:45 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-04-30T03:51:52.450Z] Dev server process group stopped
+[2026-04-30T03:51:52.513Z] Dev server exited with code -15
+[2026-04-30T03:51:55.495Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-30T03:51:57.772Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T03:51:58.175Z] Server running on http://localhost:3000/
+[2026-04-30T03:58:29.137Z] 11:58:29 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T03:58:30.800Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T03:58:31.071Z] Server running on http://localhost:3000/
+[2026-04-30T03:58:52.856Z] 11:58:52 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T03:58:54.583Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T03:58:54.867Z] Server running on http://localhost:3000/
+[2026-04-30T03:58:58.860Z] 11:58:58 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T03:59:00.518Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T03:59:00.809Z] Server running on http://localhost:3000/
+[2026-04-30T03:59:07.922Z] 11:59:07 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T03:59:09.795Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T03:59:10.063Z] Server running on http://localhost:3000/
+[2026-04-30T04:00:55.295Z] 12:00:55 AM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T04:01:19.284Z] 12:01:19 AM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T04:02:52.880Z] [Auth] Missing session cookie
+[2026-04-30T04:02:52.935Z] [Auth] Missing session cookie
+[2026-04-30T04:02:52.944Z] [Auth] Missing session cookie
+[2026-04-30T04:02:52.953Z] [Auth] Missing session cookie
+[2026-04-30T04:02:52.963Z] [Auth] Missing session cookie
+[2026-04-30T04:02:52.976Z] [Auth] Missing session cookie
+[2026-04-30T04:02:52.983Z] [Auth] Missing session cookie
+[2026-04-30T04:02:52.990Z] [Auth] Missing session cookie
+[2026-04-30T04:02:53.539Z] [Auth] Missing session cookie
+[2026-04-30T04:02:53.547Z] [Auth] Missing session cookie

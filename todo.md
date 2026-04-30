@@ -397,3 +397,18 @@
 - [x] Test: Neuen Trainer über Registrierungsseite anlegen (eigen.trainer@test.com -> /trainer/180002/180002)
 - [x] Test: Prüfen ob selbstregistrierter Trainer volle Logo-Upload-Rechte hat (Logo-Upload-Button sichtbar)
 - [x] Test: Eingeladener Trainer sieht Logo read-only ("Das Logo wird vom Spartenleiter verwaltet")
+
+## Konfigurator-Vorschau: Kompletter Durchlauf
+
+- [x] Test: Als Trainer einloggen und Mannschaft öffnen
+- [x] Test: "Zum Konfigurator"-Link klicken und prüfen ob Logo automatisch geladen wird
+- [x] Test: Spielernamen und -nummern auf dem Trikot platzieren
+- [x] Test: Trikot-Design exportieren/speichern
+
+## Bestellübersicht für Spartenleiter
+
+- [x] Backend: Prozedur die alle Mannschaften der Abteilung mit Zahlungsstatus zusammenfasst
+- [x] Backend: Bestellfortschritt pro Mannschaft (konfiguriert/nicht konfiguriert, bezahlt/offen)
+- [x] Frontend: Neue Seite/Bereich im Spartenleiter-Dashboard mit Bestellübersicht
+- [x] Frontend: Tabelle mit Mannschaft, Trainer, Zahlungsmodell, Status, Fortschritt
+- [ ] Frontend: Filter/Sortierung nach Status (offen/bestätigt/abgeschlossen)

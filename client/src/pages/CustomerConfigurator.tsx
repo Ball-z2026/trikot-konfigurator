@@ -140,6 +140,12 @@ export default function CustomerConfigurator() {
   const { id } = useParams<{ id: string }>();
   const productId = parseInt(id || "0");
 
+  // Team-ID aus Query-Parameter lesen (vom Trainer-Dashboard)
+  const teamIdParam = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("teamId") ? parseInt(params.get("teamId")!) : null;
+  }, []);
+
   const { data: productData, isLoading } = trpc.product.getById.useQuery(
     { id: productId },
     { enabled: productId > 0 }
@@ -152,6 +158,7 @@ export default function CustomerConfigurator() {
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
   const [clubName, setClubName] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
+  const [teamPlayersLoaded, setTeamPlayersLoaded] = useState(false);
   const [newPlayerNumber, setNewPlayerNumber] = useState("");
   const [newPlayerName, setNewPlayerName] = useState("");
   const [activePlayerIdx, setActivePlayerIdx] = useState<number | null>(null);
@@ -309,7 +316,23 @@ export default function CustomerConfigurator() {
     }
   }, [deptDefaultFont, allZones, autoFontApplied]);
 
-  // Auto-select first partt
+  // ─── Auto-Ladung: Spieler aus Team laden (wenn teamId-Parameter vorhanden) ───
+  const { data: teamData } = trpc.team.getById.useQuery(
+    { id: teamIdParam!, orgId: userOrgId! },
+    { enabled: !!teamIdParam && !!userOrgId && !teamPlayersLoaded }
+  );
+  useEffect(() => {
+    if (teamPlayersLoaded || !teamData?.players || teamData.players.length === 0) return;
+    const loadedPlayers: Player[] = teamData.players.map((p: any) => ({
+      number: p.number || "",
+      name: p.name,
+    }));
+    setPlayers(loadedPlayers);
+    setTeamPlayersLoaded(true);
+    toast.success(`${loadedPlayers.length} Spieler aus "${teamData.name}" geladen`);
+  }, [teamData, teamPlayersLoaded]);
+
+  // Auto-select first parttt
   useEffect(() => {
     if (hasParts && activePartId === null && parts.length > 0) {
       const sorted = [...parts].sort((a, b) => a.sortOrder - b.sortOrder);

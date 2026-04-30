@@ -80,6 +80,7 @@ import {
   listPlayerPayments,
   setPlayerPaid,
   deletePlayerPayments,
+  getOrderOverviewByDepartment,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1295,6 +1296,18 @@ export const appRouter = router({
           throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
         }
         return listPlayerPayments(input.teamId);
+      }),
+  }),
+
+  // ─── Order Overview (Bestellübersicht für Spartenleiter) ─────────────────────────────────
+  orderOverview: router({
+    /** Bestellübersicht aller Mannschaften einer Abteilung */
+    byDepartment: protectedProcedure
+      .input(z.object({ departmentId: z.number(), orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        // Nur Owner oder Spartenleiter dürfen die Übersicht sehen
+        await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
+        return getOrderOverviewByDepartment(input.departmentId);
       }),
   }),
 

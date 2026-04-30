@@ -680,7 +680,7 @@ function TeamDetail({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/">
+            <Link href={`/konfigurator/90020?teamId=${teamId}`}>
               <Button size="sm" variant="outline">
                 <Shirt className="w-4 h-4 mr-2" />
                 Zum Konfigurator

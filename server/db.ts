@@ -1,4 +1,4 @@
-import { eq, and, asc, not } from "drizzle-orm";
+import { eq, and, asc, not, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -944,4 +944,77 @@ export async function deletePlayerPayments(teamId: number) {
   const db = await getDb();
   if (!db) return;
   await db.delete(playerPayments).where(eq(playerPayments.teamId, teamId));
+}
+
+// ─── Order Overview (Bestellübersicht) ──────────────────────────────────────
+/**
+ * Gibt eine Übersicht aller Mannschaften einer Abteilung mit Zahlungsstatus zurück.
+ * Für den Spartenleiter: Mannschaft, Trainer, Zahlungsmodell, Status, Spieleranzahl.
+ */
+export async function getOrderOverviewByDepartment(departmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Get all teams in this department
+  const teamsList = await db.select().from(teams).where(eq(teams.departmentId, departmentId));
+  if (teamsList.length === 0) return [];
+  // Get trainer info for all teams
+  const trainerIds = [...new Set(teamsList.map(t => t.trainerId))];
+  const trainerRows = trainerIds.length > 0
+    ? await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(inArray(users.id, trainerIds))
+    : [];
+  const trainerMap = new Map(trainerRows.map(t => [t.id, t]));
+  // Get team payment info for all teams
+  const teamIds = teamsList.map(t => t.id);
+  const paymentRows = teamIds.length > 0
+    ? await db.select().from(teamPayments).where(inArray(teamPayments.teamId, teamIds))
+    : [];
+  const paymentMap = new Map(paymentRows.map(p => [p.teamId, p]));
+  // Get player counts per team
+  const playerRows = teamIds.length > 0
+    ? await db.select().from(players).where(inArray(players.teamId, teamIds))
+    : [];
+  const playerCountMap = new Map<number, number>();
+  for (const p of playerRows) {
+    playerCountMap.set(p.teamId, (playerCountMap.get(p.teamId) || 0) + 1);
+  }
+  // Get player payments for self-pay teams
+  const selfPayTeamIds = paymentRows.filter(p => p.paymentType === "self").map(p => p.teamId);
+  const playerPaymentRows = selfPayTeamIds.length > 0
+    ? await db.select().from(playerPayments).where(inArray(playerPayments.teamId, selfPayTeamIds))
+    : [];
+  const playerPaidMap = new Map<number, { paid: number; total: number }>();
+  for (const teamId of selfPayTeamIds) {
+    const teamPlayers = playerRows.filter(p => p.teamId === teamId);
+    const paidPlayers = playerPaymentRows.filter(pp => pp.teamId === teamId && pp.paid);
+    playerPaidMap.set(teamId, { paid: paidPlayers.length, total: teamPlayers.length });
+  }
+  // Get sponsor info for sponsor-pay teams
+  const sponsorTeamIds = paymentRows.filter(p => p.paymentType === "sponsor").map(p => p.teamId);
+  const sponsorRows = sponsorTeamIds.length > 0
+    ? await db.select().from(sponsors).where(inArray(sponsors.teamId, sponsorTeamIds))
+    : [];
+  const sponsorMap = new Map(sponsorRows.map(s => [s.teamId, s]));
+  return teamsList.map(team => {
+    const trainer = trainerMap.get(team.trainerId);
+    const payment = paymentMap.get(team.id);
+    const playerCount = playerCountMap.get(team.id) || 0;
+    const playerPaidInfo = playerPaidMap.get(team.id);
+    const sponsor = sponsorMap.get(team.id);
+    return {
+      teamId: team.id,
+      teamName: team.name,
+      trainerName: trainer?.name || trainer?.email || "Unbekannt",
+      trainerId: team.trainerId,
+      playerCount,
+      paymentType: payment?.paymentType || null,
+      paymentStatus: payment?.status || null,
+      confirmedAt: payment?.confirmedAt || null,
+      // For self-pay: how many players have paid
+      playersPaid: playerPaidInfo?.paid || null,
+      playersTotal: playerPaidInfo?.total || null,
+      // For sponsor-pay: sponsor company name
+      sponsorName: sponsor?.companyName || null,
+      createdAt: team.createdAt,
+    };
+  });
 }
