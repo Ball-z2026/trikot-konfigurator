@@ -335,3 +335,24 @@ export const playerPayments = mysqlTable("player_payments", {
 
 export type PlayerPayment = typeof playerPayments.$inferSelect;
 export type InsertPlayerPayment = typeof playerPayments.$inferInsert;
+
+/**
+ * Order Comments – Kommentare zwischen Spartenleiter und Trainer zu einer Mannschaftsbestellung.
+ * Ermöglicht direkte Kommunikation im Kontext der Bestellübersicht.
+ */
+export const orderComments = mysqlTable("order_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  teamId: int("teamId").notNull(),
+  /** Wer hat den Kommentar geschrieben */
+  userId: int("userId").notNull(),
+  /** Name des Verfassers (zum Zeitpunkt des Kommentars) */
+  userName: varchar("userName", { length: 255 }).notNull(),
+  /** Rolle des Verfassers: department_lead oder trainer */
+  userRole: mysqlEnum("userRole", ["department_lead", "trainer"]).notNull(),
+  /** Kommentar-Text */
+  message: text("message").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OrderComment = typeof orderComments.$inferSelect;
+export type InsertOrderComment = typeof orderComments.$inferInsert;

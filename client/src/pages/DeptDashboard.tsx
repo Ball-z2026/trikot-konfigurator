@@ -35,10 +35,16 @@ import {
   Upload,
   UserPlus,
   Users,
+  MessageCircle,
+  Send,
+  ArrowLeft,
 } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { OrderCommentThread } from "./OrderCommentThread";
 
 /** Vordefinierte Google-Fonts-Auswahl */
 const PRESET_FONTS = [
@@ -1176,6 +1182,7 @@ function TrainerSection({
   );
 }
 
+
 // ─── Order Overview Section (Bestellübersicht) ──────────────────────────────
 function OrderOverviewSection({
   orgId,
@@ -1190,6 +1197,18 @@ function OrderOverviewSection({
   );
   const [statusFilter, setStatusFilter] = useState<"all" | "offen" | "ausstehend" | "bestaetigt">("all");
   const [sortBy, setSortBy] = useState<"name" | "status">("name");
+  const [selectedTeam, setSelectedTeam] = useState<{
+    teamId: number;
+    teamName: string;
+    trainerName: string;
+  } | null>(null);
+
+  // Kommentar-Anzahl pro Team laden
+  const teamIds = useMemo(() => (overview || []).map((t) => t.teamId), [overview]);
+  const { data: commentCounts } = trpc.orderComment.countByTeams.useQuery(
+    { teamIds },
+    { enabled: teamIds.length > 0 }
+  );
 
   const paymentTypeLabel = (type: string | null) => {
     switch (type) {
@@ -1228,6 +1247,28 @@ function OrderOverviewSection({
     return a.teamName.localeCompare(b.teamName);
   });
 
+  // Detailansicht mit Kommentaren
+  if (selectedTeam) {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Shield className="w-5 h-5 text-indigo-600" />
+              Bestellübersicht
+            </h2>
+          </div>
+        </div>
+        <OrderCommentThread
+          teamId={selectedTeam.teamId}
+          teamName={selectedTeam.teamName}
+          trainerName={selectedTeam.trainerName}
+          onBack={() => setSelectedTeam(null)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -1237,7 +1278,7 @@ function OrderOverviewSection({
             Bestellübersicht
           </h2>
           <p className="text-sm text-muted-foreground">
-            Übersicht aller Mannschaften mit Zahlungsstatus.
+            Übersicht aller Mannschaften mit Zahlungsstatus. Klicken Sie auf eine Zeile für Details und Kommunikation.
           </p>
         </div>
       </div>
@@ -1300,24 +1341,45 @@ function OrderOverviewSection({
                   <th className="py-3 px-2 font-medium">Spieler</th>
                   <th className="py-3 px-2 font-medium">Zahlungsmodell</th>
                   <th className="py-3 px-2 font-medium">Status</th>
+                  <th className="py-3 px-2 font-medium">Kommentare</th>
                   <th className="py-3 px-2 font-medium">Details</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredAndSorted.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                    <td colSpan={7} className="py-6 text-center text-muted-foreground">
                       Keine Mannschaften mit diesem Status gefunden.
                     </td>
                   </tr>
                 ) : (
                   filteredAndSorted.map((item) => (
-                    <tr key={item.teamId} className="border-b hover:bg-muted/30">
+                    <tr
+                      key={item.teamId}
+                      className="border-b hover:bg-muted/30 cursor-pointer"
+                      onClick={() =>
+                        setSelectedTeam({
+                          teamId: item.teamId,
+                          teamName: item.teamName,
+                          trainerName: item.trainerName,
+                        })
+                      }
+                    >
                       <td className="py-3 px-2 font-medium">{item.teamName}</td>
                       <td className="py-3 px-2">{item.trainerName}</td>
                       <td className="py-3 px-2">{item.playerCount}</td>
                       <td className="py-3 px-2">{paymentTypeLabel(item.paymentType)}</td>
                       <td className="py-3 px-2">{statusBadge(item)}</td>
+                      <td className="py-3 px-2">
+                        {commentCounts && commentCounts[item.teamId] ? (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <MessageCircle className="w-3 h-3" />
+                            {commentCounts[item.teamId]}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
                       <td className="py-3 px-2 text-muted-foreground text-xs">
                         {item.paymentType === "self" && item.playersPaid !== null && (
                           <span>{item.playersPaid}/{item.playersTotal} bezahlt</span>

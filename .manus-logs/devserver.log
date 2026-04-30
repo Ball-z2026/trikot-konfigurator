@@ -3649,3 +3649,95 @@
 [2026-04-30T04:05:16.416Z] [Auth] Missing session cookie
 [2026-04-30T04:05:17.016Z] [Auth] Missing session cookie
 [2026-04-30T04:05:17.024Z] [Auth] Missing session cookie
+[2026-04-30T17:35:10.604Z] 1:35:10 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-30T17:35:12.505Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:35:12.874Z] Server running on http://localhost:3000/
+[2026-04-30T17:35:39.093Z] 1:35:39 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T17:35:40.737Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:35:41.054Z] Server running on http://localhost:3000/
+[2026-04-30T17:35:49.339Z] 1:35:49 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T17:35:50.960Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:35:51.252Z] Server running on http://localhost:3000/
+[2026-04-30T17:36:03.345Z] 1:36:03 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T17:36:05.118Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:36:05.390Z] Server running on http://localhost:3000/
+[2026-04-30T17:36:16.258Z] 1:36:16 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T17:36:17.764Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:36:18.069Z] Server running on http://localhost:3000/
+[2026-04-30T17:36:25.166Z] 1:36:25 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T17:36:26.904Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:36:27.202Z] Server running on http://localhost:3000/
+[2026-04-30T17:36:36.452Z] 1:36:36 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T17:36:38.214Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:36:38.480Z] Server running on http://localhost:3000/
+[2026-04-30T17:37:11.341Z] 1:37:11 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T17:37:13.022Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:37:13.380Z] Server running on http://localhost:3000/
+[2026-04-30T17:38:06.839Z] 1:38:06 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T17:38:08.494Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:38:08.780Z] Server running on http://localhost:3000/
+[2026-04-30T17:42:09.143Z] 1:42:09 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T17:42:17.819Z] 1:42:17 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T17:42:26.509Z] 1:42:26 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T17:43:12.026Z] 1:43:12 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T17:43:33.661Z] 1:43:33 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T17:44:02.971Z] 1:44:02 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-04-30T17:44:43.992Z] 1:44:43 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T17:44:45.612Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:44:45.915Z] Server running on http://localhost:3000/
+[2026-04-30T17:45:28.634Z] Dev server process group stopped
+[2026-04-30T17:45:28.710Z] Dev server exited with code -15
+[2026-04-30T17:45:31.704Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-04-30T17:45:33.842Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:45:34.149Z] Server running on http://localhost:3000/
+[2026-04-30T17:46:10.919Z] 1:46:10 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T17:46:11.200Z] c
+[2026-04-30T17:46:11.201Z] node:internal/modules/run_main:122
+[2026-04-30T17:46:11.201Z] triggerUncaughtException(
+[2026-04-30T17:46:11.202Z] ^
+[2026-04-30T17:46:11.202Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-30T17:46:11.202Z] /home/ubuntu/trikot-konfigurator/server/routers.ts:1378:20: ERROR: Expected ";" but found "("
+[2026-04-30T17:46:11.203Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-30T17:46:11.203Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-30T17:46:11.203Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-30T17:46:11.204Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-30T17:46:11.204Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-30T17:46:11.205Z] at Socket.emit (node:events:524:28)
+[2026-04-30T17:46:11.205Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-30T17:46:11.205Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-30T17:46:11.206Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-30T17:46:11.206Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-30T17:46:11.206Z] 
+[2026-04-30T17:46:11.207Z] Node.js v22.13.0
+[2026-04-30T17:46:24.291Z] 1:46:24 PM [tsx] change in ./server/routers.ts Rerunning...
+[2026-04-30T17:46:24.567Z] c
+[2026-04-30T17:46:24.568Z] node:internal/modules/run_main:122
+[2026-04-30T17:46:24.569Z] triggerUncaughtException(
+[2026-04-30T17:46:24.570Z] ^
+[2026-04-30T17:46:24.571Z] Error [TransformError]: Transform failed with 1 error:
+[2026-04-30T17:46:24.571Z] /home/ubuntu/trikot-konfigurator/server/routers.ts:1378:20: ERROR: Expected ";" but found "("
+[2026-04-30T17:46:24.572Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-04-30T17:46:24.573Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-04-30T17:46:24.573Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-04-30T17:46:24.574Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-04-30T17:46:24.575Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-04-30T17:46:24.576Z] at Socket.emit (node:events:524:28)
+[2026-04-30T17:46:24.576Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-04-30T17:46:24.577Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-04-30T17:46:24.577Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-04-30T17:46:24.578Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-04-30T17:46:24.578Z] 
+[2026-04-30T17:46:24.578Z] Node.js v22.13.0
+[2026-04-30T17:46:49.176Z] 1:46:49 PM [tsx] change in ./server/routers.ts Rerunning...
+[2026-04-30T17:46:50.629Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T17:46:50.883Z] Server running on http://localhost:3000/
+[2026-04-30T17:49:45.661Z] [Auth] Missing session cookie
+[2026-04-30T17:49:45.701Z] [Auth] Missing session cookie
+[2026-04-30T17:49:45.709Z] [Auth] Missing session cookie
+[2026-04-30T17:49:45.717Z] [Auth] Missing session cookie
+[2026-04-30T17:49:45.726Z] [Auth] Missing session cookie
+[2026-04-30T17:49:45.735Z] [Auth] Missing session cookie
+[2026-04-30T17:49:45.743Z] [Auth] Missing session cookie
+[2026-04-30T17:49:45.754Z] [Auth] Missing session cookie
+[2026-04-30T17:49:46.187Z] [Auth] Missing session cookie
+[2026-04-30T17:49:46.193Z] [Auth] Missing session cookie

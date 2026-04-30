@@ -412,3 +412,27 @@
 - [x] Frontend: Neue Seite/Bereich im Spartenleiter-Dashboard mit Bestellübersicht
 - [x] Frontend: Tabelle mit Mannschaft, Trainer, Zahlungsmodell, Status, Fortschritt
 - [x] Frontend: Filter/Sortierung nach Status (offen/bestätigt/abgeschlossen)
+
+## Kommentarfunktion in Bestellübersicht
+
+### DB-Schema
+- [x] Kommentare-Tabelle (order_comments): id, teamId, userId, userName, userRole, message, createdAt
+- [x] Migration ausführen (pnpm db:push)
+
+### Backend
+- [x] DB-Helper: createOrderComment, listOrderCommentsByTeam, countOrderCommentsByTeams
+- [x] tRPC-Prozedur: orderComment.create (Spartenleiter + Trainer dürfen kommentieren)
+- [x] tRPC-Prozedur: orderComment.listByTeam (Kommentare einer Mannschaft laden)
+- [x] tRPC-Prozedur: orderComment.countByTeams (Kommentar-Anzahl pro Mannschaft)
+- [x] Berechtigungsprüfung: Nur Spartenleiter der Abteilung und Trainer der Mannschaft dürfen kommentieren/lesen
+
+### Frontend
+- [x] Detailansicht pro Mannschaft in der Bestellübersicht (Klick auf Zeile öffnet Details)
+- [x] Kommentar-Thread mit Nachrichten (Name, Rolle, Zeitstempel, Text)
+- [x] Kommentar-Eingabefeld mit Senden-Button (Enter zum Senden)
+- [x] Visuelle Unterscheidung zwischen Spartenleiter- und Trainer-Kommentaren (Indigo vs. Emerald, rechts vs. links)
+- [x] Kommentar-Anzahl-Badge in der Bestellübersicht-Tabelle
+- [x] Zurück-Button zur Übersicht
+
+### Tests
+- [x] Vitest: Kommentar-CRUD und Berechtigungsprüfung (94 Tests bestanden)

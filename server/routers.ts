@@ -81,6 +81,9 @@ import {
   setPlayerPaid,
   deletePlayerPayments,
   getOrderOverviewByDepartment,
+  createOrderComment,
+  listOrderCommentsByTeam,
+  countOrderCommentsByTeams,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1308,6 +1311,65 @@ export const appRouter = router({
         // Nur Owner oder Spartenleiter dürfen die Übersicht sehen
         await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
         return getOrderOverviewByDepartment(input.departmentId);
+      }),
+  }),
+  // ─── Order Comments ─────────────────────────────────────────────────────────────────────
+  orderComment: router({
+    /** Kommentar zu einer Mannschaftsbestellung erstellen */
+    create: protectedProcedure
+      .input(z.object({
+        teamId: z.number(),
+        message: z.string().min(1).max(2000),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Team laden um orgId und departmentId zu prüfen
+        const team = await getTeamById(input.teamId);
+        if (!team) throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        // Prüfen ob User berechtigt ist (Spartenleiter der Abteilung ODER Trainer der Mannschaft)
+        const allMemberships = await getAllMembershipsByUserAndOrg(ctx.user.id, team.orgId);
+        if (allMemberships.length === 0) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        }
+        const isOwner = allMemberships.some(m => m.role === "owner");
+        const isDeptLead = allMemberships.some(m => m.role === "department_lead" && m.departmentId === team.departmentId);
+        const isTrainer = team.trainerId === ctx.user.id;
+        if (!isOwner && !isDeptLead && !isTrainer) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur Spartenleiter und Trainer dieser Mannschaft dürfen kommentieren" });
+        }
+        const userRole = (isOwner || isDeptLead) ? "department_lead" as const : "trainer" as const;
+        const userName = ctx.user.name || "Unbekannt";
+        const commentId = await createOrderComment({
+          teamId: input.teamId,
+          userId: ctx.user.id,
+          userName,
+          userRole,
+          message: input.message,
+        });
+        return { id: commentId };
+      }),
+    /** Kommentare einer Mannschaft laden */
+    listByTeam: protectedProcedure
+      .input(z.object({ teamId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const team = await getTeamById(input.teamId);
+        if (!team) throw new TRPCError({ code: "NOT_FOUND", message: "Mannschaft nicht gefunden" });
+        const allMemberships = await getAllMembershipsByUserAndOrg(ctx.user.id, team.orgId);
+        if (allMemberships.length === 0) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        }
+        const isOwner = allMemberships.some(m => m.role === "owner");
+        const isDeptLead = allMemberships.some(m => m.role === "department_lead" && m.departmentId === team.departmentId);
+        const isTrainer = team.trainerId === ctx.user.id;
+        if (!isOwner && !isDeptLead && !isTrainer) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung zum Lesen der Kommentare" });
+        }
+        return listOrderCommentsByTeam(input.teamId);
+      }),
+    /** Kommentar-Anzahl pro Mannschaft (für Badge in Bestellübersicht) */
+    countByTeams: protectedProcedure
+      .input(z.object({ teamIds: z.array(z.number()) }))
+      .query(async ({ input }) => {
+        return countOrderCommentsByTeams(input.teamIds);
       }),
   }),
 

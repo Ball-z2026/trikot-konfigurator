@@ -23,6 +23,8 @@ import {
   players,
   InsertTeam,
   InsertPlayer,
+  orderComments,
+  InsertOrderComment,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1017,4 +1019,51 @@ export async function getOrderOverviewByDepartment(departmentId: number) {
       createdAt: team.createdAt,
     };
   });
+}
+
+
+// ─── Order Comments ─────────────────────────────────────────────────────────
+
+export async function createOrderComment(data: {
+  teamId: number;
+  userId: number;
+  userName: string;
+  userRole: "department_lead" | "trainer";
+  message: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(orderComments).values({
+    teamId: data.teamId,
+    userId: data.userId,
+    userName: data.userName,
+    userRole: data.userRole,
+    message: data.message,
+  }).$returningId();
+  return result.id;
+}
+
+export async function listOrderCommentsByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db
+    .select()
+    .from(orderComments)
+    .where(eq(orderComments.teamId, teamId))
+    .orderBy(asc(orderComments.createdAt));
+}
+
+export async function countOrderCommentsByTeams(teamIds: number[]) {
+  if (teamIds.length === 0) return {};
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const allComments = await db
+    .select({ teamId: orderComments.teamId })
+    .from(orderComments)
+    .where(inArray(orderComments.teamId, teamIds));
+  const counts: Record<number, number> = {};
+  for (const c of allComments) {
+    counts[c.teamId] = (counts[c.teamId] || 0) + 1;
+  }
+  return counts;
 }
