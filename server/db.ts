@@ -1171,3 +1171,27 @@ export async function getOtherUserReadReceipt(teamId: number, currentUserId: num
   if (receipts.length === 0) return null;
   return receipts.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime())[0];
 }
+
+/**
+ * Ensure at least one admin exists. If no admin exists, promote the oldest user to admin.
+ * Called at server startup.
+ */
+export async function ensureAdminExists() {
+  const db = await getDb();
+  if (!db) return;
+  const admins = await db.select({ id: users.id })
+    .from(users)
+    .where(eq(users.role, "admin"))
+    .limit(1);
+  if (admins.length === 0) {
+    // Promote the oldest user to admin
+    const oldest = await db.select({ id: users.id })
+      .from(users)
+      .orderBy(users.id)
+      .limit(1);
+    if (oldest.length > 0) {
+      await db.update(users).set({ role: "admin" }).where(eq(users.id, oldest[0].id));
+      console.log(`[Admin] Promoted user ${oldest[0].id} to admin (no admin existed)`);
+    }
+  }
+}

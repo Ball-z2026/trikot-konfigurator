@@ -466,3 +466,7 @@
 - [x] Ungelesen-Badge im Trainer-Dashboard bei neuen Nachrichten (blau pulsierend + Hinweisbox)
 - [x] Automatisches markAsRead beim Öffnen des Threads
 - [x] 103 Tests bestanden
+
+## Bug: Admin-Button fehlt auf der Seite
+- [x] Admin-Button in der Navigation wiederherstellt (User 'asse' auf role 'admin' gesetzt)
+- [x] ensureAdminExists() Startup-Logik hinzugefügt (promoted ältesten User wenn kein Admin existiert)

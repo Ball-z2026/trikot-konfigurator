@@ -8,6 +8,7 @@ import { registerLocalAuthRoutes } from "../localAuth";
 import { registerUploadRoute } from "../uploadRoute";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
+import { ensureAdminExists } from "../db";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
@@ -41,6 +42,8 @@ async function startServer() {
   registerLocalAuthRoutes(app);
   registerUploadRoute(app);
   // tRPC API
+  // Ensure at least one admin exists
+  await ensureAdminExists();
   app.use(
     "/api/trpc",
     createExpressMiddleware({
