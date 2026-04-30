@@ -48,11 +48,14 @@ import {
   Star,
   StarOff,
   Info,
+  MessageCircle,
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { PaymentSection } from "./PaymentSection";
+import { OrderCommentThread } from "./OrderCommentThread";
+import { useMemo } from "react";
 
 // ─── Logo Section für selbstregistrierte Trainer ─────────────────────────────
 function TrainerLogoSection({ orgId }: { orgId: number }) {
@@ -1039,6 +1042,9 @@ function TeamDetail({
         )}
         {/* Abrechnungs-Bereich */}
         <PaymentSection teamId={teamId} orgId={orgId} players={players} />
+        {/* Kommunikation mit Spartenleiter */}
+        <Separator className="my-6" />
+        <TrainerCommentSection teamId={teamId} teamName={team.name} />
       </div>
     </div>
   );
@@ -1102,4 +1108,70 @@ export default function TrainerDashboard() {
   }
 
   return <TeamList orgId={orgId} deptId={deptId} />;
+}
+
+
+// ─── Trainer Comment Section ─────────────────────────────────────────────────
+function TrainerCommentSection({ teamId, teamName }: { teamId: number; teamName: string }) {
+  const [showThread, setShowThread] = useState(false);
+  const teamIds = useMemo(() => [teamId], [teamId]);
+  const { data: unreadCounts } = trpc.orderComment.getUnreadCounts.useQuery(
+    { teamIds },
+    { refetchInterval: 30000 }
+  );
+  const { data: commentCounts } = trpc.orderComment.countByTeams.useQuery(
+    { teamIds },
+    { enabled: teamIds.length > 0 }
+  );
+
+  const unreadCount = unreadCounts?.[teamId] || 0;
+  const totalCount = commentCounts?.[teamId] || 0;
+
+  if (showThread) {
+    return (
+      <div>
+        <OrderCommentThread
+          teamId={teamId}
+          teamName={teamName}
+          trainerName="Spartenleiter"
+          onBack={() => setShowThread(false)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <MessageCircle className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-lg font-bold">Kommunikation</h2>
+          {unreadCount > 0 && (
+            <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0 h-5 animate-pulse">
+              {unreadCount} neu
+            </Badge>
+          )}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowThread(true)}
+          className="gap-2"
+        >
+          <MessageCircle className="w-4 h-4" />
+          {totalCount > 0 ? `${totalCount} Nachrichten` : "Nachricht schreiben"}
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Kommunizieren Sie hier direkt mit dem Spartenleiter Ihrer Abteilung.
+      </p>
+      {unreadCount > 0 && (
+        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-700 font-medium">
+            Sie haben {unreadCount} ungelesene {unreadCount === 1 ? "Nachricht" : "Nachrichten"} vom Spartenleiter.
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }

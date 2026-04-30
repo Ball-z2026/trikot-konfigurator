@@ -458,3 +458,11 @@
 
 ### Tests
 - [x] Vitest: markAsRead, getUnreadCounts, getReadReceipt, Berechtigungsprüfung (103 Tests bestanden)
+
+### Kommentarfunktion im Trainer-Dashboard
+### Frontend
+- [x] Trainer-Dashboard Team-Detailansicht: Kommentar-Thread integrieren (OrderCommentThread wiederverwendet)
+- [x] Trainer sieht Nachrichten vom Spartenleiter und kann antworten
+- [x] Ungelesen-Badge im Trainer-Dashboard bei neuen Nachrichten (blau pulsierend + Hinweisbox)
+- [x] Automatisches markAsRead beim Öffnen des Threads
+- [x] 103 Tests bestanden
