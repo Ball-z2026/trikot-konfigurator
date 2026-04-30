@@ -480,3 +480,14 @@
 - [x] Frontend: Laden-Button im Konfigurator mit Liste gespeicherter Designs
 - [x] Frontend: Überschreiben-Option für bestehende Designs
 - [x] Logo-Anzeige: Funktioniert auf Dev-Server korrekt, auf deployed Seite nach Publish sichtbar
+
+## Testverein TSV Musterstadt 1920
+
+- [x] Testverein erstellt: TSV Musterstadt 1920 mit 4 Sparten (Basketball, Fußball, Handball, Volleyball)
+- [x] Je 4 Mannschaften pro Sparte mit je 1 Trainer und 15 Spielern (240 Spieler total)
+- [x] Owner-Login getestet (owner@tsv-musterstadt.de → /org/240001)
+- [x] Spartenleiter-Login getestet (spartenleiter.volleyball@tsv-musterstadt.de → /dept-dashboard)
+- [x] Trainer-Login getestet (trainer.volleyball.1@tsv-musterstadt.de → /trainer/240001/240001)
+- [x] Konfigurator-Test: Spieler automatisch geladen, Vereinsname gesperrt, Logo-Zone gesperrt
+- [x] Bestellübersicht: 4 Mannschaften mit je 15 Spielern, Filter und Sortierung funktionieren
+- [x] Seed-Scripts aufgeräumt (seed-testverein.mjs, describe-users.mjs, check-logos.mjs gelöscht)
