@@ -436,3 +436,25 @@
 
 ### Tests
 - [x] Vitest: Kommentar-CRUD und Berechtigungsprüfung (94 Tests bestanden)
+
+## Lesebestätigungen für Kommentare
+
+### DB-Schema
+- [x] commentReadReceipts-Tabelle: id, teamId, userId, lastReadAt, createdAt, updatedAt
+- [x] Migration ausführen (pnpm db:push)
+
+### Backend
+- [x] DB-Helper: markCommentsAsRead (Upsert), getReadReceiptsByTeam, getUnreadCommentCounts, getOtherUserReadReceipt
+- [x] tRPC-Prozedur: orderComment.markAsRead (beim Öffnen des Threads aufrufen)
+- [x] tRPC-Prozedur: orderComment.getUnreadCounts (ungelesene Kommentare pro Team zählen)
+- [x] tRPC-Prozedur: orderComment.getReadReceipt (Lesebestätigung des Gegenübers)
+- [x] Logik: Vergleich lastReadAt mit createdAt der neuesten Kommentare anderer User
+
+### Frontend
+- [x] Kommentar-Thread: Automatisch als gelesen markieren beim Öffnen (markAsRead aufrufen)
+- [x] Bestellübersicht: Ungelesen-Badge neben Kommentar-Anzahl (z.B. "3 neu", blau pulsierend)
+- [x] Kommentar-Thread: Lesebestätigung unter letzter gelesener Nachricht (Doppelhaken + "Gelesen" mit Zeitstempel)
+- [x] Automatisches Refetching: Unread-Counts alle 30s, Kommentare alle 15s
+
+### Tests
+- [x] Vitest: markAsRead, getUnreadCounts, getReadReceipt, Berechtigungsprüfung (103 Tests bestanden)

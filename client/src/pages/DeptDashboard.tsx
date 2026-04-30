@@ -1210,6 +1210,12 @@ function OrderOverviewSection({
     { enabled: teamIds.length > 0 }
   );
 
+  // Ungelesene Kommentare pro Team laden
+  const { data: unreadCounts } = trpc.orderComment.getUnreadCounts.useQuery(
+    { teamIds },
+    { enabled: teamIds.length > 0, refetchInterval: 30000 }
+  );
+
   const paymentTypeLabel = (type: string | null) => {
     switch (type) {
       case "club": return "Verein zahlt";
@@ -1371,14 +1377,21 @@ function OrderOverviewSection({
                       <td className="py-3 px-2">{paymentTypeLabel(item.paymentType)}</td>
                       <td className="py-3 px-2">{statusBadge(item)}</td>
                       <td className="py-3 px-2">
-                        {commentCounts && commentCounts[item.teamId] ? (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <MessageCircle className="w-3 h-3" />
-                            {commentCounts[item.teamId]}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {commentCounts && commentCounts[item.teamId] ? (
+                            <Badge variant="outline" className="text-xs gap-1">
+                              <MessageCircle className="w-3 h-3" />
+                              {commentCounts[item.teamId]}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                          {unreadCounts && unreadCounts[item.teamId] && unreadCounts[item.teamId] > 0 && (
+                            <Badge className="bg-blue-600 text-white text-[10px] px-1.5 py-0 h-4 animate-pulse">
+                              {unreadCounts[item.teamId]} neu
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-2 text-muted-foreground text-xs">
                         {item.paymentType === "self" && item.playersPaid !== null && (

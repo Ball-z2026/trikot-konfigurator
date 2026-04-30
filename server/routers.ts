@@ -84,6 +84,9 @@ import {
   createOrderComment,
   listOrderCommentsByTeam,
   countOrderCommentsByTeams,
+  markCommentsAsRead,
+  getUnreadCommentCounts,
+  getOtherUserReadReceipt,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1370,6 +1373,27 @@ export const appRouter = router({
       .input(z.object({ teamIds: z.array(z.number()) }))
       .query(async ({ input }) => {
         return countOrderCommentsByTeams(input.teamIds);
+      }),
+    /** Kommentare als gelesen markieren (beim Öffnen des Threads) */
+    markAsRead: protectedProcedure
+      .input(z.object({ teamId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        await markCommentsAsRead(input.teamId, ctx.user.id);
+        return { success: true };
+      }),
+    /** Ungelesene Kommentare pro Team zählen */
+    getUnreadCounts: protectedProcedure
+      .input(z.object({ teamIds: z.array(z.number()) }))
+      .query(async ({ input, ctx }) => {
+        return getUnreadCommentCounts(input.teamIds, ctx.user.id);
+      }),
+    /** Lesebestätigung des Gegenübers holen (für "Gelesen um X Uhr") */
+    getReadReceipt: protectedProcedure
+      .input(z.object({ teamId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const receipt = await getOtherUserReadReceipt(input.teamId, ctx.user.id);
+        if (!receipt) return null;
+        return { userId: receipt.userId, lastReadAt: receipt.lastReadAt };
       }),
   }),
 

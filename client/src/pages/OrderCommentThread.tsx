@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Send, ArrowLeft, MessageCircle, Users } from "lucide-react";
+import { Loader2, Send, ArrowLeft, MessageCircle, CheckCheck } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -24,15 +24,40 @@ export function OrderCommentThread({
     { teamId },
     { refetchInterval: 15000 }
   );
+  const { data: readReceipt } = trpc.orderComment.getReadReceipt.useQuery(
+    { teamId },
+    { refetchInterval: 15000 }
+  );
   const utils = trpc.useUtils();
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Beim Öffnen des Threads: Kommentare als gelesen markieren
+  const markAsRead = trpc.orderComment.markAsRead.useMutation({
+    onSuccess: () => {
+      utils.orderComment.getUnreadCounts.invalidate();
+    },
+  });
+
+  useEffect(() => {
+    markAsRead.mutate({ teamId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamId]);
+
+  // Auch bei neuen Kommentaren als gelesen markieren
+  useEffect(() => {
+    if (comments && comments.length > 0) {
+      markAsRead.mutate({ teamId });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comments?.length]);
 
   const createComment = trpc.orderComment.create.useMutation({
     onSuccess: () => {
       setMessage("");
       utils.orderComment.listByTeam.invalidate({ teamId });
       utils.orderComment.countByTeams.invalidate();
+      utils.orderComment.getReadReceipt.invalidate({ teamId });
     },
     onError: (err) => {
       toast.error(err.message || "Kommentar konnte nicht gesendet werden");
@@ -56,6 +81,38 @@ export function OrderCommentThread({
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // Finde die letzte eigene Nachricht, um die Lesebestätigung darunter anzuzeigen
+  const lastOwnMessageIndex = comments
+    ? [...comments].reverse().findIndex((c) => {
+        // Prüfe ob die Nachricht vom aktuellen User ist
+        // Wir nutzen die Rolle als Heuristik: Wenn wir im Spartenleiter-Dashboard sind,
+        // sind unsere Nachrichten "department_lead", sonst "trainer"
+        return true; // Wird unten per userId gefiltert
+      })
+    : -1;
+
+  // Bestimme ob die Lesebestätigung unter der letzten Nachricht angezeigt werden soll
+  const showReadReceipt = (commentIndex: number) => {
+    if (!readReceipt || !comments || comments.length === 0) return false;
+    // Finde die letzte Nachricht die VOR dem readReceipt.lastReadAt liegt
+    const comment = comments[commentIndex];
+    if (!comment) return false;
+    // Zeige "Gelesen" nur unter der letzten Nachricht die vom Gegenüber gelesen wurde
+    // und die nicht vom Gegenüber selbst geschrieben wurde
+    const readTime = new Date(readReceipt.lastReadAt).getTime();
+    const commentTime = new Date(comment.createdAt).getTime();
+    // Prüfe ob dies die letzte Nachricht ist, die gelesen wurde
+    if (commentTime > readTime) return false;
+    // Prüfe ob die nächste Nachricht nach dem Lesen kam
+    const nextComment = comments[commentIndex + 1];
+    if (!nextComment) {
+      // Letzte Nachricht insgesamt - zeige Gelesen wenn sie vor dem Lesen war
+      return true;
+    }
+    const nextTime = new Date(nextComment.createdAt).getTime();
+    return nextTime > readTime;
   };
 
   return (
@@ -102,44 +159,61 @@ export function OrderCommentThread({
                 </p>
               </div>
             ) : (
-              comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className={`flex flex-col ${
-                    comment.userRole === "department_lead"
-                      ? "items-end"
-                      : "items-start"
-                  }`}
-                >
+              comments.map((comment, index) => (
+                <div key={comment.id}>
                   <div
-                    className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                    className={`flex flex-col ${
                       comment.userRole === "department_lead"
-                        ? "bg-indigo-600 text-white"
-                        : "bg-muted"
+                        ? "items-end"
+                        : "items-start"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{comment.message}</p>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="text-[10px] text-muted-foreground">
-                      {comment.userName}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] px-1 py-0 h-4"
+                    <div
+                      className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                        comment.userRole === "department_lead"
+                          ? "bg-indigo-600 text-white"
+                          : "bg-muted"
+                      }`}
                     >
-                      {comment.userRole === "department_lead"
-                        ? "Spartenleiter"
-                        : "Trainer"}
-                    </Badge>
-                    <span className="text-[10px] text-muted-foreground">
-                      {new Date(comment.createdAt).toLocaleString("de-DE", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                      <p className="text-sm whitespace-pre-wrap">{comment.message}</p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 px-1">
+                      <span className="text-[10px] text-muted-foreground">
+                        {comment.userName}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] px-1 py-0 h-4"
+                      >
+                        {comment.userRole === "department_lead"
+                          ? "Spartenleiter"
+                          : "Trainer"}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(comment.createdAt).toLocaleString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                    {/* Lesebestätigung */}
+                    {showReadReceipt(index) && (
+                      <div className={`flex items-center gap-1 mt-0.5 px-1 ${
+                        comment.userRole === "department_lead" ? "justify-end" : "justify-start"
+                      }`}>
+                        <CheckCheck className="w-3 h-3 text-blue-500" />
+                        <span className="text-[9px] text-blue-500 font-medium">
+                          Gelesen {new Date(readReceipt!.lastReadAt).toLocaleString("de-DE", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

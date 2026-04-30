@@ -1,4 +1,4 @@
-import { eq, and, asc, not, inArray } from "drizzle-orm";
+import { eq, and, asc, not, inArray, gt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -24,6 +24,7 @@ import {
   InsertTeam,
   InsertPlayer,
   orderComments,
+  commentReadReceipts,
   InsertOrderComment,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -1066,4 +1067,107 @@ export async function countOrderCommentsByTeams(teamIds: number[]) {
     counts[c.teamId] = (counts[c.teamId] || 0) + 1;
   }
   return counts;
+}
+
+// ─── Comment Read Receipts ─────────────────────────────────────────────────────
+
+/**
+ * Markiert Kommentare als gelesen für einen User in einem Team.
+ * Upsert: Wenn bereits ein Eintrag existiert, wird lastReadAt aktualisiert.
+ */
+export async function markCommentsAsRead(teamId: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const existing = await db
+    .select()
+    .from(commentReadReceipts)
+    .where(and(eq(commentReadReceipts.teamId, teamId), eq(commentReadReceipts.userId, userId)))
+    .limit(1);
+  if (existing.length > 0) {
+    await db
+      .update(commentReadReceipts)
+      .set({ lastReadAt: new Date() })
+      .where(and(eq(commentReadReceipts.teamId, teamId), eq(commentReadReceipts.userId, userId)));
+  } else {
+    await db.insert(commentReadReceipts).values({
+      teamId,
+      userId,
+      lastReadAt: new Date(),
+    });
+  }
+}
+
+/**
+ * Holt die Lesebestätigungen für ein Team.
+ */
+export async function getReadReceiptsByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(commentReadReceipts)
+    .where(eq(commentReadReceipts.teamId, teamId));
+}
+
+/**
+ * Zählt ungelesene Kommentare pro Team für einen bestimmten User.
+ * Ungelesen = Kommentare von ANDEREN Usern, die nach dem letzten Lesen erstellt wurden.
+ */
+export async function getUnreadCommentCounts(teamIds: number[], userId: number): Promise<Record<number, number>> {
+  if (teamIds.length === 0) return {};
+  const db = await getDb();
+  if (!db) return {};
+  const receipts = await db
+    .select()
+    .from(commentReadReceipts)
+    .where(and(
+      inArray(commentReadReceipts.teamId, teamIds),
+      eq(commentReadReceipts.userId, userId)
+    ));
+  const receiptMap = new Map(receipts.map(r => [r.teamId, r.lastReadAt]));
+  const result: Record<number, number> = {};
+  for (const teamId of teamIds) {
+    const lastRead = receiptMap.get(teamId);
+    let unreadComments;
+    if (lastRead) {
+      unreadComments = await db
+        .select()
+        .from(orderComments)
+        .where(and(
+          eq(orderComments.teamId, teamId),
+          not(eq(orderComments.userId, userId)),
+          gt(orderComments.createdAt, lastRead)
+        ));
+    } else {
+      unreadComments = await db
+        .select()
+        .from(orderComments)
+        .where(and(
+          eq(orderComments.teamId, teamId),
+          not(eq(orderComments.userId, userId))
+        ));
+    }
+    if (unreadComments.length > 0) {
+      result[teamId] = unreadComments.length;
+    }
+  }
+  return result;
+}
+
+/**
+ * Holt die Lesebestätigung des Gegenübers für ein Team.
+ * Gibt den Zeitpunkt zurück, wann der andere User zuletzt gelesen hat.
+ */
+export async function getOtherUserReadReceipt(teamId: number, currentUserId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const receipts = await db
+    .select()
+    .from(commentReadReceipts)
+    .where(and(
+      eq(commentReadReceipts.teamId, teamId),
+      not(eq(commentReadReceipts.userId, currentUserId))
+    ));
+  if (receipts.length === 0) return null;
+  return receipts.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime())[0];
 }

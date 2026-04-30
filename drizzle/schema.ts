@@ -356,3 +356,21 @@ export const orderComments = mysqlTable("order_comments", {
 
 export type OrderComment = typeof orderComments.$inferSelect;
 export type InsertOrderComment = typeof orderComments.$inferInsert;
+
+/**
+ * Comment Read Receipts – Lesebestätigungen für Kommentare.
+ * Speichert pro User und Team den Zeitpunkt des letzten Lesens.
+ * Damit können ungelesene Kommentare berechnet werden.
+ */
+export const commentReadReceipts = mysqlTable("comment_read_receipts", {
+  id: int("id").autoincrement().primaryKey(),
+  teamId: int("teamId").notNull(),
+  userId: int("userId").notNull(),
+  /** Zeitpunkt des letzten Lesens der Kommentare */
+  lastReadAt: timestamp("lastReadAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CommentReadReceipt = typeof commentReadReceipts.$inferSelect;
+export type InsertCommentReadReceipt = typeof commentReadReceipts.$inferInsert;
