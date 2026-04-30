@@ -491,3 +491,9 @@
 - [x] Konfigurator-Test: Spieler automatisch geladen, Vereinsname gesperrt, Logo-Zone gesperrt
 - [x] Bestellübersicht: 4 Mannschaften mit je 15 Spielern, Filter und Sortierung funktionieren
 - [x] Seed-Scripts aufgeräumt (seed-testverein.mjs, describe-users.mjs, check-logos.mjs gelöscht)
+
+## Live-Test: Logo-Upload und Kommentarfunktion
+
+- [x] Logo als Spartenleiter hochladen und im Konfigurator als Trainer verifizieren
+- [x] Kommentar als Spartenleiter schreiben und Unread-Badge beim Trainer prüfen
+- [x] Deployment auf Live-URL aktualisieren
