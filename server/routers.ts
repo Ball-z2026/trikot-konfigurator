@@ -82,6 +82,12 @@ import {
   deletePlayerPayments,
   getOrderOverviewByDepartment,
   createOrderComment,
+  createSavedDesign,
+  listSavedDesigns,
+  listSavedDesignsByTeam,
+  getSavedDesign,
+  updateSavedDesign,
+  deleteSavedDesign,
   listOrderCommentsByTeam,
   countOrderCommentsByTeams,
   markCommentsAsRead,
@@ -1474,6 +1480,73 @@ export const appRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: "Sie können sich nicht selbst löschen" });
         }
         await deleteUser(input.userId);
+        return { success: true };
+      }),
+  }),
+
+  savedDesign: router({
+    /** Design speichern */
+    save: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1, "Bitte einen Namen eingeben"),
+        teamId: z.number(),
+        productId: z.number(),
+        zonesConfig: z.unknown(),
+        colorsConfig: z.unknown().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const id = await createSavedDesign({
+          name: input.name,
+          teamId: input.teamId,
+          productId: input.productId,
+          userId: ctx.user.id,
+          zonesConfig: input.zonesConfig,
+          colorsConfig: input.colorsConfig,
+        });
+        return { id, name: input.name };
+      }),
+
+    /** Gespeicherte Designs eines Teams laden */
+    list: protectedProcedure
+      .input(z.object({ teamId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return listSavedDesignsByTeam(input.teamId);
+      }),
+
+    /** Einzelnes Design laden */
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return getSavedDesign(input.id);
+      }),
+
+    /** Design aktualisieren (überschreiben) */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).optional(),
+        zonesConfig: z.unknown().optional(),
+        colorsConfig: z.unknown().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const design = await getSavedDesign(input.id);
+        if (!design || design.userId !== ctx.user.id) {
+          throw new Error("Design nicht gefunden oder keine Berechtigung");
+        }
+        const { id, ...data } = input;
+        await updateSavedDesign(id, data);
+        return { success: true };
+      }),
+
+    /** Design löschen */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const design = await getSavedDesign(input.id);
+        if (!design || design.userId !== ctx.user.id) {
+          throw new Error("Design nicht gefunden oder keine Berechtigung");
+        }
+        await deleteSavedDesign(input.id);
         return { success: true };
       }),
   }),

@@ -1,4 +1,4 @@
-import { eq, and, asc, not, inArray, gt, sql } from "drizzle-orm";
+import { eq, and, asc, desc, not, inArray, gt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -26,6 +26,7 @@ import {
   orderComments,
   commentReadReceipts,
   InsertOrderComment,
+  savedDesigns,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1194,4 +1195,59 @@ export async function ensureAdminExists() {
       console.log(`[Admin] Promoted user ${oldest[0].id} to admin (no admin existed)`);
     }
   }
+}
+
+// ─── Saved Designs ─────────────────────────────────────────────────────────────
+
+export async function createSavedDesign(data: {
+  name: string;
+  teamId: number;
+  productId: number;
+  userId: number;
+  zonesConfig: unknown;
+  colorsConfig?: unknown;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(savedDesigns).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function listSavedDesigns(teamId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(savedDesigns)
+    .where(and(eq(savedDesigns.teamId, teamId), eq(savedDesigns.userId, userId)))
+    .orderBy(desc(savedDesigns.updatedAt));
+}
+
+export async function listSavedDesignsByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(savedDesigns)
+    .where(eq(savedDesigns.teamId, teamId))
+    .orderBy(desc(savedDesigns.updatedAt));
+}
+
+export async function getSavedDesign(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const rows = await db.select().from(savedDesigns).where(eq(savedDesigns.id, id));
+  return rows[0] || null;
+}
+
+export async function updateSavedDesign(id: number, data: {
+  name?: string;
+  zonesConfig?: unknown;
+  colorsConfig?: unknown;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(savedDesigns).set(data).where(eq(savedDesigns.id, id));
+}
+
+export async function deleteSavedDesign(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(savedDesigns).where(eq(savedDesigns.id, id));
 }

@@ -3829,3 +3829,33 @@
 [2026-04-30T18:54:24.402Z] [Auth] Missing session cookie
 [2026-04-30T18:54:24.777Z] [Auth] Missing session cookie
 [2026-04-30T18:54:24.781Z] [Auth] Missing session cookie
+[2026-04-30T19:41:27.046Z] 3:41:27 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-04-30T19:41:28.658Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T19:41:29.150Z] Server running on http://localhost:3000/
+[2026-04-30T19:42:00.610Z] 3:42:00 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T19:42:02.348Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T19:42:02.851Z] Server running on http://localhost:3000/
+[2026-04-30T19:42:18.559Z] 3:42:18 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T19:42:20.108Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T19:42:20.509Z] Server running on http://localhost:3000/
+[2026-04-30T19:42:31.869Z] 3:42:31 PM [tsx] change in ./server/db.ts Restarting...
+[2026-04-30T19:42:33.434Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T19:42:33.825Z] Server running on http://localhost:3000/
+[2026-04-30T19:42:44.574Z] 3:42:44 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T19:42:46.065Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T19:42:46.435Z] Server running on http://localhost:3000/
+[2026-04-30T19:43:16.936Z] 3:43:16 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-04-30T19:43:18.651Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-04-30T19:43:19.046Z] Server running on http://localhost:3000/
+[2026-04-30T19:49:27.663Z] 3:49:27 PM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-dropdown-menu
+[2026-04-30T19:49:27.664Z] 3:49:27 PM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-04-30T19:53:31.264Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.300Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.314Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.323Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.337Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.344Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.349Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.354Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.756Z] [Auth] Missing session cookie
+[2026-04-30T19:53:31.766Z] [Auth] Missing session cookie

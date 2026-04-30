@@ -470,3 +470,13 @@
 ## Bug: Admin-Button fehlt auf der Seite
 - [x] Admin-Button in der Navigation wiederherstellt (User 'asse' auf role 'admin' gesetzt)
 - [x] ensureAdminExists() Startup-Logik hinzugefügt (promoted ältesten User wenn kein Admin existiert)
+
+## Speichern-Funktion im Konfigurator + Logo-Fix
+- [x] DB-Schema: savedDesigns-Tabelle (id, name, teamId, productId, userId, zonesConfig JSON, createdAt, updatedAt)
+- [x] DB-Migration ausführen
+- [x] Backend: DB-Helper (createSavedDesign, listSavedDesigns, getSavedDesign, updateSavedDesign, deleteSavedDesign)
+- [x] Backend: tRPC-Prozeduren (save, list, get, update, delete)
+- [x] Frontend: Speichern-Button im Konfigurator mit Dialog für Design-Name
+- [x] Frontend: Laden-Button im Konfigurator mit Liste gespeicherter Designs
+- [x] Frontend: Überschreiben-Option für bestehende Designs
+- [x] Logo-Anzeige: Funktioniert auf Dev-Server korrekt, auf deployed Seite nach Publish sichtbar

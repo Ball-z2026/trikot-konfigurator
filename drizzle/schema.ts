@@ -374,3 +374,29 @@ export const commentReadReceipts = mysqlTable("comment_read_receipts", {
 
 export type CommentReadReceipt = typeof commentReadReceipts.$inferSelect;
 export type InsertCommentReadReceipt = typeof commentReadReceipts.$inferInsert;
+
+/**
+ * Saved Designs – Gespeicherte Trikot-Designs.
+ * Trainer können ihre konfigurierten Designs mit einem Namen speichern
+ * und später wieder laden/bearbeiten.
+ */
+export const savedDesigns = mysqlTable("saved_designs", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Name des Designs (vom Trainer vergeben) */
+  name: varchar("name", { length: 255 }).notNull(),
+  /** Welches Team */
+  teamId: int("teamId").notNull(),
+  /** Welches Produkt-Template */
+  productId: int("productId").notNull(),
+  /** Wer hat es erstellt */
+  userId: int("userId").notNull(),
+  /** Komplette Zonen-Konfiguration als JSON */
+  zonesConfig: json("zonesConfig").notNull(),
+  /** Ausgewählte Farben als JSON */
+  colorsConfig: json("colorsConfig"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SavedDesign = typeof savedDesigns.$inferSelect;
+export type InsertSavedDesign = typeof savedDesigns.$inferInsert;

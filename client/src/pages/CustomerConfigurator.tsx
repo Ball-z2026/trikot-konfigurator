@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +31,10 @@ import {
   Droplets,
   Palette,
   Lock,
+  Save,
+  FolderOpen,
+  MoreVertical,
+  Pencil,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
@@ -163,6 +169,51 @@ export default function CustomerConfigurator() {
   const [newPlayerName, setNewPlayerName] = useState("");
   const [activePlayerIdx, setActivePlayerIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
+  // ─── Saved Designs State ─────────────────────────────────────────────────
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false);
+  const [designName, setDesignName] = useState("");
+  const [savingDesign, setSavingDesign] = useState(false);
+  const [currentDesignId, setCurrentDesignId] = useState<number | null>(null);
+  const [currentDesignName, setCurrentDesignName] = useState<string | null>(null);
+  
+  // ─── Saved Designs tRPC ─────────────────────────────────────────────────
+  const { data: savedDesigns, refetch: refetchDesigns } = trpc.savedDesign.list.useQuery(
+    { teamId: teamIdParam! },
+    { enabled: !!teamIdParam }
+  );
+  const saveMutation = trpc.savedDesign.save.useMutation({
+    onSuccess: (result) => {
+      setCurrentDesignId(result.id);
+      setCurrentDesignName(result.name);
+      setSaveDialogOpen(false);
+      setDesignName("");
+      setSavingDesign(false);
+      refetchDesigns();
+      toast.success(`Design "${result.name}" gespeichert`);
+    },
+    onError: () => {
+      setSavingDesign(false);
+      toast.error("Speichern fehlgeschlagen");
+    },
+  });
+  const updateMutation = trpc.savedDesign.update.useMutation({
+    onSuccess: () => {
+      setSavingDesign(false);
+      refetchDesigns();
+      toast.success("Design aktualisiert");
+    },
+    onError: () => {
+      setSavingDesign(false);
+      toast.error("Aktualisierung fehlgeschlagen");
+    },
+  });
+  const deleteMutation = trpc.savedDesign.delete.useMutation({
+    onSuccess: () => {
+      refetchDesigns();
+      toast.success("Design gelöscht");
+    },
+  });
   const [partColors, setPartColors] = useState<Record<number, string>>({});
   const [dtfBaseColor, setDtfBaseColor] = useState<string | null>(null);
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
@@ -666,6 +717,58 @@ export default function CustomerConfigurator() {
       </svg>
     </span>
   );
+  // ─── Save/Load Design ──────────────────────────────────────────────────────
+  const handleSaveDesign = useCallback(() => {
+    if (!teamIdParam) {
+      toast.error("Kein Team zugeordnet - Speichern nur über Trainer-Dashboard möglich");
+      return;
+    }
+    if (currentDesignId) {
+      // Bestehendes Design überschreiben
+      setSavingDesign(true);
+      updateMutation.mutate({
+        id: currentDesignId,
+        zonesConfig: zoneContents,
+        colorsConfig: { partColors, dtfBaseColor },
+      });
+    } else {
+      // Neues Design - Dialog öffnen für Namen
+      setSaveDialogOpen(true);
+    }
+  }, [teamIdParam, currentDesignId, zoneContents, partColors, dtfBaseColor, updateMutation]);
+
+  const handleSaveAsNew = useCallback(() => {
+    if (!designName.trim()) {
+      toast.error("Bitte einen Namen eingeben");
+      return;
+    }
+    setSavingDesign(true);
+    saveMutation.mutate({
+      name: designName.trim(),
+      teamId: teamIdParam!,
+      productId,
+      zonesConfig: zoneContents,
+      colorsConfig: { partColors, dtfBaseColor },
+    });
+  }, [designName, teamIdParam, productId, zoneContents, partColors, dtfBaseColor, saveMutation]);
+
+  const handleLoadDesign = useCallback((design: any) => {
+    // Zonen-Konfiguration laden
+    if (design.zonesConfig) {
+      setZoneContents(design.zonesConfig as Record<number, any>);
+    }
+    // Farben laden
+    if (design.colorsConfig) {
+      const colors = design.colorsConfig as any;
+      if (colors.partColors) setPartColors(colors.partColors);
+      if (colors.dtfBaseColor) setDtfBaseColor(colors.dtfBaseColor);
+    }
+    setCurrentDesignId(design.id);
+    setCurrentDesignName(design.name);
+    setLoadDialogOpen(false);
+    toast.success(`Design "${design.name}" geladen`);
+  }, []);
+
   // ─── Export ───────────────────────────────────────────────────────────────────────
   const waitForRepaint = useCallback(() => {
     return new Promise<void>((resolve) => {
@@ -912,6 +1015,35 @@ export default function CustomerConfigurator() {
             )}
           </div>
           <div className="flex gap-1.5 sm:gap-2 shrink-0">
+            {/* Save/Load Buttons */}
+            {teamIdParam && (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm">
+                      <Save className="w-3.5 h-3.5 sm:mr-1.5" />
+                      <span className="hidden sm:inline">{currentDesignName || "Speichern"}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {currentDesignId && (
+                      <DropdownMenuItem onClick={handleSaveDesign}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Speichern (überschreiben)
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => { setDesignName(""); setSaveDialogOpen(true); }}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Speichern unter...
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLoadDialogOpen(true)}>
+                      <FolderOpen className="w-4 h-4 mr-2" />
+                      Design laden
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -1967,6 +2099,62 @@ export default function CustomerConfigurator() {
           </div>
         </div>
       </main>
+      {/* Save Design Dialog */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Design speichern</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="design-name">Name des Designs</Label>
+              <Input
+                id="design-name"
+                placeholder="z.B. Heimtrikot 2026, Auswärts-Design..."
+                value={designName}
+                onChange={(e) => setDesignName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveAsNew()}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Abbrechen</Button>
+            <Button onClick={handleSaveAsNew} disabled={savingDesign || !designName.trim()}>
+              {savingDesign ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Speichern
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Load Design Dialog */}
+      <Dialog open={loadDialogOpen} onOpenChange={setLoadDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Gespeicherte Designs laden</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-4 max-h-80 overflow-y-auto">
+            {!savedDesigns || savedDesigns.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Noch keine Designs gespeichert</p>
+            ) : (
+              savedDesigns.map((design) => (
+                <div key={design.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group" onClick={() => handleLoadDesign(design)}>
+                  <div>
+                    <p className="font-medium text-sm">{design.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(design.updatedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate({ id: design.id }); }}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
