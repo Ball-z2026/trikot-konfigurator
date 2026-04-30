@@ -411,4 +411,4 @@
 - [x] Backend: Bestellfortschritt pro Mannschaft (konfiguriert/nicht konfiguriert, bezahlt/offen)
 - [x] Frontend: Neue Seite/Bereich im Spartenleiter-Dashboard mit Bestellübersicht
 - [x] Frontend: Tabelle mit Mannschaft, Trainer, Zahlungsmodell, Status, Fortschritt
-- [ ] Frontend: Filter/Sortierung nach Status (offen/bestätigt/abgeschlossen)
+- [x] Frontend: Filter/Sortierung nach Status (offen/bestätigt/abgeschlossen)

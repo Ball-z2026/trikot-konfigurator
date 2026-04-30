@@ -1188,6 +1188,8 @@ function OrderOverviewSection({
     { departmentId: deptId, orgId },
     { enabled: deptId > 0 && orgId > 0 }
   );
+  const [statusFilter, setStatusFilter] = useState<"all" | "offen" | "ausstehend" | "bestaetigt">("all");
+  const [sortBy, setSortBy] = useState<"name" | "status">("name");
 
   const paymentTypeLabel = (type: string | null) => {
     switch (type) {
@@ -1198,15 +1200,33 @@ function OrderOverviewSection({
     }
   };
 
+  const getStatusKey = (item: any): "offen" | "ausstehend" | "bestaetigt" => {
+    if (!item.paymentType) return "offen";
+    if (item.paymentStatus === "confirmed") return "bestaetigt";
+    return "ausstehend";
+  };
+
   const statusBadge = (item: any) => {
-    if (!item.paymentType) {
+    const key = getStatusKey(item);
+    if (key === "offen") {
       return <Badge variant="outline" className="text-muted-foreground">Offen</Badge>;
     }
-    if (item.paymentStatus === "confirmed") {
+    if (key === "bestaetigt") {
       return <Badge className="bg-green-600 text-white">Bestätigt</Badge>;
     }
     return <Badge variant="outline" className="text-amber-600 border-amber-600">Ausstehend</Badge>;
   };
+
+  const filteredAndSorted = (overview || []).filter((item) => {
+    if (statusFilter === "all") return true;
+    return getStatusKey(item) === statusFilter;
+  }).sort((a, b) => {
+    if (sortBy === "status") {
+      const order = { offen: 0, ausstehend: 1, bestaetigt: 2 };
+      return order[getStatusKey(a)] - order[getStatusKey(b)];
+    }
+    return a.teamName.localeCompare(b.teamName);
+  });
 
   return (
     <div>
@@ -1237,41 +1257,84 @@ function OrderOverviewSection({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left">
-                <th className="py-3 px-2 font-medium">Mannschaft</th>
-                <th className="py-3 px-2 font-medium">Trainer</th>
-                <th className="py-3 px-2 font-medium">Spieler</th>
-                <th className="py-3 px-2 font-medium">Zahlungsmodell</th>
-                <th className="py-3 px-2 font-medium">Status</th>
-                <th className="py-3 px-2 font-medium">Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {overview.map((item) => (
-                <tr key={item.teamId} className="border-b hover:bg-muted/30">
-                  <td className="py-3 px-2 font-medium">{item.teamName}</td>
-                  <td className="py-3 px-2">{item.trainerName}</td>
-                  <td className="py-3 px-2">{item.playerCount}</td>
-                  <td className="py-3 px-2">{paymentTypeLabel(item.paymentType)}</td>
-                  <td className="py-3 px-2">{statusBadge(item)}</td>
-                  <td className="py-3 px-2 text-muted-foreground text-xs">
-                    {item.paymentType === "self" && item.playersPaid !== null && (
-                      <span>{item.playersPaid}/{item.playersTotal} bezahlt</span>
-                    )}
-                    {item.paymentType === "sponsor" && item.sponsorName && (
-                      <span>Sponsor: {item.sponsorName}</span>
-                    )}
-                    {item.paymentType === "club" && item.paymentStatus === "confirmed" && item.confirmedAt && (
-                      <span>Bestätigt am {new Date(item.confirmedAt).toLocaleDateString("de-DE")}</span>
-                    )}
-                  </td>
+        <div>
+          {/* Filter & Sort Controls */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="text-xs text-muted-foreground">Filter:</span>
+            {(["all", "offen", "ausstehend", "bestaetigt"] as const).map((f) => (
+              <Button
+                key={f}
+                variant={statusFilter === f ? "default" : "outline"}
+                size="sm"
+                className="text-xs h-7"
+                onClick={() => setStatusFilter(f)}
+              >
+                {f === "all" ? "Alle" : f === "offen" ? "Offen" : f === "ausstehend" ? "Ausstehend" : "Bestätigt"}
+              </Button>
+            ))}
+            <span className="text-xs text-muted-foreground ml-4">Sortierung:</span>
+            <Button
+              variant={sortBy === "name" ? "default" : "outline"}
+              size="sm"
+              className="text-xs h-7"
+              onClick={() => setSortBy("name")}
+            >
+              Name
+            </Button>
+            <Button
+              variant={sortBy === "status" ? "default" : "outline"}
+              size="sm"
+              className="text-xs h-7"
+              onClick={() => setSortBy("status")}
+            >
+              Status
+            </Button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left">
+                  <th className="py-3 px-2 font-medium">Mannschaft</th>
+                  <th className="py-3 px-2 font-medium">Trainer</th>
+                  <th className="py-3 px-2 font-medium">Spieler</th>
+                  <th className="py-3 px-2 font-medium">Zahlungsmodell</th>
+                  <th className="py-3 px-2 font-medium">Status</th>
+                  <th className="py-3 px-2 font-medium">Details</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredAndSorted.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                      Keine Mannschaften mit diesem Status gefunden.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAndSorted.map((item) => (
+                    <tr key={item.teamId} className="border-b hover:bg-muted/30">
+                      <td className="py-3 px-2 font-medium">{item.teamName}</td>
+                      <td className="py-3 px-2">{item.trainerName}</td>
+                      <td className="py-3 px-2">{item.playerCount}</td>
+                      <td className="py-3 px-2">{paymentTypeLabel(item.paymentType)}</td>
+                      <td className="py-3 px-2">{statusBadge(item)}</td>
+                      <td className="py-3 px-2 text-muted-foreground text-xs">
+                        {item.paymentType === "self" && item.playersPaid !== null && (
+                          <span>{item.playersPaid}/{item.playersTotal} bezahlt</span>
+                        )}
+                        {item.paymentType === "sponsor" && item.sponsorName && (
+                          <span>Sponsor: {item.sponsorName}</span>
+                        )}
+                        {item.paymentType === "club" && item.paymentStatus === "confirmed" && item.confirmedAt && (
+                          <span>Bestätigt am {new Date(item.confirmedAt).toLocaleDateString("de-DE")}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
