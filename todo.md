@@ -600,7 +600,7 @@
 - [x] Responsive Layout: Canvas sticky auf Desktop, Bild-basierte Höhe statt fester Aspect-Ratio
 
 ## 3D-Mockup (nach Abschluss aller anderen Features)
-- [ ] Nach Freigabe eines Designs: 3D-Mockup aus den konfigurierten Dateien generieren
+- [ ] Nach Freigabe eines Designs: 3D-Mockup aus den konfigurierten Dateien generieren (zurückgestellt – abhängig von API-Entscheidung, siehe docs/3d-mockup-analyse.md)
 - [x] Optionen evaluiert: Three.js, Dynamic Mockups API, VirtualThreads, KI-Bildgenerierung (siehe docs/3d-mockup-analyse.md)
 
 ## Drag-and-Drop für Sponsor-Vorlagen
