@@ -137,6 +137,8 @@ export const products = mysqlTable("products", {
   templateId: varchar("templateId", { length: 100 }),
   /** Farbpalette für Sublimation – JSON-Array von Hex-Farben, z.B. ["#ff0000","#0000ff","#ffffff"] */
   colorPalette: json("colorPalette").$type<string[]>(),
+  /** Freie Zonen-Logik: Trainer definiert Zonen selbst (Position, Größe, Löschen) */
+  freeZoneMode: boolean("freeZoneMode").default(false).notNull(),
   published: boolean("published").default(false).notNull(),
   createdBy: int("createdBy"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

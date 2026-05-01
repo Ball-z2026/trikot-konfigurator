@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `freeZoneMode` boolean DEFAULT false NOT NULL;

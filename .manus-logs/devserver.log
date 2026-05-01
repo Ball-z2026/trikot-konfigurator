@@ -4549,3 +4549,58 @@
 [2026-05-01T10:56:27.340Z] [Auth] Missing session cookie
 [2026-05-01T10:56:27.348Z] [Auth] Missing session cookie
 [2026-05-01T10:56:27.357Z] [Auth] Missing session cookie
+[2026-05-01T11:01:12.433Z] 7:01:12 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-01T11:01:39.259Z] 7:01:39 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-01T11:01:45.763Z] 7:01:45 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-01T11:01:54.525Z] 7:01:54 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-01T11:01:56.356Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T11:01:56.839Z] Server running on http://localhost:3000/
+[2026-05-01T11:02:44.019Z] 7:02:44 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T11:02:45.525Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T11:02:45.892Z] Server running on http://localhost:3000/
+[2026-05-01T11:02:54.694Z] 7:02:54 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T11:02:56.244Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T11:02:56.613Z] Server running on http://localhost:3000/
+[2026-05-01T11:09:43.789Z] Dev server process group stopped
+[2026-05-01T11:09:43.863Z] Dev server exited with code -15
+[2026-05-01T11:09:46.805Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T11:09:48.751Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T11:09:49.285Z] Server running on http://localhost:3000/
+[2026-05-01T11:11:52.523Z] 7:11:52 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T11:11:54.234Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T11:11:54.757Z] Server running on http://localhost:3000/
+[2026-05-01T11:15:51.254Z] Dev server process group stopped
+[2026-05-01T11:15:51.319Z] Dev server exited with code -15
+[2026-05-01T11:15:54.271Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T11:15:56.143Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T11:15:56.656Z] Server running on http://localhost:3000/
+[2026-05-01T11:17:00.940Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.000Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.007Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.014Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.020Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.029Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.039Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.044Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.050Z] [Auth] Missing session cookie
+[2026-05-01T11:17:01.058Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.368Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.397Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.405Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.415Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.423Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.432Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.440Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.447Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.741Z] [Auth] Missing session cookie
+[2026-05-01T11:18:26.747Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.069Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.092Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.099Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.106Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.117Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.124Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.129Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.142Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.303Z] [Auth] Missing session cookie
+[2026-05-01T11:18:39.308Z] [Auth] Missing session cookie

@@ -98,8 +98,11 @@ export default function AdminProducts() {
   const selectedTemplate = TEXTIL_TEMPLATES.find((t) => t.id === selectedTemplateId);
 
   // Filter templates by selected sport (exclude legacy templates from selection)
+  // Bekleidung-Templates (freeZoneMode) werden für alle Sportarten angezeigt
   const filteredTemplates = selectedSport
-    ? TEXTIL_TEMPLATES.filter((t) => t.sport === selectedSport && !t.id.startsWith("trikot_"))
+    ? TEXTIL_TEMPLATES.filter((t) => 
+        (t.sport === selectedSport || t.category === "Bekleidung") && !t.id.startsWith("trikot_")
+      )
     : [];
 
   const handleCreateFromTemplate = () => {
@@ -109,6 +112,7 @@ export default function AdminProducts() {
       description: selectedTemplate.description,
       category: newCategory.trim() || selectedTemplate.category,
       templateId: selectedTemplate.id,
+      freeZoneMode: selectedTemplate.freeZoneMode ?? false,
       parts: selectedTemplate.parts,
     });
   };

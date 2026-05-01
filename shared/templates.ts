@@ -10,7 +10,7 @@
 export interface TemplateZone {
   label: string;
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
@@ -75,6 +75,11 @@ export interface TextilTemplate {
   printMethod: "sublimation" | "dtf";
   /** Vorschaubild für die Auswahl */
   previewUrl: string;
+  /**
+   * Freie Zonen-Logik: Trainer kann eigene Zonen erstellen, verschieben, löschen.
+   * Bei Trikots = false (feste Zonen vom Admin), bei Bekleidung = true.
+   */
+  freeZoneMode?: boolean;
   parts: TemplatePart[];
 }
 
@@ -389,6 +394,209 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     printMethod: "dtf",
     previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
     parts: [VORDERTEIL, RUECKTEIL],
+  },
+  // ===== Bekleidung (freeZoneMode) =====
+  // Bei diesen Produkten definiert der Trainer die Zonen selbst.
+  // Nur das Vereinswappen ist vorbelegt und nicht löschbar.
+  {
+    id: "trainingshose",
+    name: "Trainingshose",
+    description:
+      "Trainingshose mit freier Zonen-Platzierung. Vereinswappen vorbelegt, alle anderen Elemente frei positionierbar.",
+    category: "Bekleidung",
+    sport: "fussball",
+    printMethod: "dtf",
+    freeZoneMode: true,
+    previewUrl: "/manus-storage/trainingshose_front_e7906657.svg",
+    parts: [
+      {
+        key: "vorderteil",
+        label: "Vorderseite",
+        imageUrl: "/manus-storage/trainingshose_front_e7906657.svg",
+        sortOrder: 1,
+        zones: [
+          {
+            label: "Vereinswappen",
+            type: "image",
+            purpose: "clubLogo",
+            posX: 55,
+            posY: 8,
+            width: 20,
+            height: 10,
+            widthCm: 6,
+            heightCm: 6,
+            sortOrder: 1,
+          },
+        ],
+      },
+      {
+        key: "rueckteil",
+        label: "Rückseite",
+        imageUrl: "/manus-storage/trainingshose_back_efd89dfa.svg",
+        sortOrder: 2,
+        zones: [],
+      },
+    ],
+  },
+  {
+    id: "aufwaermshirt",
+    name: "Aufwärmshirt",
+    description:
+      "Langarm-Aufwärmshirt mit freier Zonen-Platzierung. Vereinswappen vorbelegt.",
+    category: "Bekleidung",
+    sport: "fussball",
+    printMethod: "dtf",
+    freeZoneMode: true,
+    previewUrl: "/manus-storage/aufwaermshirt_front_ae95cc7f.svg",
+    parts: [
+      {
+        key: "vorderteil",
+        label: "Vorderseite",
+        imageUrl: "/manus-storage/aufwaermshirt_front_ae95cc7f.svg",
+        sortOrder: 1,
+        zones: [
+          {
+            label: "Vereinswappen",
+            type: "image",
+            purpose: "clubLogo",
+            posX: 55,
+            posY: 15,
+            width: 15,
+            height: 10,
+            widthCm: 8,
+            heightCm: 8,
+            sortOrder: 1,
+          },
+        ],
+      },
+      {
+        key: "rueckteil",
+        label: "Rückseite",
+        imageUrl: "/manus-storage/aufwaermshirt_back_ce952a93.svg",
+        sortOrder: 2,
+        zones: [],
+      },
+    ],
+  },
+  {
+    id: "zipjacke",
+    name: "Zip-Jacke",
+    description:
+      "Jacke mit durchgehendem Reißverschluss und freier Zonen-Platzierung. Vereinswappen vorbelegt.",
+    category: "Bekleidung",
+    sport: "fussball",
+    printMethod: "dtf",
+    freeZoneMode: true,
+    previewUrl: "/manus-storage/zipjacke_front_21c5a323.svg",
+    parts: [
+      {
+        key: "vorderteil",
+        label: "Vorderseite",
+        imageUrl: "/manus-storage/zipjacke_front_21c5a323.svg",
+        sortOrder: 1,
+        zones: [
+          {
+            label: "Vereinswappen",
+            type: "image",
+            purpose: "clubLogo",
+            posX: 55,
+            posY: 15,
+            width: 15,
+            height: 10,
+            widthCm: 8,
+            heightCm: 8,
+            sortOrder: 1,
+          },
+        ],
+      },
+      {
+        key: "rueckteil",
+        label: "Rückseite",
+        imageUrl: "/manus-storage/zipjacke_back_8fd59235.svg",
+        sortOrder: 2,
+        zones: [],
+      },
+    ],
+  },
+  {
+    id: "halfzipper",
+    name: "Half-Zipper",
+    description:
+      "Oberteil mit halbem Reißverschluss und freier Zonen-Platzierung. Vereinswappen vorbelegt.",
+    category: "Bekleidung",
+    sport: "fussball",
+    printMethod: "dtf",
+    freeZoneMode: true,
+    previewUrl: "/manus-storage/halfzipper_front_a4f66ee1.svg",
+    parts: [
+      {
+        key: "vorderteil",
+        label: "Vorderseite",
+        imageUrl: "/manus-storage/halfzipper_front_a4f66ee1.svg",
+        sortOrder: 1,
+        zones: [
+          {
+            label: "Vereinswappen",
+            type: "image",
+            purpose: "clubLogo",
+            posX: 55,
+            posY: 15,
+            width: 15,
+            height: 10,
+            widthCm: 8,
+            heightCm: 8,
+            sortOrder: 1,
+          },
+        ],
+      },
+      {
+        key: "rueckteil",
+        label: "Rückseite",
+        imageUrl: "/manus-storage/halfzipper_back_bb8bc0d7.svg",
+        sortOrder: 2,
+        zones: [],
+      },
+    ],
+  },
+  {
+    id: "warmejacke",
+    name: "Warme Jacke",
+    description:
+      "Gefütterte Winterjacke mit Kapuze und freier Zonen-Platzierung. Vereinswappen vorbelegt.",
+    category: "Bekleidung",
+    sport: "fussball",
+    printMethod: "dtf",
+    freeZoneMode: true,
+    previewUrl: "/manus-storage/warmejacke_front_88ce747a.svg",
+    parts: [
+      {
+        key: "vorderteil",
+        label: "Vorderseite",
+        imageUrl: "/manus-storage/warmejacke_front_88ce747a.svg",
+        sortOrder: 1,
+        zones: [
+          {
+            label: "Vereinswappen",
+            type: "image",
+            purpose: "clubLogo",
+            posX: 55,
+            posY: 18,
+            width: 14,
+            height: 9,
+            widthCm: 8,
+            heightCm: 8,
+            sortOrder: 1,
+          },
+        ],
+      },
+      {
+        key: "rueckteil",
+        label: "Rückseite",
+        imageUrl: "/manus-storage/warmejacke_back_344fce0a.svg",
+        sortOrder: 2,
+        zones: [],
+      },
+    ],
   },
   // ===== Legacy (für bestehende Produkte) =====
   {

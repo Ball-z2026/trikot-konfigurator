@@ -216,7 +216,7 @@ export async function createProductFromTemplate(
     zones: Array<{
       label: string;
       type: "image" | "text" | "both";
-      purpose: "logo" | "playerName" | "playerNumber" | "clubName" | "custom";
+      purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
       posX: number;
       posY: number;
       width: number;

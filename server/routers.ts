@@ -234,6 +234,7 @@ export const appRouter = router({
           description: z.string().optional(),
           category: z.string().optional(),
           templateId: z.string(),
+          freeZoneMode: z.boolean().optional(),
           parts: z.array(
             z.object({
               key: z.string(),
@@ -271,6 +272,7 @@ export const appRouter = router({
             description: input.description || null,
             category: input.category || null,
             templateId: input.templateId,
+            freeZoneMode: input.freeZoneMode ?? false,
             createdBy: ctx.user.id,
           },
           input.parts
@@ -449,6 +451,77 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
+        await bulkUpdateZones(input.zones);
+        return { success: true };
+      }),
+
+    // ─── Trainer-Prozeduren für freeZoneMode (nicht-Admin) ───
+    /** Zone erstellen (nur bei freeZoneMode-Produkten) */
+    freeCreate: protectedProcedure
+      .input(
+        z.object({
+          productId: z.number(),
+          partId: z.number().optional(),
+          label: z.string().min(1),
+          side: z.enum(["front", "back"]).default("front"),
+          type: zoneType.default("text"),
+          purpose: zonePurpose.default("custom"),
+          posX: z.number().min(0).max(100).default(10),
+          posY: z.number().min(0).max(100).default(10),
+          width: z.number().min(1).max(100).default(20),
+          height: z.number().min(1).max(100).default(15),
+          sortOrder: z.number().default(0),
+        })
+      )
+      .mutation(async ({ input }) => {
+        // Prüfe ob Produkt freeZoneMode hat
+        const product = await getProductById(input.productId);
+        if (!product || !product.freeZoneMode) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Freie Zonen-Bearbeitung ist für dieses Produkt nicht aktiviert." });
+        }
+        const id = await createZone(input);
+        return { id };
+      }),
+
+    /** Zone löschen (nur bei freeZoneMode-Produkten, nicht clubLogo) */
+    freeDelete: protectedProcedure
+      .input(z.object({ id: z.number(), productId: z.number() }))
+      .mutation(async ({ input }) => {
+        const product = await getProductById(input.productId);
+        if (!product || !product.freeZoneMode) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Freie Zonen-Bearbeitung ist für dieses Produkt nicht aktiviert." });
+        }
+        // Prüfe ob Zone clubLogo ist (darf nicht gelöscht werden)
+        const zones = await listZonesByProduct(input.productId);
+        const zone = zones.find(z => z.id === input.id);
+        if (zone?.purpose === "clubLogo") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Das Vereinswappen kann nicht entfernt werden." });
+        }
+        await deleteZone(input.id);
+        return { success: true };
+      }),
+
+    /** Positionen aktualisieren (nur bei freeZoneMode-Produkten) */
+    freeBulkUpdatePositions: protectedProcedure
+      .input(
+        z.object({
+          productId: z.number(),
+          zones: z.array(
+            z.object({
+              id: z.number(),
+              posX: z.number(),
+              posY: z.number(),
+              width: z.number(),
+              height: z.number(),
+            })
+          ),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const product = await getProductById(input.productId);
+        if (!product || !product.freeZoneMode) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Freie Zonen-Bearbeitung ist für dieses Produkt nicht aktiviert." });
+        }
         await bulkUpdateZones(input.zones);
         return { success: true };
       }),

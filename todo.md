@@ -686,28 +686,29 @@
 
 ## Neue Produkte + Freie Zonen-Logik
 ### Neue Produkte anlegen
-- [ ] SVG-Silhouette: Trainingshose (Vorder-/Rückseite)
-- [ ] SVG-Silhouette: Aufwärmshirt (Vorder-/Rückseite)
-- [ ] SVG-Silhouette: Zip-Jacke (Vorder-/Rückseite)
-- [ ] SVG-Silhouette: Half-Zipper (Vorder-/Rückseite)
-- [ ] SVG-Silhouette: Warme Jacke (Vorder-/Rückseite)
-- [ ] Textil-Templates in shared/templates.ts registrieren
-- [ ] Produkte in DB anlegen (Admin-Seeding oder manuell)
+- [x] SVG-Silhouette: Trainingshose (Vorder-/Rückseite)
+- [x] SVG-Silhouette: Aufwärmshirt (Vorder-/Rückseite)
+- [x] SVG-Silhouette: Zip-Jacke (Vorder-/Rückseite)
+- [x] SVG-Silhouette: Half-Zipper (Vorder-/Rückseite)
+- [x] SVG-Silhouette: Warme Jacke (Vorder-/Rückseite)
+- [x] Textil-Templates in shared/templates.ts registriert (Kategorie "Bekleidung", freeZoneMode=true)
+- [x] Produkte über Admin-Oberfläche anlegbar (Templates bei allen Sportarten verfügbar)
 
 ### Freie Zonen-Logik (für Nicht-Trikots)
-- [ ] DB/Schema: freeZoneMode-Flag am Produkt (Trikots=false, andere=true)
-- [ ] Trainer kann eigene Zonen erstellen (Position, Größe frei wählbar)
-- [ ] Zonen auf dem Textil per Drag verschiebbar
-- [ ] Zonen per Drag-Handle in der Größe änderbar (Resize)
-- [ ] Vereinswappen: Immer vorhanden, nicht löschbar, aber Position frei wählbar
-- [ ] Alle anderen Zonen: Löschbar/entfernbar per Button
+- [x] DB/Schema: freeZoneMode-Flag am Produkt (Migration 0020, Trikots=false, Bekleidung=true)
+- [x] Trainer kann eigene Zonen erstellen (freeCreate-Endpunkt, Position/Größe frei wählbar)
+- [x] Zonen auf dem Textil per Drag verschiebbar (Maus-Events, Echtzeit-Update)
+- [x] Zonen per Resize-Handle (unten rechts) in der Größe änderbar
+- [x] Vereinswappen: Immer vorhanden, nicht löschbar (FORBIDDEN), Position frei wählbar
+- [x] Alle anderen Zonen: Löschbar per Button (Overlay + Zonen-Karte)
 
 ### Toggle für automatisierte Felder
-- [ ] Kürzel (playerInitials): Toggle-Button ein/aus (mit/ohne)
-- [ ] Nummer (playerNumber): Toggle-Button ein/aus (mit/ohne)
-- [ ] Spielername (playerName): Toggle-Button ein/aus (mit/ohne)
-- [ ] Wenn aktiviert: Zone wird erstellt mit Standard-Größe, Trainer kann Position wählen
-- [ ] Wenn deaktiviert: Zone wird entfernt
+- [x] Kürzel (playerInitials): Toggle-Button ein/aus
+- [x] Nummer (playerNumber): Toggle-Button ein/aus
+- [x] Spielername (playerName): Toggle-Button ein/aus
+- [x] Wenn aktiviert: Zone wird erstellt mit Standard-Größe (freeCreate), Trainer kann Position wählen
+- [x] Wenn deaktiviert: Zone wird entfernt (freeDelete)
 
-### CMYK-Checkpoint speichern
-- [ ] Checkpoint für CMYK-Farbauswahl speichern (vor neuen Produkt-Features)
+### CMYK-Checkpoint gespeichert
+- [x] Checkpoint für CMYK-Farbauswahl gespeichert (5d0a96dc)
+- [x] Tests: 155 Tests bestanden (10 Testdateien, inkl. 15 freeZone-Tests)

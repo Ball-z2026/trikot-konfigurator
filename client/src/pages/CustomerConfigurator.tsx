@@ -36,6 +36,10 @@ import {
   MoreVertical,
   Pencil,
   GripVertical,
+  Move,
+  ToggleLeft,
+  ToggleRight,
+  X,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { getNumberRules, BUNDESLAENDER, type NumberRule } from "@shared/jerseyRules";
@@ -343,6 +347,208 @@ export default function CustomerConfigurator() {
     return false;
   }, [productData?.templateId, parts]);
 
+  // ─── Free Zone Mode erkennen (Bekleidung: Trainer definiert Zonen selbst) ───
+  const isFreeZoneMode = useMemo(() => {
+    if (!productData?.templateId) return (productData as any)?.freeZoneMode ?? false;
+    const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
+    return tmpl?.freeZoneMode ?? (productData as any)?.freeZoneMode ?? false;
+  }, [productData?.templateId, (productData as any)?.freeZoneMode]);
+
+  // ─── Free Zone: Drag & Resize State ───
+  const [draggingZone, setDraggingZone] = useState<number | null>(null);
+  const [resizingZone, setResizingZone] = useState<number | null>(null);
+  const [localZones, setLocalZones] = useState<ZoneData[]>([]);
+  const [dragStart, setDragStart] = useState<{
+    x: number; y: number; zoneX: number; zoneY: number; zoneW: number; zoneH: number;
+  } | null>(null);
+
+  // ─── Free Zone: Toggle-State für automatisierte Felder ───
+  const [enabledAutoFields, setEnabledAutoFields] = useState<Record<string, boolean>>({
+    playerName: false,
+    playerNumber: false,
+    playerInitials: false,
+  });
+
+  // Sync localZones mit allZones
+  useEffect(() => {
+    if (isFreeZoneMode && allZones.length > 0) {
+      setLocalZones(allZones.map(z => ({ ...z })));
+      // Prüfe welche Auto-Felder bereits als Zonen existieren
+      const existing: Record<string, boolean> = {
+        playerName: allZones.some(z => z.purpose === "playerName"),
+        playerNumber: allZones.some(z => z.purpose === "playerNumber"),
+        playerInitials: allZones.some(z => z.purpose === "playerInitials"),
+      };
+      setEnabledAutoFields(existing);
+    }
+  }, [isFreeZoneMode, allZones]);
+
+  // ─── Free Zone: tRPC Mutations für Zone-Management (Trainer-Endpunkte) ───
+  const utils = trpc.useUtils();
+  const createZoneMut = trpc.zone.freeCreate.useMutation({
+    onSuccess: () => utils.product.getById.invalidate({ id: productId }),
+  });
+  const deleteZoneMut = trpc.zone.freeDelete.useMutation({
+    onSuccess: () => utils.product.getById.invalidate({ id: productId }),
+  });
+  const bulkUpdatePositions = trpc.zone.freeBulkUpdatePositions.useMutation({
+    onSuccess: () => utils.product.getById.invalidate({ id: productId }),
+  });
+
+  // ─── Free Zone: Drag & Resize Handlers ───
+  const getRelativePosition = useCallback((e: React.MouseEvent | MouseEvent) => {
+    if (!canvasRef.current) return { x: 0, y: 0 };
+    const rect = canvasRef.current.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    };
+  }, []);
+
+  const handleFreeZoneMouseDown = useCallback(
+    (e: React.MouseEvent, zoneId: number, isResize = false) => {
+      if (!isFreeZoneMode) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const zone = localZones.find((z) => z.id === zoneId);
+      if (!zone) return;
+      const pos = getRelativePosition(e);
+      setDragStart({ x: pos.x, y: pos.y, zoneX: zone.posX, zoneY: zone.posY, zoneW: zone.width, zoneH: zone.height });
+      if (isResize) setResizingZone(zoneId);
+      else setDraggingZone(zoneId);
+      setSelectedZoneId(zoneId);
+    },
+    [isFreeZoneMode, localZones, getRelativePosition]
+  );
+
+  useEffect(() => {
+    if (!isFreeZoneMode) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragStart) return;
+      const pos = getRelativePosition(e);
+      const dx = pos.x - dragStart.x;
+      const dy = pos.y - dragStart.y;
+      if (draggingZone !== null) {
+        setLocalZones((prev) =>
+          prev.map((z) =>
+            z.id === draggingZone
+              ? { ...z, posX: Math.max(0, Math.min(100 - z.width, dragStart.zoneX + dx)), posY: Math.max(0, Math.min(100 - z.height, dragStart.zoneY + dy)) }
+              : z
+          )
+        );
+      }
+      if (resizingZone !== null) {
+        setLocalZones((prev) =>
+          prev.map((z) =>
+            z.id === resizingZone
+              ? { ...z, width: Math.max(5, Math.min(100 - z.posX, dragStart.zoneW + dx)), height: Math.max(5, Math.min(100 - z.posY, dragStart.zoneH + dy)) }
+              : z
+          )
+        );
+      }
+    };
+    const handleMouseUp = () => {
+      if (draggingZone !== null || resizingZone !== null) {
+        const changedZones = localZones
+          .filter((z) => {
+            const orig = allZones.find((oz) => oz.id === z.id);
+            if (!orig) return false;
+            return orig.posX !== z.posX || orig.posY !== z.posY || orig.width !== z.width || orig.height !== z.height;
+          })
+          .map((z) => ({
+            id: z.id,
+            posX: Math.round(z.posX * 100) / 100,
+            posY: Math.round(z.posY * 100) / 100,
+            width: Math.round(z.width * 100) / 100,
+            height: Math.round(z.height * 100) / 100,
+          }));
+        if (changedZones.length > 0) bulkUpdatePositions.mutate({ productId, zones: changedZones });
+      }
+      setDraggingZone(null);
+      setResizingZone(null);
+      setDragStart(null);
+    };
+    if (draggingZone !== null || resizingZone !== null) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isFreeZoneMode, draggingZone, resizingZone, dragStart, localZones, allZones, bulkUpdatePositions, getRelativePosition]);
+
+  // ─── Free Zone: Toggle Auto-Felder (Spielername, Nummer, Kürzel) ───
+  const handleToggleAutoField = useCallback(async (purpose: "playerName" | "playerNumber" | "playerInitials") => {
+    if (!activePartId) return;
+    const isEnabled = enabledAutoFields[purpose];
+    if (isEnabled) {
+      // Deaktivieren: Zone löschen
+      const zone = allZones.find(z => z.purpose === purpose && z.partId === activePartId);
+      if (zone) {
+        deleteZoneMut.mutate({ id: zone.id, productId });
+        setEnabledAutoFields(prev => ({ ...prev, [purpose]: false }));
+      }
+    } else {
+      // Aktivieren: Neue Zone erstellen
+      const labels: Record<string, string> = { playerName: "Spielername", playerNumber: "Nummer", playerInitials: "Kürzel" };
+      const defaults: Record<string, { posX: number; posY: number; width: number; height: number }> = {
+        playerName: { posX: 25, posY: 75, width: 50, height: 8 },
+        playerNumber: { posX: 35, posY: 40, width: 30, height: 20 },
+        playerInitials: { posX: 35, posY: 65, width: 30, height: 8 },
+      };
+      const d = defaults[purpose];
+      createZoneMut.mutate({
+        productId,
+        label: labels[purpose],
+        side: "front",
+        type: "text",
+        purpose,
+        posX: d.posX,
+        posY: d.posY,
+        width: d.width,
+        height: d.height,
+        sortOrder: allZones.length + 1,
+      });
+      setEnabledAutoFields(prev => ({ ...prev, [purpose]: true }));
+    }
+  }, [activePartId, enabledAutoFields, allZones, deleteZoneMut, createZoneMut, productId]);
+
+  // ─── Free Zone: Custom-Zone hinzufügen ───
+  const [addZoneDialogOpen, setAddZoneDialogOpen] = useState(false);
+  const [newZoneLabel, setNewZoneLabel] = useState("");
+  const [newZoneType, setNewZoneType] = useState<"text" | "image" | "both">("both");
+
+  const handleAddCustomZone = useCallback(() => {
+    if (!activePartId || !newZoneLabel.trim()) return;
+    createZoneMut.mutate({
+      productId,
+      label: newZoneLabel.trim(),
+      side: "front",
+      type: newZoneType,
+      purpose: "custom",
+      posX: 30,
+      posY: 30,
+      width: 25,
+      height: 15,
+      sortOrder: allZones.length + 1,
+    });
+    setNewZoneLabel("");
+    setAddZoneDialogOpen(false);
+    toast.success(`Zone "${newZoneLabel.trim()}" hinzugefügt`);
+  }, [activePartId, newZoneLabel, newZoneType, createZoneMut, productId, allZones.length]);
+
+  // ─── Free Zone: Zone löschen (nur nicht-clubLogo) ───
+  const handleDeleteFreeZone = useCallback((zone: ZoneData) => {
+    if (zone.purpose === "clubLogo") {
+      toast.error("Das Vereinswappen kann nicht entfernt werden.");
+      return;
+    }
+    deleteZoneMut.mutate({ id: zone.id, productId });
+    if (selectedZoneId === zone.id) setSelectedZoneId(null);
+    toast.success(`Zone "${zone.label}" entfernt`);
+  }, [deleteZoneMut, selectedZoneId, productId]);
+
   const colorPalette: string[] = (productData as any)?.colorPalette || [];
 
   // Initialize partColors from defaultColor
@@ -628,9 +834,11 @@ export default function CustomerConfigurator() {
     }
   }, [hasParts, isDtf, isSublimation, dtfBaseColor, dtfBrandImage, sortedParts, partColors]);
 
+  // Im freeZoneMode verwende localZones für Echtzeit-Drag-Updates
+  const zonesSource = isFreeZoneMode ? localZones : allZones;
   const currentZones = hasParts
-    ? allZones.filter((z) => z.partId === activePartId)
-    : allZones.filter((z) => z.side === activeSide);
+    ? zonesSource.filter((z) => z.partId === activePartId)
+    : zonesSource.filter((z) => z.side === activeSide);
 
   // ─── Zone Content Management ───────────────────────────────────────────
   const updateZoneContent = useCallback((zoneId: number, updates: Partial<ZoneContent>) => {
@@ -1065,18 +1273,23 @@ export default function CustomerConfigurator() {
     const purpose = zone.purpose || "custom";
     const PurposeIcon = PURPOSE_ICONS[purpose] || PenTool;
     const rotation = zone.rotation || 0;
+    const isFreeZoneDraggable = isFreeZoneMode && interactive;
+    const isBeingDragged = draggingZone === zone.id || resizingZone === zone.id;
+    const canDelete = isFreeZoneMode && zone.purpose !== "clubLogo";
 
     return (
       <div
-        className={`absolute overflow-hidden flex items-center justify-center transition-all duration-150 ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
+        className={`absolute flex items-center justify-center transition-all ${isBeingDragged ? "" : "duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
         style={{
           left: `${zone.posX}%`,
           top: `${zone.posY}%`,
           width: `${zone.width}%`,
           height: `${zone.height}%`,
-          zIndex: isDragTarget ? 20 : 10,
+          zIndex: isDragTarget ? 20 : isSelected ? 15 : 10,
           transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-          border: isDragTarget
+          border: isFreeZoneDraggable
+            ? `2px ${isSelected ? "solid" : "dashed"} ${zoneBorderColors[colorIdx]}`
+            : isDragTarget
             ? "2px solid hsl(var(--primary))"
             : isSelected
             ? `2px solid ${zoneBorderColors[colorIdx]}`
@@ -1084,8 +1297,10 @@ export default function CustomerConfigurator() {
             ? "none"
             : `1px dashed ${zoneBorderColors[colorIdx]}40`,
           borderRadius: "2px",
-          cursor: interactive ? "pointer" : "default",
+          cursor: isFreeZoneDraggable ? (isBeingDragged ? "grabbing" : "grab") : interactive ? "pointer" : "default",
+          overflow: "hidden",
         }}
+        onMouseDown={isFreeZoneDraggable ? (e) => handleFreeZoneMouseDown(e, zone.id) : undefined}
         onClick={
           interactive
             ? (e) => {
@@ -1122,6 +1337,36 @@ export default function CustomerConfigurator() {
             >
               {zone.label}
             </span>
+          </div>
+        )}
+        {/* freeZoneMode: Resize-Handle (unten rechts) */}
+        {isFreeZoneDraggable && isSelected && (
+          <div
+            className="absolute bottom-0 right-0 w-3 h-3 bg-primary cursor-se-resize"
+            style={{ zIndex: 30 }}
+            onMouseDown={(e) => handleFreeZoneMouseDown(e, zone.id, true)}
+          />
+        )}
+        {/* freeZoneMode: Delete-Button (oben rechts) */}
+        {isFreeZoneDraggable && isSelected && canDelete && (
+          <button
+            className="absolute top-0 right-0 w-5 h-5 bg-destructive text-white flex items-center justify-center text-xs rounded-bl hover:bg-destructive/80"
+            style={{ zIndex: 30 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteFreeZone(zone);
+            }}
+          >
+            ×
+          </button>
+        )}
+        {/* freeZoneMode: Label-Badge */}
+        {isFreeZoneDraggable && (
+          <div
+            className="absolute top-0 left-0 px-1 text-white text-[8px] leading-tight truncate max-w-full"
+            style={{ backgroundColor: zoneBorderColors[colorIdx], zIndex: 25, pointerEvents: "none" }}
+          >
+            {zone.label}
           </div>
         )}
       </div>
@@ -1995,6 +2240,91 @@ export default function CustomerConfigurator() {
                   </Card>
                 )}
 
+                {/* freeZoneMode: Auto-Feld-Toggles und Zone-Hinzufügen */}
+                {isFreeZoneMode && (
+                  <Card className="border-blue-200 bg-blue-50/30 dark:border-blue-800 dark:bg-blue-950/20">
+                    <CardContent className="pt-3 sm:pt-4 space-y-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Move className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Freie Zonen-Bearbeitung</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Verschiebe und skaliere Zonen direkt auf dem Textil. Wähle welche automatischen Felder angezeigt werden sollen.
+                      </p>
+                      {/* Auto-Feld-Toggles */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium">Automatische Felder</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {(["playerName", "playerNumber", "playerInitials"] as const).map((field) => (
+                            <button
+                              key={field}
+                              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-all ${
+                                enabledAutoFields[field]
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50"
+                              }`}
+                              onClick={() => handleToggleAutoField(field)}
+                              disabled={createZoneMut.isPending || deleteZoneMut.isPending}
+                            >
+                              {enabledAutoFields[field] ? (
+                                <ToggleRight className="w-3.5 h-3.5" />
+                              ) : (
+                                <ToggleLeft className="w-3.5 h-3.5" />
+                              )}
+                              {field === "playerName" ? "Spielername" : field === "playerNumber" ? "Nummer" : "Kürzel"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Custom-Zone hinzufügen */}
+                      <div className="pt-1">
+                        {addZoneDialogOpen ? (
+                          <div className="space-y-2 p-2 border rounded-md bg-background">
+                            <Input
+                              placeholder="Zonen-Name (z.B. Sponsor Rücken)"
+                              value={newZoneLabel}
+                              onChange={(e) => setNewZoneLabel(e.target.value)}
+                              className="h-8 text-xs"
+                              onKeyDown={(e) => e.key === "Enter" && handleAddCustomZone()}
+                            />
+                            <div className="flex gap-1.5">
+                              {(["text", "image", "both"] as const).map((t) => (
+                                <button
+                                  key={t}
+                                  className={`flex-1 px-2 py-1 rounded text-[10px] border transition-colors ${
+                                    newZoneType === t ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary/50"
+                                  }`}
+                                  onClick={() => setNewZoneType(t)}
+                                >
+                                  {t === "text" ? "Text" : t === "image" ? "Bild" : "Beides"}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" className="flex-1 h-7 text-xs" onClick={handleAddCustomZone} disabled={!newZoneLabel.trim()}>
+                                <Plus className="w-3 h-3 mr-1" /> Hinzufügen
+                              </Button>
+                              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAddZoneDialogOpen(false)}>
+                                Abbrechen
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full h-8 text-xs border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                            onClick={() => setAddZoneDialogOpen(true)}
+                          >
+                            <Plus className="w-3.5 h-3.5 mr-1.5" />
+                            Neue Zone hinzufügen
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {currentZones.length === 0 ? (
                   <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm">
                     {hasParts && activePart
@@ -2034,6 +2364,19 @@ export default function CustomerConfigurator() {
                               <Badge variant="outline" className="text-[10px] sm:text-xs ml-auto">
                                 {PURPOSE_LABELS[purpose] || "Freitext"}
                               </Badge>
+                            )}
+                            {/* freeZoneMode: Lösch-Button (nicht für clubLogo) */}
+                            {isFreeZoneMode && zone.purpose !== "clubLogo" && (
+                              <button
+                                className="ml-1 p-1 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
+                                title="Zone entfernen"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteFreeZone(zone);
+                                }}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             )}
                           </div>
 
