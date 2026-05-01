@@ -497,3 +497,9 @@
 - [x] Logo als Spartenleiter hochladen und im Konfigurator als Trainer verifizieren
 - [x] Kommentar als Spartenleiter schreiben und Unread-Badge beim Trainer prüfen
 - [x] Deployment auf Live-URL aktualisieren
+
+## Schriftarten-Freigabe, Zahlungsmodell und neue Produkte
+
+- [x] Schriftarten als Spartenleiter freigeben (Roboto + Bebas Neue) und im Konfigurator beim Trainer verifiziert
+- [x] Zahlungsmodell-Workflow: Trainer wählt "Verein zahlt", Spartenleiter bestätigt
+- [x] Weitere Produkte im Admin-Bereich anlegen (Hoodie, Jacke, T-Shirt) und im Konfigurator getestet
