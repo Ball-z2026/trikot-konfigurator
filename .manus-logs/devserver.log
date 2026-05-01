@@ -3873,3 +3873,124 @@
 [2026-04-30T20:33:03.734Z] [Auth] Missing session cookie
 [2026-04-30T20:33:09.442Z] [Auth] Missing session cookie
 [2026-05-01T05:06:08.649Z] [Auth] Missing session cookie
+[2026-05-01T06:03:04.580Z] 2:03:04 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-01T06:03:06.432Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:03:06.953Z] Server running on http://localhost:3000/
+[2026-05-01T06:03:27.934Z] 2:03:27 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T06:03:29.143Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:03:29.534Z] Server running on http://localhost:3000/
+[2026-05-01T06:03:43.632Z] 2:03:43 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T06:03:43.972Z] c
+[2026-05-01T06:03:43.973Z] node:internal/modules/run_main:122
+[2026-05-01T06:03:43.974Z] triggerUncaughtException(
+[2026-05-01T06:03:43.974Z] ^
+[2026-05-01T06:03:43.974Z] Error [TransformError]: Transform failed with 1 error:
+[2026-05-01T06:03:43.975Z] /home/ubuntu/trikot-konfigurator/server/db.ts:1028:0: ERROR: Unexpected "}"
+[2026-05-01T06:03:43.975Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-05-01T06:03:43.975Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-05-01T06:03:43.976Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-05-01T06:03:43.976Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-05-01T06:03:43.976Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-05-01T06:03:43.976Z] at Socket.emit (node:events:524:28)
+[2026-05-01T06:03:43.977Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-05-01T06:03:43.977Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-05-01T06:03:43.977Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-05-01T06:03:43.978Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-05-01T06:03:43.978Z] 
+[2026-05-01T06:03:43.978Z] Node.js v22.13.0
+[2026-05-01T06:03:53.899Z] 2:03:53 AM [tsx] change in ./server/db.ts Rerunning...
+[2026-05-01T06:03:55.526Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:03:55.905Z] Server running on http://localhost:3000/
+[2026-05-01T06:04:07.772Z] 2:04:07 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T06:04:09.666Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:04:10.151Z] Server running on http://localhost:3000/
+[2026-05-01T06:04:16.435Z] Dev server process group stopped
+[2026-05-01T06:04:16.515Z] Dev server exited with code -15
+[2026-05-01T06:04:19.485Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:04:21.465Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:04:21.923Z] Server running on http://localhost:3000/
+[2026-05-01T06:04:40.355Z] 2:04:40 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T06:04:42.184Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:04:42.607Z] Server running on http://localhost:3000/
+[2026-05-01T06:05:02.662Z] 2:05:02 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T06:05:04.188Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:05:04.628Z] Server running on http://localhost:3000/
+[2026-05-01T06:05:06.543Z] Dev server process group stopped
+[2026-05-01T06:05:06.845Z] 2:05:06 AM [vite] (client) Pre-transform error: The service was stopped: write EPIPE
+[2026-05-01T06:05:06.845Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.846Z] File: /home/ubuntu/trikot-konfigurator/client/src/components/ErrorBoundary.tsx
+[2026-05-01T06:05:06.846Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.847Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.847Z] File: /home/ubuntu/trikot-konfigurator/client/src/contexts/ThemeContext.tsx
+[2026-05-01T06:05:06.858Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.859Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.859Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/Home.tsx
+[2026-05-01T06:05:06.860Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.860Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.861Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProducts.tsx
+[2026-05-01T06:05:06.861Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.862Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.862Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProductEditor.tsx
+[2026-05-01T06:05:06.862Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.863Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.863Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx
+[2026-05-01T06:05:06.864Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.865Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.865Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/DeptFonts.tsx
+[2026-05-01T06:05:06.866Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.867Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.867Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/TrainerDashboard.tsx
+[2026-05-01T06:05:06.868Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.868Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.868Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/Login.tsx
+[2026-05-01T06:05:06.869Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.870Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.870Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx
+[2026-05-01T06:05:06.870Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.871Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.871Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminUsers.tsx
+[2026-05-01T06:05:06.872Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.872Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.873Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/ForgotPassword.tsx
+[2026-05-01T06:05:06.874Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.874Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.875Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/ResetPassword.tsx
+[2026-05-01T06:05:06.875Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.876Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.877Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/Register.tsx
+[2026-05-01T06:05:06.878Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.878Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.879Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/DeptDashboard.tsx
+[2026-05-01T06:05:06.879Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.880Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.880Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/PaymentConfirm.tsx
+[2026-05-01T06:05:06.881Z] 2:05:06 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T06:05:06.881Z] Plugin: vite:esbuild
+[2026-05-01T06:05:06.882Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/NotFound.tsx
+[2026-05-01T06:05:06.978Z] Dev server exited with code -15
+[2026-05-01T06:05:09.579Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:05:11.169Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:05:11.521Z] Server running on http://localhost:3000/
+[2026-05-01T06:05:38.012Z] 2:05:38 AM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-01T06:06:01.667Z] 2:06:01 AM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-01T06:06:24.573Z] 2:06:24 AM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-01T06:06:28.345Z] Dev server process group stopped
+[2026-05-01T06:06:28.422Z] Dev server exited with code -15
+[2026-05-01T06:06:31.379Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:06:33.095Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:06:33.475Z] Server running on http://localhost:3000/
+[2026-05-01T06:14:34.486Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.525Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.531Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.538Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.546Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.553Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.562Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.568Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.959Z] [Auth] Missing session cookie
+[2026-05-01T06:14:34.974Z] [Auth] Missing session cookie
+[2026-05-01T06:15:16.143Z] Dev server process group stopped
+[2026-05-01T06:15:16.202Z] Dev server exited with code -15
+[2026-05-01T06:15:19.175Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:15:21.045Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:15:21.458Z] Server running on http://localhost:3000/

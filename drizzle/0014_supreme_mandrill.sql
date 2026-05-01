@@ -1,0 +1,1 @@
+ALTER TABLE `teams` ADD `orderStatus` enum('offen','bestellt','in_produktion','geliefert') DEFAULT 'offen' NOT NULL;

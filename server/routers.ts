@@ -81,6 +81,7 @@ import {
   setPlayerPaid,
   deletePlayerPayments,
   getOrderOverviewByDepartment,
+  updateOrderStatus,
   createOrderComment,
   createSavedDesign,
   listSavedDesigns,
@@ -1320,6 +1321,18 @@ export const appRouter = router({
         // Nur Owner oder Spartenleiter dürfen die Übersicht sehen
         await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
         return getOrderOverviewByDepartment(input.departmentId);
+      }),
+    /** Bestellstatus einer Mannschaft ändern (nur Spartenleiter/Owner) */
+    updateStatus: protectedProcedure
+      .input(z.object({
+        teamId: z.number(),
+        orgId: z.number(),
+        departmentId: z.number(),
+        status: z.enum(["offen", "bestellt", "in_produktion", "geliefert"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
+        return updateOrderStatus(input.teamId, input.status);
       }),
   }),
   // ─── Order Comments ─────────────────────────────────────────────────────────────────────

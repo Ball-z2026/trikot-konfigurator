@@ -1013,6 +1013,8 @@ export async function getOrderOverviewByDepartment(departmentId: number) {
       paymentType: payment?.paymentType || null,
       paymentStatus: payment?.status || null,
       confirmedAt: payment?.confirmedAt || null,
+      // Bestellstatus
+      orderStatus: team.orderStatus,
       // For self-pay: how many players have paid
       playersPaid: playerPaidInfo?.paid || null,
       playersTotal: playerPaidInfo?.total || null,
@@ -1023,9 +1025,18 @@ export async function getOrderOverviewByDepartment(departmentId: number) {
   });
 }
 
+// ─── Order Status ─────────────────────────────────────────────────────────────
+export async function updateOrderStatus(
+  teamId: number,
+  status: "offen" | "bestellt" | "in_produktion" | "geliefert"
+) {
+  const db = await getDb();
+  if (!db) return null;
+  await db.update(teams).set({ orderStatus: status }).where(eq(teams.id, teamId));
+  return { teamId, orderStatus: status };
+}
 
 // ─── Order Comments ─────────────────────────────────────────────────────────
-
 export async function createOrderComment(data: {
   teamId: number;
   userId: number;

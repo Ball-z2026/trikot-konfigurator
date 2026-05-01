@@ -514,3 +514,16 @@
 - [x] Bestellprozess E2E: Trainer konfiguriert Trikot mit Spielerdaten (Sparkasse Sponsor, Tom Braun #1)
 - [x] Bestellprozess E2E: Trainer exportiert als PNG (244KB), Design als 'Heimtrikot 2026' gespeichert
 - [x] Bestellprozess E2E: Spartenleiter sieht 4 Mannschaften mit Status (1. Herren: Bestätigt, Rest: Offen)
+
+## Bestellstatus-Workflow erweitern
+
+- [x] DB-Schema: orderStatus-Feld an teams-Tabelle erweitern (offen → bestellt → in_produktion → geliefert)
+- [x] Backend: tRPC-Router für Statusänderung (nur Spartenleiter darf Status ändern)
+- [x] Frontend: Status-Badges und Statusänderungs-Buttons im Spartenleiter-Dashboard
+- [x] Frontend: Status-Timeline/Fortschrittsanzeige pro Mannschaft
+- [x] Workflow testen: Status von Offen → Bestellt → In Produktion → Geliefert durchspielen
+
+## Farbanpassung Sublimations-Konfigurator testen
+
+- [x] Sublimations-Trikot im Konfigurator öffnen und verschiedene Farbkombinationen testen
+- [x] Farbänderungen in der Vorschau und im Export verifizieren (Blau + Rot getestet, alle Parts ändern sich in Echtzeit)

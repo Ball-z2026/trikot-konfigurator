@@ -38,6 +38,11 @@ import {
   MessageCircle,
   Send,
   ArrowLeft,
+  Package,
+  Factory,
+  Truck,
+  CircleDot,
+  ChevronRight,
 } from "lucide-react";
 import { useState, useRef, useCallback, useMemo } from "react";
 import { Link } from "wouter";
@@ -1191,10 +1196,18 @@ function OrderOverviewSection({
   orgId: number;
   deptId: number;
 }) {
+  const utils = trpc.useUtils();
   const { data: overview, isLoading } = trpc.orderOverview.byDepartment.useQuery(
     { departmentId: deptId, orgId },
     { enabled: deptId > 0 && orgId > 0 }
   );
+  const updateStatusMutation = trpc.orderOverview.updateStatus.useMutation({
+    onSuccess: () => {
+      utils.orderOverview.byDepartment.invalidate();
+      toast.success("Bestellstatus aktualisiert");
+    },
+    onError: (err) => toast.error(err.message),
+  });
   const [statusFilter, setStatusFilter] = useState<"all" | "offen" | "ausstehend" | "bestaetigt">("all");
   const [sortBy, setSortBy] = useState<"name" | "status">("name");
   const [selectedTeam, setSelectedTeam] = useState<{
@@ -1346,7 +1359,8 @@ function OrderOverviewSection({
                   <th className="py-3 px-2 font-medium">Trainer</th>
                   <th className="py-3 px-2 font-medium">Spieler</th>
                   <th className="py-3 px-2 font-medium">Zahlungsmodell</th>
-                  <th className="py-3 px-2 font-medium">Status</th>
+                  <th className="py-3 px-2 font-medium">Zahlung</th>
+                  <th className="py-3 px-2 font-medium">Bestellstatus</th>
                   <th className="py-3 px-2 font-medium">Kommentare</th>
                   <th className="py-3 px-2 font-medium">Details</th>
                 </tr>
@@ -1354,7 +1368,7 @@ function OrderOverviewSection({
               <tbody>
                 {filteredAndSorted.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-muted-foreground">
+                    <td colSpan={8} className="py-6 text-center text-muted-foreground">
                       Keine Mannschaften mit diesem Status gefunden.
                     </td>
                   </tr>
@@ -1376,6 +1390,20 @@ function OrderOverviewSection({
                       <td className="py-3 px-2">{item.playerCount}</td>
                       <td className="py-3 px-2">{paymentTypeLabel(item.paymentType)}</td>
                       <td className="py-3 px-2">{statusBadge(item)}</td>
+                      <td className="py-3 px-2">
+                        <OrderStatusStepper
+                          currentStatus={item.orderStatus || "offen"}
+                          onChangeStatus={(newStatus) => {
+                            updateStatusMutation.mutate({
+                              teamId: item.teamId,
+                              orgId,
+                              departmentId: deptId,
+                              status: newStatus,
+                            });
+                          }}
+                          isLoading={updateStatusMutation.isPending}
+                        />
+                      </td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-1.5">
                           {commentCounts && commentCounts[item.teamId] ? (
@@ -1411,6 +1439,85 @@ function OrderOverviewSection({
             </table>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+
+// ─── Order Status Stepper ──────────────────────────────────────────────────
+const ORDER_STEPS = [
+  { key: "offen" as const, label: "Offen", icon: CircleDot, color: "text-gray-400" },
+  { key: "bestellt" as const, label: "Bestellt", icon: Package, color: "text-blue-600" },
+  { key: "in_produktion" as const, label: "In Produktion", icon: Factory, color: "text-amber-600" },
+  { key: "geliefert" as const, label: "Geliefert", icon: Truck, color: "text-green-600" },
+] as const;
+
+function OrderStatusStepper({
+  currentStatus,
+  onChangeStatus,
+  isLoading,
+}: {
+  currentStatus: "offen" | "bestellt" | "in_produktion" | "geliefert";
+  onChangeStatus: (status: "offen" | "bestellt" | "in_produktion" | "geliefert") => void;
+  isLoading: boolean;
+}) {
+  const currentIndex = ORDER_STEPS.findIndex((s) => s.key === currentStatus);
+  const nextStep = currentIndex < ORDER_STEPS.length - 1 ? ORDER_STEPS[currentIndex + 1] : null;
+
+  return (
+    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+      {ORDER_STEPS.map((step, i) => {
+        const Icon = step.icon;
+        const isActive = i <= currentIndex;
+        const isCurrent = i === currentIndex;
+        return (
+          <div key={step.key} className="flex items-center">
+            <div
+              className={`relative group ${isCurrent ? "ring-2 ring-offset-1 ring-blue-300 rounded-full" : ""}`}
+              title={step.label}
+            >
+              <Icon
+                className={`w-4 h-4 ${isActive ? step.color : "text-gray-200"} ${
+                  isCurrent ? "scale-110" : ""
+                } transition-all`}
+              />
+            </div>
+            {i < ORDER_STEPS.length - 1 && (
+              <div
+                className={`w-2 h-0.5 mx-0.5 ${
+                  i < currentIndex ? "bg-blue-400" : "bg-gray-200"
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+      {nextStep && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-1 h-6 px-2 text-[10px] gap-0.5"
+          disabled={isLoading}
+          onClick={(e) => {
+            e.stopPropagation();
+            onChangeStatus(nextStep.key);
+          }}
+        >
+          {isLoading ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <>
+              <ChevronRight className="w-3 h-3" />
+              {nextStep.label}
+            </>
+          )}
+        </Button>
+      )}
+      {!nextStep && (
+        <Badge className="ml-1 bg-green-600 text-white text-[10px] px-1.5 h-5">
+          Abgeschlossen
+        </Badge>
       )}
     </div>
   );

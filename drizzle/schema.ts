@@ -228,6 +228,14 @@ export const teams = mysqlTable("teams", {
   name: varchar("name", { length: 255 }).notNull(),
   /** Trainer/Betreuer der diese Mannschaft verwaltet */
   trainerId: int("trainerId").notNull(),
+  /**
+   * Bestellstatus der Mannschaft:
+   * - offen: Noch keine Bestellung aufgegeben
+   * - bestellt: Bestellung wurde aufgegeben
+   * - in_produktion: Trikots sind in Produktion
+   * - geliefert: Trikots wurden geliefert
+   */
+  orderStatus: mysqlEnum("orderStatus", ["offen", "bestellt", "in_produktion", "geliefert"]).default("offen").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
