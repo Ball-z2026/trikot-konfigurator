@@ -622,3 +622,12 @@
 - [x] Utility-Funktion: unter 250 DPI = Ablehnung (rejected), 250-299 DPI = Warnung (warning), ab 300 DPI = OK
 - [x] Alle Upload-Stellen anpassen: Konfigurator (Zone-Upload, DTF-Markentrikot) + OrgDashboard (Vereinswappen, Sponsor-Vorlagen)
 - [x] Tests: 103 bestanden
+
+## Upload-Prüfungen: Überdrucken + Transparenzen
+- [x] PDF-Prüfung: Overprint-Flags erkennen (OPM, op, OP in ExtGState) → Warnung
+- [x] PDF-Prüfung: Transparenz erkennen (ca, CA, SMask, BM in ExtGState) → Warnung
+- [x] Bild-Prüfung: Transparenz erkennen (Alpha-Kanal bei PNG/WebP) → Warnung
+- [x] PDF als bevorzugtes Upload-Format bei allen Stellen (.pdf zuerst in accept)
+- [x] Integration in alle Upload-Stellen (Konfigurator Zone, DTF-Markentrikot, Vereinswappen, Sponsor-Vorlagen)
+- [x] Hinweistexte: "PDF bevorzugt" bei allen Upload-Buttons und Bereichen
+- [x] Tests: 103 bestanden

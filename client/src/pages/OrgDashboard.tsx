@@ -299,8 +299,17 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   const handleUploadSponsor = useCallback(async () => {
     if (!sponsorFile || !sponsorName.trim()) return;
-    // DPI-Prüfung: Sponsor-Logos werden typisch bei 26x10cm (Brust) gedruckt
+    // Überdrucken- und Transparenz-Prüfung
     try {
+      const { checkUploadFile } = await import("@/hooks/useUploadChecks");
+      const checkResult = await checkUploadFile(sponsorFile);
+      for (const w of checkResult.warnings) {
+        toast.warning(w.message, { duration: 10000 });
+      }
+    } catch { /* Bei Fehler fortfahren */ }
+    // DPI-Prüfung: Sponsor-Logos werden typisch bei 26x10cm (Brust) gedruckt (nur Bilder)
+    const isPdfSponsor = sponsorFile.type === "application/pdf" || sponsorFile.name.toLowerCase().endsWith(".pdf");
+    if (!isPdfSponsor) try {
       const { checkImageDpi } = await import("@/hooks/useDpiCheck");
       const result = await checkImageDpi(sponsorFile, 26, 10);
       if (result.status === "rejected") {
@@ -359,8 +368,17 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   const handleUploadLogo = useCallback(async () => {
     if (!logoFile || !logoName.trim()) return;
-    // DPI-Prüfung: Vereinswappen wird bei 10x10cm gedruckt
+    // Überdrucken- und Transparenz-Prüfung
     try {
+      const { checkUploadFile } = await import("@/hooks/useUploadChecks");
+      const checkResult = await checkUploadFile(logoFile);
+      for (const w of checkResult.warnings) {
+        toast.warning(w.message, { duration: 10000 });
+      }
+    } catch { /* Bei Fehler fortfahren */ }
+    // DPI-Prüfung: Vereinswappen wird bei 10x10cm gedruckt (nur Bilder)
+    const isPdfLogo = logoFile.type === "application/pdf" || logoFile.name.toLowerCase().endsWith(".pdf");
+    if (!isPdfLogo) try {
       const { checkImageDpi } = await import("@/hooks/useDpiCheck");
       const result = await checkImageDpi(logoFile, 10, 10);
       if (result.status === "rejected") {
@@ -489,8 +507,8 @@ function OrgDetail({ orgId }: { orgId: number }) {
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/png,image/jpeg,image/svg+xml,image/webp"
-                          onChange={handleLogoFileChange}
+accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
+                           onChange={handleLogoFileChange}
                           className="hidden"
                         />
                         <div
@@ -502,9 +520,10 @@ function OrgDetail({ orgId }: { orgId: number }) {
                           ) : (
                             <div>
                               <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">Klicken zum Auswählen (max. 5 MB)</p>
-                            </div>
-                          )}
+               <p className="text-sm text-muted-foreground">Klicken zum Auswählen (PDF bevorzugt, max. 5 MB)</p>
+                             </div>
+                           )}
+
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -634,8 +653,8 @@ function OrgDetail({ orgId }: { orgId: number }) {
                         <input
                           ref={sponsorFileRef}
                           type="file"
-                          accept="image/png,image/jpeg,image/svg+xml,image/webp"
-                          onChange={handleSponsorFileChange}
+accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
+                           onChange={handleSponsorFileChange}
                           className="hidden"
                         />
                         <div
@@ -647,7 +666,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
                           ) : (
                             <div>
                               <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">Klicken zum Auswählen (max. 5 MB)</p>
+                              <p className="text-sm text-muted-foreground">Klicken zum Auswählen (PDF bevorzugt, max. 5 MB)</p>
                             </div>
                           )}
                         </div>

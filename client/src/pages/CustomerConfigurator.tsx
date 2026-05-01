@@ -649,17 +649,27 @@ export default function CustomerConfigurator() {
     (zoneId: number) => {
       const input = document.createElement("input");
       input.type = "file";
-      input.accept = "image/*";
+      input.accept = ".pdf,image/*";
       input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (!file) return;
 
-        // DPI-Prüfung: Finde die Zone um cm-Maße zu bekommen
+        // Überdrucken- und Transparenz-Prüfung
+        try {
+          const { checkUploadFile } = await import("@/hooks/useUploadChecks");
+          const checkResult = await checkUploadFile(file);
+          for (const w of checkResult.warnings) {
+            toast.warning(w.message, { duration: 10000 });
+          }
+        } catch { /* Bei Fehler fortfahren */ }
+
+        // DPI-Prüfung (nur für Bilder, nicht für PDFs)
+        const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
         const zone = allZones.find(z => z.id === zoneId);
         const widthCm = zone?.widthCm || null;
         const heightCm = zone?.heightCm || null;
 
-        if (widthCm && heightCm) {
+        if (!isPdf && widthCm && heightCm) {
           try {
             const { checkImageDpi } = await import("@/hooks/useDpiCheck");
             const result = await checkImageDpi(file, widthCm, heightCm);
@@ -679,7 +689,7 @@ export default function CustomerConfigurator() {
         const reader = new FileReader();
         reader.onload = () => {
           updateZoneContent(zoneId, { imageDataUrl: reader.result as string });
-          toast.success("Bild platziert");
+          toast.success("Datei platziert");
         };
         reader.readAsDataURL(file);
       };
@@ -1828,23 +1838,34 @@ export default function CustomerConfigurator() {
                               onClick={() => {
                                 const input = document.createElement("input");
                                 input.type = "file";
-                                input.accept = "image/*";
+                                input.accept = ".pdf,image/*";
                                 input.onchange = async (e) => {
                                   const file = (e.target as HTMLInputElement).files?.[0];
                                   if (!file) return;
-                                  // DPI-Prüfung: Markentrikot sollte mind. 250 DPI bei ca. 30x40cm haben
+                                  // Überdrucken- und Transparenz-Prüfung
                                   try {
-                                    const { checkImageDpi } = await import("@/hooks/useDpiCheck");
-                                    const result = await checkImageDpi(file, 30, 40);
-                                    if (result.status === "rejected") {
-                                      toast.error(result.message, { duration: 8000 });
-                                      return;
-                                    } else if (result.status === "warning") {
-                                      toast.warning(result.message, { duration: 8000 });
-                                    } else {
-                                      toast.success(result.message);
+                                    const { checkUploadFile } = await import("@/hooks/useUploadChecks");
+                                    const checkResult = await checkUploadFile(file);
+                                    for (const w of checkResult.warnings) {
+                                      toast.warning(w.message, { duration: 10000 });
                                     }
                                   } catch { /* Bei Fehler fortfahren */ }
+                                  // DPI-Prüfung (nur für Bilder, nicht für PDFs)
+                                  const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+                                  if (!isPdf) {
+                                    try {
+                                      const { checkImageDpi } = await import("@/hooks/useDpiCheck");
+                                      const result = await checkImageDpi(file, 30, 40);
+                                      if (result.status === "rejected") {
+                                        toast.error(result.message, { duration: 8000 });
+                                        return;
+                                      } else if (result.status === "warning") {
+                                        toast.warning(result.message, { duration: 8000 });
+                                      } else {
+                                        toast.success(result.message);
+                                      }
+                                    } catch { /* Bei Fehler fortfahren */ }
+                                  }
                                   const reader = new FileReader();
                                   reader.onload = () => {
                                     setDtfBrandImage(reader.result as string);
@@ -2052,7 +2073,7 @@ export default function CustomerConfigurator() {
                                   }}
                                 >
                                   <Upload className="w-3.5 h-3.5 mr-1.5" />
-                                  {content?.imageDataUrl ? "Bild \u00e4ndern" : "Logo hochladen"}
+                                  {content?.imageDataUrl ? "Datei ändern" : "Datei hochladen (PDF bevorzugt)"}
                                 </Button>
                                 {content?.imageDataUrl && (
                                   <Button
@@ -2206,7 +2227,7 @@ export default function CustomerConfigurator() {
                                 }}
                               >
                                 <Upload className="w-3 h-3 mr-1" />
-                                Oder Bild hochladen
+                                 Datei hochladen (PDF bevorzugt)
                               </Button>
                             </div>
                           )}

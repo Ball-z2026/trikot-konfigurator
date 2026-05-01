@@ -4292,3 +4292,75 @@
 [2026-05-01T09:43:42.366Z] [Auth] Missing session cookie
 [2026-05-01T09:43:42.833Z] [Auth] Missing session cookie
 [2026-05-01T09:43:42.840Z] [Auth] Missing session cookie
+[2026-05-01T09:46:51.043Z] 5:46:51 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:47:17.745Z] 5:47:17 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:47:24.686Z] 5:47:24 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:47:38.113Z] 5:47:38 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:47:50.918Z] 5:47:50 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:47:51.437Z] 5:47:51 AM [vite] Internal server error: Transform failed with 1 error:
+[2026-05-01T09:47:51.438Z] /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:2076:115: ERROR: The character "}" is not valid inside a JSX element
+[2026-05-01T09:47:51.438Z] Plugin: vite:esbuild
+[2026-05-01T09:47:51.438Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:2076:110
+[2026-05-01T09:47:51.439Z] 
+[2026-05-01T09:47:51.439Z] The character "}" is not valid inside a JSX element
+[2026-05-01T09:47:51.439Z] 2074 |
+[2026-05-01T09:47:51.440Z] 2075 |                                    <Upload data-loc="client/src/pages/CustomerConfigurator.tsx:2075" className="w-3.5 ...
+[2026-05-01T09:47:51.440Z] 2076 |                                    {content?.imageDataUrl ? "Datei ändern" : "Datei hochladen (PDF bevorzugt)"}den"}
+[2026-05-01T09:47:51.440Z] |                                                                                                                     ^
+[2026-05-01T09:47:51.440Z] 2077 |                                  </Button>
+[2026-05-01T09:47:51.441Z] 2078 |                                  {content?.imageDataUrl &&
+[2026-05-01T09:47:51.441Z] 
+[2026-05-01T09:47:51.441Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-05-01T09:47:51.441Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-05-01T09:47:51.442Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-05-01T09:47:51.442Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-05-01T09:47:51.443Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-05-01T09:47:51.443Z] at Socket.emit (node:events:524:28)
+[2026-05-01T09:47:51.443Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-05-01T09:47:51.444Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-05-01T09:47:51.444Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-05-01T09:47:51.444Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-05-01T09:47:51.765Z] 5:47:51 AM [vite] (client) Pre-transform error: Transform failed with 1 error:
+[2026-05-01T09:47:51.766Z] /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:2076:115: ERROR: The character "}" is not valid inside a JSX element
+[2026-05-01T09:47:51.766Z] Plugin: vite:esbuild
+[2026-05-01T09:47:51.767Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:2076:110
+[2026-05-01T09:47:51.767Z] 
+[2026-05-01T09:47:51.768Z] The character "}" is not valid inside a JSX element
+[2026-05-01T09:47:51.768Z] 2074 |
+[2026-05-01T09:47:51.769Z] 2075 |                                    <Upload data-loc="client/src/pages/CustomerConfigurator.tsx:2075" className="w-3.5 ...
+[2026-05-01T09:47:51.769Z] 2076 |                                    {content?.imageDataUrl ? "Datei ändern" : "Datei hochladen (PDF bevorzugt)"}den"}
+[2026-05-01T09:47:51.769Z] |                                                                                                                     ^
+[2026-05-01T09:47:51.770Z] 2077 |                                  </Button>
+[2026-05-01T09:47:51.770Z] 2078 |                                  {content?.imageDataUrl &&
+[2026-05-01T09:47:51.770Z] 
+[2026-05-01T09:47:57.786Z] 5:47:57 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:48:17.824Z] [Auth] Missing session cookie
+[2026-05-01T09:48:17.842Z] [Auth] Missing session cookie
+[2026-05-01T09:48:17.850Z] [Auth] Missing session cookie
+[2026-05-01T09:48:17.855Z] [Auth] Missing session cookie
+[2026-05-01T09:48:17.861Z] [Auth] Missing session cookie
+[2026-05-01T09:48:17.869Z] [Auth] Missing session cookie
+[2026-05-01T09:48:17.878Z] [Auth] Missing session cookie
+[2026-05-01T09:48:17.881Z] [Auth] Missing session cookie
+[2026-05-01T09:48:18.576Z] [Auth] Missing session cookie
+[2026-05-01T09:48:18.581Z] [Auth] Missing session cookie
+[2026-05-01T09:48:32.458Z] 5:48:32 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-01T09:48:48.419Z] 5:48:48 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-01T09:49:02.172Z] 5:49:02 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-01T09:49:21.801Z] 5:49:21 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-01T09:49:34.482Z] 5:49:34 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-01T09:49:39.884Z] Dev server process group stopped
+[2026-05-01T09:49:39.943Z] Dev server exited with code -15
+[2026-05-01T09:49:42.917Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T09:49:44.995Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T09:49:45.544Z] Server running on http://localhost:3000/
+[2026-05-01T09:49:53.190Z] [Auth] Missing session cookie
+[2026-05-01T09:49:53.245Z] [Auth] Missing session cookie
+[2026-05-01T09:49:53.254Z] [Auth] Missing session cookie
+[2026-05-01T09:49:53.261Z] [Auth] Missing session cookie
+[2026-05-01T09:49:53.271Z] [Auth] Missing session cookie
+[2026-05-01T09:49:53.279Z] [Auth] Missing session cookie
+[2026-05-01T09:49:53.287Z] [Auth] Missing session cookie
+[2026-05-01T09:49:53.295Z] [Auth] Missing session cookie
+[2026-05-01T09:49:54.086Z] [Auth] Missing session cookie
+[2026-05-01T09:49:54.107Z] [Auth] Missing session cookie
