@@ -350,6 +350,21 @@ export default function CustomerConfigurator() {
     return false;
   }, [productData?.templateId, parts]);
 
+  // ─── Erkennung ob Produktbilder Transparenz haben (für Farb-Overlay) ───
+  // Nicht-Trikot-Produkte (T-Shirt, Hoodie, Jacke) haben transparente PNGs
+  // SVG-basierte Templates haben immer Transparenz
+  // Trikot-Kategorie mit PNG-Bildern hat KEINE Transparenz (weißer Hintergrund mit Umriss)
+  const hasTransparentImages = useMemo(() => {
+    if (productData?.category && productData.category !== 'Trikot') return true;
+    if ((productData as any)?.freeZoneMode) return true;
+    // SVG-Templates erkennen
+    const tmpl = productData?.templateId ? TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId) : null;
+    if (tmpl?.parts?.[0]?.imageUrl?.includes('.svg')) return true;
+    // Prüfe ob die Part-Bilder SVGs sind
+    if (parts.length > 0 && parts[0]?.imageUrl?.includes('.svg')) return true;
+    return false;
+  }, [productData?.category, productData?.templateId, (productData as any)?.freeZoneMode, parts]);
+
   // ─── Free Zone Mode erkennen (Bekleidung: Trainer definiert Zonen selbst) ───
   const isFreeZoneMode = useMemo(() => {
     if (!productData?.templateId) return (productData as any)?.freeZoneMode ?? false;
@@ -1392,14 +1407,15 @@ export default function CustomerConfigurator() {
                           <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted/30 rounded overflow-hidden relative">
                             {part.imageUrl ? (
                               <>
+                                {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id) }} />
+                                )}
                                 <img
                                   src={storageUrl(part.imageUrl)}
                                   alt={part.label}
-                                  className="w-full h-full object-contain"
+                                  className="w-full h-full object-contain relative"
+                                  style={{ mixBlendMode: (hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined }}
                                 />
-                                {getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id), mixBlendMode: "multiply", opacity: 0.8 }} />
-                                )}
                               </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -1503,15 +1519,16 @@ export default function CustomerConfigurator() {
                           <div className="aspect-square relative">
                             {part.imageUrl ? (
                               <>
+                                {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id) }} />
+                                )}
                                 <img
                                   src={storageUrl(part.imageUrl)}
                                   alt={part.label}
-                                  className="w-full h-full object-contain p-1"
+                                  className="w-full h-full object-contain p-1 relative"
                                   draggable={false}
+                                  style={{ mixBlendMode: (hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined }}
                                 />
-                                {getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id), mixBlendMode: "multiply", opacity: 0.8 }} />
-                                )}
                               </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -1604,26 +1621,42 @@ export default function CustomerConfigurator() {
                     dragSponsorRef.current = null;
                   }}
                 >
-                  {/* CSS-based coloring: overlay with mix-blend-mode */}
+                  {/* CSS-based coloring: color behind image, visible through transparent areas */}
                   {currentImage ? (
                     <div className="relative w-full" style={{ position: "relative", zIndex: 1 }}>
-                      <img
-                        src={currentImage}
-                        alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
-                        className="w-full h-auto block pointer-events-none drop-shadow-md"
-                        draggable={false}
-                      />
-                      {/* Color overlay using mix-blend-mode: multiply */}
-                      {activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                      {/* Color layer - only for transparent images (T-Shirt, Hoodie, SVG) */}
+                      {hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
                             backgroundColor: activeColor,
-                            mixBlendMode: "multiply",
-                            opacity: 0.85,
+                            WebkitMaskImage: `url(${currentImage})`,
+                            WebkitMaskSize: "100% 100%",
+                            WebkitMaskRepeat: "no-repeat",
+                            WebkitMaskPosition: "center",
+                            maskImage: `url(${currentImage})`,
+                            maskSize: "100% 100%",
+                            maskRepeat: "no-repeat",
+                            maskPosition: "center",
                           }}
                         />
                       )}
+                      {/* Color indicator badge for opaque images (Trikot PNGs) */}
+                      {!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                        <div className="absolute top-3 left-3 z-10 flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm pointer-events-none">
+                          <div className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: activeColor }} />
+                          <span className="text-xs font-medium text-gray-700">Grundfarbe</span>
+                        </div>
+                      )}
+                      <img
+                        src={currentImage}
+                        alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
+                        className="w-full h-auto block pointer-events-none drop-shadow-md relative"
+                        draggable={false}
+                        style={{
+                          mixBlendMode: (hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined,
+                        }}
+                      />
                     </div>
                   ) : (
                     <div className="w-full aspect-[3/4] flex flex-col items-center justify-center text-muted-foreground" style={{ position: "relative", zIndex: 1 }}>

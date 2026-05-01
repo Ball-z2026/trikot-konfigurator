@@ -779,3 +779,17 @@
 - [x] Fix: Neue /api/storage-proxy/ Route erstellt die CDN-Layer umgeht + storageUrl() Utility im Frontend
 - [x] Alle Frontend-Dateien aktualisiert: CustomerConfigurator, Home, AdminProducts, AdminProductEditor, OrgDashboard, TrainerDashboard, DeptDashboard, AiMockupView
 - [x] 168 Tests bestanden (11 Testdateien, inkl. storage-proxy.test.ts)
+
+## Bugs: DTF Konfigurator (Produkt 180001 - A Test Trikot)
+- [x] Grundfarbe füllt die gesamte Seite statt nur das Trikot (gelbe Farbe überdeckt alles)
+  - Fix: Für transparente Bilder (T-Shirt, Hoodie, SVG) → mask-image + multiply Blend
+  - Fix: Für opake Bilder (Trikot-PNGs) → Farb-Indikator-Badge statt Overlay
+- [x] Rücken-Sponsor kann nicht ausgewählt werden (Trainer-Rolle: trainer.handball.1@tsv-musterstadt.de)
+  - Info: Rücken-Sponsor-Zone existiert bereits für Produkt 180001 (Zone 150006)
+  - Benutzer muss auf "Rückteil" wechseln um die Zone zu sehen
+
+## Bugs: Fan T-Shirt und Free-Zone-Modus (01.05.2026)
+- [x] Fan T-Shirt: Rücken-Sponsor kann nicht hinzugefügt werden
+  - Fix: Brust-Sponsor und Rücken-Sponsor Zonen (purpose: custom) in DB hinzugefügt
+- [x] Free-Zone-Modus: Zonen per Maus/Touch verschieben funktioniert nicht bei Nicht-Trikot-Produkten
+  - Fix: freeZoneMode=true für Hoodie (540001), Jacke (540002), T-Shirt (540003) in DB gesetzt
