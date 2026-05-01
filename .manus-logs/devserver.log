@@ -4096,3 +4096,14 @@
 [2026-05-01T08:03:31.430Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-01T08:03:33.279Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-01T08:03:33.685Z] Server running on http://localhost:3000/
+[2026-05-01T08:09:53.140Z] 4:09:53 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T08:10:28.175Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.214Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.219Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.223Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.227Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.232Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.238Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.243Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.697Z] [Auth] Missing session cookie
+[2026-05-01T08:10:28.708Z] [Auth] Missing session cookie

@@ -1862,44 +1862,65 @@ export default function CustomerConfigurator() {
 
                           {/* Vereinswappen (clubLogo): Automatisch vom Owner-Logo, nur Owner kann ändern */}
                           {purpose === "clubLogo" && (
-                            isZoneLocked(zone) ? (
-                              <div className="text-xs text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-md p-2 flex items-center gap-2">
-                                <Lock className="w-3.5 h-3.5 shrink-0" />
-                                <span>
-                                  {content?.imageDataUrl
-                                    ? "Vereinswappen vom Verein festgelegt."
-                                    : "Vereinswappen wird automatisch gesetzt, sobald der Vereinsverantwortliche ein Logo hochl\u00e4dt."}
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1 h-8 text-xs"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleImageUploadToZone(zone.id);
-                                  }}
-                                >
-                                  <Upload className="w-3.5 h-3.5 mr-1.5" />
-                                  {content?.imageDataUrl ? "Wappen \u00e4ndern" : "Vereinswappen hochladen"}
-                                </Button>
-                                {content?.imageDataUrl && (
+                            <div className="space-y-2">
+                              {/* Wappen-Vorschau Thumbnail */}
+                              {content?.imageDataUrl && (
+                                <div className={`flex items-center gap-3 rounded-lg p-2.5 ${isZoneLocked(zone) ? "bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800" : "bg-accent/40 border border-border"}`}>
+                                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-white dark:bg-gray-900 border border-border shrink-0 flex items-center justify-center p-1">
+                                    <img
+                                      src={content.imageDataUrl}
+                                      alt="Vereinswappen"
+                                      className="w-full h-full object-contain"
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium text-foreground truncate">Vereinswappen</p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                      {isZoneLocked(zone) ? "Vom Verein festgelegt" : "Vom Owner hochgeladen"}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                              {/* Gesperrt-Hinweis oder Upload-Buttons */}
+                              {isZoneLocked(zone) ? (
+                                <div className="text-xs text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-md p-2 flex items-center gap-2">
+                                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                                  <span>
+                                    {content?.imageDataUrl
+                                      ? "Nur der Vereinsverantwortliche kann das Wappen \u00e4ndern."
+                                      : "Vereinswappen wird automatisch gesetzt, sobald der Vereinsverantwortliche ein Logo hochl\u00e4dt."}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex gap-2">
                                   <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="shrink-0 h-8 w-8"
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 h-8 text-xs"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      updateZoneContent(zone.id, { imageDataUrl: undefined });
+                                      handleImageUploadToZone(zone.id);
                                     }}
                                   >
-                                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                    <Upload className="w-3.5 h-3.5 mr-1.5" />
+                                    {content?.imageDataUrl ? "Wappen \u00e4ndern" : "Vereinswappen hochladen"}
                                   </Button>
-                                )}
-                              </div>
-                            )
+                                  {content?.imageDataUrl && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="shrink-0 h-8 w-8"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateZoneContent(zone.id, { imageDataUrl: undefined });
+                                      }}
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           )}
 
                           {/* Logo zones: Image Upload (allgemeiner Logo-Upload, z.B. Sponsor) */}

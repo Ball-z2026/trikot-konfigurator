@@ -567,3 +567,9 @@
 - [x] Frontend Konfigurator: Vereinswappen automatisch vom Owner-Logo befüllen (bei allen Produkten)
 - [x] Frontend Konfigurator: Vereinswappen nur vom Owner änderbar (gesperrt für Spartenleiter und Trainer)
 - [x] Tests: 103 Tests bestanden, Browser-Verifizierung als Trainer erfolgreich
+
+## Visuelle Vorschau des Vereinswappens im Konfigurator
+
+- [x] Vereinswappen-Thumbnail in der Zonen-Karte anzeigen (wenn Bild vorhanden)
+- [x] Vorschau auch im gesperrten Zustand (Trainer/Spartenleiter) sichtbar
+- [x] Browser-Verifizierung als Trainer (103 Tests bestanden)
