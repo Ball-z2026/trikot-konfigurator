@@ -5230,3 +5230,52 @@
 [2026-05-01T22:12:17.691Z] [Auth] Missing session cookie
 [2026-05-01T22:12:17.950Z] [Auth] Missing session cookie
 [2026-05-01T22:12:17.954Z] [Auth] Missing session cookie
+[2026-05-01T22:30:19.734Z] 6:30:19 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T22:30:31.830Z] 6:30:31 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T22:30:48.751Z] 6:30:48 PM [vite] (client) hmr update /src/index.css
+[2026-05-01T22:30:59.143Z] 6:30:59 PM [vite] (client) hmr update /src/index.css
+[2026-05-01T22:31:31.939Z] 6:31:31 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T22:31:46.306Z] 6:31:46 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T22:32:19.987Z] 6:32:19 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T22:32:21.549Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T22:32:22.460Z] Server running on http://localhost:3000/
+[2026-05-01T22:33:08.295Z] 6:33:08 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-01T22:33:09.807Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T22:33:10.181Z] Server running on http://localhost:3000/
+[2026-05-01T22:33:42.455Z] 6:33:42 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T22:33:43.999Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T22:33:44.376Z] Server running on http://localhost:3000/
+[2026-05-01T22:33:50.477Z] 6:33:50 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T22:33:51.983Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T22:33:52.454Z] Server running on http://localhost:3000/
+[2026-05-01T22:34:06.816Z] 6:34:06 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T22:34:08.351Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T22:34:08.710Z] Server running on http://localhost:3000/
+[2026-05-01T22:34:18.086Z] 6:34:18 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T22:34:19.661Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T22:34:20.042Z] Server running on http://localhost:3000/
+[2026-05-01T22:37:03.135Z] Dev server process group stopped
+[2026-05-01T22:37:03.192Z] Dev server exited with code -15
+[2026-05-01T22:37:06.147Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T22:37:07.843Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T22:37:08.268Z] Server running on http://localhost:3000/
+[2026-05-01T22:42:32.098Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.210Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.219Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.234Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.242Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.253Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.263Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.272Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.387Z] [Auth] Missing session cookie
+[2026-05-01T22:42:32.393Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.316Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.340Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.343Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.348Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.352Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.358Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.362Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.366Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.420Z] [Auth] Missing session cookie
+[2026-05-01T22:43:13.424Z] [Auth] Missing session cookie

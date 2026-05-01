@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Download, RefreshCw } from "lucide-react";
+import { Sparkles, Download, RefreshCw, Save, Share2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
@@ -19,6 +19,12 @@ interface AiMockupViewProps {
   canvasContainerRef?: React.RefObject<HTMLDivElement | null>;
   /** Beschreibung der Zonen-Inhalte für den KI-Prompt */
   zoneDescriptions?: string;
+  /** Seite: "front" oder "back" (für Vorder-/Rückseite-Modus) */
+  side?: "front" | "back";
+  /** Callback wenn Mockup in Galerie gespeichert werden soll */
+  onSaveToGallery?: (mockupUrl: string, side: string) => void;
+  /** Callback wenn Mockup geteilt werden soll */
+  onShare?: (mockupUrl: string) => void;
 }
 
 const LOADING_STEPS = [
@@ -40,6 +46,9 @@ export function AiMockupView({
   cachedScreenshot,
   canvasContainerRef,
   zoneDescriptions,
+  side = "front",
+  onSaveToGallery,
+  onShare,
 }: AiMockupViewProps) {
   const [mockupUrl, setMockupUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -139,6 +148,7 @@ export function AiMockupView({
         colorDescription: colorDescriptions,
         designImageBase64,
         zoneDescriptions,
+        side,
       });
 
       if (result.url) {
@@ -289,7 +299,7 @@ export function AiMockupView({
               className="w-full h-auto"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap justify-center">
             <Button variant="outline" size="sm" onClick={handleGenerate}>
               <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
               Neu generieren
@@ -298,6 +308,18 @@ export function AiMockupView({
               <Download className="w-3.5 h-3.5 mr-1.5" />
               Herunterladen
             </Button>
+            {onSaveToGallery && (
+              <Button variant="outline" size="sm" onClick={() => onSaveToGallery(mockupUrl!, side)}>
+                <Save className="w-3.5 h-3.5 mr-1.5" />
+                Speichern
+              </Button>
+            )}
+            {onShare && (
+              <Button variant="outline" size="sm" onClick={() => onShare(mockupUrl!)}>
+                <Share2 className="w-3.5 h-3.5 mr-1.5" />
+                Teilen
+              </Button>
+            )}
           </div>
           <p className="text-xs text-muted-foreground text-center">
             KI-generiertes Bild basierend auf deinem Design. Farben und Positionen können leicht abweichen.

@@ -839,3 +839,13 @@
 - [x] KI-Mockup: Funktioniert auch für Hoodie, Jacke, T-Shirt (nicht nur Trikots)
 - [x] Speichern-Button: Konfiguriertes Produkt (Hoodie etc.) als Bild speichern/herunterladen
 - [x] Speichern-Button: KI-Mockup als Bild speichern/herunterladen
+
+## KI-Mockup Erweiterungen
+- [x] Screenshot aus der Gesamtübersicht (Overview) nehmen statt nur vom aktuellen Einzelteil
+- [x] Rückseite-Mockup-Modus ergänzen (Vorder- und Rückseite separat generieren)
+- [x] Mockup-Galerie im Trainer-Dashboard (generierte Mockups speichern und vergleichen)
+- [x] Mockups versenden können (per Link teilen / E-Mail)
+
+## Mannschaft bei allen Textilien anzeigen
+- [x] Mannschafts-Panel (Spielerliste, Spieler-Navigation) auch bei freeZoneMode-Produkten (war bereits implementiert)
+- [x] Automatische Befüllung von Spielername/Nummer-Zonen auch bei Nicht-Trikot-Produkten (war bereits implementiert)

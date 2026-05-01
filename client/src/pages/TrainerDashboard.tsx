@@ -50,6 +50,9 @@ import {
   StarOff,
   Info,
   MessageCircle,
+  Share2,
+  ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -1111,6 +1114,10 @@ function TeamDetail({
             ))}
           </div>
         )}
+        {/* Mockup-Galerie */}
+        <Separator className="my-6" />
+        <MockupGallerySection teamId={teamId} teamName={team.name} orgId={orgId} />
+
         {/* Abrechnungs-Bereich */}
         <PaymentSection teamId={teamId} orgId={orgId} players={players} />
         {/* Kommunikation mit Spartenleiter */}
@@ -1181,8 +1188,132 @@ export default function TrainerDashboard() {
   return <TeamList orgId={orgId} deptId={deptId} />;
 }
 
+// ─── Mockup Gallery Section ─────────────────────────────────────────────────────
+function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; teamName: string; orgId: number }) {
+  const utils = trpc.useUtils();
+  const { data: mockups, isLoading } = trpc.mockupGallery.listByTeam.useQuery({ teamId });
+  const deleteMockup = trpc.mockupGallery.delete.useMutation({
+    onSuccess: () => {
+      utils.mockupGallery.listByTeam.invalidate({ teamId });
+      toast.success("Mockup gelöscht");
+    },
+    onError: () => toast.error("Löschen fehlgeschlagen"),
+  });
 
-// ─── Trainer Comment Section ─────────────────────────────────────────────────
+  const handleShare = (shareToken: string) => {
+    const shareUrl = `${window.location.origin}/mockup/${shareToken}`;
+    navigator.clipboard.writeText(shareUrl);
+    toast.success("Share-Link in Zwischenablage kopiert!");
+  };
+
+  const handleDownload = (imageUrl: string, title: string | null) => {
+    const a = document.createElement("a");
+    a.href = storageUrl(imageUrl) || imageUrl;
+    a.download = `${(title || teamName).replace(/\s+/g, "_")}_Mockup.png`;
+    a.target = "_blank";
+    a.click();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-500" />
+          <h2 className="text-xl font-bold">KI-Mockup Galerie</h2>
+          {mockups && mockups.length > 0 && (
+            <Badge variant="secondary" className="text-xs">{mockups.length}</Badge>
+          )}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : !mockups || mockups.length === 0 ? (
+        <div className="text-center py-8 bg-muted/30 rounded-xl border border-dashed">
+          <Sparkles className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground mb-1">Noch keine Mockups gespeichert</p>
+          <p className="text-sm text-muted-foreground">
+            Erstelle im Konfigurator ein KI-Mockup und speichere es hier.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {mockups.map((mockup) => (
+            <Card key={mockup.id} className="overflow-hidden group">
+              <div className="relative aspect-square bg-muted">
+                <img
+                  src={storageUrl(mockup.imageUrl) || mockup.imageUrl}
+                  alt={mockup.title || "KI-Mockup"}
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute top-2 right-2">
+                  <Badge variant="secondary" className="text-[10px]">
+                    {mockup.side === "front" ? "Vorderseite" : "Rückseite"}
+                  </Badge>
+                </div>
+              </div>
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium truncate">
+                      {mockup.title || "KI-Mockup"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(mockup.createdAt).toLocaleDateString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleShare(mockup.shareToken!)}
+                      title="Teilen"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleDownload(mockup.imageUrl, mockup.title)}
+                      title="Herunterladen"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      onClick={() => {
+                        if (confirm("Mockup wirklich löschen?")) {
+                          deleteMockup.mutate({ id: mockup.id });
+                        }
+                      }}
+                      title="Löschen"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Trainer Comment Section ─────────────────────────────────────────────────────
 function TrainerCommentSection({ teamId, teamName }: { teamId: number; teamName: string }) {
   const [showThread, setShowThread] = useState(false);
   const teamIds = useMemo(() => [teamId], [teamId]);

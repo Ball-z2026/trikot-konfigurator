@@ -190,7 +190,28 @@ export default function CustomerConfigurator() {
   const [activePlayerIdx, setActivePlayerIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [cachedMockupScreenshot, setCachedMockupScreenshot] = useState<string | null>(null);
-  // ─── Saved Designs State ─────────────────────────────────────────────────
+  const [mockupSide, setMockupSide] = useState<"front" | "back">("front");
+
+  // ─── Mockup-Galerie Mutation ──────────────────────────────────────────────────────────
+  const saveMockupMutation = trpc.mockupGallery.save.useMutation({
+    onSuccess: (result) => {
+      toast.success("Mockup in Galerie gespeichert!");
+      // Share-Link in Zwischenablage kopieren
+      const shareUrl = `${window.location.origin}/mockup/${result.shareToken}`;
+      navigator.clipboard.writeText(shareUrl).catch(() => {});
+    },
+    onError: () => toast.error("Speichern fehlgeschlagen"),
+  });
+  const saveMockupToGallery = (params: { mockupUrl: string; side: string; productId: number; teamId: number }) => {
+    saveMockupMutation.mutate({
+      teamId: params.teamId,
+      productId: params.productId,
+      imageUrl: params.mockupUrl,
+      side: params.side as "front" | "back",
+    });
+  };
+
+  // ─── Saved Designs State ─────────────────────────────────────────────────────────────
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [designName, setDesignName] = useState("");
@@ -1589,8 +1610,38 @@ export default function CustomerConfigurator() {
                   size="sm"
                   className="h-8 text-xs"
                   onClick={async () => {
-                    // Screenshot des Canvas erstellen BEVOR wir den View wechseln
-                    if (canvasRef.current) {
+                    // Screenshot aus der Gesamtübersicht nehmen (overviewRef)
+                    // Dazu kurz zur Overview wechseln, Screenshot machen, dann zum Mockup
+                    const prevMode = viewMode;
+                    if (prevMode !== "overview") {
+                      setViewMode("overview");
+                      // Warte bis DOM gerendert
+                      await new Promise(r => setTimeout(r, 300));
+                    }
+                    if (overviewRef.current) {
+                      try {
+                        const { toPng } = await import("html-to-image");
+                        const dataUrl = await toPng(overviewRef.current, {
+                          quality: 0.8,
+                          pixelRatio: 1.5,
+                          skipFonts: true,
+                        });
+                        setCachedMockupScreenshot(dataUrl);
+                      } catch {
+                        // Fallback: Versuche canvasRef
+                        if (canvasRef.current) {
+                          try {
+                            const { toPng } = await import("html-to-image");
+                            const dataUrl = await toPng(canvasRef.current, {
+                              quality: 0.8,
+                              pixelRatio: 1.5,
+                              skipFonts: true,
+                            });
+                            setCachedMockupScreenshot(dataUrl);
+                          } catch { /* kein Screenshot */ }
+                        }
+                      }
+                    } else if (canvasRef.current) {
                       try {
                         const { toPng } = await import("html-to-image");
                         const dataUrl = await toPng(canvasRef.current, {
@@ -1599,9 +1650,7 @@ export default function CustomerConfigurator() {
                           skipFonts: true,
                         });
                         setCachedMockupScreenshot(dataUrl);
-                      } catch {
-                        // Fallback: kein Screenshot
-                      }
+                      } catch { /* kein Screenshot */ }
                     }
                     setViewMode("ai-mockup");
                   }}
@@ -1677,6 +1726,25 @@ export default function CustomerConfigurator() {
             {hasParts && viewMode === "ai-mockup" && (
               <Card className="overflow-hidden">
                 <div className="bg-[#e8eaed] p-4 sm:p-6">
+                  {/* Vorderseite / Rückseite Tabs */}
+                  <div className="flex gap-2 mb-4 justify-center">
+                    <Button
+                      variant={mockupSide === "front" ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setMockupSide("front")}
+                    >
+                      Vorderseite
+                    </Button>
+                    <Button
+                      variant={mockupSide === "back" ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setMockupSide("back")}
+                    >
+                      Rückseite
+                    </Button>
+                  </div>
                   <AiMockupView
                     productName={productData?.name || "Trikot"}
                     sortedParts={sortedParts}
@@ -1686,7 +1754,8 @@ export default function CustomerConfigurator() {
                     isDtf={isDtf}
                     dtfBaseColor={dtfBaseColor || ""}
                     cachedScreenshot={cachedMockupScreenshot}
-                    canvasContainerRef={canvasRef}
+                    canvasContainerRef={overviewRef}
+                    side={mockupSide}
                     zoneDescriptions={allZones.map(z => {
                       const c = zoneContents[z.id];
                       const parts: string[] = [];
@@ -1696,6 +1765,14 @@ export default function CustomerConfigurator() {
                       if (z.purpose === "clubLogo") parts.push("Vereinswappen");
                       return parts.length > 1 ? parts.join(" - ") : null;
                     }).filter(Boolean).join("; ")}
+                    onSaveToGallery={teamIdParam ? (url, side) => {
+                      saveMockupToGallery({ mockupUrl: url, side, productId, teamId: teamIdParam });
+                    } : undefined}
+                    onShare={(url) => {
+                      const fullUrl = window.location.origin + (storageUrl(url) || url);
+                      navigator.clipboard.writeText(fullUrl);
+                      toast.success("Mockup-Link in Zwischenablage kopiert!");
+                    }}
                   />
                 </div>
               </Card>
@@ -1705,6 +1782,25 @@ export default function CustomerConfigurator() {
             {!hasParts && viewMode === "ai-mockup" && (
               <Card className="overflow-hidden">
                 <div className="bg-[#e8eaed] p-4 sm:p-6">
+                  {/* Vorderseite / Rückseite Tabs */}
+                  <div className="flex gap-2 mb-4 justify-center">
+                    <Button
+                      variant={mockupSide === "front" ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setMockupSide("front")}
+                    >
+                      Vorderseite
+                    </Button>
+                    <Button
+                      variant={mockupSide === "back" ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setMockupSide("back")}
+                    >
+                      Rückseite
+                    </Button>
+                  </div>
                   <AiMockupView
                     productName={productData?.name || "Textil"}
                     sortedParts={sortedParts}
@@ -1715,6 +1811,7 @@ export default function CustomerConfigurator() {
                     dtfBaseColor={dtfBaseColor || ""}
                     cachedScreenshot={cachedMockupScreenshot}
                     canvasContainerRef={canvasRef}
+                    side={mockupSide}
                     zoneDescriptions={allZones.map(z => {
                       const c = zoneContents[z.id];
                       const parts: string[] = [];
@@ -1724,6 +1821,14 @@ export default function CustomerConfigurator() {
                       if (z.purpose === "clubLogo") parts.push("Vereinswappen");
                       return parts.length > 1 ? parts.join(" - ") : null;
                     }).filter(Boolean).join("; ")}
+                    onSaveToGallery={teamIdParam ? (url, side) => {
+                      saveMockupToGallery({ mockupUrl: url, side, productId, teamId: teamIdParam });
+                    } : undefined}
+                    onShare={(url) => {
+                      const fullUrl = window.location.origin + (storageUrl(url) || url);
+                      navigator.clipboard.writeText(fullUrl);
+                      toast.success("Mockup-Link in Zwischenablage kopiert!");
+                    }}
                   />
                 </div>
               </Card>

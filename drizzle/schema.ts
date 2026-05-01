@@ -456,3 +456,29 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
 
 export type SponsorTemplate = typeof sponsorTemplates.$inferSelect;
 export type InsertSponsorTemplate = typeof sponsorTemplates.$inferInsert;
+
+/**
+ * Mockup Gallery – Gespeicherte KI-generierte Mockups pro Team.
+ * Trainer können generierte Mockups speichern, vergleichen und per Link teilen.
+ */
+export const mockupGallery = mysqlTable("mockup_gallery", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Welches Team */
+  teamId: int("teamId").notNull(),
+  /** Welches Produkt-Template */
+  productId: int("productId").notNull(),
+  /** Wer hat es erstellt */
+  userId: int("userId").notNull(),
+  /** URL zum generierten Mockup-Bild (Storage) */
+  imageUrl: text("imageUrl").notNull(),
+  /** Seite: front oder back */
+  side: mysqlEnum("side", ["front", "back"]).default("front").notNull(),
+  /** Optionaler Name/Titel */
+  title: varchar("title", { length: 255 }),
+  /** Öffentlicher Share-Token für Link-Sharing */
+  shareToken: varchar("shareToken", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MockupGalleryItem = typeof mockupGallery.$inferSelect;
+export type InsertMockupGalleryItem = typeof mockupGallery.$inferInsert;

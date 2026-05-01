@@ -29,6 +29,8 @@ import {
   savedDesigns,
   sponsorTemplates,
   InsertSponsorTemplate,
+  mockupGallery,
+  InsertMockupGalleryItem,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1341,4 +1343,32 @@ export async function deleteSponsorTemplate(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(sponsorTemplates).where(eq(sponsorTemplates.id, id));
+}
+
+
+// ─── Mockup Gallery Helpers ─────────────────────────────────────────────────
+export async function createMockupGalleryItem(data: InsertMockupGalleryItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(mockupGallery).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function listMockupsByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(mockupGallery).where(eq(mockupGallery.teamId, teamId)).orderBy(desc(mockupGallery.createdAt));
+}
+
+export async function getMockupByShareToken(shareToken: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(mockupGallery).where(eq(mockupGallery.shareToken, shareToken)).limit(1);
+  return result[0];
+}
+
+export async function deleteMockupGalleryItem(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(mockupGallery).where(and(eq(mockupGallery.id, id), eq(mockupGallery.userId, userId)));
 }

@@ -18,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Register from "./pages/Register";
 import DeptDashboard from "./pages/DeptDashboard";
 import PaymentConfirm from "./pages/PaymentConfirm";
+import MockupShare from "./pages/MockupShare";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/trainer/:id/:deptId" component={TrainerDashboard} />
       <Route path="/trainer/:id/:deptId/team/:teamId" component={TrainerDashboard} />
       <Route path="/payment/confirm/:token" component={PaymentConfirm} />
+      <Route path="/mockup/:token" component={MockupShare} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -102,6 +102,10 @@ import {
   deleteSponsorTemplate,
   listOrgTemplates,
   duplicateSavedDesign,
+  createMockupGalleryItem,
+  listMockupsByTeam,
+  getMockupByShareToken,
+  deleteMockupGalleryItem,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1796,6 +1800,56 @@ export const appRouter = router({
       }),
    }),
 
+  /** Mockup-Galerie */
+  mockupGallery: router({
+    /** Mockup in Galerie speichern */
+    save: protectedProcedure
+      .input(z.object({
+        teamId: z.number(),
+        productId: z.number(),
+        imageUrl: z.string(),
+        side: z.enum(["front", "back"]).default("front"),
+        title: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const shareToken = nanoid(16);
+        const result = await createMockupGalleryItem({
+          teamId: input.teamId,
+          productId: input.productId,
+          userId: ctx.user!.id,
+          imageUrl: input.imageUrl,
+          side: input.side,
+          title: input.title || null,
+          shareToken,
+        });
+        return { id: result.id, shareToken };
+      }),
+
+    /** Alle Mockups eines Teams laden */
+    listByTeam: protectedProcedure
+      .input(z.object({ teamId: z.number() }))
+      .query(async ({ input }) => {
+        return listMockupsByTeam(input.teamId);
+      }),
+
+    /** Mockup per Share-Token laden (öffentlich) */
+    getByShareToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const item = await getMockupByShareToken(input.token);
+        if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Mockup nicht gefunden" });
+        return item;
+      }),
+
+    /** Mockup löschen */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteMockupGalleryItem(input.id, ctx.user!.id);
+        return { success: true };
+      }),
+  }),
+
   /** Mockup-Generierung */
   mockup: router({
     /** KI-Mockup generieren – nutzt das aktuelle Design als Referenzbild */
@@ -1808,6 +1862,8 @@ export const appRouter = router({
         designImageBase64: z.string().optional(),
         /** Beschreibung der Zonen-Inhalte (Logos, Texte, Nummern) */
         zoneDescriptions: z.string().optional(),
+        /** Welche Seite: front oder back */
+        side: z.enum(["front", "back"]).optional().default("front"),
       }))
       .mutation(async ({ input }) => {
         const colorInfo = input.colorDescription
@@ -1819,8 +1875,11 @@ export const appRouter = router({
         const zoneInfo = input.zoneDescriptions
           ? ` Auf dem Textil befinden sich folgende Elemente: ${input.zoneDescriptions}.`
           : "";
+        const sideInfo = input.side === "back"
+          ? " Zeige die RÜCKSEITE des Textils (von hinten betrachtet)."
+          : " Zeige die VORDERSEITE des Textils (von vorne betrachtet).";
 
-        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund. Nutze das beigefügte Design-Bild als EXAKTE Vorlage – reproduziere die Positionen, Farben, Logos, Wappen, Texte, Nummern und Muster GENAU wie im Referenzbild gezeigt.${colorInfo}${typeInfo}${zoneInfo} Zeige das komplette Textil von vorne, professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
+        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund. Nutze das beigefügte Design-Bild als EXAKTE Vorlage – reproduziere die Positionen, Farben, Logos, Wappen, Texte, Nummern und Muster GENAU wie im Referenzbild gezeigt.${colorInfo}${typeInfo}${zoneInfo}${sideInfo} Professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
 
         // Wenn ein Design-Bild vorhanden ist, als Referenz übergeben
         const originalImages = input.designImageBase64
