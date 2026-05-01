@@ -558,3 +558,12 @@
 - [x] Verbandsregeln im Konfigurator: NRW + Volleyball → FIVB-Regeln (Brustnummer mind. 15 cm, Nummernkreis 1-99)
 - [x] Alle 103 Tests bestanden
 - [x] Temporäre Scripts aufgeräumt (update-org.mjs entfernt)
+
+## Brust Logo → Vereinswappen umbenennen
+
+- [x] DB: Alle Zonen mit name "Brust Logo" in "Vereinswappen" umbenennen (Migration) + neuer purpose "clubLogo"
+- [x] Backend: Zone-Label "Vereinswappen" statt "Brust Logo" in Templates und Seed-Daten
+- [x] Frontend Konfigurator: "Brust Logo" → "Vereinswappen" in allen Anzeigen
+- [x] Frontend Konfigurator: Vereinswappen automatisch vom Owner-Logo befüllen (bei allen Produkten)
+- [x] Frontend Konfigurator: Vereinswappen nur vom Owner änderbar (gesperrt für Spartenleiter und Trainer)
+- [x] Tests: 103 Tests bestanden, Browser-Verifizierung als Trainer erfolgreich

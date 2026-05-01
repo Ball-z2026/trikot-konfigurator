@@ -73,7 +73,7 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "playerName" | "playerNumber" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
@@ -108,6 +108,7 @@ type Player = {
 
 const PURPOSE_ICONS: Record<string, typeof FileImage> = {
   logo: FileImage,
+  clubLogo: Shield,
   playerName: User,
   playerNumber: Hash,
   clubName: Shield,
@@ -116,6 +117,7 @@ const PURPOSE_ICONS: Record<string, typeof FileImage> = {
 
 const PURPOSE_LABELS: Record<string, string> = {
   logo: "Logo",
+  clubLogo: "Vereinswappen",
   playerName: "Spielername",
   playerNumber: "Nummer",
   clubName: "Vereinsname",
@@ -235,11 +237,15 @@ export default function CustomerConfigurator() {
   const isTrainer = userRole === "trainer";
   const hasMultipleMemberships = (myMemberships?.length ?? 0) > 1;
 
-  // Gesperrte Zonen: Vereinsname und Logo sind für Trainer nicht änderbar
+  // Gesperrte Zonen: Vereinswappen und Vereinsname sind für Nicht-Owner nicht änderbar
+  const isOwner = userRole === "owner";
   const isZoneLocked = useCallback((zone: ZoneData) => {
-    if (!isTrainer) return false;
-    return zone.purpose === "clubName" || zone.purpose === "logo";
-  }, [isTrainer]);
+    // clubLogo (Vereinswappen) ist NUR vom Owner änderbar
+    if (zone.purpose === "clubLogo") return !isOwner;
+    // clubName ist für Trainer gesperrt
+    if (zone.purpose === "clubName") return isTrainer;
+    return false;
+  }, [isOwner, isTrainer]);
 
   // Standard-Logo der Organisation laden
   const { data: orgDefaultLogo } = trpc.orgLogo.getDefault.useQuery(
@@ -335,10 +341,10 @@ export default function CustomerConfigurator() {
     setClubName(primaryMembership.orgName);
   }, [primaryMembership?.orgName]);
 
-  // ─── Auto-Zuweisung: Org-Logo in alle Logo-Zonen setzen ───
+  // ─── Auto-Zuweisung: Org-Logo in alle Vereinswappen-Zonen (clubLogo) setzen ───
   useEffect(() => {
     if (autoLogoApplied || !orgDefaultLogo?.imageUrl || allZones.length === 0) return;
-    const logoZones = allZones.filter((z) => z.purpose === "logo");
+    const logoZones = allZones.filter((z) => z.purpose === "clubLogo");
     if (logoZones.length === 0) return;
     setZoneContents((prev) => {
       const updated = { ...prev };
@@ -361,7 +367,7 @@ export default function CustomerConfigurator() {
   // ─── Auto-Zuweisung: Abt.-Schrift in alle Text-Zonen setzen ───
   useEffect(() => {
     if (autoFontApplied || !deptDefaultFont?.fontFamily || allZones.length === 0) return;
-    const textZones = allZones.filter((z) => z.purpose !== "logo");
+    const textZones = allZones.filter((z) => z.purpose !== "logo" && z.purpose !== "clubLogo");
     if (textZones.length === 0) return;
     setZoneContents((prev) => {
       const updated = { ...prev };
@@ -1537,10 +1543,10 @@ export default function CustomerConfigurator() {
                         setZoneContents((prev) => {
                           const updated = { ...prev };
                           for (const zone of allZones) {
-                            if (zone.purpose === "logo" && updated[zone.id]?.imageDataUrl === prevAutoLogoUrl.current) {
+                            if (zone.purpose === "clubLogo" && updated[zone.id]?.imageDataUrl === prevAutoLogoUrl.current) {
                               updated[zone.id] = { ...updated[zone.id], zoneId: zone.id, imageDataUrl: undefined as any };
                             }
-                            if (zone.purpose !== "logo" && updated[zone.id]?.fontFamily === prevAutoFontFamily.current) {
+                            if (zone.purpose !== "logo" && zone.purpose !== "clubLogo" && updated[zone.id]?.fontFamily === prevAutoFontFamily.current) {
                               updated[zone.id] = { ...updated[zone.id], zoneId: zone.id, fontFamily: undefined as any };
                             }
                           }
@@ -1854,18 +1860,50 @@ export default function CustomerConfigurator() {
                             </div>
                           )}
 
-                          {/* Logo zones: Image Upload */}
-                          {purpose === "logo" && (
+                          {/* Vereinswappen (clubLogo): Automatisch vom Owner-Logo, nur Owner kann ändern */}
+                          {purpose === "clubLogo" && (
                             isZoneLocked(zone) ? (
                               <div className="text-xs text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-md p-2 flex items-center gap-2">
                                 <Lock className="w-3.5 h-3.5 shrink-0" />
                                 <span>
                                   {content?.imageDataUrl
                                     ? "Vereinswappen vom Verein festgelegt."
-                                    : "Vereinswappen wird automatisch gesetzt."}
+                                    : "Vereinswappen wird automatisch gesetzt, sobald der Vereinsverantwortliche ein Logo hochl\u00e4dt."}
                                 </span>
                               </div>
                             ) : (
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 h-8 text-xs"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleImageUploadToZone(zone.id);
+                                  }}
+                                >
+                                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                                  {content?.imageDataUrl ? "Wappen \u00e4ndern" : "Vereinswappen hochladen"}
+                                </Button>
+                                {content?.imageDataUrl && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="shrink-0 h-8 w-8"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateZoneContent(zone.id, { imageDataUrl: undefined });
+                                    }}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                  </Button>
+                                )}
+                              </div>
+                            )
+                          )}
+
+                          {/* Logo zones: Image Upload (allgemeiner Logo-Upload, z.B. Sponsor) */}
+                          {purpose === "logo" && (
                               <div className="flex gap-2">
                                 <Button
                                   variant="outline"
@@ -1893,7 +1931,6 @@ export default function CustomerConfigurator() {
                                   </Button>
                                 )}
                               </div>
-                            )
                           )}
 
                           {/* Player Name/Number: Auto-filled */}

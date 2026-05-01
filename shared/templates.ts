@@ -10,7 +10,7 @@
 export interface TemplateZone {
   label: string;
   type: "image" | "text" | "both";
-  purpose: "logo" | "playerName" | "playerNumber" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "custom";
   posX: number;
   posY: number;
   width: number;
@@ -85,9 +85,9 @@ const VORDERTEIL: TemplatePart = {
   sortOrder: 1,
   zones: [
     {
-      label: "Brust Logo",
+      label: "Vereinswappen",
       type: "image",
-      purpose: "logo",
+      purpose: "clubLogo",
       posX: 35,
       posY: 25,
       width: 30,

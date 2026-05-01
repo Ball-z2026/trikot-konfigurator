@@ -38,6 +38,7 @@ import {
   Ruler,
   Palette,
   Building2,
+  Shield,
   Droplets,
   X,
 } from "lucide-react";
@@ -61,7 +62,7 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "playerName" | "playerNumber" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
@@ -77,8 +78,9 @@ type ZoneData = {
   sortOrder: number;
 };
 
-const PURPOSE_CONFIG = {
+const PURPOSE_CONFIG: Record<string, { label: string; icon: typeof FileImage; description: string; autoType: "image" | "text" | "both" }> = {
   logo: { label: "Logo", icon: FileImage, description: "Bild-Upload (Logo, Sponsor)", autoType: "image" as const },
+  clubLogo: { label: "Vereinswappen", icon: Shield, description: "Vereinswappen – automatisch vom Owner gesetzt, nur Owner kann ändern", autoType: "image" as const },
   playerName: { label: "Spielername", icon: User, description: "Automatisch aus Mannschaftsliste", autoType: "text" as const },
   playerNumber: { label: "Nummer", icon: Hash, description: "Automatisch aus Mannschaftsliste", autoType: "text" as const },
   clubName: { label: "Vereinsname", icon: Building2, description: "Fester Vereinsname für alle Trikots", autoType: "text" as const },
@@ -890,7 +892,7 @@ export default function AdminProductEditor() {
                                   <Label className="text-[10px] text-muted-foreground mb-1 block">Zweck</Label>
                                   <Select
                                     value={zone.purpose}
-                                    onValueChange={(val: "logo" | "playerName" | "playerNumber" | "clubName" | "custom") => {
+                                    onValueChange={(val: string) => {
                                       const autoType = PURPOSE_CONFIG[val]?.autoType || zone.type;
                                       updateLocalZone(zone.id, { purpose: val, type: autoType });
                                       updateZoneMut.mutate({ id: zone.id, purpose: val, type: autoType });

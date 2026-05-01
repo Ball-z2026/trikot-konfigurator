@@ -176,6 +176,7 @@ export type InsertProductPart = typeof productParts.$inferInsert;
  * - playerName: Wird automatisch mit Spielername aus Mannschaftsliste befüllt
  * - playerNumber: Wird automatisch mit Spielernummer aus Mannschaftsliste befüllt
  * - clubName: Wird automatisch mit dem Vereinsnamen befüllt (fest für alle Trikots gleich)
+ * - clubLogo: Vereinswappen – wird automatisch vom Owner-Logo gesetzt, nur Owner kann es ändern
  * - custom: Frei konfigurierbares Feld (Text oder Bild)
  */
 export const productZones = mysqlTable("product_zones", {
@@ -187,7 +188,7 @@ export const productZones = mysqlTable("product_zones", {
   /** Zone-Typ: image = nur Bild-Upload, text = nur Text, both = beides */
   type: mysqlEnum("type", ["image", "text", "both"]).default("image").notNull(),
   /** Zweck der Zone – bestimmt ob der Inhalt automatisch befüllt wird */
-  purpose: mysqlEnum("purpose", ["logo", "playerName", "playerNumber", "clubName", "custom"]).default("logo").notNull(),
+  purpose: mysqlEnum("purpose", ["logo", "clubLogo", "playerName", "playerNumber", "clubName", "custom"]).default("logo").notNull(),
   /** Position X in % vom linken Rand */
   posX: float("posX").default(10).notNull(),
   /** Position Y in % vom oberen Rand */
