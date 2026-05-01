@@ -793,3 +793,12 @@
   - Fix: Brust-Sponsor und Rücken-Sponsor Zonen (purpose: custom) in DB hinzugefügt
 - [x] Free-Zone-Modus: Zonen per Maus/Touch verschieben funktioniert nicht bei Nicht-Trikot-Produkten
   - Fix: freeZoneMode=true für Hoodie (540001), Jacke (540002), T-Shirt (540003) in DB gesetzt
+
+## Standard-Zonen für Nicht-Trikot-Artikel (Hoodie, Jacke, T-Shirt)
+- [x] Neuer Zone-Purpose-Typ "initials" für Spieler-Kürzel (Initialen aus Mannschaftsliste) - bereits als playerInitials im Schema vorhanden
+- [x] Kürzel-Zone: Unten links, 8x8 cm, auf Vorderseite aller Nicht-Trikot-Artikel
+- [x] Vereinsname-Zone: Immer auf der Rückseite (Jacke-Vereinsname von Vorderseite auf Rückseite verschoben)
+- [x] Vereinswappen-Zone: Immer auf der Herzseite (links oben Brust) - T-Shirt Wappen von Mitte auf links verschoben
+- [x] Auto-Fill: Spieler-Initialen automatisch aus Mannschaftsliste in Kürzel-Zone eintragen (war bereits implementiert)
+- [x] Zonen für alle 3 Produkte (Hoodie 540001, Jacke 540002, T-Shirt 540003) in DB angelegt
+- [x] Fehlerhafte verwaiste Zonen (ohne partId) beim T-Shirt bereinigt
