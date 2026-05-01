@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Shirt, Shield, Settings, ArrowRight, LogIn, LogOut, Menu, Building2, Users } from "lucide-react";
+import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
@@ -189,24 +190,26 @@ export default function Home() {
                   onClick={() => setLocation(`/konfigurator/${product.id}`)}
                 >
                   <div className="aspect-[4/3] bg-muted/50 relative overflow-hidden">
-                    {product.frontImageUrl ? (
-                      <img
-                        src={product.frontImageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : product.templateId ? (
-                      <div className="w-full h-full flex items-center justify-center p-4">
-                        <div className="text-center">
-                          <Shirt className="w-10 h-10 sm:w-14 sm:h-14 text-primary/40 mx-auto" />
-                          <span className="text-[10px] text-muted-foreground mt-1 block">Template-Produkt</span>
+                    {(() => {
+                      // Versuche ein Vorschaubild zu finden: frontImageUrl > Template-previewUrl > generisches Icon
+                      const imageUrl = product.frontImageUrl
+                        || (product.templateId && TEXTIL_TEMPLATES.find(t => t.id === product.templateId)?.previewUrl)
+                        || null;
+                      if (imageUrl) {
+                        return (
+                          <img
+                            src={imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                          />
+                        );
+                      }
+                      return (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Shirt className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground/30" />
                         </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Shirt className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground/30" />
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base sm:text-lg">{product.name}</CardTitle>

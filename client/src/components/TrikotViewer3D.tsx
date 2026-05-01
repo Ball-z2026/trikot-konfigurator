@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect, useState, Suspense } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 // ─── Types ───────────────────────────────────────────
@@ -11,71 +11,93 @@ interface TrikotViewer3DProps {
   className?: string;
 }
 
-// ─── T-Shirt Geometry Builder ────────────────────────
-function createTShirtGeometry(): THREE.BufferGeometry {
-  // Simple T-shirt shape using a flat plane with slight curvature
-  const width = 2.4;
-  const height = 3.0;
-  const segW = 32;
-  const segH = 40;
-
-  const geometry = new THREE.PlaneGeometry(width, height, segW, segH);
+// ─── T-Shirt Shape als gewölbte Geometrie ────────────
+// Erstellt eine PlaneGeometry mit T-Shirt-Silhouette über Alpha und leichter Wölbung
+function createCurvedPlane(segments: number = 32): THREE.BufferGeometry {
+  const geometry = new THREE.PlaneGeometry(3, 3.5, segments, segments);
   const pos = geometry.attributes.position;
 
+  // Leichte zylindrische Wölbung
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
     const y = pos.getY(i);
-
-    // Add subtle curvature to simulate fabric drape
-    const curveFactor = 0.15;
-    const z = -Math.pow(x / (width / 2), 2) * curveFactor;
-
-    // Slight vertical curve (belly area)
-    const bellyFactor = 0.05;
-    const bellyZ = Math.sin((y / height + 0.5) * Math.PI) * bellyFactor;
-
-    pos.setZ(i, z + bellyZ);
+    // Wölbung: Mitte nach vorne, Ränder nach hinten
+    const z = -Math.pow(x / 1.5, 2) * 0.3 + Math.sin((y + 1.75) / 3.5 * Math.PI) * 0.08;
+    pos.setZ(i, z);
   }
 
   geometry.computeVertexNormals();
   return geometry;
 }
 
-// ─── TShirt Mesh Component ───────────────────────────
+// ─── T-Shirt Silhouette als Shape für Clipping ───────
+function createTShirtClipShape(): THREE.Shape {
+  const shape = new THREE.Shape();
+  // Skaliert auf die PlaneGeometry-Größe (3 x 3.5)
+  const s = 1.0; // Skalierungsfaktor
+
+  // T-Shirt-Silhouette (zentriert)
+  shape.moveTo(-0.9 * s, -1.4 * s);
+  shape.quadraticCurveTo(-0.85 * s, -0.5 * s, -0.9 * s, 0.2 * s);
+  shape.lineTo(-1.4 * s, 0.5 * s);
+  shape.lineTo(-1.4 * s, 0.85 * s);
+  shape.lineTo(-0.85 * s, 0.65 * s);
+  shape.lineTo(-0.65 * s, 1.05 * s);
+  shape.quadraticCurveTo(-0.3 * s, 1.25 * s, 0, 1.05 * s);
+  shape.quadraticCurveTo(0.3 * s, 1.25 * s, 0.65 * s, 1.05 * s);
+  shape.lineTo(0.85 * s, 0.65 * s);
+  shape.lineTo(1.4 * s, 0.85 * s);
+  shape.lineTo(1.4 * s, 0.5 * s);
+  shape.lineTo(0.9 * s, 0.2 * s);
+  shape.quadraticCurveTo(0.85 * s, -0.5 * s, 0.9 * s, -1.4 * s);
+  shape.lineTo(-0.9 * s, -1.4 * s);
+
+  return shape;
+}
+
+// ─── T-Shirt Mesh mit Extrude-Geometrie ──────────────
 function TShirtMesh({
   frontTextureUrl,
-  backTextureUrl,
   baseColor,
 }: {
   frontTextureUrl?: string;
-  backTextureUrl?: string;
   baseColor?: string;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const backMeshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const [frontTexture, setFrontTexture] = useState<THREE.Texture | null>(null);
-  const [backTexture, setBackTexture] = useState<THREE.Texture | null>(null);
 
-  const geometry = useMemo(() => createTShirtGeometry(), []);
+  // Erstelle extrudierte T-Shirt-Form
+  const geometry = useMemo(() => {
+    const shape = createTShirtClipShape();
+    const extrudeSettings = {
+      depth: 0.25,
+      bevelEnabled: true,
+      bevelThickness: 0.03,
+      bevelSize: 0.03,
+      bevelSegments: 3,
+      curveSegments: 24,
+    };
+    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    geo.center();
 
-  // Back geometry (flipped)
-  const backGeometry = useMemo(() => {
-    const geo = createTShirtGeometry();
-    // Flip normals for back side
+    // Füge leichte Krümmung hinzu
     const pos = geo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
-      pos.setZ(i, -pos.getZ(i));
+      const x = pos.getX(i);
+      const y = pos.getY(i);
+      const z = pos.getZ(i);
+      // Zylindrische Krümmung
+      const curveZ = z - Math.pow(x, 2) * 0.08;
+      // Leichte Schulter-Wölbung
+      const shoulderZ = curveZ + (y > 0.5 ? (y - 0.5) * 0.05 : 0);
+      pos.setZ(i, shoulderZ);
     }
-    // Flip UV x for correct back mapping
-    const uv = geo.attributes.uv;
-    for (let i = 0; i < uv.count; i++) {
-      uv.setX(i, 1 - uv.getX(i));
-    }
+
     geo.computeVertexNormals();
     return geo;
   }, []);
 
-  // Load front texture
+  // Load texture
   useEffect(() => {
     if (!frontTextureUrl) {
       setFrontTexture(null);
@@ -87,7 +109,7 @@ function TShirtMesh({
       frontTextureUrl,
       (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
-        tex.flipY = false;
+        tex.flipY = true;
         setFrontTexture(tex);
       },
       undefined,
@@ -95,72 +117,29 @@ function TShirtMesh({
     );
   }, [frontTextureUrl]);
 
-  // Load back texture
-  useEffect(() => {
-    if (!backTextureUrl) {
-      setBackTexture(null);
-      return;
-    }
-    const loader = new THREE.TextureLoader();
-    loader.crossOrigin = "anonymous";
-    loader.load(
-      backTextureUrl,
-      (tex) => {
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.flipY = false;
-        setBackTexture(tex);
-      },
-      undefined,
-      () => setBackTexture(null)
-    );
-  }, [backTextureUrl]);
-
-  // Gentle rotation animation
+  // Sanfte Rotation
   useFrame((_, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.15;
-    }
-    if (backMeshRef.current) {
-      backMeshRef.current.rotation.y = meshRef.current?.rotation.y || 0;
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.3;
     }
   });
 
-  const color = baseColor || "#ffffff";
+  const color = baseColor || "#e8eaed";
 
   return (
-    <group>
-      {/* Front */}
-      <mesh ref={meshRef} geometry={geometry} castShadow receiveShadow>
+    <group ref={groupRef} scale={[1.3, 1.3, 1.3]}>
+      <mesh geometry={geometry} castShadow receiveShadow>
         <meshStandardMaterial
           color={color}
           map={frontTexture}
-          side={THREE.FrontSide}
-          roughness={0.8}
+          roughness={0.75}
           metalness={0.0}
-        />
-      </mesh>
-      {/* Back */}
-      <mesh ref={backMeshRef} geometry={backGeometry} castShadow receiveShadow>
-        <meshStandardMaterial
-          color={color}
-          map={backTexture}
-          side={THREE.FrontSide}
-          roughness={0.8}
-          metalness={0.0}
+          side={THREE.DoubleSide}
+          flatShading={false}
         />
       </mesh>
     </group>
   );
-}
-
-// ─── Scene Setup ─────────────────────────────────────
-function SceneSetup() {
-  const { camera } = useThree();
-  useEffect(() => {
-    camera.position.set(0, 0, 4);
-    camera.lookAt(0, 0, 0);
-  }, [camera]);
-  return null;
 }
 
 // ─── Main Component ──────────────────────────────────
@@ -173,22 +152,19 @@ export function TrikotViewer3D({
   return (
     <div className={className} style={{ width: "100%", height: "100%", minHeight: 300 }}>
       <Canvas
-        shadows
-        camera={{ position: [0, 0, 4], fov: 45 }}
+        camera={{ position: [0, 0.2, 4], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: "transparent" }}
       >
-        <SceneSetup />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow />
-        <directionalLight position={[-3, 3, -3]} intensity={0.3} />
+        <ambientLight intensity={2.0} />
+        <directionalLight position={[3, 4, 5]} intensity={1.0} />
+        <directionalLight position={[-3, 2, -3]} intensity={0.5} />
+        <pointLight position={[0, -1, 4]} intensity={0.4} />
         <Suspense fallback={null}>
           <TShirtMesh
             frontTextureUrl={frontTextureUrl}
-            backTextureUrl={backTextureUrl}
             baseColor={baseColor}
           />
-          <Environment preset="studio" />
         </Suspense>
         <OrbitControls
           enablePan={false}

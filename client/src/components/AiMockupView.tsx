@@ -12,6 +12,8 @@ interface AiMockupViewProps {
   isSublimation: boolean;
   isDtf: boolean;
   dtfBaseColor: string;
+  /** Referenz auf das Canvas-Container-Element für Screenshot */
+  canvasContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 const LOADING_STEPS = [
@@ -25,10 +27,12 @@ const LOADING_STEPS = [
 export function AiMockupView({
   productName,
   sortedParts,
+  processedPartImages,
   partColors,
   isSublimation,
   isDtf,
   dtfBaseColor,
+  canvasContainerRef,
 }: AiMockupViewProps) {
   const [mockupUrl, setMockupUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -52,12 +56,10 @@ export function AiMockupView({
 
     const updateProgress = () => {
       const elapsed = Date.now() - startTimeRef.current;
-      // Asymptotischer Fortschritt: nähert sich 95% an, erreicht es aber nie
       const targetProgress = Math.min(95, (elapsed / 600) * (1 - elapsed / 120000));
       const smoothProgress = 95 * (1 - Math.exp(-elapsed / 25000));
       setProgress(Math.min(95, Math.max(targetProgress, smoothProgress)));
 
-      // Schritte basierend auf verstrichener Zeit aktualisieren
       let stepIndex = 0;
       let accumulated = 0;
       for (let i = 0; i < LOADING_STEPS.length; i++) {
@@ -79,6 +81,34 @@ export function AiMockupView({
     };
   }, [isGenerating]);
 
+  /** Erstelle ein Composite-Bild aus den processedPartImages als Referenz für die KI */
+  const captureDesignImage = async (): Promise<string | undefined> => {
+    // Methode 1: Verwende canvasContainerRef für einen Screenshot des aktuellen Designs
+    if (canvasContainerRef?.current) {
+      try {
+        const { toPng } = await import("html-to-image");
+        const dataUrl = await toPng(canvasContainerRef.current, {
+          quality: 0.7,
+          pixelRatio: 1,
+          skipFonts: true,
+        });
+        return dataUrl;
+      } catch {
+        // Fallback zu Methode 2
+      }
+    }
+
+    // Methode 2: Erstelle ein Composite aus den processedPartImages
+    const partEntries = sortedParts
+      .filter(p => processedPartImages[p.id])
+      .map(p => processedPartImages[p.id]);
+
+    if (partEntries.length === 0) return undefined;
+
+    // Verwende das erste verfügbare Bild (Vorderteil) als Referenz
+    return partEntries[0];
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     setMockupUrl(null);
@@ -90,15 +120,18 @@ export function AiMockupView({
 
       const productType = isSublimation ? "Sublimation" : isDtf ? "DTF-Druck" : "Standard";
 
+      // Erfasse das aktuelle Design als Referenzbild
+      const designImageBase64 = await captureDesignImage();
+
       const result = await generateMockup.mutateAsync({
         productName,
         productType,
         colorDescription: colorDescriptions,
+        designImageBase64,
       });
 
       if (result.url) {
         setProgress(100);
-        // Kurze Verzögerung damit 100% sichtbar wird
         await new Promise(resolve => setTimeout(resolve, 400));
         setMockupUrl(result.url);
         toast.success("KI-Mockup erfolgreich generiert!");
@@ -132,8 +165,8 @@ export function AiMockupView({
           <div className="text-center max-w-sm">
             <h3 className="font-semibold text-lg mb-1">KI-Mockup generieren</h3>
             <p className="text-sm text-muted-foreground">
-              Erstelle ein fotorealistisches Mockup deines Designs mit KI-Bildgenerierung.
-              Die aktuellen Farben und das Design werden als Vorlage verwendet.
+              Erstelle ein fotorealistisches Mockup basierend auf deinem aktuellen Design.
+              Farben, Logos und Muster werden als Vorlage verwendet.
             </p>
           </div>
           <Button
@@ -154,11 +187,8 @@ export function AiMockupView({
         <div className="flex flex-col items-center gap-6 py-8 w-full max-w-sm">
           {/* Animierter Kreis mit Pulseffekt */}
           <div className="relative w-28 h-28">
-            {/* Äußerer Ring – rotiert */}
             <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500 border-r-pink-500 animate-spin" style={{ animationDuration: "2s" }} />
-            {/* Mittlerer Ring – rotiert gegenläufig */}
             <div className="absolute inset-2 rounded-full border-4 border-transparent border-b-purple-400 border-l-pink-400 animate-spin" style={{ animationDuration: "3s", animationDirection: "reverse" }} />
-            {/* Innerer Kreis mit Puls */}
             <div className="absolute inset-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 animate-pulse flex items-center justify-center">
               <Sparkles className="w-8 h-8 text-purple-500 animate-pulse" />
             </div>
@@ -213,7 +243,6 @@ export function AiMockupView({
             ))}
           </div>
 
-          {/* Hinweis */}
           <p className="text-xs text-muted-foreground text-center mt-2">
             Die KI erstellt ein einzigartiges Mockup basierend auf deinem Design.
             <br />
@@ -244,7 +273,7 @@ export function AiMockupView({
             </Button>
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            KI-generiertes Bild. Farben und Positionen können leicht abweichen.
+            KI-generiertes Bild basierend auf deinem Design. Farben und Positionen können leicht abweichen.
           </p>
         </div>
       )}

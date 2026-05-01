@@ -748,3 +748,8 @@
 
 ## KI-Mockup Ladeanimation verbessern
 - [x] Ansprechende Ladeanimation mit Fortschrittsanzeige und informativen Texten während der KI-Mockup-Generierung
+
+## Bug-Fixes: Produktdarstellung, 3D-Ansicht, KI-Mockup
+- [x] Neue Produkte werden auf dem Laptop nicht dargestellt (Produktliste/Home) – Template-SVG-Previews als Fallback
+- [x] 3D-Ansicht zeigt nur 2 Blätter statt ein T-Shirt-Modell – ExtrudeGeometry mit T-Shirt-Silhouette
+- [x] KI-Mockup wird nicht aus der tatsächlichen Vorlage/Design generiert – Canvas-Screenshot als Referenzbild an generateImage gesendet

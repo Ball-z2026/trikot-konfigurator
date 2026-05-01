@@ -1750,6 +1750,7 @@ export default function CustomerConfigurator() {
                     isSublimation={isSublimation}
                     isDtf={isDtf}
                     dtfBaseColor={dtfBaseColor || ""}
+                    canvasContainerRef={canvasRef}
                   />
                 </div>
               </Card>
