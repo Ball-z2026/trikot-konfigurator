@@ -250,8 +250,7 @@ export default function CustomerConfigurator() {
   const [partColors, setPartColors] = useState<Record<number, string>>({});
   const [dtfBaseColor, setDtfBaseColor] = useState<string | null>(null);
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
-  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
-  const [processedPartImages, setProcessedPartImages] = useState<Record<number, string>>({});
+  // processedImageUrl and processedPartImages removed - using CSS-based coloring instead
 
   // ─── Drag-and-Drop für Sponsor-Vorlagen ──────────────────────────────
   const [dragOverZoneId, setDragOverZoneId] = useState<number | null>(null);
@@ -694,195 +693,17 @@ export default function CustomerConfigurator() {
     : isDtf && dtfBaseColor && !dtfBrandImage
     ? dtfBaseColor
     : DEFAULT_JERSEY_COLOR;
-  const needsProcessing = hasParts && !!rawCurrentImage;
+  // CSS-based coloring: no Canvas/CORS needed. The image is shown directly and
+  // colored via a CSS overlay with mix-blend-mode.
+  const currentImage = rawCurrentImage;
+  // activeColor is used as CSS overlay color in the rendering section below
 
-  useEffect(() => {
-    if (!needsProcessing || !rawCurrentImage || !activeColor) {
-      setProcessedImageUrl((prev) => prev === null ? prev : null);
-      return;
-    }
-    const img = document.createElement("img");
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) { setProcessedImageUrl(null); return; }
-        ctx.drawImage(img, 0, 0);
-        let imageData: ImageData;
-        try {
-          imageData = ctx.getImageData(0, 0, w, h);
-        } catch {
-          // Canvas is tainted (CORS) - fall back to showing raw image
-          setProcessedImageUrl(null);
-          return;
-        }
-        const d = imageData.data;
-
-        // Parse the target color
-        const tc = document.createElement("canvas").getContext("2d")!;
-        tc.fillStyle = activeColor;
-        tc.fillRect(0, 0, 1, 1);
-        const cp = tc.getImageData(0, 0, 1, 1).data;
-        const cr = cp[0], cg = cp[1], cb = cp[2];
-
-        // Mark outside pixels using scanline flood fill from all 4 edges
-        const outside = new Uint8Array(w * h);
-        const threshold = 240;
-        const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
-        const queue: number[] = [];
-
-        // Seed from all border pixels that are white
-        for (let x = 0; x < w; x++) {
-          const topIdx = x;
-          if (isWhitish(topIdx * 4) && !outside[topIdx]) { outside[topIdx] = 1; queue.push(topIdx); }
-          const botIdx = (h - 1) * w + x;
-          if (isWhitish(botIdx * 4) && !outside[botIdx]) { outside[botIdx] = 1; queue.push(botIdx); }
-        }
-        for (let y = 0; y < h; y++) {
-          const leftIdx = y * w;
-          if (isWhitish(leftIdx * 4) && !outside[leftIdx]) { outside[leftIdx] = 1; queue.push(leftIdx); }
-          const rightIdx = y * w + (w - 1);
-          if (isWhitish(rightIdx * 4) && !outside[rightIdx]) { outside[rightIdx] = 1; queue.push(rightIdx); }
-        }
-
-        // BFS flood fill
-        let head = 0;
-        while (head < queue.length) {
-          const pos = queue[head++];
-          const px = pos % w;
-          const py = (pos - px) / w;
-          const neighbors = [
-            py > 0 ? pos - w : -1,
-            py < h - 1 ? pos + w : -1,
-            px > 0 ? pos - 1 : -1,
-            px < w - 1 ? pos + 1 : -1,
-          ];
-          for (const n of neighbors) {
-            if (n >= 0 && !outside[n] && isWhitish(n * 4)) {
-              outside[n] = 1;
-              queue.push(n);
-            }
-          }
-        }
-
-        // Replace inside white pixels with the chosen color
-        for (let i = 0; i < w * h; i++) {
-          if (!outside[i] && isWhitish(i * 4)) {
-            d[i * 4] = cr;
-            d[i * 4 + 1] = cg;
-            d[i * 4 + 2] = cb;
-          }
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-        setProcessedImageUrl(canvas.toDataURL("image/png"));
-      } catch {
-        // Fallback: show raw image without color processing
-        setProcessedImageUrl(null);
-      }
-    };
-    img.onerror = () => {
-      // If image fails to load with crossOrigin, try without it (won't be processed but at least visible)
-      setProcessedImageUrl(null);
-    };
-    img.src = rawCurrentImage;
-  }, [rawCurrentImage, needsProcessing, activeColor]);
-
-  const currentImage = needsProcessing && processedImageUrl ? processedImageUrl : rawCurrentImage;
-
-   // Process all part images for composite/overview view (flood-fill always to make shape visible)
-  useEffect(() => {
-    if (!hasParts || (isDtf && dtfBrandImage)) {
-      setProcessedPartImages({});
-      return;
-    }
-    const results: Record<number, string> = {};
-    let pending = 0;
-    const partsWithImages = sortedParts.filter(p => p.imageUrl);
-    if (partsWithImages.length === 0) return;
-    pending = partsWithImages.length;
-    for (const part of partsWithImages) {
-      // Determine color per part: sublimation uses individual partColors, DTF uses base color
-      const partColor = isSublimation && partColors[part.id]
-        ? partColors[part.id]
-        : isDtf && dtfBaseColor
-        ? dtfBaseColor
-        : DEFAULT_JERSEY_COLOR;
-      const img = document.createElement("img");
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          // Parse the target color for this part
-          const tc = document.createElement("canvas").getContext("2d")!;
-          tc.fillStyle = partColor;
-          tc.fillRect(0, 0, 1, 1);
-          const cp = tc.getImageData(0, 0, 1, 1).data;
-          const cr = cp[0], cg = cp[1], cb = cp[2];
-          const w = img.naturalWidth;
-          const h = img.naturalHeight;
-          const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) { pending--; if (pending === 0) setProcessedPartImages({ ...results }); return; }
-          ctx.drawImage(img, 0, 0);
-          let imageData: ImageData;
-          try {
-            imageData = ctx.getImageData(0, 0, w, h);
-          } catch {
-            // Canvas tainted (CORS) - skip color processing for this part
-            pending--;
-            if (pending === 0) setProcessedPartImages({ ...results });
-            return;
-          }
-          const d = imageData.data;
-          const threshold = 240;
-          const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
-          const outside = new Uint8Array(w * h);
-          const queue: number[] = [];
-          for (let x = 0; x < w; x++) {
-            if (isWhitish(x * 4) && !outside[x]) { outside[x] = 1; queue.push(x); }
-            const b = (h - 1) * w + x;
-            if (isWhitish(b * 4) && !outside[b]) { outside[b] = 1; queue.push(b); }
-          }
-          for (let y = 0; y < h; y++) {
-            const l = y * w;
-            if (isWhitish(l * 4) && !outside[l]) { outside[l] = 1; queue.push(l); }
-            const r = y * w + (w - 1);
-            if (isWhitish(r * 4) && !outside[r]) { outside[r] = 1; queue.push(r); }
-          }
-          let head = 0;
-          while (head < queue.length) {
-            const pos = queue[head++];
-            const px = pos % w;
-            const py = (pos - px) / w;
-            const neighbors = [py > 0 ? pos - w : -1, py < h - 1 ? pos + w : -1, px > 0 ? pos - 1 : -1, px < w - 1 ? pos + 1 : -1];
-            for (const n of neighbors) {
-              if (n >= 0 && !outside[n] && isWhitish(n * 4)) { outside[n] = 1; queue.push(n); }
-            }
-          }
-          for (let i = 0; i < w * h; i++) {
-            if (!outside[i] && isWhitish(i * 4)) {
-              d[i * 4] = cr; d[i * 4 + 1] = cg; d[i * 4 + 2] = cb;
-            }
-          }
-          ctx.putImageData(imageData, 0, 0);
-          results[part.id] = canvas.toDataURL("image/png");
-        } catch {
-          // Fallback: skip color processing for this part
-        }
-        pending--;
-        if (pending === 0) setProcessedPartImages({ ...results });
-      };
-      img.onerror = () => { pending--; if (pending === 0) setProcessedPartImages({ ...results }); };
-      img.src = part.imageUrl!;
-    }
-  }, [hasParts, isDtf, isSublimation, dtfBaseColor, dtfBrandImage, sortedParts, partColors]);
+  // Part colors for CSS overlay (no Canvas processing needed)
+  const getPartColor = useCallback((partId: number) => {
+    if (isSublimation && partColors[partId]) return partColors[partId];
+    if (isDtf && dtfBaseColor && !dtfBrandImage) return dtfBaseColor;
+    return DEFAULT_JERSEY_COLOR;
+  }, [isSublimation, isDtf, dtfBaseColor, dtfBrandImage, partColors]);
 
   // Im freeZoneMode verwende localZones für Echtzeit-Drag-Updates
   const zonesSource = isFreeZoneMode ? localZones : allZones;
@@ -897,8 +718,8 @@ export default function CustomerConfigurator() {
 
   // ─── Drag-and-Drop Handlers für Sponsor-Vorlagen ───────────────────
   const handleZoneDragOver = useCallback((e: React.DragEvent, zone: ZoneData) => {
-    // Nur custom-Zonen (Sponsor) und nicht gesperrte Zonen akzeptieren Drops
-    if (zone.purpose !== "custom" || isZoneLocked(zone)) return;
+    // Custom- und Logo-Zonen (Sponsor) akzeptieren Drops
+    if (zone.purpose !== "custom" && zone.purpose !== "logo" || isZoneLocked(zone)) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
     setDragOverZoneId(zone.id);
@@ -911,7 +732,7 @@ export default function CustomerConfigurator() {
   const handleZoneDrop = useCallback((e: React.DragEvent, zone: ZoneData) => {
     e.preventDefault();
     setDragOverZoneId(null);
-    if (zone.purpose !== "custom" || isZoneLocked(zone)) return;
+    if (zone.purpose !== "custom" && zone.purpose !== "logo" || isZoneLocked(zone)) return;
     const sponsor = dragSponsorRef.current;
     if (!sponsor) return;
     if (sponsor.logoUrl) {
@@ -1319,7 +1140,7 @@ export default function CustomerConfigurator() {
     const colorIdx = idx % zoneBorderColors.length;
     const isSelected = interactive && selectedZoneId === zone.id;
     const isDragTarget = interactive && dragOverZoneId === zone.id;
-    const isDroppable = interactive && zone.purpose === "custom" && !isZoneLocked(zone);
+    const isDroppable = interactive && (zone.purpose === "custom" || zone.purpose === "logo") && !isZoneLocked(zone);
     const purpose = zone.purpose || "custom";
     const PurposeIcon = PURPOSE_ICONS[purpose] || PenTool;
     const rotation = zone.rotation || 0;
@@ -1567,13 +1388,18 @@ export default function CustomerConfigurator() {
                             setViewMode("parts");
                           }}
                         >
-                          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted/30 rounded overflow-hidden">
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted/30 rounded overflow-hidden relative">
                             {part.imageUrl ? (
-                              <img
-                                src={processedPartImages[part.id] || part.imageUrl}
-                                alt={part.label}
-                                className="w-full h-full object-contain"
-                              />
+                              <>
+                                <img
+                                  src={part.imageUrl}
+                                  alt={part.label}
+                                  className="w-full h-full object-contain"
+                                />
+                                {getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id), mixBlendMode: "multiply", opacity: 0.8 }} />
+                                )}
+                              </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <Image className="w-4 h-4 text-muted-foreground/30" />
@@ -1675,12 +1501,17 @@ export default function CustomerConfigurator() {
                         >
                           <div className="aspect-square relative">
                             {part.imageUrl ? (
-                              <img
-                                src={processedPartImages[part.id] || part.imageUrl}
-                                alt={part.label}
-                                className="w-full h-full object-contain p-1"
-                                draggable={false}
-                              />
+                              <>
+                                <img
+                                  src={part.imageUrl}
+                                  alt={part.label}
+                                  className="w-full h-full object-contain p-1"
+                                  draggable={false}
+                                />
+                                {getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id), mixBlendMode: "multiply", opacity: 0.8 }} />
+                                )}
+                              </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <Image className="w-6 h-6 text-muted-foreground/20" />
@@ -1718,7 +1549,7 @@ export default function CustomerConfigurator() {
                   <AiMockupView
                     productName={productData?.name || "Trikot"}
                     sortedParts={sortedParts}
-                    processedPartImages={processedPartImages}
+                    processedPartImages={{}}
                     partColors={partColors}
                     isSublimation={isSublimation}
                     isDtf={isDtf}
@@ -1754,7 +1585,7 @@ export default function CustomerConfigurator() {
                     const relX = ((e.clientX - canvasRect.left) / canvasRect.width) * 100;
                     const relY = ((e.clientY - canvasRect.top) / canvasRect.height) * 100;
                     const targetZone = currentZones.find(z => 
-                      z.purpose === "custom" && !isZoneLocked(z) &&
+                      (z.purpose === "custom" || z.purpose === "logo") && !isZoneLocked(z) &&
                       relX >= z.posX && relX <= z.posX + z.width &&
                       relY >= z.posY && relY <= z.posY + z.height
                     );
@@ -1772,18 +1603,27 @@ export default function CustomerConfigurator() {
                     dragSponsorRef.current = null;
                   }}
                 >
-                  {/* Color is now baked into the processed image via flood-fill */}
+                  {/* CSS-based coloring: overlay with mix-blend-mode */}
                   {currentImage ? (
-                    <img
-                      src={currentImage}
-                      alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
-                      className="w-full h-auto block pointer-events-none drop-shadow-md"
-                      style={{
-                        position: "relative",
-                        zIndex: 1,
-                      }}
-                      draggable={false}
-                    />
+                    <div className="relative w-full" style={{ position: "relative", zIndex: 1 }}>
+                      <img
+                        src={currentImage}
+                        alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
+                        className="w-full h-auto block pointer-events-none drop-shadow-md"
+                        draggable={false}
+                      />
+                      {/* Color overlay using mix-blend-mode: multiply */}
+                      {activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            backgroundColor: activeColor,
+                            mixBlendMode: "multiply",
+                            opacity: 0.85,
+                          }}
+                        />
+                      )}
+                    </div>
                   ) : (
                     <div className="w-full aspect-[3/4] flex flex-col items-center justify-center text-muted-foreground" style={{ position: "relative", zIndex: 1 }}>
                       <Shirt className="w-12 h-12 sm:w-16 sm:h-16 opacity-20" />
@@ -2554,7 +2394,7 @@ export default function CustomerConfigurator() {
                           )}
 
                           {/* Sponsor-Vorlagen-Auswahl */}
-                          {purpose === "custom" && sponsorTemplates && sponsorTemplates.length > 0 && (
+                          {(purpose === "custom" || purpose === "logo") && sponsorTemplates && sponsorTemplates.length > 0 && (
                             <div className="mt-2">
                               <Label className="text-[10px] text-muted-foreground mb-1 block">Sponsor-Vorlagen</Label>
                               <div className="flex gap-1.5 flex-wrap">

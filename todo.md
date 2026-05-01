@@ -766,3 +766,8 @@
 - [x] Rücken-Sponsor kann ausgewählt werden (war immer da, muss auf Rückteil klicken + scrollen)
 - [x] Trikot wird nicht angezeigt – CORS-Fallback hinzugefügt (try/catch bei getImageData, onerror-Handler, zeigt Original-SVG bei CORS-Fehler)
 - [x] KI-Mockup: Canvas-Screenshot als Referenzbild funktioniert wenn Trikot-Bild sichtbar ist (CORS-Fix behebt auch dieses Problem)
+
+## Bugs: Deployed Version (Mai 2026)
+- [x] Textil nicht erkennbar – CSS-basierte Einfärbung (mix-blend-mode) statt Canvas-Pixel-Manipulation, kein CORS-Problem mehr
+- [x] KI-Mockup – funktioniert wenn Trikot-Bild sichtbar ist (Canvas-Screenshot als Referenz)
+- [x] Gespeicherte Sponsoren – Bedingung von purpose=="custom" auf purpose=="custom"||"logo" erweitert, Drag-and-Drop ebenfalls
