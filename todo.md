@@ -833,3 +833,9 @@
 - [x] Visuelles Highlight auf aktiv verschobener Zone (Ring/Glow, Scale, Shadow)
 - [x] Subtile Puls-Animation auf dem Label-Badge während des Drags
 - [x] Auch im AdminProductEditor konsistent umsetzen
+
+## KI-Mockup Fix & Speichern-Funktion
+- [x] KI-Mockup: Canvas-Screenshot des konfigurierten Produkts als Referenzbild für die KI-Generierung verwenden (statt generischem Prompt)
+- [x] KI-Mockup: Funktioniert auch für Hoodie, Jacke, T-Shirt (nicht nur Trikots)
+- [x] Speichern-Button: Konfiguriertes Produkt (Hoodie etc.) als Bild speichern/herunterladen
+- [x] Speichern-Button: KI-Mockup als Bild speichern/herunterladen

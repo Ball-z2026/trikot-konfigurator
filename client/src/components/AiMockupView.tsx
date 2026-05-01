@@ -13,8 +13,12 @@ interface AiMockupViewProps {
   isSublimation: boolean;
   isDtf: boolean;
   dtfBaseColor: string;
-  /** Referenz auf das Canvas-Container-Element für Screenshot */
+  /** Vorab-gecachter Screenshot des Canvas (data:image/png;base64,...) */
+  cachedScreenshot?: string | null;
+  /** Referenz auf das Canvas-Container-Element für Screenshot (Fallback) */
   canvasContainerRef?: React.RefObject<HTMLDivElement | null>;
+  /** Beschreibung der Zonen-Inhalte für den KI-Prompt */
+  zoneDescriptions?: string;
 }
 
 const LOADING_STEPS = [
@@ -33,7 +37,9 @@ export function AiMockupView({
   isSublimation,
   isDtf,
   dtfBaseColor,
+  cachedScreenshot,
   canvasContainerRef,
+  zoneDescriptions,
 }: AiMockupViewProps) {
   const [mockupUrl, setMockupUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -82,31 +88,34 @@ export function AiMockupView({
     };
   }, [isGenerating]);
 
-  /** Erstelle ein Composite-Bild aus den processedPartImages als Referenz für die KI */
+  /** Erstelle ein Referenzbild für die KI-Generierung */
   const captureDesignImage = async (): Promise<string | undefined> => {
-    // Methode 1: Verwende canvasContainerRef für einen Screenshot des aktuellen Designs
+    // Priorität 1: Vorab-gecachter Screenshot (wurde VOR dem Wechsel zum Mockup-Tab erstellt)
+    if (cachedScreenshot) {
+      return cachedScreenshot;
+    }
+
+    // Priorität 2: Verwende canvasContainerRef für einen Screenshot des aktuellen Designs
     if (canvasContainerRef?.current) {
       try {
         const { toPng } = await import("html-to-image");
         const dataUrl = await toPng(canvasContainerRef.current, {
-          quality: 0.7,
-          pixelRatio: 1,
+          quality: 0.8,
+          pixelRatio: 1.5,
           skipFonts: true,
         });
         return dataUrl;
       } catch {
-        // Fallback zu Methode 2
+        // Fallback zu Methode 3
       }
     }
 
-    // Methode 2: Erstelle ein Composite aus den processedPartImages
+    // Priorität 3: Erstelle ein Composite aus den processedPartImages
     const partEntries = sortedParts
       .filter(p => processedPartImages[p.id])
       .map(p => processedPartImages[p.id]);
 
     if (partEntries.length === 0) return undefined;
-
-    // Verwende das erste verfügbare Bild (Vorderteil) als Referenz
     return partEntries[0];
   };
 
@@ -129,6 +138,7 @@ export function AiMockupView({
         productType,
         colorDescription: colorDescriptions,
         designImageBase64,
+        zoneDescriptions,
       });
 
       if (result.url) {
@@ -151,15 +161,26 @@ export function AiMockupView({
     if (!mockupUrl) return;
     const a = document.createElement("a");
     a.href = storageUrl(mockupUrl) || mockupUrl;
-    a.download = `${productName.replace(/\s+/g, "_")}_mockup.png`;
+    a.download = `${productName.replace(/\s+/g, "_")}_KI_Mockup.png`;
+    a.target = "_blank";
     a.click();
   };
 
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Vorschau des gecachten Screenshots */}
+      {cachedScreenshot && !mockupUrl && !isGenerating && (
+        <div className="w-full max-w-xs mx-auto mb-2">
+          <p className="text-xs text-muted-foreground text-center mb-1.5">Dein aktuelles Design (Vorlage):</p>
+          <div className="rounded-lg overflow-hidden border bg-white shadow-sm">
+            <img src={cachedScreenshot} alt="Aktuelles Design" className="w-full h-auto" />
+          </div>
+        </div>
+      )}
+
       {/* Initialer Zustand: Generieren-Button */}
       {!mockupUrl && !isGenerating && (
-        <div className="flex flex-col items-center gap-4 py-8">
+        <div className="flex flex-col items-center gap-4 py-4">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
             <Sparkles className="w-10 h-10 text-purple-500" />
           </div>
@@ -180,6 +201,11 @@ export function AiMockupView({
           <p className="text-xs text-muted-foreground">
             Dauer: ca. 10-60 Sekunden
           </p>
+          {!cachedScreenshot && (
+            <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-md">
+              Hinweis: Kein Design-Screenshot verfügbar. Das Mockup wird nur auf Basis der Farbbeschreibung erstellt.
+            </p>
+          )}
         </div>
       )}
 

@@ -1806,6 +1806,8 @@ export const appRouter = router({
         colorDescription: z.string().optional().describe("Farbbeschreibung der Teile, z.B. 'Vorderteil: #ff0000, Rückteil: #0000ff'"),
         /** Base64-kodiertes Bild des aktuellen Designs (data:image/png;base64,...) */
         designImageBase64: z.string().optional(),
+        /** Beschreibung der Zonen-Inhalte (Logos, Texte, Nummern) */
+        zoneDescriptions: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const colorInfo = input.colorDescription
@@ -1814,8 +1816,11 @@ export const appRouter = router({
         const typeInfo = input.productType
           ? ` Druckverfahren: ${input.productType}.`
           : "";
+        const zoneInfo = input.zoneDescriptions
+          ? ` Auf dem Textil befinden sich folgende Elemente: ${input.zoneDescriptions}.`
+          : "";
 
-        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund. Nutze das beigefügte Design-Bild als exakte Vorlage für Farben, Logos, Nummern und Muster auf dem Textil.${colorInfo}${typeInfo} Zeige das komplette Textil von vorne, professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
+        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund. Nutze das beigefügte Design-Bild als EXAKTE Vorlage – reproduziere die Positionen, Farben, Logos, Wappen, Texte, Nummern und Muster GENAU wie im Referenzbild gezeigt.${colorInfo}${typeInfo}${zoneInfo} Zeige das komplette Textil von vorne, professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
 
         // Wenn ein Design-Bild vorhanden ist, als Referenz übergeben
         const originalImages = input.designImageBase64

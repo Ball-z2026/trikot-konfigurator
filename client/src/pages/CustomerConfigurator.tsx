@@ -189,6 +189,7 @@ export default function CustomerConfigurator() {
   const [newPlayerName, setNewPlayerName] = useState("");
   const [activePlayerIdx, setActivePlayerIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [cachedMockupScreenshot, setCachedMockupScreenshot] = useState<string | null>(null);
   // ─── Saved Designs State ─────────────────────────────────────────────────
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
@@ -1227,7 +1228,7 @@ export default function CustomerConfigurator() {
             ? "2px solid hsl(var(--primary))"
             : isSelected
             ? `2px solid ${zoneBorderColors[colorIdx]}`
-            : content?.imageDataUrl || content?.text
+            : content?.imageDataUrl || content?.imageUrl || content?.text
             ? "none"
             : `1px dashed ${zoneBorderColors[colorIdx]}40`,
           borderRadius: isBeingDragged ? "4px" : "2px",
@@ -1250,16 +1251,16 @@ export default function CustomerConfigurator() {
         onDragLeave={interactive && isDroppable ? handleZoneDragLeave : undefined}
         onDrop={interactive && isDroppable ? (e) => handleZoneDrop(e, zone) : undefined}
       >
-        {content?.imageDataUrl && (
+        {(content?.imageDataUrl || content?.imageUrl) && (
           <img
-            src={storageUrl(content.imageDataUrl) || content.imageDataUrl}
+            src={storageUrl(content.imageDataUrl || content.imageUrl || "") || content.imageDataUrl || content.imageUrl || ""}
             alt=""
             className="w-full h-full object-contain"
             draggable={false}
           />
         )}
-        {content?.text && !content?.imageDataUrl && renderZoneText(content, scale)}
-        {!content?.imageDataUrl && !content?.text && (
+        {content?.text && !content?.imageDataUrl && !content?.imageUrl && renderZoneText(content, scale)}
+        {!content?.imageDataUrl && !content?.imageUrl && !content?.text && (
           <div className="text-center opacity-40">
             <PurposeIcon
               className="mx-auto"
@@ -1513,20 +1514,44 @@ export default function CustomerConfigurator() {
             ) : (
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant={activeSide === "front" ? "default" : "outline"}
+                  variant={activeSide === "front" && viewMode !== "ai-mockup" ? "default" : "outline"}
                   size="sm"
                   className="h-8"
-                  onClick={() => setActiveSide("front")}
+                  onClick={() => { setActiveSide("front"); setViewMode("parts"); }}
                 >
                   Vorderseite
                 </Button>
                 <Button
-                  variant={activeSide === "back" ? "default" : "outline"}
+                  variant={activeSide === "back" && viewMode !== "ai-mockup" ? "default" : "outline"}
                   size="sm"
                   className="h-8"
-                  onClick={() => setActiveSide("back")}
+                  onClick={() => { setActiveSide("back"); setViewMode("parts"); }}
                 >
                   Rückseite
+                </Button>
+                <Button
+                  variant={viewMode === "ai-mockup" ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={async () => {
+                    if (canvasRef.current) {
+                      try {
+                        const { toPng } = await import("html-to-image");
+                        const dataUrl = await toPng(canvasRef.current, {
+                          quality: 0.8,
+                          pixelRatio: 1.5,
+                          skipFonts: true,
+                        });
+                        setCachedMockupScreenshot(dataUrl);
+                      } catch {
+                        // Fallback: kein Screenshot
+                      }
+                    }
+                    setViewMode("ai-mockup");
+                  }}
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  KI-Mockup
                 </Button>
                 {activePlayer && (
                   <Badge variant="outline" className="ml-auto text-xs">
@@ -1563,7 +1588,23 @@ export default function CustomerConfigurator() {
                   variant={viewMode === "ai-mockup" ? "default" : "outline"}
                   size="sm"
                   className="h-8 text-xs"
-                  onClick={() => setViewMode("ai-mockup")}
+                  onClick={async () => {
+                    // Screenshot des Canvas erstellen BEVOR wir den View wechseln
+                    if (canvasRef.current) {
+                      try {
+                        const { toPng } = await import("html-to-image");
+                        const dataUrl = await toPng(canvasRef.current, {
+                          quality: 0.8,
+                          pixelRatio: 1.5,
+                          skipFonts: true,
+                        });
+                        setCachedMockupScreenshot(dataUrl);
+                      } catch {
+                        // Fallback: kein Screenshot
+                      }
+                    }
+                    setViewMode("ai-mockup");
+                  }}
                 >
                   <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                   KI-Mockup
@@ -1644,14 +1685,52 @@ export default function CustomerConfigurator() {
                     isSublimation={isSublimation}
                     isDtf={isDtf}
                     dtfBaseColor={dtfBaseColor || ""}
+                    cachedScreenshot={cachedMockupScreenshot}
                     canvasContainerRef={canvasRef}
+                    zoneDescriptions={allZones.map(z => {
+                      const c = zoneContents[z.id];
+                      const parts: string[] = [];
+                      if (z.label) parts.push(z.label);
+                      if (c?.text) parts.push(`Text: "${c.text}"`);
+                      if (c?.imageDataUrl || c?.imageUrl) parts.push("Logo/Bild vorhanden");
+                      if (z.purpose === "clubLogo") parts.push("Vereinswappen");
+                      return parts.length > 1 ? parts.join(" - ") : null;
+                    }).filter(Boolean).join("; ")}
+                  />
+                </div>
+              </Card>
+            )}
+
+            {/* KI-Mockup für freeZoneMode-Produkte (Hoodie, Jacke, etc.) */}
+            {!hasParts && viewMode === "ai-mockup" && (
+              <Card className="overflow-hidden">
+                <div className="bg-[#e8eaed] p-4 sm:p-6">
+                  <AiMockupView
+                    productName={productData?.name || "Textil"}
+                    sortedParts={sortedParts}
+                    processedPartImages={{}}
+                    partColors={partColors}
+                    isSublimation={isSublimation}
+                    isDtf={isDtf}
+                    dtfBaseColor={dtfBaseColor || ""}
+                    cachedScreenshot={cachedMockupScreenshot}
+                    canvasContainerRef={canvasRef}
+                    zoneDescriptions={allZones.map(z => {
+                      const c = zoneContents[z.id];
+                      const parts: string[] = [];
+                      if (z.label) parts.push(z.label);
+                      if (c?.text) parts.push(`Text: "${c.text}"`);
+                      if (c?.imageDataUrl || c?.imageUrl) parts.push("Logo/Bild vorhanden");
+                      if (z.purpose === "clubLogo") parts.push("Vereinswappen");
+                      return parts.length > 1 ? parts.join(" - ") : null;
+                    }).filter(Boolean).join("; ")}
                   />
                 </div>
               </Card>
             )}
 
             {/* Single Part Canvas */}
-            {(viewMode === "parts" || !hasParts) && (
+            {(viewMode === "parts" || (!hasParts && viewMode !== "ai-mockup")) && (
               <Card className="overflow-hidden">
                 <div
                   ref={canvasRef}
