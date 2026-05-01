@@ -718,3 +718,9 @@
 - [x] SVGs als statische Assets hochgeladen
 - [x] DTF-Templates in shared/templates.ts registriert (4 Sportarten: Fußball, Handball, Volleyball, Basketball)
 - [x] Tests: 155 Tests bestanden (10 Testdateien)
+
+## Alle Produkte per Seed-Script in DB anlegen
+- [x] Seed-Script erstellt (seed-products.mjs): Alle 17 Templates als Produkte in DB angelegt (mit Zonen, published=true)
+- [x] Bestehende Produkte nicht dupliziert (Prüfung auf templateId)
+- [x] 929 Test-Produkte bereinigt, 19 veröffentlichte Produkte + 8 Entwürfe verbleibend
+- [x] Verifizierung: Alle Produkte in der Produktliste sichtbar
