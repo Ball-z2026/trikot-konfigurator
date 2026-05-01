@@ -267,6 +267,12 @@ export default function CustomerConfigurator() {
     { enabled: !!userOrgId }
   );
 
+  // Sponsor-Vorlagen laden
+  const { data: sponsorTemplates } = trpc.sponsorTemplate.list.useQuery(
+    { orgId: userOrgId! },
+    { enabled: !!userOrgId }
+  );
+
   // Trikotnummern-Regeln basierend auf Sportart des Vereins
   const numberRules: NumberRule | null = useMemo(() => {
     if (!orgData?.sport) return null;
@@ -2091,6 +2097,50 @@ export default function CustomerConfigurator() {
                                 <Upload className="w-3 h-3 mr-1" />
                                 Oder Bild hochladen
                               </Button>
+                            </div>
+                          )}
+
+                          {/* Sponsor-Vorlagen-Auswahl */}
+                          {purpose === "custom" && sponsorTemplates && sponsorTemplates.length > 0 && (
+                            <div className="mt-2">
+                              <Label className="text-[10px] text-muted-foreground mb-1 block">Sponsor-Vorlagen</Label>
+                              <div className="flex gap-1.5 flex-wrap">
+                                {sponsorTemplates.map((tpl: { id: number; name: string; logoUrl: string; }) => (
+                                  <button
+                                    key={tpl.id}
+                                    className={`group relative border rounded p-1 hover:border-primary transition-colors ${
+                                      (tpl.logoUrl && content?.imageUrl === tpl.logoUrl) || (!tpl.logoUrl && content?.text === tpl.name)
+                                        ? "border-primary bg-primary/5"
+                                        : "border-border"
+                                    }`}
+                                    title={tpl.name}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (tpl.logoUrl) {
+                                        updateZoneContent(zone.id, { imageUrl: tpl.logoUrl, text: "" });
+                                      } else {
+                                        updateZoneContent(zone.id, { text: tpl.name, imageUrl: "" });
+                                      }
+                                      toast.success(`Sponsor "${tpl.name}" eingesetzt`);
+                                    }}
+                                  >
+                                    {tpl.logoUrl ? (
+                                      <img
+                                        src={tpl.logoUrl}
+                                        alt={tpl.name}
+                                        className="w-10 h-10 object-contain rounded"
+                                      />
+                                    ) : (
+                                      <div className="w-10 h-10 flex items-center justify-center text-[8px] text-center leading-tight font-medium">
+                                        {tpl.name.length > 12 ? tpl.name.substring(0, 12) + "..." : tpl.name}
+                                      </div>
+                                    )}
+                                    <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] text-muted-foreground whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                      {tpl.name}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </CardContent>

@@ -587,12 +587,12 @@
 
 ## Sponsor-Vorlagen (Nächster Schritt 2)
 
-- [ ] DB-Schema: sponsor_templates Tabelle (id, orgId, name, logoUrl, logoKey, category, sortOrder, createdBy, createdAt)
-- [ ] Backend: tRPC-Prozeduren für CRUD von Sponsor-Vorlagen (Owner-only)
-- [ ] Backend: tRPC-Prozedur zum Abrufen der Vorlagen für Trainer
-- [ ] Frontend: Sponsor-Vorlagen-Verwaltung im Owner-Dashboard (Upload, Benennen, Löschen)
-- [ ] Frontend: Sponsor-Vorlagen-Auswahl im Konfigurator (Klick zum Einfügen in Sponsor-Zonen)
-- [ ] Tests und Browser-Verifizierung
+- [x] DB-Schema: sponsor_templates Tabelle (id, orgId, name, logoUrl, storageKey, category, sortOrder, createdBy, createdAt)
+- [x] Backend: tRPC-Prozeduren für CRUD von Sponsor-Vorlagen (Owner-only: create, update, delete)
+- [x] Backend: tRPC-Prozedur zum Abrufen der Vorlagen für alle Mitglieder (sponsorTemplate.list)
+- [x] Frontend: Sponsor-Vorlagen-Verwaltung im Owner-Dashboard (Upload, Benennen, Löschen)
+- [x] Frontend: Sponsor-Vorlagen-Auswahl im Konfigurator (Klick setzt Text/Logo in Sponsor-Zonen)
+- [x] Tests: 103 Tests bestanden, Browser-Verifizierung: Klick auf "Stadtwerke Musterstadt" setzt Text sofort auf Trikot
 
 ## Bugs: Konfigurator Layout (01.05.2026)
 - [x] BUG: Mobile Ansicht - Zonen-Positionierung ist falsch (Root Cause: Container aspect-ratio 3:4 ≠ Bild-Ratio 0.738 → Bild bestimmt jetzt Container-Höhe)

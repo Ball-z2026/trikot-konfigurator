@@ -4208,3 +4208,32 @@
 [2026-05-01T08:49:31.500Z] [Auth] Missing session cookie
 [2026-05-01T08:49:31.936Z] [Auth] Missing session cookie
 [2026-05-01T08:49:31.943Z] [Auth] Missing session cookie
+[2026-05-01T08:50:55.967Z] 4:50:55 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T08:51:10.738Z] 4:51:10 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T08:51:17.941Z] [Auth] Missing session cookie
+[2026-05-01T08:51:17.960Z] [Auth] Missing session cookie
+[2026-05-01T08:51:17.971Z] [Auth] Missing session cookie
+[2026-05-01T08:51:17.984Z] [Auth] Missing session cookie
+[2026-05-01T08:51:17.994Z] [Auth] Missing session cookie
+[2026-05-01T08:51:18.008Z] [Auth] Missing session cookie
+[2026-05-01T08:51:18.016Z] [Auth] Missing session cookie
+[2026-05-01T08:51:18.025Z] [Auth] Missing session cookie
+[2026-05-01T08:51:18.737Z] [Auth] Missing session cookie
+[2026-05-01T08:51:18.770Z] [Auth] Missing session cookie
+[2026-05-01T08:51:24.993Z] Dev server process group stopped
+[2026-05-01T08:51:25.101Z] Dev server exited with code -15
+[2026-05-01T08:51:28.037Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T08:51:30.364Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T08:51:30.903Z] Server running on http://localhost:3000/
+[2026-05-01T08:51:51.543Z] [Auth] Missing session cookie
+[2026-05-01T08:54:00.177Z] 4:54:00 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T08:54:07.459Z] [Auth] Missing session cookie
+[2026-05-01T08:54:07.484Z] [Auth] Missing session cookie
+[2026-05-01T08:54:07.489Z] [Auth] Missing session cookie
+[2026-05-01T08:54:07.498Z] [Auth] Missing session cookie
+[2026-05-01T08:54:07.507Z] [Auth] Missing session cookie
+[2026-05-01T08:54:07.514Z] [Auth] Missing session cookie
+[2026-05-01T08:54:07.522Z] [Auth] Missing session cookie
+[2026-05-01T08:54:07.531Z] [Auth] Missing session cookie
+[2026-05-01T08:54:08.104Z] [Auth] Missing session cookie
+[2026-05-01T08:54:08.109Z] [Auth] Missing session cookie
