@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import {
@@ -56,6 +57,7 @@ import { toast } from "sonner";
 import { PaymentSection } from "./PaymentSection";
 import { OrderCommentThread } from "./OrderCommentThread";
 import { useMemo } from "react";
+import { KONFEKTIONSGROESSEN } from "@shared/jerseyRules";
 
 // ─── Logo Section für selbstregistrierte Trainer ─────────────────────────────
 function TrainerLogoSection({ orgId }: { orgId: number }) {
@@ -322,6 +324,8 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
 
   const [showCreate, setShowCreate] = useState(false);
   const [teamName, setTeamName] = useState("");
+  const [teamLeague, setTeamLeague] = useState("");
+  const [teamCategory, setTeamCategory] = useState("");
 
   const createTeam = trpc.team.create.useMutation({
     onSuccess: (data) => {
@@ -389,7 +393,28 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
                   <Input
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
-                    placeholder="z.B. U19 Herren, 1. Mannschaft"
+                    placeholder="z.B. 1. Herren, U19"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Kategorie</Label>
+                  <Select value={teamCategory} onValueChange={setTeamCategory}>
+                    <SelectTrigger><SelectValue placeholder="Kategorie wählen..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="herren">Herren</SelectItem>
+                      <SelectItem value="damen">Damen</SelectItem>
+                      <SelectItem value="jugend_m">Jugend (männlich)</SelectItem>
+                      <SelectItem value="jugend_w">Jugend (weiblich)</SelectItem>
+                      <SelectItem value="mixed">Mixed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Spielklasse</Label>
+                  <Input
+                    value={teamLeague}
+                    onChange={(e) => setTeamLeague(e.target.value)}
+                    placeholder="z.B. Landesliga, Bezirksliga, Kreisliga"
                   />
                 </div>
               </div>
@@ -401,13 +426,15 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
                   Abbrechen
                 </Button>
                 <Button
-                  onClick={() =>
+                  onClick={() => {
                     createTeam.mutate({
                       orgId,
                       departmentId: deptId,
                       name: teamName,
-                    })
-                  }
+                      league: teamLeague || undefined,
+                      category: teamCategory || undefined,
+                    });
+                  }}
                   disabled={!teamName.trim() || createTeam.isPending}
                 >
                   {createTeam.isPending ? (
@@ -466,8 +493,12 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
                         <CardTitle className="text-base">
                           {team.name}
                         </CardTitle>
-                        <CardDescription className="text-xs">
-                          Mannschaft
+                        <CardDescription className="text-xs flex items-center gap-1 flex-wrap">
+                          {team.category && <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            {{herren:"Herren",damen:"Damen",jugend_m:"Jugend (m)",jugend_w:"Jugend (w)",mixed:"Mixed"}[team.category] || team.category}
+                          </Badge>}
+                          {team.league && <span className="text-muted-foreground">{team.league}</span>}
+                          {!team.category && !team.league && "Mannschaft"}
                         </CardDescription>
                       </div>
                     </div>
@@ -525,6 +556,7 @@ function TeamDetail({
   const [playerName, setPlayerName] = useState("");
   const [playerNumber, setPlayerNumber] = useState("");
   const [playerPosition, setPlayerPosition] = useState("");
+  const [playerSize, setPlayerSize] = useState("");
 
   const [showImport, setShowImport] = useState(false);
   const [csvText, setCsvText] = useState("");
@@ -534,6 +566,9 @@ function TeamDetail({
   const [editName, setEditName] = useState("");
   const [editNumber, setEditNumber] = useState("");
   const [editPosition, setEditPosition] = useState("");
+  const [editSize, setEditSize] = useState("");
+
+  // Größen aus jerseyRules importiert (inkl. Kinder-/Jugendgrößen)
 
   // ─── Rename Team ───
   const [showRename, setShowRename] = useState(false);
@@ -557,6 +592,7 @@ function TeamDetail({
       setPlayerName("");
       setPlayerNumber("");
       setPlayerPosition("");
+      setPlayerSize("");
       toast.success("Spieler hinzugefügt");
     },
     onError: (e) => toast.error(e.message),
@@ -833,7 +869,7 @@ function TeamDetail({
                       placeholder="Vor- und Nachname"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>Trikotnummer</Label>
                       <Input
@@ -849,6 +885,19 @@ function TeamDetail({
                         onChange={(e) => setPlayerPosition(e.target.value)}
                         placeholder="z.B. Stürmer"
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Größe</Label>
+                      <select
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                        value={playerSize}
+                        onChange={(e) => setPlayerSize(e.target.value)}
+                      >
+                        <option value="">Wählen...</option>
+                        {KONFEKTIONSGROESSEN.map((s) => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -867,6 +916,7 @@ function TeamDetail({
                         name: playerName,
                         number: playerNumber || undefined,
                         position: playerPosition || undefined,
+                        size: playerSize || undefined,
                       })
                     }
                     disabled={!playerName.trim() || createPlayer.isPending}
@@ -912,9 +962,10 @@ function TeamDetail({
             {/* Header */}
             <div className="grid grid-cols-12 gap-2 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               <div className="col-span-1">#</div>
-              <div className="col-span-4">Name</div>
+              <div className="col-span-3">Name</div>
               <div className="col-span-2">Nummer</div>
-              <div className="col-span-3">Position</div>
+              <div className="col-span-2">Position</div>
+              <div className="col-span-2">Größe</div>
               <div className="col-span-2 text-right">Aktionen</div>
             </div>
             <Separator />
@@ -926,7 +977,7 @@ function TeamDetail({
                       <div className="col-span-1 text-sm text-muted-foreground">
                         {idx + 1}
                       </div>
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <Input
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
@@ -940,12 +991,24 @@ function TeamDetail({
                           className="h-8 text-sm"
                         />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-2">
                         <Input
                           value={editPosition}
                           onChange={(e) => setEditPosition(e.target.value)}
                           className="h-8 text-sm"
                         />
+                      </div>
+                      <div className="col-span-2">
+                        <select
+                          className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm"
+                          value={editSize}
+                          onChange={(e) => setEditSize(e.target.value)}
+                        >
+                          <option value="">--</option>
+                          {KONFEKTIONSGROESSEN.map((s) => (
+                            <option key={s.value} value={s.value}>{s.label}</option>
+                          ))}
+                        </select>
                       </div>
                       <div className="col-span-2 flex justify-end gap-1">
                         <Button
@@ -967,6 +1030,7 @@ function TeamDetail({
                               name: editName || undefined,
                               number: editNumber || null,
                               position: editPosition || null,
+                              size: editSize || null,
                             })
                           }
                           disabled={updatePlayer.isPending}
@@ -980,7 +1044,7 @@ function TeamDetail({
                       <div className="col-span-1 text-sm text-muted-foreground">
                         {idx + 1}
                       </div>
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <p className="font-medium text-sm">{player.name}</p>
                       </div>
                       <div className="col-span-2">
@@ -994,9 +1058,14 @@ function TeamDetail({
                           </span>
                         )}
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-2">
                         <span className="text-sm text-muted-foreground">
                           {player.position || "–"}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-sm text-muted-foreground">
+                          {player.size || "–"}
                         </span>
                       </div>
                       <div className="col-span-2 flex justify-end gap-1">
@@ -1009,6 +1078,7 @@ function TeamDetail({
                             setEditName(player.name);
                             setEditNumber(player.number || "");
                             setEditPosition(player.position || "");
+                            setEditSize(player.size || "");
                           }}
                         >
                           <Pencil className="w-3.5 h-3.5" />

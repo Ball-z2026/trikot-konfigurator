@@ -3994,3 +3994,77 @@
 [2026-05-01T06:15:19.175Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-01T06:15:21.045Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-01T06:15:21.458Z] Server running on http://localhost:3000/
+[2026-05-01T06:44:19.811Z] 2:44:19 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-01T06:44:21.284Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:44:21.690Z] Server running on http://localhost:3000/
+[2026-05-01T06:44:56.961Z] 2:44:56 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T06:44:58.631Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:44:59.065Z] Server running on http://localhost:3000/
+[2026-05-01T06:45:27.754Z] 2:45:27 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T06:45:29.354Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:45:29.776Z] Server running on http://localhost:3000/
+[2026-05-01T06:45:32.185Z] Dev server process group stopped
+[2026-05-01T06:45:32.261Z] Dev server exited with code -15
+[2026-05-01T06:45:35.228Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:45:36.943Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:45:37.312Z] Server running on http://localhost:3000/
+[2026-05-01T06:46:25.171Z] 2:46:25 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T06:46:30.643Z] 2:46:30 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T06:46:46.679Z] 2:46:46 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T06:52:30.920Z] Dev server process group stopped
+[2026-05-01T06:52:30.986Z] Dev server exited with code -15
+[2026-05-01T06:52:33.931Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:52:35.733Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:52:36.265Z] Server running on http://localhost:3000/
+[2026-05-01T06:54:04.043Z] 2:54:04 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-01T06:54:05.739Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:54:06.408Z] Server running on http://localhost:3000/
+[2026-05-01T06:55:19.579Z] 2:55:19 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T06:55:21.355Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:55:21.918Z] Server running on http://localhost:3000/
+[2026-05-01T06:55:40.173Z] 2:55:40 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T06:55:41.946Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:55:42.339Z] Server running on http://localhost:3000/
+[2026-05-01T06:55:50.417Z] Dev server process group stopped
+[2026-05-01T06:55:50.464Z] Dev server exited with code -15
+[2026-05-01T06:55:53.429Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:55:55.197Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:55:55.558Z] Server running on http://localhost:3000/
+[2026-05-01T06:59:50.892Z] Dev server process group stopped
+[2026-05-01T06:59:50.958Z] Dev server exited with code -15
+[2026-05-01T06:59:53.904Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T06:59:55.514Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T06:59:56.021Z] Server running on http://localhost:3000/
+[2026-05-01T07:01:05.014Z] 3:01:05 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T07:01:22.068Z] 3:01:22 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T07:01:27.787Z] 3:01:27 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T07:02:01.175Z] 3:02:01 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T07:02:49.392Z] 3:02:49 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T07:03:04.435Z] 3:03:04 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T07:03:16.251Z] 3:03:16 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T07:03:26.637Z] Dev server process group stopped
+[2026-05-01T07:03:26.707Z] Dev server exited with code -15
+[2026-05-01T07:03:29.649Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T07:03:31.487Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T07:03:31.885Z] Server running on http://localhost:3000/
+[2026-05-01T07:04:12.404Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.464Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.478Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.484Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.490Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.495Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.500Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.505Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.874Z] [Auth] Missing session cookie
+[2026-05-01T07:04:12.881Z] [Auth] Missing session cookie
+[2026-05-01T07:06:55.036Z] 3:06:55 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T07:12:31.173Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.201Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.211Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.218Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.226Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.235Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.243Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.251Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.778Z] [Auth] Missing session cookie
+[2026-05-01T07:12:31.783Z] [Auth] Missing session cookie

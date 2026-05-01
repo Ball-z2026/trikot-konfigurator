@@ -837,7 +837,7 @@ export async function deletePlayer(id: number) {
   await db.delete(players).where(eq(players.id, id));
 }
 
-export async function bulkCreatePlayers(teamId: number, playersList: Array<{ name: string; number?: string; position?: string }>) {
+export async function bulkCreatePlayers(teamId: number, playersList: Array<{ name: string; number?: string; position?: string; size?: string }>) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   if (playersList.length === 0) return [];
@@ -846,9 +846,19 @@ export async function bulkCreatePlayers(teamId: number, playersList: Array<{ nam
     name: p.name,
     number: p.number || null,
     position: p.position || null,
+    size: p.size || null,
   }));
   await db.insert(players).values(values);
   return listPlayersByTeam(teamId);
+}
+
+/** Aktualisiere die Größen mehrerer Spieler auf einmal */
+export async function bulkUpdatePlayerSizes(updates: Array<{ id: number; size: string | null }>) {
+  const db = await getDb();
+  if (!db) return;
+  for (const u of updates) {
+    await db.update(players).set({ size: u.size }).where(eq(players.id, u.id));
+  }
 }
 
 export async function deleteAllPlayersByTeam(teamId: number) {

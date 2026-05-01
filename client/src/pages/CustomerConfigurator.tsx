@@ -37,10 +37,12 @@ import {
   Pencil,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
+import { getNumberRules, BUNDESLAENDER, type NumberRule } from "@shared/jerseyRules";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AlertTriangle, Info } from "lucide-react";
 
 // ─── Google Fonts for sport typography ────────────────────────────────────
 const FONT_OPTIONS = [
@@ -101,6 +103,7 @@ type ZoneContent = {
 type Player = {
   number: string;
   name: string;
+  size?: string;
 };
 
 const PURPOSE_ICONS: Record<string, typeof FileImage> = {
@@ -252,6 +255,24 @@ export default function CustomerConfigurator() {
   const [autoLogoApplied, setAutoLogoApplied] = useState(false);
   const [autoFontApplied, setAutoFontApplied] = useState(false);
 
+  // Organisation-Daten laden für Bundesland-Regeln
+  const { data: orgData } = trpc.org.getById.useQuery(
+    { id: userOrgId! },
+    { enabled: !!userOrgId }
+  );
+
+  // Trikotnummern-Regeln basierend auf Sportart des Vereins
+  const numberRules: NumberRule | null = useMemo(() => {
+    if (!orgData?.sport) return null;
+    const sport = orgData.sport as "fussball" | "volleyball" | "handball" | "basketball";
+    return getNumberRules(sport, "amateur");
+  }, [orgData?.sport]);
+
+  const orgStateName = useMemo(() => {
+    if (!orgData?.state) return null;
+    return BUNDESLAENDER.find(b => b.value === orgData.state)?.label || orgData.state;
+  }, [orgData?.state]);
+
   const canvasRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
   const parts: PartData[] = useMemo(() => (productData?.parts as PartData[]) || [], [productData?.parts]);
@@ -377,6 +398,7 @@ export default function CustomerConfigurator() {
     const loadedPlayers: Player[] = teamData.players.map((p: any) => ({
       number: p.number || "",
       name: p.name,
+      size: p.size || undefined,
     }));
     setPlayers(loadedPlayers);
     setTeamPlayersLoaded(true);
@@ -1899,6 +1921,36 @@ export default function CustomerConfigurator() {
                             </div>
                           )}
 
+                          {/* Landesverband-Regeln für Nummern-Zonen */}
+                          {purpose === "playerNumber" && numberRules && (
+                            <div className="text-xs rounded-md p-2 mt-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <Info className="w-3.5 h-3.5 shrink-0" />
+                                <span className="font-semibold">Verbandsregeln{orgStateName ? ` (${orgStateName})` : ""}</span>
+                              </div>
+                              <div className="space-y-0.5 ml-5">
+                                {zone.side === "back" || zone.partId === null ? (
+                                  <p>Rückennummer: mind. <strong>{numberRules.backMinHeight} cm</strong> Höhe
+                                    {numberRules.backRequired && <Badge variant="outline" className="ml-1 text-[9px] px-1 py-0 border-blue-300">Pflicht</Badge>}
+                                  </p>
+                                ) : (
+                                  numberRules.frontMinHeight && (
+                                    <p>Brustnummer: mind. <strong>{numberRules.frontMinHeight} cm</strong> Höhe
+                                      {numberRules.frontRequired && <Badge variant="outline" className="ml-1 text-[9px] px-1 py-0 border-blue-300">Pflicht</Badge>}
+                                    </p>
+                                  )
+                                )}
+                                <p className="text-[10px] opacity-75">Nummernkreis: {numberRules.numberRange.min}–{numberRules.numberRange.max} | {numberRules.source}</p>
+                                {zone.heightCm && zone.heightCm < (zone.side === "back" ? numberRules.backMinHeight : (numberRules.frontMinHeight || 0)) && (
+                                  <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 mt-1">
+                                    <AlertTriangle className="w-3 h-3" />
+                                    <span className="font-medium">Aktuelle Höhe ({zone.heightCm} cm) unterschreitet Mindestmaß!</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Club Name: Auto-filled */}
                           {purpose === "clubName" && (
                             <div className={`text-xs rounded-md p-2 ${isZoneLocked(zone) ? "text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400" : "text-muted-foreground bg-accent/50"}`}>
@@ -2070,6 +2122,11 @@ export default function CustomerConfigurator() {
                             <span className="flex-1 text-xs sm:text-sm font-medium truncate">
                               {player.name}
                             </span>
+                            {player.size && (
+                              <Badge variant="outline" className="text-[9px] px-1.5 py-0 shrink-0">
+                                {player.size}
+                              </Badge>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"

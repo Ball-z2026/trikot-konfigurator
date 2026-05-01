@@ -527,3 +527,34 @@
 
 - [x] Sublimations-Trikot im Konfigurator öffnen und verschiedene Farbkombinationen testen
 - [x] Farbänderungen in der Vorschau und im Export verifizieren (Blau + Rot getestet, alle Parts ändern sich in Echtzeit)
+
+## Größentabelle pro Spieler
+
+- [x] DB-Schema: size-Feld an players-Tabelle (S/M/L/XL/XXL, nullable)
+- [x] Backend: DB-Helpers und tRPC-Router für Größe erweitern (player.update inkl. size)
+- [x] Frontend: Größenauswahl im Trainer-Dashboard (Spielerliste + Spieler bearbeiten)
+- [x] Frontend: Größe im Konfigurator-Mannschafts-Tab anzeigen
+- [x] Frontend: Größenübersicht in der Spartenleiter-Bestellübersicht (Zusammenfassung pro Mannschaft)
+- [x] Tests aktualisieren (103 Tests bestanden)
+
+## Bundesland, Spielklasse, Kategorie und Landesverband-Regeln
+
+- [x] Recherche: Trikotnummern-Regeln der deutschen Landesverbände (Nummerngröße, Platzierung, Schrift)
+- [x] Regeln-Datei erstellt: shared/jerseyRules.ts mit allen Sportart-Vorgaben
+- [x] DB-Schema: Bundesland-Feld (state) + Sportart (sport) an organizations-Tabelle hinzugefügt
+- [x] DB-Schema: Spielklasse-Feld (league) und Kategorie-Feld (category) an teams-Tabelle hinzugefügt
+- [x] Backend: createOrganization und updateOrganization um Bundesland + Sportart erweitert
+- [x] Backend: createTeam und updateTeam um Spielklasse und Kategorie erweitert
+- [x] Frontend: Bundesland-Dropdown bei Verein-Erstellung und -Bearbeitung
+- [x] Frontend: Spielklasse-Input und Kategorie-Dropdown (Damen/Herren/Jugend) bei Mannschaft-Erstellung
+- [x] Frontend: Spielklasse und Kategorie in der Mannschaftsliste anzeigen
+- [x] Frontend: Konfigurator zeigt Landesverband-Regeln an (Nummerngröße, Hinweise)
+- [x] Frontend: Konfigurator validiert Nummerngrößen basierend auf Bundesland-Regeln
+
+## Verifizierung (01.05.2026)
+
+- [x] Größe "L" für Tom Braun zugewiesen und im Trainer-Dashboard inline angezeigt
+- [x] Konfigurator Mannschafts-Tab zeigt Größe als Badge (Tom Braun: L)
+- [x] Verbandsregeln im Konfigurator: NRW + Volleyball → FIVB-Regeln (Brustnummer mind. 15 cm, Nummernkreis 1-99)
+- [x] Alle 103 Tests bestanden
+- [x] Temporäre Scripts aufgeräumt (update-org.mjs entfernt)

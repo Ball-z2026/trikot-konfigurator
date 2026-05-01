@@ -30,6 +30,10 @@ export const organizations = mysqlTable("organizations", {
   name: varchar("name", { length: 255 }).notNull(),
   /** Typ: Verein oder Firma */
   type: mysqlEnum("type", ["verein", "firma"]).default("verein").notNull(),
+  /** Bundesland (z.B. "nw" für NRW, "by" für Bayern) */
+  state: varchar("state", { length: 5 }),
+  /** Hauptsportart der Organisation */
+  sport: varchar("sport", { length: 50 }),
   /** Ersteller (Hauptverantwortlicher) */
   ownerId: int("ownerId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -226,6 +230,10 @@ export const teams = mysqlTable("teams", {
   departmentId: int("departmentId").notNull(),
   orgId: int("orgId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  /** Spielklasse (z.B. "landesliga", "bezirksliga") */
+  league: varchar("league", { length: 100 }),
+  /** Kategorie: Herren, Damen, Jugend etc. */
+  category: varchar("category", { length: 50 }),
   /** Trainer/Betreuer der diese Mannschaft verwaltet */
   trainerId: int("trainerId").notNull(),
   /**
@@ -252,6 +260,8 @@ export const players = mysqlTable("players", {
   name: varchar("name", { length: 255 }).notNull(),
   number: varchar("number", { length: 10 }),
   position: varchar("position", { length: 100 }),
+  /** Konfektionsgröße (S, M, L, XL, XXL, 3XL) – optional */
+  size: varchar("size", { length: 10 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

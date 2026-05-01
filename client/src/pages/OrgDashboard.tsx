@@ -29,6 +29,8 @@ function OrgList() {
   const [showCreate, setShowCreate] = useState(false);
   const [newOrgName, setNewOrgName] = useState("");
   const [newOrgType, setNewOrgType] = useState<"verein" | "firma">("verein");
+  const [newOrgState, setNewOrgState] = useState("");
+  const [newOrgSport, setNewOrgSport] = useState("");
 
   const createOrg = trpc.org.create.useMutation({
     onSuccess: (data) => {
@@ -109,11 +111,47 @@ function OrgList() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label>Bundesland</Label>
+                  <Select value={newOrgState} onValueChange={setNewOrgState}>
+                    <SelectTrigger><SelectValue placeholder="Bundesland wählen..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bw">Baden-Württemberg</SelectItem>
+                      <SelectItem value="by">Bayern</SelectItem>
+                      <SelectItem value="be">Berlin</SelectItem>
+                      <SelectItem value="bb">Brandenburg</SelectItem>
+                      <SelectItem value="hb">Bremen</SelectItem>
+                      <SelectItem value="hh">Hamburg</SelectItem>
+                      <SelectItem value="he">Hessen</SelectItem>
+                      <SelectItem value="mv">Mecklenburg-Vorpommern</SelectItem>
+                      <SelectItem value="ni">Niedersachsen</SelectItem>
+                      <SelectItem value="nw">Nordrhein-Westfalen</SelectItem>
+                      <SelectItem value="rp">Rheinland-Pfalz</SelectItem>
+                      <SelectItem value="sl">Saarland</SelectItem>
+                      <SelectItem value="sn">Sachsen</SelectItem>
+                      <SelectItem value="st">Sachsen-Anhalt</SelectItem>
+                      <SelectItem value="sh">Schleswig-Holstein</SelectItem>
+                      <SelectItem value="th">Thüringen</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Hauptsportart</Label>
+                  <Select value={newOrgSport} onValueChange={setNewOrgSport}>
+                    <SelectTrigger><SelectValue placeholder="Sportart wählen..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fussball">Fußball</SelectItem>
+                      <SelectItem value="handball">Handball</SelectItem>
+                      <SelectItem value="volleyball">Volleyball</SelectItem>
+                      <SelectItem value="basketball">Basketball</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowCreate(false)}>Abbrechen</Button>
                 <Button
-                  onClick={() => createOrg.mutate({ name: newOrgName, type: newOrgType })}
+                  onClick={() => createOrg.mutate({ name: newOrgName, type: newOrgType, state: newOrgState || undefined, sport: newOrgSport || undefined })}
                   disabled={!newOrgName.trim() || createOrg.isPending}
                 >
                   {createOrg.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -318,10 +356,16 @@ function OrgDetail({ orgId }: { orgId: number }) {
               </div>
               <div>
                 <h1 className="text-lg font-bold">{org.name}</h1>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-xs">
                     {org.type === "verein" ? "Verein" : "Firma"}
                   </Badge>
+                  {org.state && <Badge variant="outline" className="text-xs">
+                    {{bw:"BaWü",by:"Bayern",be:"Berlin",bb:"Brandenburg",hb:"Bremen",hh:"Hamburg",he:"Hessen",mv:"MV",ni:"Niedersachsen",nw:"NRW",rp:"RLP",sl:"Saarland",sn:"Sachsen",st:"Sachsen-Anhalt",sh:"SH",th:"Thüringen"}[org.state] || org.state}
+                  </Badge>}
+                  {org.sport && <Badge variant="outline" className="text-xs">
+                    {{fussball:"Fußball",handball:"Handball",volleyball:"Volleyball",basketball:"Basketball"}[org.sport] || org.sport}
+                  </Badge>}
                   {isOwner && <Badge className="text-xs">Hauptverantwortlicher</Badge>}
                 </div>
               </div>

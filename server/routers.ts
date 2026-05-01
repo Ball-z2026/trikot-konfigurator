@@ -459,11 +459,15 @@ export const appRouter = router({
       .input(z.object({
         name: z.string().min(1),
         type: z.enum(["verein", "firma"]).default("verein"),
+        state: z.string().max(5).optional(),
+        sport: z.string().max(50).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const orgId = await createOrganization({
           name: input.name,
           type: input.type,
+          state: input.state || null,
+          sport: input.sport || null,
           ownerId: ctx.user.id,
         });
         // Ersteller als Owner-Mitglied hinzuf\u00fcgen
@@ -481,6 +485,8 @@ export const appRouter = router({
         id: z.number(),
         name: z.string().min(1).optional(),
         type: z.enum(["verein", "firma"]).optional(),
+        state: z.string().max(5).optional(),
+        sport: z.string().max(50).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         await requireOrgOwner(ctx.user.id, input.id);
@@ -971,6 +977,8 @@ export const appRouter = router({
         orgId: z.number(),
         departmentId: z.number(),
         name: z.string().min(1),
+        league: z.string().max(100).optional(),
+        category: z.string().max(50).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         // Trainer dürfen in ihrer eigenen Abteilung Mannschaften erstellen
@@ -982,6 +990,8 @@ export const appRouter = router({
           orgId: input.orgId,
           departmentId: input.departmentId,
           name: input.name,
+          league: input.league || null,
+          category: input.category || null,
           trainerId: ctx.user.id,
         });
         return { id };
@@ -1026,6 +1036,8 @@ export const appRouter = router({
         id: z.number(),
         orgId: z.number(),
         name: z.string().min(1).optional(),
+        league: z.string().max(100).optional(),
+        category: z.string().max(50).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const team = await getTeamById(input.id);
@@ -1083,6 +1095,7 @@ export const appRouter = router({
         name: z.string().min(1),
         number: z.string().optional(),
         position: z.string().optional(),
+        size: z.string().nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const team = await getTeamById(input.teamId);
@@ -1098,6 +1111,7 @@ export const appRouter = router({
           name: input.name,
           number: input.number || null,
           position: input.position || null,
+          size: input.size || null,
         });
         return { id };
       }),
@@ -1111,6 +1125,7 @@ export const appRouter = router({
         name: z.string().min(1).optional(),
         number: z.string().nullable().optional(),
         position: z.string().nullable().optional(),
+        size: z.string().nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const team = await getTeamById(input.teamId);
@@ -1152,6 +1167,7 @@ export const appRouter = router({
           name: z.string().min(1),
           number: z.string().optional(),
           position: z.string().optional(),
+          size: z.string().optional(),
         })),
         /** Bestehende Spieler vorher löschen? */
         replaceExisting: z.boolean().default(false),
