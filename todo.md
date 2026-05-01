@@ -761,3 +761,8 @@
 - [x] "Aus Vorlage wählen" funktioniert (erfordert teamId-Parameter im URL, über Trainer-Dashboard erreichbar)
 - [x] Konfigurator-Link im TrainerDashboard auf gültiges Produkt 690035 korrigiert (war 90020)
 - [x] Test-Passwörter für alle TSV-Musterstadt-User auf 'Test1234!' gesetzt
+
+## Bugs: Handball DTF Trikot
+- [x] Rücken-Sponsor kann ausgewählt werden (war immer da, muss auf Rückteil klicken + scrollen)
+- [x] Trikot wird nicht angezeigt – CORS-Fallback hinzugefügt (try/catch bei getImageData, onerror-Handler, zeigt Original-SVG bei CORS-Fehler)
+- [x] KI-Mockup: Canvas-Screenshot als Referenzbild funktioniert wenn Trikot-Bild sichtbar ist (CORS-Fix behebt auch dieses Problem)

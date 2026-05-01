@@ -704,75 +704,91 @@ export default function CustomerConfigurator() {
     const img = document.createElement("img");
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const w = img.naturalWidth;
-      const h = img.naturalHeight;
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, w, h);
-      const d = imageData.data;
+      try {
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { setProcessedImageUrl(null); return; }
+        ctx.drawImage(img, 0, 0);
+        let imageData: ImageData;
+        try {
+          imageData = ctx.getImageData(0, 0, w, h);
+        } catch {
+          // Canvas is tainted (CORS) - fall back to showing raw image
+          setProcessedImageUrl(null);
+          return;
+        }
+        const d = imageData.data;
 
-      // Parse the target color
-      const tc = document.createElement("canvas").getContext("2d")!;
-      tc.fillStyle = activeColor;
-      tc.fillRect(0, 0, 1, 1);
-      const cp = tc.getImageData(0, 0, 1, 1).data;
-      const cr = cp[0], cg = cp[1], cb = cp[2];
+        // Parse the target color
+        const tc = document.createElement("canvas").getContext("2d")!;
+        tc.fillStyle = activeColor;
+        tc.fillRect(0, 0, 1, 1);
+        const cp = tc.getImageData(0, 0, 1, 1).data;
+        const cr = cp[0], cg = cp[1], cb = cp[2];
 
-      // Mark outside pixels using scanline flood fill from all 4 edges
-      const outside = new Uint8Array(w * h);
-      const threshold = 240;
-      const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
-      const queue: number[] = [];
+        // Mark outside pixels using scanline flood fill from all 4 edges
+        const outside = new Uint8Array(w * h);
+        const threshold = 240;
+        const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
+        const queue: number[] = [];
 
-      // Seed from all border pixels that are white
-      for (let x = 0; x < w; x++) {
-        const topIdx = x;
-        if (isWhitish(topIdx * 4) && !outside[topIdx]) { outside[topIdx] = 1; queue.push(topIdx); }
-        const botIdx = (h - 1) * w + x;
-        if (isWhitish(botIdx * 4) && !outside[botIdx]) { outside[botIdx] = 1; queue.push(botIdx); }
-      }
-      for (let y = 0; y < h; y++) {
-        const leftIdx = y * w;
-        if (isWhitish(leftIdx * 4) && !outside[leftIdx]) { outside[leftIdx] = 1; queue.push(leftIdx); }
-        const rightIdx = y * w + (w - 1);
-        if (isWhitish(rightIdx * 4) && !outside[rightIdx]) { outside[rightIdx] = 1; queue.push(rightIdx); }
-      }
+        // Seed from all border pixels that are white
+        for (let x = 0; x < w; x++) {
+          const topIdx = x;
+          if (isWhitish(topIdx * 4) && !outside[topIdx]) { outside[topIdx] = 1; queue.push(topIdx); }
+          const botIdx = (h - 1) * w + x;
+          if (isWhitish(botIdx * 4) && !outside[botIdx]) { outside[botIdx] = 1; queue.push(botIdx); }
+        }
+        for (let y = 0; y < h; y++) {
+          const leftIdx = y * w;
+          if (isWhitish(leftIdx * 4) && !outside[leftIdx]) { outside[leftIdx] = 1; queue.push(leftIdx); }
+          const rightIdx = y * w + (w - 1);
+          if (isWhitish(rightIdx * 4) && !outside[rightIdx]) { outside[rightIdx] = 1; queue.push(rightIdx); }
+        }
 
-      // BFS flood fill
-      let head = 0;
-      while (head < queue.length) {
-        const pos = queue[head++];
-        const px = pos % w;
-        const py = (pos - px) / w;
-        const neighbors = [
-          py > 0 ? pos - w : -1,
-          py < h - 1 ? pos + w : -1,
-          px > 0 ? pos - 1 : -1,
-          px < w - 1 ? pos + 1 : -1,
-        ];
-        for (const n of neighbors) {
-          if (n >= 0 && !outside[n] && isWhitish(n * 4)) {
-            outside[n] = 1;
-            queue.push(n);
+        // BFS flood fill
+        let head = 0;
+        while (head < queue.length) {
+          const pos = queue[head++];
+          const px = pos % w;
+          const py = (pos - px) / w;
+          const neighbors = [
+            py > 0 ? pos - w : -1,
+            py < h - 1 ? pos + w : -1,
+            px > 0 ? pos - 1 : -1,
+            px < w - 1 ? pos + 1 : -1,
+          ];
+          for (const n of neighbors) {
+            if (n >= 0 && !outside[n] && isWhitish(n * 4)) {
+              outside[n] = 1;
+              queue.push(n);
+            }
           }
         }
-      }
 
-      // Replace inside white pixels with the chosen color
-      for (let i = 0; i < w * h; i++) {
-        if (!outside[i] && isWhitish(i * 4)) {
-          d[i * 4] = cr;
-          d[i * 4 + 1] = cg;
-          d[i * 4 + 2] = cb;
+        // Replace inside white pixels with the chosen color
+        for (let i = 0; i < w * h; i++) {
+          if (!outside[i] && isWhitish(i * 4)) {
+            d[i * 4] = cr;
+            d[i * 4 + 1] = cg;
+            d[i * 4 + 2] = cb;
+          }
         }
-      }
 
-      ctx.putImageData(imageData, 0, 0);
-      setProcessedImageUrl(canvas.toDataURL("image/png"));
+        ctx.putImageData(imageData, 0, 0);
+        setProcessedImageUrl(canvas.toDataURL("image/png"));
+      } catch {
+        // Fallback: show raw image without color processing
+        setProcessedImageUrl(null);
+      }
+    };
+    img.onerror = () => {
+      // If image fails to load with crossOrigin, try without it (won't be processed but at least visible)
+      setProcessedImageUrl(null);
     };
     img.src = rawCurrentImage;
   }, [rawCurrentImage, needsProcessing, activeColor]);
@@ -800,54 +816,66 @@ export default function CustomerConfigurator() {
       const img = document.createElement("img");
       img.crossOrigin = "anonymous";
       img.onload = () => {
-        // Parse the target color for this part
-        const tc = document.createElement("canvas").getContext("2d")!;
-        tc.fillStyle = partColor;
-        tc.fillRect(0, 0, 1, 1);
-        const cp = tc.getImageData(0, 0, 1, 1).data;
-        const cr = cp[0], cg = cp[1], cb = cp[2];
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) { pending--; return; }
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, w, h);
-        const d = imageData.data;
-        const threshold = 240;
-        const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
-        const outside = new Uint8Array(w * h);
-        const queue: number[] = [];
-        for (let x = 0; x < w; x++) {
-          if (isWhitish(x * 4) && !outside[x]) { outside[x] = 1; queue.push(x); }
-          const b = (h - 1) * w + x;
-          if (isWhitish(b * 4) && !outside[b]) { outside[b] = 1; queue.push(b); }
-        }
-        for (let y = 0; y < h; y++) {
-          const l = y * w;
-          if (isWhitish(l * 4) && !outside[l]) { outside[l] = 1; queue.push(l); }
-          const r = y * w + (w - 1);
-          if (isWhitish(r * 4) && !outside[r]) { outside[r] = 1; queue.push(r); }
-        }
-        let head = 0;
-        while (head < queue.length) {
-          const pos = queue[head++];
-          const px = pos % w;
-          const py = (pos - px) / w;
-          const neighbors = [py > 0 ? pos - w : -1, py < h - 1 ? pos + w : -1, px > 0 ? pos - 1 : -1, px < w - 1 ? pos + 1 : -1];
-          for (const n of neighbors) {
-            if (n >= 0 && !outside[n] && isWhitish(n * 4)) { outside[n] = 1; queue.push(n); }
+        try {
+          // Parse the target color for this part
+          const tc = document.createElement("canvas").getContext("2d")!;
+          tc.fillStyle = partColor;
+          tc.fillRect(0, 0, 1, 1);
+          const cp = tc.getImageData(0, 0, 1, 1).data;
+          const cr = cp[0], cg = cp[1], cb = cp[2];
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { pending--; if (pending === 0) setProcessedPartImages({ ...results }); return; }
+          ctx.drawImage(img, 0, 0);
+          let imageData: ImageData;
+          try {
+            imageData = ctx.getImageData(0, 0, w, h);
+          } catch {
+            // Canvas tainted (CORS) - skip color processing for this part
+            pending--;
+            if (pending === 0) setProcessedPartImages({ ...results });
+            return;
           }
-        }
-        for (let i = 0; i < w * h; i++) {
-          if (!outside[i] && isWhitish(i * 4)) {
-            d[i * 4] = cr; d[i * 4 + 1] = cg; d[i * 4 + 2] = cb;
+          const d = imageData.data;
+          const threshold = 240;
+          const isWhitish = (idx: number) => d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold;
+          const outside = new Uint8Array(w * h);
+          const queue: number[] = [];
+          for (let x = 0; x < w; x++) {
+            if (isWhitish(x * 4) && !outside[x]) { outside[x] = 1; queue.push(x); }
+            const b = (h - 1) * w + x;
+            if (isWhitish(b * 4) && !outside[b]) { outside[b] = 1; queue.push(b); }
           }
+          for (let y = 0; y < h; y++) {
+            const l = y * w;
+            if (isWhitish(l * 4) && !outside[l]) { outside[l] = 1; queue.push(l); }
+            const r = y * w + (w - 1);
+            if (isWhitish(r * 4) && !outside[r]) { outside[r] = 1; queue.push(r); }
+          }
+          let head = 0;
+          while (head < queue.length) {
+            const pos = queue[head++];
+            const px = pos % w;
+            const py = (pos - px) / w;
+            const neighbors = [py > 0 ? pos - w : -1, py < h - 1 ? pos + w : -1, px > 0 ? pos - 1 : -1, px < w - 1 ? pos + 1 : -1];
+            for (const n of neighbors) {
+              if (n >= 0 && !outside[n] && isWhitish(n * 4)) { outside[n] = 1; queue.push(n); }
+            }
+          }
+          for (let i = 0; i < w * h; i++) {
+            if (!outside[i] && isWhitish(i * 4)) {
+              d[i * 4] = cr; d[i * 4 + 1] = cg; d[i * 4 + 2] = cb;
+            }
+          }
+          ctx.putImageData(imageData, 0, 0);
+          results[part.id] = canvas.toDataURL("image/png");
+        } catch {
+          // Fallback: skip color processing for this part
         }
-        ctx.putImageData(imageData, 0, 0);
-        results[part.id] = canvas.toDataURL("image/png");
         pending--;
         if (pending === 0) setProcessedPartImages({ ...results });
       };

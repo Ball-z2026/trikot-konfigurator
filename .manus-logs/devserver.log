@@ -4819,3 +4819,10 @@
 [2026-05-01T14:52:26.277Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-01T14:52:26.707Z] 10:52:26 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
 [2026-05-01T14:52:26.732Z] Server running on http://localhost:3000/
+[2026-05-01T15:02:15.343Z] [Auth] Missing session cookie
+[2026-05-01T15:04:14.463Z] [Auth] Missing session cookie
+[2026-05-01T15:04:22.973Z] [Auth] Missing session cookie
+[2026-05-01T15:05:16.528Z] [Auth] Missing session cookie
+[2026-05-01T15:05:24.943Z] [Auth] Missing session cookie
+[2026-05-01T15:07:51.926Z] 11:07:51 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T15:08:21.470Z] 11:08:21 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
