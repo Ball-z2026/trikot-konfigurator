@@ -381,6 +381,7 @@ export default function CustomerConfigurator() {
   const [dragStart, setDragStart] = useState<{
     x: number; y: number; zoneX: number; zoneY: number; zoneW: number; zoneH: number;
   } | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   // ─── Free Zone: Toggle-State für automatisierte Felder ───
   const [enabledAutoFields, setEnabledAutoFields] = useState<Record<string, boolean>>({
@@ -462,27 +463,31 @@ export default function CustomerConfigurator() {
       if (!dragStart) return;
       // Verhindere Scrolling bei Touch-Drag
       if ("touches" in e) e.preventDefault();
-      const pos = getRelativePosition(e);
-      const dx = pos.x - dragStart.x;
-      const dy = pos.y - dragStart.y;
-      if (draggingZone !== null) {
-        setLocalZones((prev) =>
-          prev.map((z) =>
-            z.id === draggingZone
-              ? { ...z, posX: Math.max(0, Math.min(100 - z.width, dragStart.zoneX + dx)), posY: Math.max(0, Math.min(100 - z.height, dragStart.zoneY + dy)) }
-              : z
-          )
-        );
-      }
-      if (resizingZone !== null) {
-        setLocalZones((prev) =>
-          prev.map((z) =>
-            z.id === resizingZone
-              ? { ...z, width: Math.max(5, Math.min(100 - z.posX, dragStart.zoneW + dx)), height: Math.max(5, Math.min(100 - z.posY, dragStart.zoneH + dy)) }
-              : z
-          )
-        );
-      }
+      // Verwende requestAnimationFrame für flüssige Updates
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        const pos = getRelativePosition(e);
+        const dx = pos.x - dragStart.x;
+        const dy = pos.y - dragStart.y;
+        if (draggingZone !== null) {
+          setLocalZones((prev) =>
+            prev.map((z) =>
+              z.id === draggingZone
+                ? { ...z, posX: Math.max(0, Math.min(100 - z.width, dragStart.zoneX + dx)), posY: Math.max(0, Math.min(100 - z.height, dragStart.zoneY + dy)) }
+                : z
+            )
+          );
+        }
+        if (resizingZone !== null) {
+          setLocalZones((prev) =>
+            prev.map((z) =>
+              z.id === resizingZone
+                ? { ...z, width: Math.max(5, Math.min(100 - z.posX, dragStart.zoneW + dx)), height: Math.max(5, Math.min(100 - z.posY, dragStart.zoneH + dy)) }
+                : z
+            )
+          );
+        }
+      });
     };
     const handlePointerUp = () => {
       if (draggingZone !== null || resizingZone !== null) {
@@ -504,6 +509,7 @@ export default function CustomerConfigurator() {
       setDraggingZone(null);
       setResizingZone(null);
       setDragStart(null);
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     };
     if (draggingZone !== null || resizingZone !== null) {
       window.addEventListener("mousemove", handlePointerMove);
@@ -1172,14 +1178,18 @@ export default function CustomerConfigurator() {
 
     return (
       <div
-        className={`absolute flex items-center justify-center transition-all ${isBeingDragged ? "shadow-lg scale-[1.02] opacity-90" : "duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
+        className={`absolute flex items-center justify-center ${isBeingDragged ? "" : "transition-all duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
         style={{
           left: `${zone.posX}%`,
           top: `${zone.posY}%`,
           width: `${zone.width}%`,
           height: `${zone.height}%`,
           zIndex: isDragTarget ? 20 : isSelected ? 15 : 10,
-          transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
+          transform: isBeingDragged
+            ? `${rotation !== 0 ? `rotate(${rotation}deg) ` : ""}scale(1.02)`
+            : rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
+          opacity: isBeingDragged ? 0.9 : undefined,
+          willChange: isBeingDragged ? "left, top, width, height, transform" : undefined,
           border: isFreeZoneDraggable
             ? `2px ${isSelected ? "solid" : "dashed"} ${zoneBorderColors[colorIdx]}`
             : isDragTarget

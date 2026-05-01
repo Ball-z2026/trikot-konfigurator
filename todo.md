@@ -816,3 +816,10 @@
 - [x] Delete-Button größer auf Touch (32x32px statt 20x20px)
 - [x] Label-Badge größer auf Touch (10px statt 8px, mehr Padding)
 - [x] Auch AdminProductEditor mit Touch-Verbesserungen aktualisiert
+
+## Bug: Touch-Drag ruckelt auf Mobile (Hoodie)
+- [x] Touch-Drag Performance optimieren:
+  - requestAnimationFrame für flüssige 60fps Updates
+  - CSS transition-all während Drag deaktiviert (verhindert Ruckeln)
+  - will-change Hint für GPU-Beschleunigung
+  - Visuelles Feedback (scale, opacity) über transform statt CSS-Klassen
