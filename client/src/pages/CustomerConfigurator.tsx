@@ -35,6 +35,7 @@ import {
   FolderOpen,
   MoreVertical,
   Pencil,
+  GripVertical,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { getNumberRules, BUNDESLAENDER, type NumberRule } from "@shared/jerseyRules";
@@ -224,6 +225,10 @@ export default function CustomerConfigurator() {
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const [processedPartImages, setProcessedPartImages] = useState<Record<number, string>>({});
+
+  // ─── Drag-and-Drop für Sponsor-Vorlagen ──────────────────────────────
+  const [dragOverZoneId, setDragOverZoneId] = useState<number | null>(null);
+  const dragSponsorRef = useRef<{ id: number; name: string; logoUrl: string } | null>(null);
 
   // ─── Auto-Zuweisung: Org-Logo & Abt.-Schrift ─────────────────────────
   const { user, isAuthenticated } = useAuth();
@@ -612,14 +617,62 @@ export default function CustomerConfigurator() {
     setZoneContents((prev) => ({ ...prev, [zoneId]: { ...prev[zoneId], zoneId, ...updates } }));
   }, []);
 
+  // ─── Drag-and-Drop Handlers für Sponsor-Vorlagen ───────────────────
+  const handleZoneDragOver = useCallback((e: React.DragEvent, zone: ZoneData) => {
+    // Nur custom-Zonen (Sponsor) und nicht gesperrte Zonen akzeptieren Drops
+    if (zone.purpose !== "custom" || isZoneLocked(zone)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    setDragOverZoneId(zone.id);
+  }, [isZoneLocked]);
+
+  const handleZoneDragLeave = useCallback(() => {
+    setDragOverZoneId(null);
+  }, []);
+
+  const handleZoneDrop = useCallback((e: React.DragEvent, zone: ZoneData) => {
+    e.preventDefault();
+    setDragOverZoneId(null);
+    if (zone.purpose !== "custom" || isZoneLocked(zone)) return;
+    const sponsor = dragSponsorRef.current;
+    if (!sponsor) return;
+    if (sponsor.logoUrl) {
+      updateZoneContent(zone.id, { imageUrl: sponsor.logoUrl, text: "" });
+    } else {
+      updateZoneContent(zone.id, { text: sponsor.name, imageUrl: "" });
+    }
+    toast.success(`Sponsor "${sponsor.name}" in "${zone.label}" eingesetzt`);
+    dragSponsorRef.current = null;
+  }, [isZoneLocked, updateZoneContent]);
+
   const handleImageUploadToZone = useCallback(
     (zoneId: number) => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
-      input.onchange = (e) => {
+      input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (!file) return;
+
+        // DPI-Prüfung: Finde die Zone um cm-Maße zu bekommen
+        const zone = allZones.find(z => z.id === zoneId);
+        const widthCm = zone?.widthCm || null;
+        const heightCm = zone?.heightCm || null;
+
+        if (widthCm && heightCm) {
+          try {
+            const { checkImageDpi } = await import("@/hooks/useDpiCheck");
+            const result = await checkImageDpi(file, widthCm, heightCm);
+            if (!result.valid) {
+              toast.error(result.message, { duration: 8000 });
+              return;
+            }
+            toast.success(`Auflösung: ${result.minDpi} DPI ✓`);
+          } catch {
+            // Bei Fehler trotzdem fortfahren
+          }
+        }
+
         const reader = new FileReader();
         reader.onload = () => {
           updateZoneContent(zoneId, { imageDataUrl: reader.result as string });
@@ -629,7 +682,7 @@ export default function CustomerConfigurator() {
       };
       input.click();
     },
-    [updateZoneContent]
+    [updateZoneContent, allZones]
   );
 
   // ─── Player Management ─────────────────────────────────────────────────
@@ -945,21 +998,25 @@ export default function CustomerConfigurator() {
     const content = getEffectiveContent(zone);
     const colorIdx = idx % zoneBorderColors.length;
     const isSelected = interactive && selectedZoneId === zone.id;
+    const isDragTarget = interactive && dragOverZoneId === zone.id;
+    const isDroppable = interactive && zone.purpose === "custom" && !isZoneLocked(zone);
     const purpose = zone.purpose || "custom";
     const PurposeIcon = PURPOSE_ICONS[purpose] || PenTool;
     const rotation = zone.rotation || 0;
 
     return (
       <div
-        className="absolute overflow-hidden flex items-center justify-center"
+        className={`absolute overflow-hidden flex items-center justify-center transition-all duration-150 ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
         style={{
           left: `${zone.posX}%`,
           top: `${zone.posY}%`,
           width: `${zone.width}%`,
           height: `${zone.height}%`,
-          zIndex: 10,
+          zIndex: isDragTarget ? 20 : 10,
           transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-          border: isSelected
+          border: isDragTarget
+            ? "2px solid hsl(var(--primary))"
+            : isSelected
             ? `2px solid ${zoneBorderColors[colorIdx]}`
             : content?.imageDataUrl || content?.text
             ? "none"
@@ -975,6 +1032,9 @@ export default function CustomerConfigurator() {
               }
             : undefined
         }
+        onDragOver={interactive && isDroppable ? (e) => handleZoneDragOver(e, zone) : undefined}
+        onDragLeave={interactive && isDroppable ? handleZoneDragLeave : undefined}
+        onDrop={interactive && isDroppable ? (e) => handleZoneDrop(e, zone) : undefined}
       >
         {content?.imageDataUrl && (
           <img
@@ -1488,6 +1548,41 @@ export default function CustomerConfigurator() {
                   ref={canvasRef}
                   className="relative bg-[#e8eaed] w-full mx-auto"
                   onClick={() => setSelectedZoneId(null)}
+                  onDragOver={(e) => {
+                    // Erlaube Drop auf dem Canvas (wird von den Zonen abgefangen)
+                    if (dragSponsorRef.current) {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "copy";
+                    }
+                  }}
+                  onDrop={(e) => {
+                    // Fallback: Wenn auf den Canvas (nicht auf eine Zone) gedroppt wird
+                    e.preventDefault();
+                    setDragOverZoneId(null);
+                    if (!dragSponsorRef.current) return;
+                    // Finde die nächste custom-Zone unter dem Cursor
+                    const canvasRect = canvasRef.current?.getBoundingClientRect();
+                    if (!canvasRect) return;
+                    const relX = ((e.clientX - canvasRect.left) / canvasRect.width) * 100;
+                    const relY = ((e.clientY - canvasRect.top) / canvasRect.height) * 100;
+                    const targetZone = currentZones.find(z => 
+                      z.purpose === "custom" && !isZoneLocked(z) &&
+                      relX >= z.posX && relX <= z.posX + z.width &&
+                      relY >= z.posY && relY <= z.posY + z.height
+                    );
+                    if (targetZone) {
+                      const sponsor = dragSponsorRef.current;
+                      if (sponsor.logoUrl) {
+                        updateZoneContent(targetZone.id, { imageUrl: sponsor.logoUrl, text: "" });
+                      } else {
+                        updateZoneContent(targetZone.id, { text: sponsor.name, imageUrl: "" });
+                      }
+                      toast.success(`Sponsor "${sponsor.name}" in "${targetZone.label}" eingesetzt`);
+                    } else {
+                      toast.info("Bitte auf eine Sponsor-Zone ziehen");
+                    }
+                    dragSponsorRef.current = null;
+                  }}
                 >
                   {/* Color is now baked into the processed image via flood-fill */}
                   {currentImage ? (
@@ -1731,9 +1826,18 @@ export default function CustomerConfigurator() {
                                 const input = document.createElement("input");
                                 input.type = "file";
                                 input.accept = "image/*";
-                                input.onchange = (e) => {
+                                input.onchange = async (e) => {
                                   const file = (e.target as HTMLInputElement).files?.[0];
                                   if (!file) return;
+                                  // DPI-Prüfung: Markentrikot sollte mind. 300 DPI bei ca. 30x40cm haben
+                                  try {
+                                    const { checkImageDpi } = await import("@/hooks/useDpiCheck");
+                                    const result = await checkImageDpi(file, 30, 40);
+                                    if (!result.valid) {
+                                      toast.error(result.message, { duration: 8000 });
+                                      return;
+                                    }
+                                  } catch { /* Bei Fehler fortfahren */ }
                                   const reader = new FileReader();
                                   reader.onload = () => {
                                     setDtfBrandImage(reader.result as string);
@@ -2108,12 +2212,29 @@ export default function CustomerConfigurator() {
                                 {sponsorTemplates.map((tpl: { id: number; name: string; logoUrl: string; }) => (
                                   <button
                                     key={tpl.id}
-                                    className={`group relative border rounded p-1 hover:border-primary transition-colors ${
+                                    draggable
+                                    onDragStart={(e) => {
+                                      dragSponsorRef.current = tpl;
+                                      e.dataTransfer.effectAllowed = "copy";
+                                      e.dataTransfer.setData("text/plain", tpl.name);
+                                      // Kleines Drag-Ghost-Element
+                                      const ghost = document.createElement("div");
+                                      ghost.style.cssText = "padding:4px 10px;background:#2563eb;color:#fff;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;position:absolute;top:-1000px;";
+                                      ghost.textContent = tpl.name;
+                                      document.body.appendChild(ghost);
+                                      e.dataTransfer.setDragImage(ghost, ghost.offsetWidth / 2, ghost.offsetHeight / 2);
+                                      requestAnimationFrame(() => document.body.removeChild(ghost));
+                                    }}
+                                    onDragEnd={() => {
+                                      dragSponsorRef.current = null;
+                                      setDragOverZoneId(null);
+                                    }}
+                                    className={`group relative border rounded p-1 hover:border-primary transition-colors cursor-grab active:cursor-grabbing ${
                                       (tpl.logoUrl && content?.imageUrl === tpl.logoUrl) || (!tpl.logoUrl && content?.text === tpl.name)
                                         ? "border-primary bg-primary/5"
                                         : "border-border"
                                     }`}
-                                    title={tpl.name}
+                                    title={`${tpl.name} – Auf eine Zone ziehen oder klicken`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       if (tpl.logoUrl) {
@@ -2124,11 +2245,13 @@ export default function CustomerConfigurator() {
                                       toast.success(`Sponsor "${tpl.name}" eingesetzt`);
                                     }}
                                   >
+                                    <GripVertical className="absolute top-0.5 right-0.5 w-3 h-3 text-muted-foreground/40 group-hover:text-muted-foreground/70" />
                                     {tpl.logoUrl ? (
                                       <img
                                         src={tpl.logoUrl}
                                         alt={tpl.name}
                                         className="w-10 h-10 object-contain rounded"
+                                        draggable={false}
                                       />
                                     ) : (
                                       <div className="w-10 h-10 flex items-center justify-center text-[8px] text-center leading-tight font-medium">

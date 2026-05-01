@@ -602,3 +602,18 @@
 ## 3D-Mockup (nach Abschluss aller anderen Features)
 - [ ] Nach Freigabe eines Designs: 3D-Mockup aus den konfigurierten Dateien generieren
 - [ ] Optionen evaluieren: Three.js im Browser, KI-Bildgenerierung, oder externe API (Threadcam etc.)
+
+## Drag-and-Drop für Sponsor-Vorlagen
+- [x] Sponsor-Vorlagen als draggable Elemente (HTML5 DnD API) in der Seitenleiste (mit GripVertical-Icon + cursor-grab)
+- [x] Zonen im Canvas als Drop-Targets mit visueller Hervorhebung (ring-2 ring-primary bei dragOver)
+- [x] Drop-Handler: Sponsor-Vorlage wird in die Zone eingesetzt (Text oder Logo)
+- [x] Canvas-Fallback: Drop außerhalb einer Zone zeigt Info-Toast
+- [ ] Touch-Support für Mobile (onTouchStart/Move/End als Fallback) - später
+- [ ] Browser-Verifizierung: Drag von Vorlage auf Zone setzt Inhalt korrekt
+
+## DPI-Prüfung bei Bild-Uploads (min. 300 DPI)
+- [x] Utility-Funktion erstellt: checkImageDpi() berechnet DPI aus Pixel-Maßen und Druckfläche (cm)
+- [x] Integration im Konfigurator: Logo-Upload prüft gegen Zone-cm-Maße, DTF-Markentrikot gegen 30x40cm
+- [x] Integration im Owner-Dashboard: Vereinswappen (10x10cm), Sponsor-Vorlagen (26x10cm)
+- [x] Fehlermeldung bei < 300 DPI mit Hinweis auf benötigte Mindestauflösung (8s Toast)
+- [x] Tests: 103 bestanden, Browser-Verifizierung erfolgreich

@@ -299,6 +299,15 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   const handleUploadSponsor = useCallback(async () => {
     if (!sponsorFile || !sponsorName.trim()) return;
+    // DPI-Prüfung: Sponsor-Logos werden typisch bei 26x10cm (Brust) gedruckt
+    try {
+      const { checkImageDpi } = await import("@/hooks/useDpiCheck");
+      const result = await checkImageDpi(sponsorFile, 26, 10);
+      if (!result.valid) {
+        toast.error(result.message, { duration: 8000 });
+        return;
+      }
+    } catch { /* Bei Fehler fortfahren */ }
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = (reader.result as string).split(",")[1];
@@ -346,6 +355,15 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   const handleUploadLogo = useCallback(async () => {
     if (!logoFile || !logoName.trim()) return;
+    // DPI-Prüfung: Vereinswappen wird bei 10x10cm gedruckt
+    try {
+      const { checkImageDpi } = await import("@/hooks/useDpiCheck");
+      const result = await checkImageDpi(logoFile, 10, 10);
+      if (!result.valid) {
+        toast.error(result.message, { duration: 8000 });
+        return;
+      }
+    } catch { /* Bei Fehler fortfahren */ }
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = (reader.result as string).split(",")[1];

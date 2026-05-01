@@ -4237,3 +4237,43 @@
 [2026-05-01T08:54:07.531Z] [Auth] Missing session cookie
 [2026-05-01T08:54:08.104Z] [Auth] Missing session cookie
 [2026-05-01T08:54:08.109Z] [Auth] Missing session cookie
+[2026-05-01T08:59:22.725Z] 4:59:22 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T08:59:33.556Z] 4:59:33 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T08:59:48.882Z] 4:59:48 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:00:09.119Z] 5:00:09 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:00:21.355Z] 5:00:21 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:00:28.936Z] [Auth] Missing session cookie
+[2026-05-01T09:00:28.953Z] [Auth] Missing session cookie
+[2026-05-01T09:00:28.958Z] [Auth] Missing session cookie
+[2026-05-01T09:00:28.967Z] [Auth] Missing session cookie
+[2026-05-01T09:00:28.973Z] [Auth] Missing session cookie
+[2026-05-01T09:00:28.980Z] [Auth] Missing session cookie
+[2026-05-01T09:00:28.984Z] [Auth] Missing session cookie
+[2026-05-01T09:00:28.988Z] [Auth] Missing session cookie
+[2026-05-01T09:00:29.538Z] [Auth] Missing session cookie
+[2026-05-01T09:00:29.542Z] [Auth] Missing session cookie
+[2026-05-01T09:00:40.205Z] Dev server process group stopped
+[2026-05-01T09:00:40.279Z] Dev server exited with code -15
+[2026-05-01T09:00:43.246Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T09:00:45.319Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T09:00:45.801Z] Server running on http://localhost:3000/
+[2026-05-01T09:01:04.327Z] [Auth] Missing session cookie
+[2026-05-01T09:02:43.454Z] 5:02:43 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:03:03.278Z] 5:03:03 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T09:03:25.796Z] 5:03:25 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-01T09:03:41.902Z] 5:03:41 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-01T09:03:49.247Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.270Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.275Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.280Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.284Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.290Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.293Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.298Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.728Z] [Auth] Missing session cookie
+[2026-05-01T09:03:49.733Z] [Auth] Missing session cookie
+[2026-05-01T09:04:17.900Z] Dev server process group stopped
+[2026-05-01T09:04:17.966Z] Dev server exited with code -15
+[2026-05-01T09:04:20.936Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T09:04:22.754Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T09:04:23.176Z] Server running on http://localhost:3000/
