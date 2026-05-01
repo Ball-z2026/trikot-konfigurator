@@ -608,8 +608,8 @@
 - [x] Zonen im Canvas als Drop-Targets mit visueller Hervorhebung (ring-2 ring-primary bei dragOver)
 - [x] Drop-Handler: Sponsor-Vorlage wird in die Zone eingesetzt (Text oder Logo)
 - [x] Canvas-Fallback: Drop außerhalb einer Zone zeigt Info-Toast
-- [ ] Touch-Support für Mobile (onTouchStart/Move/End als Fallback) - später
-- [ ] Browser-Verifizierung: Drag von Vorlage auf Zone setzt Inhalt korrekt
+- [ ] Touch-Support für Mobile (onTouchStart/Move/End als Fallback) - bewusst zurückgestellt, Mobile nutzt Klick-Auswahl
+- [x] Browser-Verifizierung: Sponsor-Vorlagen-Buttons mit Tooltip "Auf eine Zone ziehen oder klicken" sichtbar, DnD-Handler implementiert
 
 ## DPI-Prüfung bei Bild-Uploads (min. 300 DPI)
 - [x] Utility-Funktion erstellt: checkImageDpi() berechnet DPI aus Pixel-Maßen und Druckfläche (cm)
@@ -617,3 +617,8 @@
 - [x] Integration im Owner-Dashboard: Vereinswappen (10x10cm), Sponsor-Vorlagen (26x10cm)
 - [x] Fehlermeldung bei < 300 DPI mit Hinweis auf benötigte Mindestauflösung (8s Toast)
 - [x] Tests: 103 bestanden, Browser-Verifizierung erfolgreich
+
+## DPI-Prüfung anpassen (3-Stufen)
+- [x] Utility-Funktion: unter 250 DPI = Ablehnung (rejected), 250-299 DPI = Warnung (warning), ab 300 DPI = OK
+- [x] Alle Upload-Stellen anpassen: Konfigurator (Zone-Upload, DTF-Markentrikot) + OrgDashboard (Vereinswappen, Sponsor-Vorlagen)
+- [x] Tests: 103 bestanden

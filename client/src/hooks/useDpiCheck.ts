@@ -3,21 +3,30 @@
  * Berechnet die effektive DPI basierend auf der Pixel-Auflösung des Bildes
  * und der vorgesehenen Druckfläche in cm.
  * 
- * Mindestanforderung: 300 DPI für professionellen Textildruck.
+ * 3-Stufen-Prüfung:
+ * - Unter 250 DPI: Ablehnung (Bild wird nicht akzeptiert)
+ * - 250–299 DPI: Warnung (Bild wird zugelassen, aber Hinweis auf geringe Qualität)
+ * - Ab 300 DPI: OK (optimale Druckqualität)
  */
 
-const MIN_DPI = 300;
+const MIN_DPI = 250;       // Absolute Untergrenze
+const OPTIMAL_DPI = 300;   // Empfohlene DPI für optimale Druckqualität
 const CM_PER_INCH = 2.54;
 
+export type DpiStatus = "rejected" | "warning" | "ok";
+
 export type DpiCheckResult = {
-  valid: boolean;
+  valid: boolean;       // true wenn DPI >= 250 (zugelassen)
+  status: DpiStatus;    // "rejected" | "warning" | "ok"
   dpiX: number;
   dpiY: number;
   minDpi: number;
   imageWidth: number;
   imageHeight: number;
-  requiredWidth: number;
-  requiredHeight: number;
+  requiredWidth: number;   // Pixel für 300 DPI
+  requiredHeight: number;  // Pixel für 300 DPI
+  minRequiredWidth: number;  // Pixel für 250 DPI
+  minRequiredHeight: number; // Pixel für 250 DPI
   message: string;
 };
 
@@ -41,20 +50,36 @@ export function calculateDpi(
   const dpiY = Math.round(imageHeight / printHeightInch);
   const minDpi = Math.min(dpiX, dpiY);
 
-  const requiredWidth = Math.ceil(MIN_DPI * printWidthInch);
-  const requiredHeight = Math.ceil(MIN_DPI * printHeightInch);
+  // Pixel-Anforderungen für optimale und minimale DPI
+  const requiredWidth = Math.ceil(OPTIMAL_DPI * printWidthInch);
+  const requiredHeight = Math.ceil(OPTIMAL_DPI * printHeightInch);
+  const minRequiredWidth = Math.ceil(MIN_DPI * printWidthInch);
+  const minRequiredHeight = Math.ceil(MIN_DPI * printHeightInch);
 
-  const valid = minDpi >= MIN_DPI;
-
+  let status: DpiStatus;
+  let valid: boolean;
   let message: string;
-  if (valid) {
-    message = `Auflösung OK: ${minDpi} DPI (mind. ${MIN_DPI} DPI erforderlich)`;
+
+  if (minDpi >= OPTIMAL_DPI) {
+    // Ab 300 DPI: Alles gut
+    status = "ok";
+    valid = true;
+    message = `Auflösung optimal: ${minDpi} DPI ✓`;
+  } else if (minDpi >= MIN_DPI) {
+    // 250–299 DPI: Warnung, aber zugelassen
+    status = "warning";
+    valid = true;
+    message = `Geringe Auflösung (${minDpi} DPI) – Druckqualität könnte nicht optimal sein. Empfohlen: mindestens ${requiredWidth} × ${requiredHeight} Pixel (300 DPI).`;
   } else {
-    message = `Auflösung zu gering: ${minDpi} DPI. Für eine Druckfläche von ${printWidthCm} × ${printHeightCm} cm werden mindestens ${requiredWidth} × ${requiredHeight} Pixel benötigt (300 DPI).`;
+    // Unter 250 DPI: Ablehnung
+    status = "rejected";
+    valid = false;
+    message = `Auflösung zu gering: ${minDpi} DPI. Für eine Druckfläche von ${printWidthCm} × ${printHeightCm} cm werden mindestens ${minRequiredWidth} × ${minRequiredHeight} Pixel benötigt (250 DPI). Empfohlen: ${requiredWidth} × ${requiredHeight} Pixel (300 DPI).`;
   }
 
   return {
     valid,
+    status,
     dpiX,
     dpiY,
     minDpi,
@@ -62,6 +87,8 @@ export function calculateDpi(
     imageHeight,
     requiredWidth,
     requiredHeight,
+    minRequiredWidth,
+    minRequiredHeight,
     message,
   };
 }

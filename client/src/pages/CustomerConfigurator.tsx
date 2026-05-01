@@ -663,11 +663,14 @@ export default function CustomerConfigurator() {
           try {
             const { checkImageDpi } = await import("@/hooks/useDpiCheck");
             const result = await checkImageDpi(file, widthCm, heightCm);
-            if (!result.valid) {
+            if (result.status === "rejected") {
               toast.error(result.message, { duration: 8000 });
               return;
+            } else if (result.status === "warning") {
+              toast.warning(result.message, { duration: 8000 });
+            } else {
+              toast.success(result.message);
             }
-            toast.success(`Auflösung: ${result.minDpi} DPI ✓`);
           } catch {
             // Bei Fehler trotzdem fortfahren
           }
@@ -1829,13 +1832,17 @@ export default function CustomerConfigurator() {
                                 input.onchange = async (e) => {
                                   const file = (e.target as HTMLInputElement).files?.[0];
                                   if (!file) return;
-                                  // DPI-Prüfung: Markentrikot sollte mind. 300 DPI bei ca. 30x40cm haben
+                                  // DPI-Prüfung: Markentrikot sollte mind. 250 DPI bei ca. 30x40cm haben
                                   try {
                                     const { checkImageDpi } = await import("@/hooks/useDpiCheck");
                                     const result = await checkImageDpi(file, 30, 40);
-                                    if (!result.valid) {
+                                    if (result.status === "rejected") {
                                       toast.error(result.message, { duration: 8000 });
                                       return;
+                                    } else if (result.status === "warning") {
+                                      toast.warning(result.message, { duration: 8000 });
+                                    } else {
+                                      toast.success(result.message);
                                     }
                                   } catch { /* Bei Fehler fortfahren */ }
                                   const reader = new FileReader();

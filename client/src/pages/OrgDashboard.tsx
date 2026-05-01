@@ -303,9 +303,13 @@ function OrgDetail({ orgId }: { orgId: number }) {
     try {
       const { checkImageDpi } = await import("@/hooks/useDpiCheck");
       const result = await checkImageDpi(sponsorFile, 26, 10);
-      if (!result.valid) {
+      if (result.status === "rejected") {
         toast.error(result.message, { duration: 8000 });
         return;
+      } else if (result.status === "warning") {
+        toast.warning(result.message, { duration: 8000 });
+      } else {
+        toast.success(result.message);
       }
     } catch { /* Bei Fehler fortfahren */ }
     const reader = new FileReader();
@@ -359,9 +363,13 @@ function OrgDetail({ orgId }: { orgId: number }) {
     try {
       const { checkImageDpi } = await import("@/hooks/useDpiCheck");
       const result = await checkImageDpi(logoFile, 10, 10);
-      if (!result.valid) {
+      if (result.status === "rejected") {
         toast.error(result.message, { duration: 8000 });
         return;
+      } else if (result.status === "warning") {
+        toast.warning(result.message, { duration: 8000 });
+      } else {
+        toast.success(result.message);
       }
     } catch { /* Bei Fehler fortfahren */ }
     const reader = new FileReader();
