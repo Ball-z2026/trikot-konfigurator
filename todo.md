@@ -823,3 +823,8 @@
   - CSS transition-all während Drag deaktiviert (verhindert Ruckeln)
   - will-change Hint für GPU-Beschleunigung
   - Visuelles Feedback (scale, opacity) über transform statt CSS-Klassen
+  - Komplett auf Pointer Events API umgestellt (statt separate Mouse/Touch Events)
+  - setPointerCapture für zuverlässiges Tracking auch außerhalb des Elements
+  - touch-action: none direkt auf jeder Zone (nicht nur Canvas)
+  - Drag-State in useRef für sofortigen Zugriff ohne Re-Render-Delay
+  - Koordinaten-Caching synchron (nicht in rAF) für präzise Positionierung

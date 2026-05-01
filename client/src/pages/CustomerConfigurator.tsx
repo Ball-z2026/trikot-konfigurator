@@ -382,6 +382,17 @@ export default function CustomerConfigurator() {
     x: number; y: number; zoneX: number; zoneY: number; zoneW: number; zoneH: number;
   } | null>(null);
   const rafRef = useRef<number | null>(null);
+  // Refs für sofortige Touch-Koordinaten (kein Re-Render nötig)
+  const dragStateRef = useRef<{
+    dragging: number | null;
+    resizing: number | null;
+    startX: number;
+    startY: number;
+    zoneX: number;
+    zoneY: number;
+    zoneW: number;
+    zoneH: number;
+  }>({ dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0 });
 
   // ─── Free Zone: Toggle-State für automatisierte Felder ───
   const [enabledAutoFields, setEnabledAutoFields] = useState<Record<string, boolean>>({
@@ -417,19 +428,20 @@ export default function CustomerConfigurator() {
   });
 
   // ─── Free Zone: Drag & Resize Handlers ───
-  const getRelativePosition = useCallback((e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) => {
+  const getRelativePosition = useCallback((e: { clientX: number; clientY: number } | React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent | React.PointerEvent | PointerEvent) => {
     if (!canvasRef.current) return { x: 0, y: 0 };
     const rect = canvasRef.current.getBoundingClientRect();
-    // Touch-Events: Verwende den ersten Touch-Punkt
+    // PointerEvent und MouseEvent haben clientX/clientY direkt
+    // TouchEvent braucht touches[0]
     let clientX: number, clientY: number;
     if ("touches" in e) {
-      const touch = e.touches[0] || (e as TouchEvent).changedTouches?.[0];
+      const touch = (e as TouchEvent).touches[0] || (e as TouchEvent).changedTouches?.[0];
       if (!touch) return { x: 0, y: 0 };
       clientX = touch.clientX;
       clientY = touch.clientY;
     } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
+      clientX = (e as MouseEvent).clientX;
+      clientY = (e as MouseEvent).clientY;
     }
     return {
       x: ((clientX - rect.left) / rect.width) * 100,
@@ -438,17 +450,30 @@ export default function CustomerConfigurator() {
   }, []);
 
   const handleFreeZonePointerDown = useCallback(
-    (e: React.MouseEvent | React.TouchEvent, zoneId: number, isResize = false) => {
+    (e: React.PointerEvent, zoneId: number, isResize = false) => {
       if (!isFreeZoneMode) return;
       e.preventDefault();
       e.stopPropagation();
       const zone = localZones.find((z) => z.id === zoneId);
       if (!zone) return;
+      // Capture pointer for reliable tracking
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
       // Haptic feedback on touch
-      if ("touches" in e && navigator.vibrate) {
+      if (e.pointerType === "touch" && navigator.vibrate) {
         navigator.vibrate(15);
       }
       const pos = getRelativePosition(e);
+      // Speichere in Ref für sofortigen Zugriff ohne Re-Render
+      dragStateRef.current = {
+        dragging: isResize ? null : zoneId,
+        resizing: isResize ? zoneId : null,
+        startX: pos.x,
+        startY: pos.y,
+        zoneX: zone.posX,
+        zoneY: zone.posY,
+        zoneW: zone.width,
+        zoneH: zone.height,
+      };
       setDragStart({ x: pos.x, y: pos.y, zoneX: zone.posX, zoneY: zone.posY, zoneW: zone.width, zoneH: zone.height });
       if (isResize) setResizingZone(zoneId);
       else setDraggingZone(zoneId);
@@ -459,30 +484,35 @@ export default function CustomerConfigurator() {
 
   useEffect(() => {
     if (!isFreeZoneMode) return;
-    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
-      if (!dragStart) return;
-      // Verhindere Scrolling bei Touch-Drag
-      if ("touches" in e) e.preventDefault();
+    const handlePointerMove = (e: PointerEvent) => {
+      const ds = dragStateRef.current;
+      if (ds.dragging === null && ds.resizing === null) return;
+      e.preventDefault();
+      // Cache Koordinaten SOFORT (nicht in rAF) - PointerEvent ist stabil
+      const canvasEl = canvasRef.current;
+      if (!canvasEl) return;
+      const rect = canvasEl.getBoundingClientRect();
+      const posX = ((e.clientX - rect.left) / rect.width) * 100;
+      const posY = ((e.clientY - rect.top) / rect.height) * 100;
+      const dx = posX - ds.startX;
+      const dy = posY - ds.startY;
       // Verwende requestAnimationFrame für flüssige Updates
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
-        const pos = getRelativePosition(e);
-        const dx = pos.x - dragStart.x;
-        const dy = pos.y - dragStart.y;
-        if (draggingZone !== null) {
+        if (ds.dragging !== null) {
           setLocalZones((prev) =>
             prev.map((z) =>
-              z.id === draggingZone
-                ? { ...z, posX: Math.max(0, Math.min(100 - z.width, dragStart.zoneX + dx)), posY: Math.max(0, Math.min(100 - z.height, dragStart.zoneY + dy)) }
+              z.id === ds.dragging
+                ? { ...z, posX: Math.max(0, Math.min(100 - z.width, ds.zoneX + dx)), posY: Math.max(0, Math.min(100 - z.height, ds.zoneY + dy)) }
                 : z
             )
           );
         }
-        if (resizingZone !== null) {
+        if (ds.resizing !== null) {
           setLocalZones((prev) =>
             prev.map((z) =>
-              z.id === resizingZone
-                ? { ...z, width: Math.max(5, Math.min(100 - z.posX, dragStart.zoneW + dx)), height: Math.max(5, Math.min(100 - z.posY, dragStart.zoneH + dy)) }
+              z.id === ds.resizing
+                ? { ...z, width: Math.max(5, Math.min(100 - z.posX, ds.zoneW + dx)), height: Math.max(5, Math.min(100 - z.posY, ds.zoneH + dy)) }
                 : z
             )
           );
@@ -490,7 +520,8 @@ export default function CustomerConfigurator() {
       });
     };
     const handlePointerUp = () => {
-      if (draggingZone !== null || resizingZone !== null) {
+      const ds = dragStateRef.current;
+      if (ds.dragging !== null || ds.resizing !== null) {
         const changedZones = localZones
           .filter((z) => {
             const orig = allZones.find((oz) => oz.id === z.id);
@@ -506,26 +537,24 @@ export default function CustomerConfigurator() {
           }));
         if (changedZones.length > 0) bulkUpdatePositions.mutate({ productId, zones: changedZones });
       }
+      dragStateRef.current = { dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0 };
       setDraggingZone(null);
       setResizingZone(null);
       setDragStart(null);
       if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     };
+    // Verwende Pointer Events API - funktioniert zuverlässig auf iOS Safari
     if (draggingZone !== null || resizingZone !== null) {
-      window.addEventListener("mousemove", handlePointerMove);
-      window.addEventListener("mouseup", handlePointerUp);
-      window.addEventListener("touchmove", handlePointerMove, { passive: false });
-      window.addEventListener("touchend", handlePointerUp);
-      window.addEventListener("touchcancel", handlePointerUp);
+      window.addEventListener("pointermove", handlePointerMove, { passive: false });
+      window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", handlePointerUp);
       return () => {
-        window.removeEventListener("mousemove", handlePointerMove);
-        window.removeEventListener("mouseup", handlePointerUp);
-        window.removeEventListener("touchmove", handlePointerMove);
-        window.removeEventListener("touchend", handlePointerUp);
-        window.removeEventListener("touchcancel", handlePointerUp);
+        window.removeEventListener("pointermove", handlePointerMove);
+        window.removeEventListener("pointerup", handlePointerUp);
+        window.removeEventListener("pointercancel", handlePointerUp);
       };
     }
-  }, [isFreeZoneMode, draggingZone, resizingZone, dragStart, localZones, allZones, bulkUpdatePositions, getRelativePosition]);
+  }, [isFreeZoneMode, draggingZone, resizingZone, localZones, allZones, bulkUpdatePositions]);
 
   // ─── Free Zone: Toggle Auto-Felder (Spielername, Nummer, Kürzel) ───
   const handleToggleAutoField = useCallback(async (purpose: "playerName" | "playerNumber" | "playerInitials") => {
@@ -1202,9 +1231,11 @@ export default function CustomerConfigurator() {
           borderRadius: "2px",
           cursor: isFreeZoneDraggable ? (isBeingDragged ? "grabbing" : "grab") : interactive ? "pointer" : "default",
           overflow: "hidden",
+          touchAction: isFreeZoneDraggable ? "none" : undefined,
+          userSelect: isFreeZoneDraggable ? "none" : undefined,
+          WebkitUserSelect: isFreeZoneDraggable ? "none" : undefined,
         }}
-        onMouseDown={isFreeZoneDraggable ? (e) => handleFreeZonePointerDown(e, zone.id) : undefined}
-        onTouchStart={isFreeZoneDraggable ? (e) => handleFreeZonePointerDown(e, zone.id) : undefined}
+        onPointerDown={isFreeZoneDraggable ? (e) => handleFreeZonePointerDown(e, zone.id) : undefined}
         onClick={
           interactive
             ? (e) => {
@@ -1252,10 +1283,9 @@ export default function CustomerConfigurator() {
               width: isMobile ? '20px' : '12px',
               height: isMobile ? '20px' : '12px',
               borderTopLeftRadius: isMobile ? '4px' : '2px',
-              /* Erweiterter Touch-Bereich über ::after */
+              touchAction: 'none',
             }}
-            onMouseDown={(e) => handleFreeZonePointerDown(e, zone.id, true)}
-            onTouchStart={(e) => handleFreeZonePointerDown(e, zone.id, true)}
+            onPointerDown={(e) => handleFreeZonePointerDown(e, zone.id, true)}
           >
             {/* Unsichtbarer erweiterter Touch-Bereich */}
             <div
@@ -1265,9 +1295,9 @@ export default function CustomerConfigurator() {
                 left: isMobile ? '-12px' : '-6px',
                 right: '-2px',
                 bottom: '-2px',
+                touchAction: 'none',
               }}
-              onMouseDown={(e) => handleFreeZonePointerDown(e, zone.id, true)}
-              onTouchStart={(e) => handleFreeZonePointerDown(e, zone.id, true)}
+              onPointerDown={(e) => handleFreeZonePointerDown(e, zone.id, true)}
             />
           </div>
         )}
