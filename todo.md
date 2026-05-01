@@ -675,3 +675,39 @@
 
 ### Bug-Fix
 - [x] JSX-Fehler in CustomerConfigurator.tsx behoben (war altes Log-Artefakt)
+
+## Farbauswahl auf CMYK umstellen
+- [x] CMYK-Utility: Konvertierungsfunktionen HEX↔CMYK, RGB↔CMYK erstellt (client/src/lib/cmyk.ts)
+- [x] CMYK-Farbwähler-Komponente: 4 Slider (C, M, Y, K) mit Vorschau, CMYK-Wert-Anzeige und Druckfarben-Vorlagen
+- [x] Trainer-Farbauswahl (Text-Zonen): HEX-Farbwähler durch CMYK-Farbwähler ersetzt (playerName, playerNumber, playerInitials, clubName, custom)
+- [x] Trikotteil-Farbauswahl (Sublimation + DTF): CMYK-Farbwähler hinzugefügt, CMYK-Tooltips bei Farbpalette
+- [x] CMYK-Werte werden als HEX gespeichert (für Rendering), CMYK-Anzeige bei allen Farbwählern
+- [x] Tests: 26 CMYK-Tests + 140 Gesamt-Tests bestanden (9 Testdateien)
+
+## Neue Produkte + Freie Zonen-Logik
+### Neue Produkte anlegen
+- [ ] SVG-Silhouette: Trainingshose (Vorder-/Rückseite)
+- [ ] SVG-Silhouette: Aufwärmshirt (Vorder-/Rückseite)
+- [ ] SVG-Silhouette: Zip-Jacke (Vorder-/Rückseite)
+- [ ] SVG-Silhouette: Half-Zipper (Vorder-/Rückseite)
+- [ ] SVG-Silhouette: Warme Jacke (Vorder-/Rückseite)
+- [ ] Textil-Templates in shared/templates.ts registrieren
+- [ ] Produkte in DB anlegen (Admin-Seeding oder manuell)
+
+### Freie Zonen-Logik (für Nicht-Trikots)
+- [ ] DB/Schema: freeZoneMode-Flag am Produkt (Trikots=false, andere=true)
+- [ ] Trainer kann eigene Zonen erstellen (Position, Größe frei wählbar)
+- [ ] Zonen auf dem Textil per Drag verschiebbar
+- [ ] Zonen per Drag-Handle in der Größe änderbar (Resize)
+- [ ] Vereinswappen: Immer vorhanden, nicht löschbar, aber Position frei wählbar
+- [ ] Alle anderen Zonen: Löschbar/entfernbar per Button
+
+### Toggle für automatisierte Felder
+- [ ] Kürzel (playerInitials): Toggle-Button ein/aus (mit/ohne)
+- [ ] Nummer (playerNumber): Toggle-Button ein/aus (mit/ohne)
+- [ ] Spielername (playerName): Toggle-Button ein/aus (mit/ohne)
+- [ ] Wenn aktiviert: Zone wird erstellt mit Standard-Größe, Trainer kann Position wählen
+- [ ] Wenn deaktiviert: Zone wird entfernt
+
+### CMYK-Checkpoint speichern
+- [ ] Checkpoint für CMYK-Farbauswahl speichern (vor neuen Produkt-Features)

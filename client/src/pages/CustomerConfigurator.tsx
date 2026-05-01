@@ -44,6 +44,8 @@ import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AlertTriangle, Info } from "lucide-react";
+import { CmykColorPicker } from "@/components/CmykColorPicker";
+import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
 
 // ─── Google Fonts for sport typography ────────────────────────────────────
 const FONT_OPTIONS = [
@@ -1767,18 +1769,25 @@ export default function CustomerConfigurator() {
                           <div key={part.id} className="space-y-1.5">
                             <div className="flex items-center justify-between">
                               <Label className="text-xs sm:text-sm font-medium">{part.label}</Label>
-                              {partColors[part.id] && (
-                                <button
-                                  className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
-                                  onClick={() => {
-                                    const updated = { ...partColors };
-                                    delete updated[part.id];
-                                    setPartColors(updated);
-                                  }}
-                                >
-                                  Zurücksetzen
-                                </button>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {partColors[part.id] && (
+                                  <span className="text-[10px] font-mono text-muted-foreground">
+                                    {formatCmyk(hexToCmyk(partColors[part.id]))}
+                                  </span>
+                                )}
+                                {partColors[part.id] && (
+                                  <button
+                                    className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+                                    onClick={() => {
+                                      const updated = { ...partColors };
+                                      delete updated[part.id];
+                                      setPartColors(updated);
+                                    }}
+                                  >
+                                    Zurücksetzen
+                                  </button>
+                                )}
+                              </div>
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                               {colorPalette.length > 0 ? (
@@ -1791,7 +1800,7 @@ export default function CustomerConfigurator() {
                                         : "border-border hover:border-muted-foreground"
                                     }`}
                                     style={{ backgroundColor: color }}
-                                    title={color}
+                                    title={`${color} | ${formatCmyk(hexToCmyk(color))}`}
                                     onClick={() => setPartColors((prev) => ({ ...prev, [part.id]: color }))}
                                   />
                                 ))
@@ -1801,6 +1810,12 @@ export default function CustomerConfigurator() {
                                 </p>
                               )}
                             </div>
+                            {/* CMYK-Farbwähler für freie Farbwahl */}
+                            <CmykColorPicker
+                              value={partColors[part.id] || "#c8c8cc"}
+                              onChange={(hex) => setPartColors((prev) => ({ ...prev, [part.id]: hex }))}
+                              label="Eigene Farbe (CMYK)"
+                            />
                           </div>
                         ))}
                       </CardContent>
@@ -1837,25 +1852,28 @@ export default function CustomerConfigurator() {
                                     : "border-border hover:border-muted-foreground"
                                 }`}
                                 style={{ backgroundColor: color }}
-                                title={color}
+                                title={`${color} | ${formatCmyk(hexToCmyk(color))}`}
                                 onClick={() => {
                                   setDtfBaseColor(color);
                                   setDtfBrandImage(null);
                                 }}
                               />
                             ))}
-                            <div className="flex items-center gap-1.5">
-                              <input
-                                type="color"
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded border cursor-pointer"
-                                value={dtfBaseColor || "#ffffff"}
-                                onChange={(e) => {
-                                  setDtfBaseColor(e.target.value);
-                                  setDtfBrandImage(null);
-                                }}
-                              />
-                            </div>
                           </div>
+                          {/* CMYK-Farbwähler für freie DTF-Grundfarbe */}
+                          <CmykColorPicker
+                            value={dtfBaseColor || "#ffffff"}
+                            onChange={(hex) => {
+                              setDtfBaseColor(hex);
+                              setDtfBrandImage(null);
+                            }}
+                            label="Eigene Grundfarbe (CMYK)"
+                          />
+                          {dtfBaseColor && !dtfBrandImage && (
+                            <span className="text-[10px] font-mono text-muted-foreground">
+                              Gewählt: {formatCmyk(hexToCmyk(dtfBaseColor))}
+                            </span>
+                          )}
                           {dtfBaseColor && !dtfBrandImage && (
                             <button
                               className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
@@ -2248,23 +2266,14 @@ export default function CustomerConfigurator() {
                             </div>
                           )}
 
-                          {/* Trainer-Farbauswahl für Text-Zonen */}
+                          {/* Trainer-Farbauswahl für Text-Zonen (CMYK) */}
                           {(purpose === "playerName" || purpose === "playerNumber" || purpose === "playerInitials" || (purpose === "clubName" && !isZoneLocked(zone))) && (
-                            <div className="flex items-center gap-2 mt-1">
-                              <Palette className="w-3.5 h-3.5 text-muted-foreground" />
-                              <Label className="text-xs text-muted-foreground">Textfarbe</Label>
-                              <input
-                                type="color"
+                            <div className="mt-1">
+                              <CmykColorPicker
                                 value={content?.fontColor || zone.fontColor || "#ffffff"}
-                                className="w-7 h-7 rounded border cursor-pointer"
-                                onChange={(e) =>
-                                  updateZoneContent(zone.id, { fontColor: e.target.value })
-                                }
-                                onClick={(e) => e.stopPropagation()}
+                                onChange={(hex) => updateZoneContent(zone.id, { fontColor: hex })}
+                                label="Textfarbe (CMYK)"
                               />
-                              <span className="text-[10px] text-muted-foreground font-mono">
-                                {content?.fontColor || zone.fontColor || "#ffffff"}
-                              </span>
                             </div>
                           )}
 
@@ -2292,15 +2301,10 @@ export default function CustomerConfigurator() {
                                   </div>
                                 )}
                                 <div className="flex items-center gap-1.5">
-                                  <Label className="text-xs">Farbe</Label>
-                                  <input
-                                    type="color"
+                                  <CmykColorPicker
                                     value={content?.fontColor || zone.fontColor || "#ffffff"}
-                                    className="w-7 h-7 rounded border cursor-pointer"
-                                    onChange={(e) =>
-                                      updateZoneContent(zone.id, { fontColor: e.target.value })
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(hex) => updateZoneContent(zone.id, { fontColor: hex })}
+                                    label="Farbe (CMYK)"
                                   />
                                 </div>
                               </div>
