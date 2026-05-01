@@ -99,6 +99,8 @@ import {
   getSponsorTemplate,
   updateSponsorTemplate,
   deleteSponsorTemplate,
+  listOrgTemplates,
+  duplicateSavedDesign,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -107,7 +109,7 @@ import { nanoid } from "nanoid";
 import { notifyOwner } from "./_core/notification";
 
 // Shared zone schema for reuse
-const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "clubName", "custom"]);
+const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "custom"]);
 const zoneType = z.enum(["image", "text", "both"]);
 
 // Admin-only procedure guard
@@ -1527,8 +1529,17 @@ export const appRouter = router({
         productId: z.number(),
         zonesConfig: z.unknown(),
         colorsConfig: z.unknown().optional(),
+        thumbnailBase64: z.string().optional(),
+        category: z.enum(["heimtrikot", "auswaertstrikot", "training", "sonstiges"]).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
+        let thumbnailUrl: string | undefined;
+        if (input.thumbnailBase64) {
+          const buf = Buffer.from(input.thumbnailBase64, "base64");
+          const key = `designs/thumb-${Date.now()}-${ctx.user.id}.png`;
+          const result = await storagePut(key, buf, "image/png");
+          thumbnailUrl = result.url;
+        }
         const id = await createSavedDesign({
           name: input.name,
           teamId: input.teamId,
@@ -1536,6 +1547,8 @@ export const appRouter = router({
           userId: ctx.user.id,
           zonesConfig: input.zonesConfig,
           colorsConfig: input.colorsConfig,
+          thumbnailUrl,
+          category: input.category,
         });
         return { id, name: input.name };
       }),
@@ -1561,14 +1574,23 @@ export const appRouter = router({
         name: z.string().min(1).optional(),
         zonesConfig: z.unknown().optional(),
         colorsConfig: z.unknown().optional(),
+        thumbnailBase64: z.string().optional(),
+        category: z.enum(["heimtrikot", "auswaertstrikot", "training", "sonstiges"]).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const design = await getSavedDesign(input.id);
         if (!design || design.userId !== ctx.user.id) {
           throw new Error("Design nicht gefunden oder keine Berechtigung");
         }
-        const { id, ...data } = input;
-        await updateSavedDesign(id, data);
+        let thumbnailUrl: string | undefined;
+        if (input.thumbnailBase64) {
+          const buf = Buffer.from(input.thumbnailBase64, "base64");
+          const key = `designs/thumb-${Date.now()}-${ctx.user.id}.png`;
+          const result = await storagePut(key, buf, "image/png");
+          thumbnailUrl = result.url;
+        }
+        const { id, thumbnailBase64, ...rest } = input;
+        await updateSavedDesign(id, { ...rest, thumbnailUrl });
         return { success: true };
       }),
 
@@ -1582,6 +1604,41 @@ export const appRouter = router({
         }
         await deleteSavedDesign(input.id);
         return { success: true };
+      }),
+
+    /** Organisationsweite Vorlagen auflisten */
+    listOrgTemplates: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input }) => {
+        return listOrgTemplates(input.orgId);
+      }),
+
+    /** Design als Org-Vorlage markieren (nur Owner) */
+    setOrgTemplate: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        orgId: z.number(),
+        isOrgTemplate: z.boolean(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership || membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Org-Vorlagen verwalten" });
+        }
+        await updateSavedDesign(input.id, { isOrgTemplate: input.isOrgTemplate, orgId: input.orgId });
+        return { success: true };
+      }),
+
+    /** Design duplizieren (in ein anderes Team kopieren) */
+    duplicate: protectedProcedure
+      .input(z.object({
+        sourceId: z.number(),
+        targetTeamId: z.number(),
+        newName: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const newId = await duplicateSavedDesign(input.sourceId, input.targetTeamId, ctx.user.id, input.newName);
+        return { id: newId };
       }),
   }),
 

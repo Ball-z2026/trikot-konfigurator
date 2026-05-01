@@ -631,3 +631,47 @@
 - [x] Integration in alle Upload-Stellen (Konfigurator Zone, DTF-Markentrikot, Vereinswappen, Sponsor-Vorlagen)
 - [x] Hinweistexte: "PDF bevorzugt" bei allen Upload-Buttons und Bereichen
 - [x] Tests: 103 bestanden
+
+## Trikot-Konfiguration speichern und als Vorlage aufrufen
+- [x] DB-Schema: saved_designs Tabelle existiert (id, teamId, productId, name, zonesConfig, colorsConfig, userId)
+- [x] Backend: tRPC-Prozeduren (save, list, get, update, delete) existieren
+- [x] Frontend: Speichern/Laden/Löschen im Konfigurator existiert
+
+### Verbesserung 1: Thumbnail-Vorschau
+- [x] DB: thumbnailUrl-Spalte zur saved_designs Tabelle hinzugefügt
+- [x] Backend: Thumbnail-URL beim Speichern mitspeichern (Base64 -> S3 Upload)
+- [x] Frontend: Canvas-Screenshot als Thumbnail generieren und hochladen (html-to-image)
+- [x] Frontend: Thumbnail in der Design-Liste anzeigen (64x64 Vorschau)
+
+### Verbesserung 2: Organisationsweite Vorlagen
+- [x] DB: orgId + isOrgTemplate-Flag zur saved_designs Tabelle hinzugefügt
+- [x] Backend: Neue Prozedur listOrgTemplates (Designs mit isOrgTemplate=true)
+- [x] Backend: Prozedur setOrgTemplate zum Markieren als Org-Vorlage (nur Owner)
+- [x] Frontend: Vereinsvorlage-Badge im Design-Laden-Dialog
+
+### Verbesserung 3: Vorlagen-Kategorien
+- [x] DB: category-Spalte (heimtrikot, auswaertstrikot, training, sonstiges) als Enum
+- [x] Frontend: Kategorie-Auswahl beim Speichern (4 Buttons im Save-Dialog)
+- [x] Frontend: Kategorie-Badge im Design-Laden-Dialog
+
+### Verbesserung 4: Duplikation für andere Teams
+- [x] Backend: Neue Prozedur duplicate (kopiert Design mit neuem teamId + Name)
+- [x] Frontend: Duplizieren-Button im Design-Laden-Dialog mit Name-Eingabe
+
+## Kürzel-Zone (playerInitials) + Trainer-Farbauswahl
+### Neuer Zonen-Typ: Kürzel
+- [x] DB: 'playerInitials' zur purpose-Enum hinzugefügt (Migration 0019)
+- [x] Backend: Zod-Validierung für playerInitials erweitert
+- [x] Frontend AdminEditor: playerInitials als Zweck-Typ hinzugefügt (PURPOSE_CONFIG + Vorschau "MM")
+- [x] Frontend Konfigurator: Kürzel automatisch aus Mannschaftsliste befüllt (Initialen aus Spielername, max 3)
+- [x] Voreingestellte Schrift des Spartenleiters wird für Kürzel verwendet (via Auto-Font-Zuweisung)
+
+### Trainer-Farbauswahl für Text-Zonen
+- [x] Frontend Konfigurator: Farbwähler bei Kürzel-Zone (Trainer kann Textfarbe wählen)
+- [x] Frontend Konfigurator: Farbwähler bei Spielernamen-Zone
+- [x] Frontend Konfigurator: Farbwähler bei Nummer-Zone
+- [x] Frontend Konfigurator: Farbwähler bei Vereinsnamen-Zone (nur wenn nicht gesperrt)
+- [x] Gewählte Farben in zoneContents.fontColor gespeichert und im Export berücksichtigt
+
+### Bug-Fix
+- [x] JSX-Fehler in CustomerConfigurator.tsx behoben (war altes Log-Artefakt)

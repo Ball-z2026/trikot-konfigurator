@@ -1,0 +1,1 @@
+ALTER TABLE `product_zones` MODIFY COLUMN `purpose` enum('logo','clubLogo','playerName','playerNumber','playerInitials','clubName','custom') NOT NULL DEFAULT 'logo';

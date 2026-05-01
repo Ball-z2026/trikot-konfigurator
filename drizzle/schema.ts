@@ -188,7 +188,7 @@ export const productZones = mysqlTable("product_zones", {
   /** Zone-Typ: image = nur Bild-Upload, text = nur Text, both = beides */
   type: mysqlEnum("type", ["image", "text", "both"]).default("image").notNull(),
   /** Zweck der Zone – bestimmt ob der Inhalt automatisch befüllt wird */
-  purpose: mysqlEnum("purpose", ["logo", "clubLogo", "playerName", "playerNumber", "clubName", "custom"]).default("logo").notNull(),
+  purpose: mysqlEnum("purpose", ["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "custom"]).default("logo").notNull(),
   /** Position X in % vom linken Rand */
   posX: float("posX").default(10).notNull(),
   /** Position Y in % vom oberen Rand */
@@ -413,6 +413,14 @@ export const savedDesigns = mysqlTable("saved_designs", {
   zonesConfig: json("zonesConfig").notNull(),
   /** Ausgewählte Farben als JSON */
   colorsConfig: json("colorsConfig"),
+  /** Thumbnail-Vorschau-URL (Canvas-Screenshot beim Speichern) */
+  thumbnailUrl: text("thumbnailUrl"),
+  /** Organisationsweite Vorlage? Nur Owner kann setzen */
+  isOrgTemplate: boolean("isOrgTemplate").default(false).notNull(),
+  /** Organisation (für organisationsweite Vorlagen) */
+  orgId: int("orgId"),
+  /** Kategorie: Heimtrikot, Auswärtstrikot, Training, Sonstiges */
+  category: mysqlEnum("category", ["heimtrikot", "auswaertstrikot", "training", "sonstiges"]).default("sonstiges"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

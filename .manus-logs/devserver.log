@@ -4364,3 +4364,166 @@
 [2026-05-01T09:49:53.295Z] [Auth] Missing session cookie
 [2026-05-01T09:49:54.086Z] [Auth] Missing session cookie
 [2026-05-01T09:49:54.107Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.121Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.145Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.156Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.169Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.198Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.209Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.217Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.225Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.717Z] [Auth] Missing session cookie
+[2026-05-01T10:13:56.723Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.419Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.435Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.442Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.447Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.454Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.460Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.465Z] [Auth] Missing session cookie
+[2026-05-01T10:34:38.471Z] [Auth] Missing session cookie
+[2026-05-01T10:34:39.544Z] [Auth] Missing session cookie
+[2026-05-01T10:34:39.547Z] [Auth] Missing session cookie
+[2026-05-01T10:34:51.284Z] Dev server process group stopped
+[2026-05-01T10:34:51.354Z] Dev server exited with code -15
+[2026-05-01T10:34:54.320Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T10:34:56.309Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:34:56.762Z] Server running on http://localhost:3000/
+[2026-05-01T10:35:24.475Z] 6:35:24 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-01T10:35:26.096Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:35:26.516Z] Server running on http://localhost:3000/
+[2026-05-01T10:35:43.615Z] 6:35:43 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T10:35:45.467Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:35:45.855Z] Server running on http://localhost:3000/
+[2026-05-01T10:35:51.039Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.084Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.097Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.107Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.114Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.124Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.133Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.142Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.803Z] [Auth] Missing session cookie
+[2026-05-01T10:35:51.809Z] [Auth] Missing session cookie
+[2026-05-01T10:36:12.004Z] 6:36:12 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T10:36:47.041Z] 6:36:47 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T10:37:03.907Z] 6:37:03 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T10:38:45.332Z] 6:38:45 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T10:41:31.285Z] 6:41:31 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T10:42:06.890Z] 6:42:06 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T10:42:32.038Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.056Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.062Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.067Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.072Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.077Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.083Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.090Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.496Z] [Auth] Missing session cookie
+[2026-05-01T10:42:32.501Z] [Auth] Missing session cookie
+[2026-05-01T10:42:51.091Z] 6:42:51 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-01T10:43:01.928Z] 6:43:01 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-01T10:43:24.892Z] 6:43:24 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-01T10:43:26.957Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:43:27.505Z] Server running on http://localhost:3000/
+[2026-05-01T10:44:34.309Z] 6:44:34 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-01T10:44:35.819Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:44:36.215Z] Server running on http://localhost:3000/
+[2026-05-01T10:44:50.523Z] 6:44:50 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T10:44:52.314Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:44:52.672Z] Server running on http://localhost:3000/
+[2026-05-01T10:45:12.637Z] 6:45:12 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T10:45:14.317Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:45:14.726Z] Server running on http://localhost:3000/
+[2026-05-01T10:45:16.791Z] Dev server process group stopped
+[2026-05-01T10:45:17.111Z] 6:45:17 AM [vite] (client) Pre-transform error: The service was stopped: write EPIPE
+[2026-05-01T10:45:17.112Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.112Z] File: /home/ubuntu/trikot-konfigurator/client/src/components/ErrorBoundary.tsx
+[2026-05-01T10:45:17.121Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.122Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.123Z] File: /home/ubuntu/trikot-konfigurator/client/src/contexts/ThemeContext.tsx
+[2026-05-01T10:45:17.156Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.157Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.157Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProductEditor.tsx
+[2026-05-01T10:45:17.158Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.158Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.159Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProducts.tsx
+[2026-05-01T10:45:17.159Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.160Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.160Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/Home.tsx
+[2026-05-01T10:45:17.160Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.160Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.161Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx
+[2026-05-01T10:45:17.161Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.162Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.162Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/DeptFonts.tsx
+[2026-05-01T10:45:17.162Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.163Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.163Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/TrainerDashboard.tsx
+[2026-05-01T10:45:17.163Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.163Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.164Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx
+[2026-05-01T10:45:17.164Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.164Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.165Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/Login.tsx
+[2026-05-01T10:45:17.165Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.165Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.166Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminUsers.tsx
+[2026-05-01T10:45:17.166Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.166Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.166Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/ForgotPassword.tsx
+[2026-05-01T10:45:17.167Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.167Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.167Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/ResetPassword.tsx
+[2026-05-01T10:45:17.168Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.168Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.168Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/Register.tsx
+[2026-05-01T10:45:17.169Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.169Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.169Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/DeptDashboard.tsx
+[2026-05-01T10:45:17.169Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.170Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.170Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/NotFound.tsx
+[2026-05-01T10:45:17.170Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.171Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.171Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/PaymentConfirm.tsx
+[2026-05-01T10:45:17.171Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.172Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.172Z] File: /home/ubuntu/trikot-konfigurator/client/src/components/ui/tooltip.tsx
+[2026-05-01T10:45:17.172Z] 6:45:17 AM [vite] (client) Pre-transform error: The service is no longer running: write EPIPE
+[2026-05-01T10:45:17.173Z] Plugin: vite:esbuild
+[2026-05-01T10:45:17.173Z] File: /home/ubuntu/trikot-konfigurator/client/src/components/ui/sonner.tsx
+[2026-05-01T10:45:17.279Z] Dev server exited with code -15
+[2026-05-01T10:45:19.837Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T10:45:21.844Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T10:45:22.256Z] Server running on http://localhost:3000/
+[2026-05-01T10:45:28.284Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.337Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.344Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.350Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.359Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.368Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.375Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.381Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.765Z] [Auth] Missing session cookie
+[2026-05-01T10:45:28.774Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.550Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.567Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.572Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.576Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.580Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.584Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.589Z] [Auth] Missing session cookie
+[2026-05-01T10:47:38.593Z] [Auth] Missing session cookie
+[2026-05-01T10:47:39.009Z] [Auth] Missing session cookie
+[2026-05-01T10:47:39.013Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.613Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.626Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.706Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.730Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.736Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.747Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.753Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.760Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.766Z] [Auth] Missing session cookie
+[2026-05-01T10:49:03.778Z] [Auth] Missing session cookie

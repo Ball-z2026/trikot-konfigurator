@@ -134,6 +134,20 @@
       "when": 1777624224767,
       "tag": "0018_workable_spacker_dave",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1777631731703,
+      "tag": "0019_crazy_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1777632211155,
+      "tag": "0020_parched_living_tribunal",
+      "breakpoints": true
     }
   ]
 }

@@ -62,7 +62,7 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
@@ -83,6 +83,7 @@ const PURPOSE_CONFIG: Record<string, { label: string; icon: typeof FileImage; de
   clubLogo: { label: "Vereinswappen", icon: Shield, description: "Vereinswappen – automatisch vom Owner gesetzt, nur Owner kann ändern", autoType: "image" as const },
   playerName: { label: "Spielername", icon: User, description: "Automatisch aus Mannschaftsliste", autoType: "text" as const },
   playerNumber: { label: "Nummer", icon: Hash, description: "Automatisch aus Mannschaftsliste", autoType: "text" as const },
+  playerInitials: { label: "Kürzel", icon: Type, description: "Initialen des Spielers (z.B. MM für Max Müller)", autoType: "text" as const },
   clubName: { label: "Vereinsname", icon: Building2, description: "Fester Vereinsname für alle Trikots", autoType: "text" as const },
   custom: { label: "Freitext", icon: PenTool, description: "Freie Texteingabe durch Kunde", autoType: "text" as const },
 };
@@ -557,6 +558,7 @@ export default function AdminProductEditor() {
                           >
                             {zone.purpose === "playerName" ? "MÜLLER" :
                              zone.purpose === "playerNumber" ? "10" :
+                             zone.purpose === "playerInitials" ? "MM" :
                              zone.purpose === "clubName" ? "FC Muster" :
                              "Abc"}
                           </span>
@@ -1107,6 +1109,7 @@ export default function AdminProductEditor() {
                                           >
                                             {zone.purpose === "playerName" ? "MÜLLER" :
                                              zone.purpose === "playerNumber" ? "10" :
+                                             zone.purpose === "playerInitials" ? "MM" :
                                              zone.purpose === "clubName" ? "FC Muster" :
                                              "Vorschau"}
                                           </div>

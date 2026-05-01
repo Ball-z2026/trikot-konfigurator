@@ -1229,6 +1229,10 @@ export async function createSavedDesign(data: {
   userId: number;
   zonesConfig: unknown;
   colorsConfig?: unknown;
+  thumbnailUrl?: string;
+  isOrgTemplate?: boolean;
+  orgId?: number;
+  category?: string;
 }) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
@@ -1263,6 +1267,10 @@ export async function updateSavedDesign(id: number, data: {
   name?: string;
   zonesConfig?: unknown;
   colorsConfig?: unknown;
+  thumbnailUrl?: string;
+  isOrgTemplate?: boolean;
+  orgId?: number;
+  category?: string;
 }) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
@@ -1273,6 +1281,33 @@ export async function deleteSavedDesign(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.delete(savedDesigns).where(eq(savedDesigns.id, id));
+}
+
+// ─── Org Design Templates ──────────────────────────────────────────────
+export async function listOrgTemplates(orgId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(savedDesigns)
+    .where(and(eq(savedDesigns.orgId, orgId), eq(savedDesigns.isOrgTemplate, true)))
+    .orderBy(desc(savedDesigns.updatedAt));
+}
+
+export async function duplicateSavedDesign(sourceId: number, targetTeamId: number, userId: number, newName?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const source = await getSavedDesign(sourceId);
+  if (!source) throw new Error("Quell-Design nicht gefunden");
+  const result = await db.insert(savedDesigns).values({
+    name: newName || source.name + " (Kopie)",
+    teamId: targetTeamId,
+    productId: source.productId,
+    userId,
+    zonesConfig: source.zonesConfig,
+    colorsConfig: source.colorsConfig,
+    thumbnailUrl: source.thumbnailUrl,
+    category: source.category,
+  });
+  return Number(result[0].insertId);
 }
 
 // ─── Sponsor Template Helpers ──────────────────────────────────────────────

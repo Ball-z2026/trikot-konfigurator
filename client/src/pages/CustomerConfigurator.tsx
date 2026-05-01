@@ -74,7 +74,7 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
@@ -93,6 +93,7 @@ type ZoneData = {
 type ZoneContent = {
   zoneId: number;
   imageDataUrl?: string;
+  imageUrl?: string;
   text?: string;
   fontSize?: number;
   fontColor?: string;
@@ -112,6 +113,7 @@ const PURPOSE_ICONS: Record<string, typeof FileImage> = {
   clubLogo: Shield,
   playerName: User,
   playerNumber: Hash,
+  playerInitials: Type,
   clubName: Shield,
   custom: PenTool,
 };
@@ -121,6 +123,7 @@ const PURPOSE_LABELS: Record<string, string> = {
   clubLogo: "Vereinswappen",
   playerName: "Spielername",
   playerNumber: "Nummer",
+  playerInitials: "K\u00fcrzel",
   clubName: "Vereinsname",
   custom: "Freitext",
 };
@@ -182,6 +185,11 @@ export default function CustomerConfigurator() {
   const [savingDesign, setSavingDesign] = useState(false);
   const [currentDesignId, setCurrentDesignId] = useState<number | null>(null);
   const [currentDesignName, setCurrentDesignName] = useState<string | null>(null);
+  const [designCategory, setDesignCategory] = useState<"heimtrikot" | "auswaertstrikot" | "training" | "sonstiges">("sonstiges");
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [duplicateSourceId, setDuplicateSourceId] = useState<number | null>(null);
+  const [duplicateTargetTeamId, setDuplicateTargetTeamId] = useState<number | null>(null);
+  const [duplicateName, setDuplicateName] = useState("");
   
   // ─── Saved Designs tRPC ─────────────────────────────────────────────────
   const { data: savedDesigns, refetch: refetchDesigns } = trpc.savedDesign.list.useQuery(
@@ -218,6 +226,16 @@ export default function CustomerConfigurator() {
     onSuccess: () => {
       refetchDesigns();
       toast.success("Design gelöscht");
+    },
+  });
+  const duplicateMutation = trpc.savedDesign.duplicate.useMutation({
+    onSuccess: () => {
+      setDuplicateDialogOpen(false);
+      refetchDesigns();
+      toast.success("Design dupliziert");
+    },
+    onError: () => {
+      toast.error("Duplizieren fehlgeschlagen");
     },
   });
   const [partColors, setPartColors] = useState<Record<number, string>>({});
@@ -773,6 +791,16 @@ export default function CustomerConfigurator() {
       if (purpose === "playerNumber" && activePlayer) {
         return { ...merged, text: activePlayer.number };
       }
+      if (purpose === "playerInitials" && activePlayer) {
+        // Kürzel aus dem Spielernamen generieren (z.B. "Max Müller" -> "MM", "Hans-Peter Schmidt" -> "HS")
+        const initials = activePlayer.name
+          .split(/[\s-]+/)
+          .map((part: string) => part.charAt(0).toUpperCase())
+          .filter(Boolean)
+          .slice(0, 3) // Max 3 Initialen
+          .join("");
+        return { ...merged, text: initials };
+      }
       if (purpose === "clubName" && clubName) {
         return { ...merged, text: clubName };
       }
@@ -818,6 +846,19 @@ export default function CustomerConfigurator() {
     </span>
   );
   // ─── Save/Load Design ──────────────────────────────────────────────────────
+  // Thumbnail-Capture: Canvas als Base64-PNG
+  const captureThumbnail = useCallback(async (): Promise<string | undefined> => {
+    if (!canvasRef.current) return undefined;
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(canvasRef.current, { quality: 0.6, pixelRatio: 0.5 });
+      // Entferne den data:image/png;base64, Prefix
+      return dataUrl.split(",")[1];
+    } catch {
+      return undefined;
+    }
+  }, []);
+
   const handleSaveDesign = useCallback(() => {
     if (!teamIdParam) {
       toast.error("Kein Team zugeordnet - Speichern nur über Trainer-Dashboard möglich");
@@ -826,31 +867,37 @@ export default function CustomerConfigurator() {
     if (currentDesignId) {
       // Bestehendes Design überschreiben
       setSavingDesign(true);
-      updateMutation.mutate({
-        id: currentDesignId,
-        zonesConfig: zoneContents,
-        colorsConfig: { partColors, dtfBaseColor },
+      captureThumbnail().then(thumbnailBase64 => {
+        updateMutation.mutate({
+          id: currentDesignId,
+          zonesConfig: zoneContents,
+          colorsConfig: { partColors, dtfBaseColor },
+          thumbnailBase64,
+        });
       });
     } else {
       // Neues Design - Dialog öffnen für Namen
       setSaveDialogOpen(true);
     }
-  }, [teamIdParam, currentDesignId, zoneContents, partColors, dtfBaseColor, updateMutation]);
+  }, [teamIdParam, currentDesignId, zoneContents, partColors, dtfBaseColor, updateMutation, captureThumbnail]);
 
-  const handleSaveAsNew = useCallback(() => {
+  const handleSaveAsNew = useCallback(async () => {
     if (!designName.trim()) {
       toast.error("Bitte einen Namen eingeben");
       return;
     }
     setSavingDesign(true);
+    const thumbnailBase64 = await captureThumbnail();
     saveMutation.mutate({
       name: designName.trim(),
       teamId: teamIdParam!,
       productId,
       zonesConfig: zoneContents,
       colorsConfig: { partColors, dtfBaseColor },
+      thumbnailBase64,
+      category: designCategory,
     });
-  }, [designName, teamIdParam, productId, zoneContents, partColors, dtfBaseColor, saveMutation]);
+  }, [designName, teamIdParam, productId, zoneContents, partColors, dtfBaseColor, saveMutation, captureThumbnail, designCategory]);
 
   const handleLoadDesign = useCallback((design: any) => {
     // Zonen-Konfiguration laden
@@ -2146,6 +2193,32 @@ export default function CustomerConfigurator() {
                             </div>
                           )}
 
+                          {/* Player Initials: Auto-filled */}
+                          {purpose === "playerInitials" && (
+                            <div className="text-xs text-muted-foreground bg-accent/50 rounded-md p-2">
+                              {activePlayer ? (
+                                <span
+                                  className="text-foreground font-medium"
+                                  style={{
+                                    fontFamily: zone.fontFamily || undefined,
+                                    fontWeight: (zone.fontWeight as any) || "700",
+                                  }}
+                                >
+                                  {activePlayer.name
+                                    .split(/[\s-]+/)
+                                    .map((part: string) => part.charAt(0).toUpperCase())
+                                    .filter(Boolean)
+                                    .slice(0, 3)
+                                    .join("")}
+                                </span>
+                              ) : (
+                                <span>
+                                  Wähle einen Spieler aus der Mannschaftsliste, um das Kürzel automatisch zu platzieren.
+                                </span>
+                              )}
+                            </div>
+                          )}
+
                           {/* Club Name: Auto-filled */}
                           {purpose === "clubName" && (
                             <div className={`text-xs rounded-md p-2 ${isZoneLocked(zone) ? "text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400" : "text-muted-foreground bg-accent/50"}`}>
@@ -2172,6 +2245,26 @@ export default function CustomerConfigurator() {
                                     : "Gib oben den Vereinsnamen ein, um ihn automatisch zu platzieren."}
                                 </span>
                               )}
+                            </div>
+                          )}
+
+                          {/* Trainer-Farbauswahl für Text-Zonen */}
+                          {(purpose === "playerName" || purpose === "playerNumber" || purpose === "playerInitials" || (purpose === "clubName" && !isZoneLocked(zone))) && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+                              <Label className="text-xs text-muted-foreground">Textfarbe</Label>
+                              <input
+                                type="color"
+                                value={content?.fontColor || zone.fontColor || "#ffffff"}
+                                className="w-7 h-7 rounded border cursor-pointer"
+                                onChange={(e) =>
+                                  updateZoneContent(zone.id, { fontColor: e.target.value })
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="text-[10px] text-muted-foreground font-mono">
+                                {content?.fontColor || zone.fontColor || "#ffffff"}
+                              </span>
                             </div>
                           )}
 
@@ -2432,6 +2525,22 @@ export default function CustomerConfigurator() {
                 autoFocus
               />
             </div>
+            <div className="space-y-2">
+              <Label>Kategorie</Label>
+              <div className="flex gap-2 flex-wrap">
+                {(["heimtrikot", "auswaertstrikot", "training", "sonstiges"] as const).map((cat) => (
+                  <Button
+                    key={cat}
+                    variant={designCategory === cat ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setDesignCategory(cat)}
+                  >
+                    {cat === "heimtrikot" ? "Heimtrikot" : cat === "auswaertstrikot" ? "Auswärtstrikot" : cat === "training" ? "Training" : "Sonstiges"}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Abbrechen</Button>
@@ -2449,25 +2558,92 @@ export default function CustomerConfigurator() {
           <DialogHeader>
             <DialogTitle>Gespeicherte Designs laden</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 py-4 max-h-80 overflow-y-auto">
+          <div className="space-y-2 py-4 max-h-96 overflow-y-auto">
             {!savedDesigns || savedDesigns.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">Noch keine Designs gespeichert</p>
             ) : (
-              savedDesigns.map((design) => (
-                <div key={design.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group" onClick={() => handleLoadDesign(design)}>
-                  <div>
-                    <p className="font-medium text-sm">{design.name}</p>
-                    <p className="text-xs text-muted-foreground">
+              savedDesigns.map((design: any) => (
+                <div key={design.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer group" onClick={() => handleLoadDesign(design)}>
+                  {/* Thumbnail */}
+                  {design.thumbnailUrl ? (
+                    <div className="w-16 h-16 rounded-md overflow-hidden bg-muted shrink-0 border">
+                      <img src={design.thumbnailUrl} alt={design.name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-md bg-muted shrink-0 border flex items-center justify-center">
+                      <Shirt className="w-6 h-6 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{design.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {design.category && design.category !== "sonstiges" && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {design.category === "heimtrikot" ? "Heim" : design.category === "auswaertstrikot" ? "Auswärts" : design.category === "training" ? "Training" : "Sonstiges"}
+                        </Badge>
+                      )}
+                      {design.isOrgTemplate && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          Vereinsvorlage
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {new Date(design.updatedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate({ id: design.id }); }}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" title="Duplizieren" onClick={(e) => {
+                      e.stopPropagation();
+                      setDuplicateSourceId(design.id);
+                      setDuplicateName(design.name + " (Kopie)");
+                      setDuplicateDialogOpen(true);
+                    }}>
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate({ id: design.id }); }}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Duplicate Design Dialog */}
+      <Dialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Design duplizieren</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Name der Kopie</Label>
+              <Input
+                value={duplicateName}
+                onChange={(e) => setDuplicateName(e.target.value)}
+                placeholder="Name für die Kopie..."
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Das Design wird für das aktuelle Team dupliziert.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDuplicateDialogOpen(false)}>Abbrechen</Button>
+            <Button onClick={() => {
+              if (!duplicateSourceId || !teamIdParam) return;
+              duplicateMutation.mutate({
+                sourceId: duplicateSourceId,
+                targetTeamId: teamIdParam,
+                newName: duplicateName.trim() || undefined,
+              });
+            }} disabled={!duplicateName.trim()}>
+              Duplizieren
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
