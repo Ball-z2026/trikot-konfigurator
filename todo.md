@@ -745,3 +745,6 @@
 - [x] Frontend: Foto-Mockup Button als Placeholder (ausgegraut, "Demnächst verfügbar")
 - [ ] API-Integration vorbereiten (Endpunkt, Auth, Request-Format) – bei Bedarf
 - [ ] Backend-Prozedur für API-Aufruf – bei Bedarf
+
+## KI-Mockup Ladeanimation verbessern
+- [x] Ansprechende Ladeanimation mit Fortschrittsanzeige und informativen Texten während der KI-Mockup-Generierung

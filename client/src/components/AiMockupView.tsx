@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, Download, RefreshCw } from "lucide-react";
+import { Sparkles, Download, RefreshCw } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -14,6 +14,14 @@ interface AiMockupViewProps {
   dtfBaseColor: string;
 }
 
+const LOADING_STEPS = [
+  { text: "Design wird analysiert...", duration: 3000 },
+  { text: "Farben und Muster werden erfasst...", duration: 4000 },
+  { text: "Fotorealistisches Mockup wird erstellt...", duration: 8000 },
+  { text: "Details werden verfeinert...", duration: 10000 },
+  { text: "Bild wird fertiggestellt...", duration: 15000 },
+];
+
 export function AiMockupView({
   productName,
   sortedParts,
@@ -24,14 +32,57 @@ export function AiMockupView({
 }: AiMockupViewProps) {
   const [mockupUrl, setMockupUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [progress, setProgress] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
+  const startTimeRef = useRef<number>(0);
+  const animFrameRef = useRef<number>(0);
 
   const generateMockup = trpc.mockup.generateAi.useMutation();
 
+  // Fortschrittsanimation während der Generierung
+  useEffect(() => {
+    if (!isGenerating) {
+      setCurrentStep(0);
+      setProgress(0);
+      return;
+    }
+
+    startTimeRef.current = Date.now();
+
+    const updateProgress = () => {
+      const elapsed = Date.now() - startTimeRef.current;
+      // Asymptotischer Fortschritt: nähert sich 95% an, erreicht es aber nie
+      const targetProgress = Math.min(95, (elapsed / 600) * (1 - elapsed / 120000));
+      const smoothProgress = 95 * (1 - Math.exp(-elapsed / 25000));
+      setProgress(Math.min(95, Math.max(targetProgress, smoothProgress)));
+
+      // Schritte basierend auf verstrichener Zeit aktualisieren
+      let stepIndex = 0;
+      let accumulated = 0;
+      for (let i = 0; i < LOADING_STEPS.length; i++) {
+        accumulated += LOADING_STEPS[i].duration;
+        if (elapsed < accumulated) break;
+        stepIndex = Math.min(i + 1, LOADING_STEPS.length - 1);
+      }
+      setCurrentStep(stepIndex);
+
+      animFrameRef.current = requestAnimationFrame(updateProgress);
+    };
+
+    animFrameRef.current = requestAnimationFrame(updateProgress);
+
+    return () => {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, [isGenerating]);
+
   const handleGenerate = async () => {
     setIsGenerating(true);
+    setMockupUrl(null);
     try {
-      // Sammle Farbinformationen für den Prompt
       const colorDescriptions = sortedParts.map((part) => {
         const color = partColors[part.id] || (isDtf ? dtfBaseColor : "#ffffff");
         return `${part.label}: ${color}`;
@@ -46,6 +97,9 @@ export function AiMockupView({
       });
 
       if (result.url) {
+        setProgress(100);
+        // Kurze Verzögerung damit 100% sichtbar wird
+        await new Promise(resolve => setTimeout(resolve, 400));
         setMockupUrl(result.url);
         toast.success("KI-Mockup erfolgreich generiert!");
       } else {
@@ -69,6 +123,7 @@ export function AiMockupView({
 
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Initialer Zustand: Generieren-Button */}
       {!mockupUrl && !isGenerating && (
         <div className="flex flex-col items-center gap-4 py-8">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
@@ -89,26 +144,85 @@ export function AiMockupView({
             Mockup generieren
           </Button>
           <p className="text-xs text-muted-foreground">
-            Dauer: ca. 10-20 Sekunden
+            Dauer: ca. 10-60 Sekunden
           </p>
         </div>
       )}
 
+      {/* Ladeanimation */}
       {isGenerating && (
-        <div className="flex flex-col items-center gap-4 py-12">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 animate-pulse" />
-            <Loader2 className="w-10 h-10 text-purple-500 animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        <div className="flex flex-col items-center gap-6 py-8 w-full max-w-sm">
+          {/* Animierter Kreis mit Pulseffekt */}
+          <div className="relative w-28 h-28">
+            {/* Äußerer Ring – rotiert */}
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500 border-r-pink-500 animate-spin" style={{ animationDuration: "2s" }} />
+            {/* Mittlerer Ring – rotiert gegenläufig */}
+            <div className="absolute inset-2 rounded-full border-4 border-transparent border-b-purple-400 border-l-pink-400 animate-spin" style={{ animationDuration: "3s", animationDirection: "reverse" }} />
+            {/* Innerer Kreis mit Puls */}
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 animate-pulse flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-purple-500 animate-pulse" />
+            </div>
           </div>
-          <div className="text-center">
-            <p className="font-medium">KI generiert dein Mockup...</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Dies kann 10-20 Sekunden dauern
-            </p>
+
+          {/* Fortschrittsbalken */}
+          <div className="w-full space-y-2">
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
+              <span>{Math.round(progress)}%</span>
+              <span>{LOADING_STEPS[currentStep].text}</span>
+            </div>
+            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
+
+          {/* Schritte-Anzeige */}
+          <div className="w-full space-y-1.5">
+            {LOADING_STEPS.map((step, index) => (
+              <div
+                key={index}
+                className={`flex items-center gap-2 text-xs transition-all duration-300 ${
+                  index < currentStep
+                    ? "text-green-600"
+                    : index === currentStep
+                    ? "text-purple-600 font-medium"
+                    : "text-muted-foreground/50"
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  index < currentStep
+                    ? "bg-green-100 text-green-600"
+                    : index === currentStep
+                    ? "bg-purple-100 text-purple-600"
+                    : "bg-muted"
+                }`}>
+                  {index < currentStep ? (
+                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : index === currentStep ? (
+                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
+                  )}
+                </div>
+                <span>{step.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Hinweis */}
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Die KI erstellt ein einzigartiges Mockup basierend auf deinem Design.
+            <br />
+            Bitte warte, bis der Vorgang abgeschlossen ist.
+          </p>
         </div>
       )}
 
+      {/* Ergebnis-Anzeige */}
       {mockupUrl && !isGenerating && (
         <div className="flex flex-col items-center gap-3 w-full">
           <div className="relative w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
