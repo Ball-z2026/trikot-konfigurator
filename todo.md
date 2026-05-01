@@ -573,3 +573,14 @@
 - [x] Vereinswappen-Thumbnail in der Zonen-Karte anzeigen (wenn Bild vorhanden)
 - [x] Vorschau auch im gesperrten Zustand (Trainer/Spartenleiter) sichtbar
 - [x] Browser-Verifizierung als Trainer (103 Tests bestanden)
+
+## Zonen-Positionen korrekt setzen (alle Produkte)
+
+- [x] Recherche: Standard-Zonen-Positionen bei Trikots, Hoodies, T-Shirts, Trainingsjacken
+- [x] Recherche: Offizielle Verbandsregeln (FIVB, DFB, DHB, DVV, DBB) für Nummern-/Logo-Positionen
+- [x] Aktuellen Zustand der Produkte und Zonen in der DB analysieren
+- [x] Zonen bei Trikots korrekt setzen (Vereinswappen 10x10cm, Brustnummer 12x15cm, Spielername 30x5cm, Spielernummer 20x25cm, Sponsoren)
+- [x] Zonen bei Hoodies korrekt setzen (Spielername + Nummer auf Rückseite verschoben)
+- [x] Zonen bei T-Shirts korrekt setzen (Spielername + Nummer auf Rückseite verschoben)
+- [x] Zonen bei Trainingsjacken korrekt setzen (fehlende Ärmel-Zone rechts ergänzt)
+- [x] Browser-Verifizierung aller 4 Produkte erfolgreich

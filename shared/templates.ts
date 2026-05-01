@@ -10,11 +10,13 @@
 export interface TemplateZone {
   label: string;
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "clubName" | "custom";
   posX: number;
   posY: number;
   width: number;
   height: number;
+  widthCm?: number;
+  heightCm?: number;
   sortOrder: number;
 }
 
@@ -88,11 +90,25 @@ const VORDERTEIL: TemplatePart = {
       label: "Vereinswappen",
       type: "image",
       purpose: "clubLogo",
-      posX: 35,
-      posY: 25,
-      width: 30,
-      height: 15,
+      posX: 60,
+      posY: 24,
+      width: 18,
+      height: 7,
+      widthCm: 10,
+      heightCm: 10,
       sortOrder: 1,
+    },
+    {
+      label: "Brustnummer",
+      type: "text",
+      purpose: "playerNumber",
+      posX: 25,
+      posY: 25,
+      width: 16,
+      height: 10,
+      widthCm: 12,
+      heightCm: 15,
+      sortOrder: 2,
     },
     {
       label: "Brust Sponsor",
@@ -102,7 +118,9 @@ const VORDERTEIL: TemplatePart = {
       posY: 45,
       width: 60,
       height: 10,
-      sortOrder: 2,
+      widthCm: 26,
+      heightCm: 10,
+      sortOrder: 3,
     },
     {
       label: "Bauch Sponsor",
@@ -112,7 +130,9 @@ const VORDERTEIL: TemplatePart = {
       posY: 70,
       width: 50,
       height: 8,
-      sortOrder: 3,
+      widthCm: 20,
+      heightCm: 8,
+      sortOrder: 4,
     },
   ],
 };
@@ -124,34 +144,52 @@ const RUECKTEIL: TemplatePart = {
   sortOrder: 2,
   zones: [
     {
+      label: "Vereinsname",
+      type: "text",
+      purpose: "clubName",
+      posX: 20,
+      posY: 10,
+      width: 58,
+      height: 14,
+      widthCm: 25,
+      heightCm: 10,
+      sortOrder: 1,
+    },
+    {
       label: "Spielername",
       type: "text",
       purpose: "playerName",
       posX: 15,
-      posY: 20,
+      posY: 65,
       width: 70,
       height: 8,
-      sortOrder: 1,
+      widthCm: 30,
+      heightCm: 5,
+      sortOrder: 2,
     },
     {
       label: "Spielernummer",
       type: "text",
       purpose: "playerNumber",
-      posX: 25,
-      posY: 32,
-      width: 50,
-      height: 20,
-      sortOrder: 2,
+      posX: 33,
+      posY: 29,
+      width: 30,
+      height: 30,
+      widthCm: 20,
+      heightCm: 25,
+      sortOrder: 3,
     },
     {
       label: "Rücken Sponsor",
       type: "both",
       purpose: "custom",
       posX: 20,
-      posY: 70,
+      posY: 82,
       width: 60,
       height: 8,
-      sortOrder: 3,
+      widthCm: 25,
+      heightCm: 8,
+      sortOrder: 4,
     },
   ],
 };
@@ -170,6 +208,8 @@ const AERMEL_LINKS: TemplatePart = {
       posY: 20,
       width: 60,
       height: 30,
+      widthCm: 7,
+      heightCm: 7,
       sortOrder: 1,
     },
   ],
@@ -189,6 +229,8 @@ const AERMEL_RECHTS: TemplatePart = {
       posY: 20,
       width: 60,
       height: 30,
+      widthCm: 7,
+      heightCm: 7,
       sortOrder: 1,
     },
   ],
