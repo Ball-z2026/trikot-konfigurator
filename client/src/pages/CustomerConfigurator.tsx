@@ -40,7 +40,6 @@ import {
   ToggleLeft,
   ToggleRight,
   X,
-  Box,
   Sparkles,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
@@ -52,7 +51,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { AlertTriangle, Info } from "lucide-react";
 import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
-const TrikotViewer3D = lazy(() => import("@/components/TrikotViewer3D"));
+
 const AiMockupView = lazy(() => import("@/components/AiMockupView"));
 
 // ─── Google Fonts for sport typography ────────────────────────────────────
@@ -177,7 +176,7 @@ export default function CustomerConfigurator() {
   );
 
   const [activePartId, setActivePartId] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"parts" | "overview" | "3d" | "ai-mockup">("parts");
+  const [viewMode, setViewMode] = useState<"parts" | "overview" | "ai-mockup">("parts");
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [zoneContents, setZoneContents] = useState<Record<number, ZoneContent>>({});
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
@@ -1616,15 +1615,7 @@ export default function CustomerConfigurator() {
                   <Shirt className="w-3.5 h-3.5 mr-1.5" />
                   Gesamtübersicht
                 </Button>
-                <Button
-                  variant={viewMode === "3d" ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={() => setViewMode("3d")}
-                >
-                  <Box className="w-3.5 h-3.5 mr-1.5" />
-                  3D-Vorschau
-                </Button>
+
                 <Button
                   variant={viewMode === "ai-mockup" ? "default" : "outline"}
                   size="sm"
@@ -1634,16 +1625,7 @@ export default function CustomerConfigurator() {
                   <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                   KI-Mockup
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs opacity-50 cursor-not-allowed"
-                  disabled
-                  title="Dynamic Mockups API - Demnächst verfügbar (API-Key erforderlich)"
-                >
-                  <Image className="w-3.5 h-3.5 mr-1.5" />
-                  Foto-Mockup
-                </Button>
+
               </div>
             )}
 
@@ -1699,44 +1681,7 @@ export default function CustomerConfigurator() {
               </Card>
             )}
 
-            {/* 3D-Vorschau */}
-            {hasParts && viewMode === "3d" && (
-              <Card className="overflow-hidden">
-                <div className="bg-[#1a1a2e] p-4" style={{ minHeight: 400 }}>
-                  <Suspense fallback={
-                    <div className="flex items-center justify-center h-[350px] text-white/60">
-                      <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                      3D-Modell wird geladen...
-                    </div>
-                  }>
-                    <TrikotViewer3D
-                      frontTextureUrl={(() => {
-                        const frontPart = sortedParts.find(p => p.key === "vorderteil");
-                        if (frontPart && processedPartImages[frontPart.id]) return processedPartImages[frontPart.id];
-                        if (frontPart?.imageUrl) return frontPart.imageUrl;
-                        return undefined;
-                      })()}
-                      backTextureUrl={(() => {
-                        const backPart = sortedParts.find(p => p.key === "rueckteil");
-                        if (backPart && processedPartImages[backPart.id]) return processedPartImages[backPart.id];
-                        if (backPart?.imageUrl) return backPart.imageUrl;
-                        return undefined;
-                      })()}
-                      baseColor={(() => {
-                        const frontPart = sortedParts.find(p => p.key === "vorderteil");
-                        if (frontPart && partColors[frontPart.id]) return partColors[frontPart.id];
-                        if (isDtf && dtfBaseColor) return dtfBaseColor;
-                        return "#e8eaed";
-                      })()}
-                      className="h-[350px]"
-                    />
-                  </Suspense>
-                  <p className="text-center text-white/40 text-xs mt-2">
-                    Maus ziehen zum Drehen, Scrollrad zum Zoomen
-                  </p>
-                </div>
-              </Card>
-            )}
+
 
             {/* KI-Mockup */}
             {hasParts && viewMode === "ai-mockup" && (

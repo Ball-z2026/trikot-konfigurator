@@ -753,3 +753,11 @@
 - [x] Neue Produkte werden auf dem Laptop nicht dargestellt (Produktliste/Home) – Template-SVG-Previews als Fallback
 - [x] 3D-Ansicht zeigt nur 2 Blätter statt ein T-Shirt-Modell – ExtrudeGeometry mit T-Shirt-Silhouette
 - [x] KI-Mockup wird nicht aus der tatsächlichen Vorlage/Design generiert – Canvas-Screenshot als Referenzbild an generateImage gesendet
+
+## Kritische Bugs (deployed Version)
+- [x] 3D-Vorschau komplett entfernt (User-Entscheidung: nur KI-Mockup als Vorschau), Three.js Dependencies entfernt
+- [x] KI-Mockup funktioniert (protectedProcedure, erfordert Login + Canvas-Screenshot als Referenz)
+- [x] Speicher-Button funktioniert (erfordert teamId-Parameter im URL, über Trainer-Dashboard erreichbar)
+- [x] "Aus Vorlage wählen" funktioniert (erfordert teamId-Parameter im URL, über Trainer-Dashboard erreichbar)
+- [x] Konfigurator-Link im TrainerDashboard auf gültiges Produkt 690035 korrigiert (war 90020)
+- [x] Test-Passwörter für alle TSV-Musterstadt-User auf 'Test1234!' gesetzt

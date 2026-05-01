@@ -4800,3 +4800,22 @@
 [2026-05-01T14:16:22.140Z] 10:16:22 AM [vite] (client) hmr update /src/index.css, /src/components/TrikotViewer3D.tsx
 [2026-05-01T14:17:19.535Z] 10:17:19 AM [vite] (client) hmr update /src/index.css, /src/components/TrikotViewer3D.tsx
 [2026-05-01T14:18:31.240Z] 10:18:31 AM [vite] (client) hmr update /src/index.css, /src/components/TrikotViewer3D.tsx
+[2026-05-01T14:38:48.577Z] [Auth] Missing session cookie
+[2026-05-01T14:39:27.567Z] [Auth] Missing session cookie
+[2026-05-01T14:39:39.520Z] [Auth] Missing session cookie
+[2026-05-01T14:40:58.353Z] [Auth] Missing session cookie
+[2026-05-01T14:41:06.102Z] [Auth] Missing session cookie
+[2026-05-01T14:43:54.155Z] 10:43:54 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T14:44:06.197Z] 10:44:06 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T14:44:16.946Z] 10:44:16 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T14:44:28.566Z] 10:44:28 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T14:45:37.265Z] [Auth] Missing session cookie
+[2026-05-01T14:46:02.772Z] [Auth] Missing session cookie
+[2026-05-01T14:46:30.516Z] 10:46:30 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-01T14:51:42.757Z] 10:51:42 AM [vite] (client) hmr update /src/index.css, /src/components/TrikotViewer3D.tsx
+[2026-05-01T14:52:21.272Z] Dev server process group stopped
+[2026-05-01T14:52:21.351Z] Dev server exited with code -15
+[2026-05-01T14:52:24.315Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T14:52:26.277Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T14:52:26.707Z] 10:52:26 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+[2026-05-01T14:52:26.732Z] Server running on http://localhost:3000/
