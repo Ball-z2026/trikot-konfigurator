@@ -503,3 +503,14 @@
 - [x] Schriftarten als Spartenleiter freigeben (Roboto + Bebas Neue) und im Konfigurator beim Trainer verifiziert
 - [x] Zahlungsmodell-Workflow: Trainer wählt "Verein zahlt", Spartenleiter bestätigt
 - [x] Weitere Produkte im Admin-Bereich anlegen (Hoodie, Jacke, T-Shirt) und im Konfigurator getestet
+
+## Produktbilder und Bestellprozess E2E
+
+- [x] Produktbilder für Hoodie generieren (Vorderseite, Rückseite)
+- [x] Produktbilder für Jacke generieren (Vorderseite, Rückseite, Ärmel Links, Ärmel Rechts)
+- [x] Produktbilder für T-Shirt generieren (Vorderseite, Rückseite)
+- [x] Bilder als Part-Grafiken hochladen und in DB zuweisen
+- [x] Produkte im Konfigurator mit neuen Bildern verifizieren
+- [x] Bestellprozess E2E: Trainer konfiguriert Trikot mit Spielerdaten (Sparkasse Sponsor, Tom Braun #1)
+- [x] Bestellprozess E2E: Trainer exportiert als PNG (244KB), Design als 'Heimtrikot 2026' gespeichert
+- [x] Bestellprozess E2E: Spartenleiter sieht 4 Mannschaften mit Status (1. Herren: Bestätigt, Rest: Offen)
