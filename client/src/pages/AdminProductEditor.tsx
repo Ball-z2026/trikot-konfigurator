@@ -541,19 +541,23 @@ export default function AdminProductEditor() {
                   const colorIdx = idx % zoneColors.length;
                   const isSelected = selectedZoneId === zone.id;
                   const PurposeIcon = PURPOSE_CONFIG[zone.purpose]?.icon || FileImage;
+                  const isBeingDragged = draggingZone === zone.id || resizingZone === zone.id;
                   return (
                     <div
                       key={zone.id}
-                      className="absolute group"
+                      className={`absolute group ${isBeingDragged ? 'zone-dragging' : ''}`}
                       style={{
                         left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`,
                         backgroundColor: isSelected ? zoneColors[colorIdx].replace("0.3", "0.5") : zoneColors[colorIdx],
-                        border: `2px ${isSelected ? "solid" : "dashed"} ${zoneBorderColors[colorIdx]}`,
+                        border: isBeingDragged ? `2px solid hsl(var(--primary))` : `2px ${isSelected ? "solid" : "dashed"} ${zoneBorderColors[colorIdx]}`,
                         borderRadius: "4px",
                         cursor: draggingZone === zone.id ? "grabbing" : "grab",
-                        zIndex: isSelected ? 10 : 1,
-                        transform: `rotate(${zone.rotation || 0}deg)`,
+                        zIndex: isBeingDragged ? 50 : isSelected ? 10 : 1,
+                        transform: isBeingDragged
+                          ? `rotate(${zone.rotation || 0}deg) scale(1.04)`
+                          : `rotate(${zone.rotation || 0}deg)`,
                         transformOrigin: "center center",
+                        transition: isBeingDragged ? 'none' : 'all 150ms',
                       }}
                       onMouseDown={(e) => handleZonePointerDown(e, zone.id)}
                       onTouchStart={(e) => handleZonePointerDown(e, zone.id)}
@@ -561,8 +565,8 @@ export default function AdminProductEditor() {
                     >
                       {/* Zone Label */}
                       <div
-                        className="absolute -top-5 sm:-top-6 left-0 text-[10px] sm:text-xs font-medium px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap flex items-center gap-1"
-                        style={{ backgroundColor: zoneBorderColors[colorIdx], color: "white", transform: `rotate(${-(zone.rotation || 0)}deg)` }}
+                        className={`absolute -top-5 sm:-top-6 left-0 text-[10px] sm:text-xs font-medium px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap flex items-center gap-1 ${isBeingDragged ? 'zone-dragging-label' : ''}`}
+                        style={{ backgroundColor: isBeingDragged ? 'hsl(var(--primary))' : zoneBorderColors[colorIdx], color: "white", transform: `rotate(${-(zone.rotation || 0)}deg)`, fontWeight: isBeingDragged ? 600 : undefined }}
                       >
                         <PurposeIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{zone.label}
                       </div>

@@ -5199,3 +5199,18 @@
 [2026-05-01T20:46:39.359Z] [Auth] Missing session cookie
 [2026-05-01T20:46:39.603Z] [Auth] Missing session cookie
 [2026-05-01T20:46:39.608Z] [Auth] Missing session cookie
+[2026-05-01T21:14:06.397Z] 5:14:06 PM [vite] (client) hmr update /src/index.css
+[2026-05-01T21:14:22.668Z] 5:14:22 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T21:14:32.888Z] 5:14:32 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T21:14:52.521Z] 5:14:52 PM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-01T21:15:00.202Z] 5:15:00 PM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-01T21:16:16.151Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.168Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.184Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.195Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.201Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.210Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.225Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.231Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.454Z] [Auth] Missing session cookie
+[2026-05-01T21:16:16.459Z] [Auth] Missing session cookie

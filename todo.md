@@ -828,3 +828,8 @@
   - touch-action: none direkt auf jeder Zone (nicht nur Canvas)
   - Drag-State in useRef für sofortigen Zugriff ohne Re-Render-Delay
   - Koordinaten-Caching synchron (nicht in rAF) für präzise Positionierung
+
+## Visuelle Hervorhebung beim Touch-Drag
+- [x] Visuelles Highlight auf aktiv verschobener Zone (Ring/Glow, Scale, Shadow)
+- [x] Subtile Puls-Animation auf dem Label-Badge während des Drags
+- [x] Auch im AdminProductEditor konsistent umsetzen

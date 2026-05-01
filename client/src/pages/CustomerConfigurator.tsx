@@ -1207,19 +1207,21 @@ export default function CustomerConfigurator() {
 
     return (
       <div
-        className={`absolute flex items-center justify-center ${isBeingDragged ? "" : "transition-all duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
+        className={`absolute flex items-center justify-center ${isBeingDragged ? "zone-dragging" : "transition-all duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
         style={{
           left: `${zone.posX}%`,
           top: `${zone.posY}%`,
           width: `${zone.width}%`,
           height: `${zone.height}%`,
-          zIndex: isDragTarget ? 20 : isSelected ? 15 : 10,
+          zIndex: isBeingDragged ? 50 : isDragTarget ? 20 : isSelected ? 15 : 10,
           transform: isBeingDragged
-            ? `${rotation !== 0 ? `rotate(${rotation}deg) ` : ""}scale(1.02)`
+            ? `${rotation !== 0 ? `rotate(${rotation}deg) ` : ""}scale(1.04)`
             : rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-          opacity: isBeingDragged ? 0.9 : undefined,
+          opacity: isBeingDragged ? 0.92 : undefined,
           willChange: isBeingDragged ? "left, top, width, height, transform" : undefined,
-          border: isFreeZoneDraggable
+          border: isBeingDragged
+            ? `2px solid hsl(var(--primary))`
+            : isFreeZoneDraggable
             ? `2px ${isSelected ? "solid" : "dashed"} ${zoneBorderColors[colorIdx]}`
             : isDragTarget
             ? "2px solid hsl(var(--primary))"
@@ -1228,7 +1230,7 @@ export default function CustomerConfigurator() {
             : content?.imageDataUrl || content?.text
             ? "none"
             : `1px dashed ${zoneBorderColors[colorIdx]}40`,
-          borderRadius: "2px",
+          borderRadius: isBeingDragged ? "4px" : "2px",
           cursor: isFreeZoneDraggable ? (isBeingDragged ? "grabbing" : "grab") : interactive ? "pointer" : "default",
           overflow: "hidden",
           touchAction: isFreeZoneDraggable ? "none" : undefined,
@@ -1314,11 +1316,16 @@ export default function CustomerConfigurator() {
             ×
           </button>
         )}
-        {/* freeZoneMode: Label-Badge - größer auf Touch */}
+        {/* freeZoneMode: Label-Badge - größer auf Touch, pulsiert beim Drag */}
         {isFreeZoneDraggable && (
           <div
-            className={`absolute top-0 left-0 text-white leading-tight truncate max-w-full ${isMobile ? 'px-1.5 py-0.5 text-[10px]' : 'px-1 text-[8px]'}`}
-            style={{ backgroundColor: zoneBorderColors[colorIdx], zIndex: 25, pointerEvents: "none" }}
+            className={`absolute top-0 left-0 text-white leading-tight truncate max-w-full ${isMobile ? 'px-1.5 py-0.5 text-[10px]' : 'px-1 text-[8px]'} ${isBeingDragged ? 'zone-dragging-label' : ''}`}
+            style={{
+              backgroundColor: isBeingDragged ? 'hsl(var(--primary))' : zoneBorderColors[colorIdx],
+              zIndex: 25,
+              pointerEvents: "none",
+              fontWeight: isBeingDragged ? 600 : undefined,
+            }}
           >
             {zone.label}
           </div>
