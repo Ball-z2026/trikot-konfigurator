@@ -724,3 +724,24 @@
 - [x] Bestehende Produkte nicht dupliziert (Prüfung auf templateId)
 - [x] 929 Test-Produkte bereinigt, 19 veröffentlichte Produkte + 8 Entwürfe verbleibend
 - [x] Verifizierung: Alle Produkte in der Produktliste sichtbar
+
+## 3D-Mockup Implementierung + 2D-Trikot entfernen
+### 2D-Trikot-Funktion entfernen
+- [x] 2D-Trikot-Button und zugehörige Logik aus dem Konfigurator entfernt
+
+### Option 1: Three.js 3D-Mockup im Browser
+- [x] Three.js als Dependency installieren (@react-three/fiber, @react-three/drei, three)
+- [x] 3D-Trikot-Geometrie erstellen (einfache T-Shirt-Form mit PlaneGeometry)
+- [x] Interaktive 3D-Vorschau im Konfigurator (OrbitControls: Rotation, Zoom)
+- [ ] Texturen aus dem Konfigurator auf das 3D-Modell projizieren (zukünftige Verbesserung)
+
+### Option 2: KI-Bildgenerierung Mockup
+- [x] Backend-Prozedur: mockup.generateAi (prompt-basiert, nutzt generateImage)
+- [x] Prompt-Template für fotorealistische Trikot-Mockups erstellen (Produktname, Druckverfahren, Farbbeschreibung)
+- [x] Frontend: "KI-Mockup generieren" Button mit Ladeanimation und Ergebnis-Anzeige
+- [x] "Neu generieren" und "Herunterladen" Buttons nach Generierung
+
+### Option 3: Dynamic Mockups API (Placeholder)
+- [x] Frontend: Foto-Mockup Button als Placeholder (ausgegraut, "Demnächst verfügbar")
+- [ ] API-Integration vorbereiten (Endpunkt, Auth, Request-Format) – bei Bedarf
+- [ ] Backend-Prozedur für API-Aufruf – bei Bedarf

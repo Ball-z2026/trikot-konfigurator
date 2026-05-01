@@ -15,7 +15,7 @@
  *     }]
  *   });
  */
-import { storagePut } from "server/storage";
+import { storagePut } from "../storage";
 import { ENV } from "./env";
 
 export type GenerateImageOptions = {
@@ -60,7 +60,11 @@ export async function generateImage(
     },
     body: JSON.stringify({
       prompt: options.prompt,
-      original_images: options.originalImages || [],
+      original_images: (options.originalImages || []).map(img => ({
+        ...(img.url ? { url: img.url } : {}),
+        ...(img.b64Json ? { b64_json: img.b64Json } : {}),
+        ...(img.mimeType ? { mime_type: img.mimeType } : {}),
+      })),
     }),
   });
 

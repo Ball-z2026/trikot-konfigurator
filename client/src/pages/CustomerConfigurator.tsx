@@ -40,16 +40,20 @@ import {
   ToggleLeft,
   ToggleRight,
   X,
+  Box,
+  Sparkles,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { getNumberRules, BUNDESLAENDER, type NumberRule } from "@shared/jerseyRules";
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo, Suspense, lazy } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AlertTriangle, Info } from "lucide-react";
 import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
+const TrikotViewer3D = lazy(() => import("@/components/TrikotViewer3D"));
+const AiMockupView = lazy(() => import("@/components/AiMockupView"));
 
 // ─── Google Fonts for sport typography ────────────────────────────────────
 const FONT_OPTIONS = [
@@ -173,7 +177,7 @@ export default function CustomerConfigurator() {
   );
 
   const [activePartId, setActivePartId] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"parts" | "overview" | "composite">("parts");
+  const [viewMode, setViewMode] = useState<"parts" | "overview" | "3d" | "ai-mockup">("parts");
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [zoneContents, setZoneContents] = useState<Record<number, ZoneContent>>({});
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
@@ -1613,13 +1617,32 @@ export default function CustomerConfigurator() {
                   Gesamtübersicht
                 </Button>
                 <Button
-                  variant={viewMode === "composite" ? "default" : "outline"}
+                  variant={viewMode === "3d" ? "default" : "outline"}
                   size="sm"
                   className="h-8 text-xs"
-                  onClick={() => setViewMode("composite")}
+                  onClick={() => setViewMode("3d")}
                 >
-                  <Shirt className="w-3.5 h-3.5 mr-1.5" />
-                  2D-Trikot
+                  <Box className="w-3.5 h-3.5 mr-1.5" />
+                  3D-Vorschau
+                </Button>
+                <Button
+                  variant={viewMode === "ai-mockup" ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => setViewMode("ai-mockup")}
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  KI-Mockup
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs opacity-50 cursor-not-allowed"
+                  disabled
+                  title="Dynamic Mockups API - Demnächst verfügbar (API-Key erforderlich)"
+                >
+                  <Image className="w-3.5 h-3.5 mr-1.5" />
+                  Foto-Mockup
                 </Button>
               </div>
             )}
@@ -1676,195 +1699,58 @@ export default function CustomerConfigurator() {
               </Card>
             )}
 
-            {/* 2D Composite View */}
-            {hasParts && viewMode === "composite" && (
+            {/* 3D-Vorschau */}
+            {hasParts && viewMode === "3d" && (
+              <Card className="overflow-hidden">
+                <div className="bg-[#1a1a2e] p-4" style={{ minHeight: 400 }}>
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center h-[350px] text-white/60">
+                      <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                      3D-Modell wird geladen...
+                    </div>
+                  }>
+                    <TrikotViewer3D
+                      frontTextureUrl={(() => {
+                        const frontPart = sortedParts.find(p => p.key === "vorderteil");
+                        if (frontPart && processedPartImages[frontPart.id]) return processedPartImages[frontPart.id];
+                        if (frontPart?.imageUrl) return frontPart.imageUrl;
+                        return undefined;
+                      })()}
+                      backTextureUrl={(() => {
+                        const backPart = sortedParts.find(p => p.key === "rueckteil");
+                        if (backPart && processedPartImages[backPart.id]) return processedPartImages[backPart.id];
+                        if (backPart?.imageUrl) return backPart.imageUrl;
+                        return undefined;
+                      })()}
+                      baseColor={(() => {
+                        const frontPart = sortedParts.find(p => p.key === "vorderteil");
+                        if (frontPart && partColors[frontPart.id]) return partColors[frontPart.id];
+                        if (isDtf && dtfBaseColor) return dtfBaseColor;
+                        return "#e8eaed";
+                      })()}
+                      className="h-[350px]"
+                    />
+                  </Suspense>
+                  <p className="text-center text-white/40 text-xs mt-2">
+                    Maus ziehen zum Drehen, Scrollrad zum Zoomen
+                  </p>
+                </div>
+              </Card>
+            )}
+
+            {/* KI-Mockup */}
+            {hasParts && viewMode === "ai-mockup" && (
               <Card className="overflow-hidden">
                 <div className="bg-[#e8eaed] p-4 sm:p-6">
-                  <div className="relative mx-auto" style={{ width: "100%", maxWidth: "500px", aspectRatio: "3/4" }}>
-                    {/* Trikot-Zusammenstellung: Teile werden relativ positioniert */}
-                    {/* Vorderteil / Rückteil - Zentral */}
-                    {sortedParts.filter(p => p.key === "vorderteil" || p.key === "rueckteil").map((part) => {
-                      const partZones = allZones.filter((z) => z.partId === part.id);
-                      return (
-                        <div
-                          key={part.id}
-                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
-                          style={{
-                            left: "20%",
-                            top: part.key === "vorderteil" ? "15%" : "15%",
-                            width: "60%",
-                            height: "65%",
-                            display: part.key === "rueckteil" ? "none" : "block",
-                          }}
-                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
-                        >
-                          <div className="relative w-full h-full">
-                            {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
-                            )}
-                            {part.imageUrl ? (
-                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
-                                <Shirt className="w-8 h-8 text-muted-foreground/20" />
-                              </div>
-                            )}
-                            {partZones.map((zone, zIdx) => (
-                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
-                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.5} interactive={false} />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Ärmel Links */}
-                    {sortedParts.filter(p => p.key === "aermel_links").map((part) => {
-                      const partZones = allZones.filter((z) => z.partId === part.id);
-                      return (
-                        <div
-                          key={part.id}
-                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
-                          style={{ left: "0%", top: "15%", width: "22%", height: "40%" }}
-                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
-                        >
-                          <div className="relative w-full h-full">
-                            {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
-                            )}
-                            {part.imageUrl ? (
-                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
-                                <span className="text-[8px] text-muted-foreground">ÄL</span>
-                              </div>
-                            )}
-                            {partZones.map((zone, zIdx) => (
-                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
-                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.3} interactive={false} />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Ärmel Rechts */}
-                    {sortedParts.filter(p => p.key === "aermel_rechts").map((part) => {
-                      const partZones = allZones.filter((z) => z.partId === part.id);
-                      return (
-                        <div
-                          key={part.id}
-                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
-                          style={{ right: "0%", top: "15%", width: "22%", height: "40%" }}
-                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
-                        >
-                          <div className="relative w-full h-full">
-                            {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
-                            )}
-                            {part.imageUrl ? (
-                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
-                                <span className="text-[8px] text-muted-foreground">ÄR</span>
-                              </div>
-                            )}
-                            {partZones.map((zone, zIdx) => (
-                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
-                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.3} interactive={false} />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Kragen */}
-                    {sortedParts.filter(p => p.key === "kragen").map((part) => {
-                      const partZones = allZones.filter((z) => z.partId === part.id);
-                      return (
-                        <div
-                          key={part.id}
-                          className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
-                          style={{ left: "30%", top: "5%", width: "40%", height: "12%" }}
-                          onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
-                        >
-                          <div className="relative w-full h-full">
-                            {isSublimation && partColors[part.id] && (
-                              <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
-                            )}
-                            {part.imageUrl ? (
-                              <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
-                                <span className="text-[8px] text-muted-foreground">Kragen</span>
-                              </div>
-                            )}
-                            {partZones.map((zone, zIdx) => (
-                              <div key={zone.id} className="absolute" style={{ left: `${zone.posX}%`, top: `${zone.posY}%`, width: `${zone.width}%`, height: `${zone.height}%`, zIndex: 2 }}>
-                                <ZoneOverlay zone={zone} idx={zIdx} scale={0.25} interactive={false} />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Bündchen Links */}
-                    {sortedParts.filter(p => p.key === "buendchen_links").map((part) => (
-                      <div
-                        key={part.id}
-                        className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
-                        style={{ left: "0%", top: "52%", width: "18%", height: "10%" }}
-                        onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
-                      >
-                        <div className="relative w-full h-full">
-                          {isSublimation && partColors[part.id] && (
-                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
-                          )}
-                          {part.imageUrl ? (
-                            <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
-                              <span className="text-[8px] text-muted-foreground">BL</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Bündchen Rechts */}
-                    {sortedParts.filter(p => p.key === "buendchen_rechts").map((part) => (
-                      <div
-                        key={part.id}
-                        className="absolute cursor-pointer hover:ring-2 hover:ring-primary/30 rounded transition-all"
-                        style={{ right: "0%", top: "52%", width: "18%", height: "10%" }}
-                        onClick={() => { setActivePartId(part.id); setViewMode("parts"); }}
-                      >
-                        <div className="relative w-full h-full">
-                          {isSublimation && partColors[part.id] && (
-                            <div className="absolute inset-0 rounded" style={{ backgroundColor: partColors[part.id], zIndex: 0 }} />
-                          )}
-                          {part.imageUrl ? (
-                            <img src={processedPartImages[part.id] || part.imageUrl} alt={part.label} className="w-full h-full object-contain" style={{ position: "relative", zIndex: 1, ...(isSublimation && partColors[part.id] ? { mixBlendMode: "multiply" as const } : {}) }} draggable={false} />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded">
-                              <span className="text-[8px] text-muted-foreground">BR</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Labels */}
-                    <div className="absolute bottom-2 left-0 right-0 text-center">
-                      <span className="text-[10px] sm:text-xs text-muted-foreground">
-                        Klicke auf ein Teil, um es zu bearbeiten
-                      </span>
-                    </div>
-                  </div>
+                  <AiMockupView
+                    productName={productData?.name || "Trikot"}
+                    sortedParts={sortedParts}
+                    processedPartImages={processedPartImages}
+                    partColors={partColors}
+                    isSublimation={isSublimation}
+                    isDtf={isDtf}
+                    dtfBaseColor={dtfBaseColor || ""}
+                  />
                 </div>
               </Card>
             )}

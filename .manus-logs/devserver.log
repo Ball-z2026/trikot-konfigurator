@@ -4645,3 +4645,143 @@
 [2026-05-01T12:48:25.536Z] [Auth] Missing session cookie
 [2026-05-01T12:48:25.845Z] [Auth] Missing session cookie
 [2026-05-01T12:48:25.850Z] [Auth] Missing session cookie
+[2026-05-01T13:18:17.734Z] 9:18:17 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:18:24.535Z] 9:18:24 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:18:31.472Z] 9:18:31 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:19:05.000Z] Dev server process group stopped
+[2026-05-01T13:19:05.067Z] Dev server exited with code -15
+[2026-05-01T13:19:08.036Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:19:09.883Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:19:10.300Z] 9:19:10 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+[2026-05-01T13:19:10.327Z] Server running on http://localhost:3000/
+[2026-05-01T13:19:55.102Z] 9:19:55 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:20:20.726Z] 9:20:20 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:20:28.281Z] 9:20:28 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:20:39.383Z] 9:20:39 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:21:00.763Z] 9:21:00 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:21:47.738Z] 9:21:47 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T13:21:48.205Z] c
+[2026-05-01T13:21:48.206Z] node:internal/modules/run_main:122
+[2026-05-01T13:21:48.207Z] triggerUncaughtException(
+[2026-05-01T13:21:48.207Z] ^
+[2026-05-01T13:21:48.207Z] Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'server' imported from /home/ubuntu/trikot-konfigurator/server/_core/imageGeneration.ts
+[2026-05-01T13:21:48.208Z] at packageResolve (node:internal/modules/esm/resolve:857:9)
+[2026-05-01T13:21:48.208Z] at moduleResolve (node:internal/modules/esm/resolve:926:18)
+[2026-05-01T13:21:48.209Z] at defaultResolve (node:internal/modules/esm/resolve:1056:11)
+[2026-05-01T13:21:48.209Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-05-01T13:21:48.209Z] at resolveBase (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777641707895:2:3744)
+[2026-05-01T13:21:48.210Z] at resolveDirectory (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777641707895:2:4243)
+[2026-05-01T13:21:48.210Z] at resolveTsPaths (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777641707895:2:4984)
+[2026-05-01T13:21:48.211Z] at resolve (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1777641707895:2:5361)
+[2026-05-01T13:21:48.211Z] at nextResolve (node:internal/modules/esm/hooks:748:28)
+[2026-05-01T13:21:48.211Z] at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+[2026-05-01T13:21:48.212Z] code: 'ERR_MODULE_NOT_FOUND'
+[2026-05-01T13:21:48.212Z] }
+[2026-05-01T13:21:48.212Z] 
+[2026-05-01T13:21:48.213Z] Node.js v22.13.0
+[2026-05-01T13:22:56.952Z] 9:22:56 AM [tsx] change in ./server/_core/imageGeneration.ts Rerunning...
+[2026-05-01T13:22:58.645Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:22:59.062Z] Server running on http://localhost:3000/
+[2026-05-01T13:23:04.763Z] Dev server process group stopped
+[2026-05-01T13:23:04.827Z] Dev server exited with code -15
+[2026-05-01T13:23:07.778Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:23:09.647Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:23:10.089Z] Server running on http://localhost:3000/
+[2026-05-01T13:27:43.959Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.035Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.044Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.057Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.067Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.079Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.088Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.097Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.288Z] [Auth] Missing session cookie
+[2026-05-01T13:27:44.294Z] [Auth] Missing session cookie
+[2026-05-01T13:28:28.118Z] Dev server process group stopped
+[2026-05-01T13:28:28.183Z] Dev server exited with code -15
+[2026-05-01T13:28:31.133Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:28:32.963Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:28:33.342Z] Server running on http://localhost:3000/
+[2026-05-01T13:28:56.417Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.492Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.507Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.515Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.522Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.531Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.537Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.544Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.707Z] [Auth] Missing session cookie
+[2026-05-01T13:28:56.712Z] [Auth] Missing session cookie
+[2026-05-01T13:29:58.215Z] 9:29:58 AM [vite] (client) ✨ new dependencies optimized: @react-three/fiber, @react-three/drei, three
+[2026-05-01T13:29:58.216Z] 9:29:58 AM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-05-01T13:36:43.812Z] 9:36:43 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:37:01.463Z] Dev server process group stopped
+[2026-05-01T13:37:01.551Z] Dev server exited with code -15
+[2026-05-01T13:37:04.494Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:37:06.409Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:37:06.843Z] Server running on http://localhost:3000/
+[2026-05-01T13:39:05.985Z] 9:39:05 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T13:39:07.538Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:39:07.932Z] Server running on http://localhost:3000/
+[2026-05-01T13:39:25.924Z] Dev server process group stopped
+[2026-05-01T13:39:26.031Z] Dev server exited with code -15
+[2026-05-01T13:39:28.957Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:39:30.676Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:39:31.065Z] Server running on http://localhost:3000/
+[2026-05-01T13:41:13.969Z] 9:41:13 AM [tsx] change in ./server/_core/imageGeneration.ts Restarting...
+[2026-05-01T13:41:15.485Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:41:15.852Z] Server running on http://localhost:3000/
+[2026-05-01T13:41:30.768Z] 9:41:30 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T13:41:32.338Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:41:32.729Z] Server running on http://localhost:3000/
+[2026-05-01T13:41:37.178Z] Dev server process group stopped
+[2026-05-01T13:41:37.259Z] Dev server exited with code -15
+[2026-05-01T13:41:40.214Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:41:42.034Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:41:42.419Z] Server running on http://localhost:3000/
+[2026-05-01T13:43:18.032Z] 9:43:18 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T13:43:19.766Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:43:20.169Z] Server running on http://localhost:3000/
+[2026-05-01T13:44:01.260Z] 9:44:01 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T13:44:03.015Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:44:03.396Z] Server running on http://localhost:3000/
+[2026-05-01T13:44:09.398Z] Dev server process group stopped
+[2026-05-01T13:44:09.491Z] Dev server exited with code -15
+[2026-05-01T13:44:12.434Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:44:14.354Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:44:14.772Z] Server running on http://localhost:3000/
+[2026-05-01T13:46:01.256Z] 9:46:01 AM [vite] (client) hmr update /src/index.css, /src/components/AiMockupView.tsx
+[2026-05-01T13:46:26.518Z] 9:46:26 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T13:46:28.097Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:46:28.472Z] Server running on http://localhost:3000/
+[2026-05-01T13:46:49.836Z] 9:46:49 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:46:57.562Z] 9:46:57 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:47:05.451Z] 9:47:05 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-01T13:47:20.235Z] 9:47:20 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-01T13:47:21.842Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:47:22.220Z] Server running on http://localhost:3000/
+[2026-05-01T13:47:27.672Z] Dev server process group stopped
+[2026-05-01T13:47:27.763Z] Dev server exited with code -15
+[2026-05-01T13:47:30.704Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-01T13:47:32.453Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-01T13:47:32.816Z] Server running on http://localhost:3000/
+[2026-05-01T13:52:22.059Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.113Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.123Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.143Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.156Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.176Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.190Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.206Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.449Z] [Auth] Missing session cookie
+[2026-05-01T13:52:22.452Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.450Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.471Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.478Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.490Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.495Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.500Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.506Z] [Auth] Missing session cookie
+[2026-05-01T13:52:27.511Z] [Auth] Missing session cookie
+[2026-05-01T13:52:28.005Z] [Auth] Missing session cookie
+[2026-05-01T13:52:28.023Z] [Auth] Missing session cookie

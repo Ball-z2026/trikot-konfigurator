@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { generateImage } from "./_core/imageGeneration";
 import { z } from "zod";
 import {
   listProducts,
@@ -1793,7 +1794,31 @@ export const appRouter = router({
         await deleteSponsorTemplate(input.id);
         return { success: true };
       }),
+   }),
+
+  /** Mockup-Generierung */
+  mockup: router({
+    /** KI-Mockup generieren */
+    generateAi: protectedProcedure
+      .input(z.object({
+        productName: z.string(),
+        productType: z.string().optional(),
+        colorDescription: z.string().optional().describe("Farbbeschreibung der Teile, z.B. 'Vorderteil: #ff0000, Rückteil: #0000ff'"),
+      }))
+      .mutation(async ({ input }) => {
+        const colorInfo = input.colorDescription
+          ? ` Die Farben der einzelnen Teile sind: ${input.colorDescription}.`
+          : "";
+        const typeInfo = input.productType
+          ? ` Druckverfahren: ${input.productType}.`
+          : "";
+
+        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund.${colorInfo}${typeInfo} Zeige das komplette Textil von vorne, professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
+
+        const result = await generateImage({ prompt });
+
+        return { url: result.url };
+      }),
   }),
 });
-
 export type AppRouter = typeof appRouter;
