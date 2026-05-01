@@ -43,6 +43,7 @@ import {
   X,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
+import { storageUrl } from "@/lib/utils";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
@@ -231,7 +232,7 @@ export default function AdminProductEditor() {
   }, [productData]);
 
   const activePart = parts.find((p) => p.id === activePartId);
-  const currentImage = hasParts ? activePart?.imageUrl || null : null;
+  const currentImage = storageUrl(hasParts ? activePart?.imageUrl || null : null) || null;
   const currentZones = hasParts
     ? localZones.filter((z) => z.partId === activePartId)
     : localZones;
@@ -470,7 +471,7 @@ export default function AdminProductEditor() {
                         >
                           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-muted/30 rounded overflow-hidden">
                             {part.imageUrl ? (
-                              <img src={part.imageUrl} alt={part.label} className="w-full h-full object-contain" />
+                              <img src={storageUrl(part.imageUrl)} alt={part.label} className="w-full h-full object-contain" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center"><Image className="w-5 h-5 text-muted-foreground/30" /></div>
                             )}

@@ -58,6 +58,7 @@ import { PaymentSection } from "./PaymentSection";
 import { OrderCommentThread } from "./OrderCommentThread";
 import { useMemo } from "react";
 import { KONFEKTIONSGROESSEN } from "@shared/jerseyRules";
+import { storageUrl } from "@/lib/utils";
 
 // ─── Logo Section für selbstregistrierte Trainer ─────────────────────────────
 function TrainerLogoSection({ orgId }: { orgId: number }) {
@@ -217,7 +218,7 @@ function TrainerLogoSection({ orgId }: { orgId: number }) {
           {logos.map((logo) => (
             <Card key={logo.id} className="overflow-hidden">
               <div className="aspect-square bg-muted/30 flex items-center justify-center p-4 relative">
-                <img src={logo.imageUrl} alt={logo.name} className="max-w-full max-h-full object-contain" />
+                <img src={storageUrl(logo.imageUrl)} alt={logo.name} className="max-w-full max-h-full object-contain" />
                 {logo.isDefault && (
                   <Badge className="absolute top-2 right-2 gap-1">
                     <Star className="w-3 h-3" />
@@ -282,7 +283,7 @@ function InvitedTrainerLogoDisplay({ orgId }: { orgId: number }) {
       {defaultLogo ? (
         <Card className="overflow-hidden max-w-xs">
           <div className="aspect-square bg-muted/30 flex items-center justify-center p-4 relative">
-            <img src={defaultLogo.imageUrl} alt={defaultLogo.name} className="max-w-full max-h-full object-contain" />
+            <img src={storageUrl(defaultLogo.imageUrl)} alt={defaultLogo.name} className="max-w-full max-h-full object-contain" />
             <Badge className="absolute top-2 right-2 gap-1">
               <Star className="w-3 h-3" />
               Vereinslogo

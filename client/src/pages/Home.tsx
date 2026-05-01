@@ -5,6 +5,7 @@ import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Shirt, Shield, Settings, ArrowRight, LogIn, LogOut, Menu, Building2, Users } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
+import { storageUrl } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
@@ -198,7 +199,7 @@ export default function Home() {
                       if (imageUrl) {
                         return (
                           <img
-                            src={imageUrl}
+                            src={storageUrl(imageUrl)}
                             alt={product.name}
                             className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                           />

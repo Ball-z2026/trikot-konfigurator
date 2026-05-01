@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OrderCommentThread } from "./OrderCommentThread";
+import { storageUrl } from "@/lib/utils";
 
 /** Vordefinierte Google-Fonts-Auswahl */
 const PRESET_FONTS = [
@@ -464,7 +465,7 @@ function LogoSection({
             <Card key={logo.id} className="overflow-hidden">
               <div className="aspect-square bg-muted/30 flex items-center justify-center p-4 relative">
                 <img
-                  src={logo.imageUrl}
+                  src={storageUrl(logo.imageUrl)}
                   alt={logo.name}
                   className="max-w-full max-h-full object-contain"
                 />

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Download, RefreshCw } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { storageUrl } from "@/lib/utils";
 
 interface AiMockupViewProps {
   productName: string;
@@ -149,7 +150,7 @@ export function AiMockupView({
   const handleDownload = () => {
     if (!mockupUrl) return;
     const a = document.createElement("a");
-    a.href = mockupUrl;
+    a.href = storageUrl(mockupUrl) || mockupUrl;
     a.download = `${productName.replace(/\s+/g, "_")}_mockup.png`;
     a.click();
   };
@@ -257,7 +258,7 @@ export function AiMockupView({
           <div className="relative w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
             <img
               ref={imgRef}
-              src={mockupUrl}
+              src={storageUrl(mockupUrl) || mockupUrl}
               alt="KI-generiertes Mockup"
               className="w-full h-auto"
             />

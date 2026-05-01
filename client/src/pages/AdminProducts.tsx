@@ -32,6 +32,7 @@ import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
 import { TEXTIL_TEMPLATES, SPORT_TYPES, type SportType } from "@shared/templates";
+import { storageUrl } from "@/lib/utils";
 
 type CreateMode = "choose" | "sport" | "template" | "blank";
 
@@ -326,7 +327,7 @@ export default function AdminProducts() {
                       >
                         <div className="aspect-[4/3] bg-muted/30 overflow-hidden p-4 relative">
                           <img
-                            src={template.previewUrl}
+                            src={storageUrl(template.previewUrl)}
                             alt={template.name}
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                           />
@@ -375,7 +376,7 @@ export default function AdminProducts() {
 
                   <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
                     <img
-                      src={selectedTemplate.previewUrl}
+                      src={storageUrl(selectedTemplate.previewUrl)}
                       alt={selectedTemplate.name}
                       className="w-20 h-20 object-contain"
                     />
@@ -498,7 +499,7 @@ export default function AdminProducts() {
                 <div className="aspect-[4/3] bg-muted/20 overflow-hidden relative">
                   {product.imageUrl ? (
                     <img
-                      src={product.imageUrl}
+                      src={storageUrl(product.imageUrl)}
                       alt={product.name}
                       className="w-full h-full object-contain p-4"
                     />

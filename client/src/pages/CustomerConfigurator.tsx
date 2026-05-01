@@ -51,6 +51,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { AlertTriangle, Info } from "lucide-react";
 import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
+import { storageUrl } from "@/lib/utils";
 
 const AiMockupView = lazy(() => import("@/components/AiMockupView"));
 
@@ -695,7 +696,7 @@ export default function CustomerConfigurator() {
     : DEFAULT_JERSEY_COLOR;
   // CSS-based coloring: no Canvas/CORS needed. The image is shown directly and
   // colored via a CSS overlay with mix-blend-mode.
-  const currentImage = rawCurrentImage;
+  const currentImage = storageUrl(rawCurrentImage) || null;
   // activeColor is used as CSS overlay color in the rendering section below
 
   // Part colors for CSS overlay (no Canvas processing needed)
@@ -1187,7 +1188,7 @@ export default function CustomerConfigurator() {
       >
         {content?.imageDataUrl && (
           <img
-            src={content.imageDataUrl}
+            src={storageUrl(content.imageDataUrl) || content.imageDataUrl}
             alt=""
             className="w-full h-full object-contain"
             draggable={false}
@@ -1392,7 +1393,7 @@ export default function CustomerConfigurator() {
                             {part.imageUrl ? (
                               <>
                                 <img
-                                  src={part.imageUrl}
+                                  src={storageUrl(part.imageUrl)}
                                   alt={part.label}
                                   className="w-full h-full object-contain"
                                 />
@@ -1503,7 +1504,7 @@ export default function CustomerConfigurator() {
                             {part.imageUrl ? (
                               <>
                                 <img
-                                  src={part.imageUrl}
+                                  src={storageUrl(part.imageUrl)}
                                   alt={part.label}
                                   className="w-full h-full object-contain p-1"
                                   draggable={false}
@@ -2134,7 +2135,7 @@ export default function CustomerConfigurator() {
                                 <div className={`flex items-center gap-3 rounded-lg p-2.5 ${isZoneLocked(zone) ? "bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800" : "bg-accent/40 border border-border"}`}>
                                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-white dark:bg-gray-900 border border-border shrink-0 flex items-center justify-center p-1">
                                     <img
-                                      src={content.imageDataUrl}
+                                      src={storageUrl(content.imageDataUrl) || content.imageDataUrl}
                                       alt="Vereinswappen"
                                       className="w-full h-full object-contain"
                                     />
@@ -2437,7 +2438,7 @@ export default function CustomerConfigurator() {
                                     <GripVertical className="absolute top-0.5 right-0.5 w-3 h-3 text-muted-foreground/40 group-hover:text-muted-foreground/70" />
                                     {tpl.logoUrl ? (
                                       <img
-                                        src={tpl.logoUrl}
+                                        src={storageUrl(tpl.logoUrl)}
                                         alt={tpl.name}
                                         className="w-10 h-10 object-contain rounded"
                                         draggable={false}
@@ -2635,7 +2636,7 @@ export default function CustomerConfigurator() {
                   {/* Thumbnail */}
                   {design.thumbnailUrl ? (
                     <div className="w-16 h-16 rounded-md overflow-hidden bg-muted shrink-0 border">
-                      <img src={design.thumbnailUrl} alt={design.name} className="w-full h-full object-cover" />
+                      <img src={storageUrl(design.thumbnailUrl)} alt={design.name} className="w-full h-full object-cover" />
                     </div>
                   ) : (
                     <div className="w-16 h-16 rounded-md bg-muted shrink-0 border flex items-center justify-center">

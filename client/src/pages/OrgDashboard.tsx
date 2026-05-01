@@ -18,6 +18,7 @@ import {
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
+import { storageUrl } from "@/lib/utils";
 
 // ─── Org List (when no org selected) ─────────────────────────────────────────
 function OrgList() {
@@ -567,7 +568,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                 {logos.map((logo) => (
                   <Card key={logo.id} className="overflow-hidden">
                     <div className="aspect-square bg-muted/30 flex items-center justify-center p-4 relative">
-                      <img src={logo.imageUrl} alt={logo.name} className="max-w-full max-h-full object-contain" />
+                      <img src={storageUrl(logo.imageUrl)} alt={logo.name} className="max-w-full max-h-full object-contain" />
                       {logo.isDefault && (
                         <Badge className="absolute top-2 right-2 gap-1">
                           <Star className="w-3 h-3" />Standard
@@ -703,7 +704,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                 {sponsorTemplates.map((tpl) => (
                   <Card key={tpl.id} className="overflow-hidden">
                     <div className="aspect-video bg-muted/30 flex items-center justify-center p-4 relative">
-                      <img src={tpl.logoUrl} alt={tpl.name} className="max-w-full max-h-full object-contain" />
+                      <img src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
                       {tpl.category && (
                         <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
                           {{hauptsponsor:"Hauptsponsor","co-sponsor":"Co-Sponsor",ausruester:"Ausrüster",sonstige:"Sonstige"}[tpl.category] || tpl.category}

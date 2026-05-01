@@ -600,7 +600,7 @@
 - [x] Responsive Layout: Canvas sticky auf Desktop, Bild-basierte Höhe statt fester Aspect-Ratio
 
 ## 3D-Mockup (nach Abschluss aller anderen Features)
-- [ ] Nach Freigabe eines Designs: 3D-Mockup aus den konfigurierten Dateien generieren (zurückgestellt – abhängig von API-Entscheidung, siehe docs/3d-mockup-analyse.md)
+- [x] ~~3D-Mockup aus konfigurierten Dateien~~ (bewusst entfernt – User-Entscheidung: nur KI-Mockup als Vorschau)
 - [x] Optionen evaluiert: Three.js, Dynamic Mockups API, VirtualThreads, KI-Bildgenerierung (siehe docs/3d-mockup-analyse.md)
 
 ## Drag-and-Drop für Sponsor-Vorlagen
@@ -733,7 +733,7 @@
 - [x] Three.js als Dependency installieren (@react-three/fiber, @react-three/drei, three)
 - [x] 3D-Trikot-Geometrie erstellen (einfache T-Shirt-Form mit PlaneGeometry)
 - [x] Interaktive 3D-Vorschau im Konfigurator (OrbitControls: Rotation, Zoom)
-- [ ] Texturen aus dem Konfigurator auf das 3D-Modell projizieren (zukünftige Verbesserung)
+- [x] ~~Texturen auf 3D-Modell projizieren~~ (bewusst entfernt – 3D-Vorschau komplett entfernt)
 
 ### Option 2: KI-Bildgenerierung Mockup
 - [x] Backend-Prozedur: mockup.generateAi (prompt-basiert, nutzt generateImage)
@@ -743,8 +743,8 @@
 
 ### Option 3: Dynamic Mockups API (Placeholder)
 - [x] Frontend: Foto-Mockup Button als Placeholder (ausgegraut, "Demnächst verfügbar")
-- [ ] API-Integration vorbereiten (Endpunkt, Auth, Request-Format) – bei Bedarf
-- [ ] Backend-Prozedur für API-Aufruf – bei Bedarf
+- [x] ~~Dynamic Mockups API~~ (bewusst zurückgestellt – bei Bedarf)
+- [x] ~~API-Backend-Prozedur~~ (bewusst zurückgestellt – bei Bedarf)
 
 ## KI-Mockup Ladeanimation verbessern
 - [x] Ansprechende Ladeanimation mit Fortschrittsanzeige und informativen Texten während der KI-Mockup-Generierung
@@ -771,3 +771,11 @@
 - [x] Textil nicht erkennbar – CSS-basierte Einfärbung (mix-blend-mode) statt Canvas-Pixel-Manipulation, kein CORS-Problem mehr
 - [x] KI-Mockup – funktioniert wenn Trikot-Bild sichtbar ist (Canvas-Screenshot als Referenz)
 - [x] Gespeicherte Sponsoren – Bedingung von purpose=="custom" auf purpose=="custom"||"logo" erweitert, Drag-and-Drop ebenfalls
+
+## Bug: Bilder laden nicht auf deployed Version (manus.space)
+- [x] SVG-Trikot-Silhouetten werden nicht angezeigt (grauer Kasten statt Trikot-Form)
+- [x] Vereinswappen/Logo wird nicht geladen ("?" Platzhalter)
+- [x] Ursache: /manus-storage/ Redirect-Problem auf deployed Version
+- [x] Fix: Neue /api/storage-proxy/ Route erstellt die CDN-Layer umgeht + storageUrl() Utility im Frontend
+- [x] Alle Frontend-Dateien aktualisiert: CustomerConfigurator, Home, AdminProducts, AdminProductEditor, OrgDashboard, TrainerDashboard, DeptDashboard, AiMockupView
+- [x] 168 Tests bestanden (11 Testdateien, inkl. storage-proxy.test.ts)
