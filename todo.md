@@ -712,3 +712,9 @@
 ### CMYK-Checkpoint gespeichert
 - [x] Checkpoint für CMYK-Farbauswahl gespeichert (5d0a96dc)
 - [x] Tests: 155 Tests bestanden (10 Testdateien, inkl. 15 freeZone-Tests)
+
+## Neues Trikot-Template mit SVG-Silhouetten (nur DTF)
+- [x] SVG-Silhouetten für Trikot erstellt (Vorderteil, Rückteil, Ärmel Links, Ärmel Rechts)
+- [x] SVGs als statische Assets hochgeladen
+- [x] DTF-Templates in shared/templates.ts registriert (4 Sportarten: Fußball, Handball, Volleyball, Basketball)
+- [x] Tests: 155 Tests bestanden (10 Testdateien)
