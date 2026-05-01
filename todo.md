@@ -601,14 +601,14 @@
 
 ## 3D-Mockup (nach Abschluss aller anderen Features)
 - [ ] Nach Freigabe eines Designs: 3D-Mockup aus den konfigurierten Dateien generieren
-- [ ] Optionen evaluieren: Three.js im Browser, KI-Bildgenerierung, oder externe API (Threadcam etc.)
+- [x] Optionen evaluiert: Three.js, Dynamic Mockups API, VirtualThreads, KI-Bildgenerierung (siehe docs/3d-mockup-analyse.md)
 
 ## Drag-and-Drop für Sponsor-Vorlagen
 - [x] Sponsor-Vorlagen als draggable Elemente (HTML5 DnD API) in der Seitenleiste (mit GripVertical-Icon + cursor-grab)
 - [x] Zonen im Canvas als Drop-Targets mit visueller Hervorhebung (ring-2 ring-primary bei dragOver)
 - [x] Drop-Handler: Sponsor-Vorlage wird in die Zone eingesetzt (Text oder Logo)
 - [x] Canvas-Fallback: Drop außerhalb einer Zone zeigt Info-Toast
-- [ ] Touch-Support für Mobile (onTouchStart/Move/End als Fallback) - bewusst zurückgestellt, Mobile nutzt Klick-Auswahl
+- [x] Touch-Support für Mobile implementiert (touchstart/touchmove/touchend/touchcancel) in CustomerConfigurator + AdminProductEditor
 - [x] Browser-Verifizierung: Sponsor-Vorlagen-Buttons mit Tooltip "Auf eine Zone ziehen oder klicken" sichtbar, DnD-Handler implementiert
 
 ## DPI-Prüfung bei Bild-Uploads (min. 300 DPI)

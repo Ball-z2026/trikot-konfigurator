@@ -396,17 +396,28 @@ export default function CustomerConfigurator() {
   });
 
   // ─── Free Zone: Drag & Resize Handlers ───
-  const getRelativePosition = useCallback((e: React.MouseEvent | MouseEvent) => {
+  const getRelativePosition = useCallback((e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) => {
     if (!canvasRef.current) return { x: 0, y: 0 };
     const rect = canvasRef.current.getBoundingClientRect();
+    // Touch-Events: Verwende den ersten Touch-Punkt
+    let clientX: number, clientY: number;
+    if ("touches" in e) {
+      const touch = e.touches[0] || (e as TouchEvent).changedTouches?.[0];
+      if (!touch) return { x: 0, y: 0 };
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
     return {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
+      x: ((clientX - rect.left) / rect.width) * 100,
+      y: ((clientY - rect.top) / rect.height) * 100,
     };
   }, []);
 
-  const handleFreeZoneMouseDown = useCallback(
-    (e: React.MouseEvent, zoneId: number, isResize = false) => {
+  const handleFreeZonePointerDown = useCallback(
+    (e: React.MouseEvent | React.TouchEvent, zoneId: number, isResize = false) => {
       if (!isFreeZoneMode) return;
       e.preventDefault();
       e.stopPropagation();
@@ -423,8 +434,10 @@ export default function CustomerConfigurator() {
 
   useEffect(() => {
     if (!isFreeZoneMode) return;
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
       if (!dragStart) return;
+      // Verhindere Scrolling bei Touch-Drag
+      if ("touches" in e) e.preventDefault();
       const pos = getRelativePosition(e);
       const dx = pos.x - dragStart.x;
       const dy = pos.y - dragStart.y;
@@ -447,7 +460,7 @@ export default function CustomerConfigurator() {
         );
       }
     };
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       if (draggingZone !== null || resizingZone !== null) {
         const changedZones = localZones
           .filter((z) => {
@@ -469,11 +482,17 @@ export default function CustomerConfigurator() {
       setDragStart(null);
     };
     if (draggingZone !== null || resizingZone !== null) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("mousemove", handlePointerMove);
+      window.addEventListener("mouseup", handlePointerUp);
+      window.addEventListener("touchmove", handlePointerMove, { passive: false });
+      window.addEventListener("touchend", handlePointerUp);
+      window.addEventListener("touchcancel", handlePointerUp);
       return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
+        window.removeEventListener("mousemove", handlePointerMove);
+        window.removeEventListener("mouseup", handlePointerUp);
+        window.removeEventListener("touchmove", handlePointerMove);
+        window.removeEventListener("touchend", handlePointerUp);
+        window.removeEventListener("touchcancel", handlePointerUp);
       };
     }
   }, [isFreeZoneMode, draggingZone, resizingZone, dragStart, localZones, allZones, bulkUpdatePositions, getRelativePosition]);
@@ -1300,7 +1319,8 @@ export default function CustomerConfigurator() {
           cursor: isFreeZoneDraggable ? (isBeingDragged ? "grabbing" : "grab") : interactive ? "pointer" : "default",
           overflow: "hidden",
         }}
-        onMouseDown={isFreeZoneDraggable ? (e) => handleFreeZoneMouseDown(e, zone.id) : undefined}
+        onMouseDown={isFreeZoneDraggable ? (e) => handleFreeZonePointerDown(e, zone.id) : undefined}
+        onTouchStart={isFreeZoneDraggable ? (e) => handleFreeZonePointerDown(e, zone.id) : undefined}
         onClick={
           interactive
             ? (e) => {
@@ -1344,7 +1364,8 @@ export default function CustomerConfigurator() {
           <div
             className="absolute bottom-0 right-0 w-3 h-3 bg-primary cursor-se-resize"
             style={{ zIndex: 30 }}
-            onMouseDown={(e) => handleFreeZoneMouseDown(e, zone.id, true)}
+            onMouseDown={(e) => handleFreeZonePointerDown(e, zone.id, true)}
+            onTouchStart={(e) => handleFreeZonePointerDown(e, zone.id, true)}
           />
         )}
         {/* freeZoneMode: Delete-Button (oben rechts) */}

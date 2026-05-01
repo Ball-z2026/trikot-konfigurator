@@ -284,18 +284,28 @@ export default function AdminProductEditor() {
     [updatePartMut]
   );
 
-  // ─── Zone Drag & Drop ──────────────────────────────────────────────────
-  const getRelativePosition = useCallback((e: React.MouseEvent | MouseEvent) => {
+  // ─── Zone Drag & Drop (Mouse + Touch) ───────────────────────────────────────────────────────
+  const getRelativePosition = useCallback((e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) => {
     if (!canvasRef.current) return { x: 0, y: 0 };
     const rect = canvasRef.current.getBoundingClientRect();
+    let clientX: number, clientY: number;
+    if ("touches" in e) {
+      const touch = e.touches[0] || (e as TouchEvent).changedTouches?.[0];
+      if (!touch) return { x: 0, y: 0 };
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
     return {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
+      x: ((clientX - rect.left) / rect.width) * 100,
+      y: ((clientY - rect.top) / rect.height) * 100,
     };
   }, []);
 
-  const handleZoneMouseDown = useCallback(
-    (e: React.MouseEvent, zoneId: number, isResize = false) => {
+  const handleZonePointerDown = useCallback(
+    (e: React.MouseEvent | React.TouchEvent, zoneId: number, isResize = false) => {
       e.preventDefault();
       e.stopPropagation();
       const zone = localZones.find((z) => z.id === zoneId);
@@ -310,8 +320,9 @@ export default function AdminProductEditor() {
   );
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
       if (!dragStart) return;
+      if ("touches" in e) e.preventDefault();
       const pos = getRelativePosition(e);
       const dx = pos.x - dragStart.x;
       const dy = pos.y - dragStart.y;
@@ -335,7 +346,7 @@ export default function AdminProductEditor() {
       }
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       if (draggingZone !== null || resizingZone !== null) {
         const changedZones = localZones
           .filter((z) => {
@@ -358,11 +369,17 @@ export default function AdminProductEditor() {
     };
 
     if (draggingZone !== null || resizingZone !== null) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("mousemove", handlePointerMove);
+      window.addEventListener("mouseup", handlePointerUp);
+      window.addEventListener("touchmove", handlePointerMove, { passive: false });
+      window.addEventListener("touchend", handlePointerUp);
+      window.addEventListener("touchcancel", handlePointerUp);
       return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
+        window.removeEventListener("mousemove", handlePointerMove);
+        window.removeEventListener("mouseup", handlePointerUp);
+        window.removeEventListener("touchmove", handlePointerMove);
+        window.removeEventListener("touchend", handlePointerUp);
+        window.removeEventListener("touchcancel", handlePointerUp);
       };
     }
   }, [draggingZone, resizingZone, dragStart, localZones, productData, bulkUpdatePositions, getRelativePosition]);
@@ -533,7 +550,8 @@ export default function AdminProductEditor() {
                         transform: `rotate(${zone.rotation || 0}deg)`,
                         transformOrigin: "center center",
                       }}
-                      onMouseDown={(e) => handleZoneMouseDown(e, zone.id)}
+                      onMouseDown={(e) => handleZonePointerDown(e, zone.id)}
+                      onTouchStart={(e) => handleZonePointerDown(e, zone.id)}
                       onClick={(e) => { e.stopPropagation(); setSelectedZoneId(zone.id); }}
                     >
                       {/* Zone Label */}
@@ -568,7 +586,8 @@ export default function AdminProductEditor() {
                       </div>
 
                       {/* Resize Handle */}
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-sm cursor-se-resize" style={{ backgroundColor: zoneBorderColors[colorIdx] }} onMouseDown={(e) => handleZoneMouseDown(e, zone.id, true)} />
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-sm cursor-se-resize" style={{ backgroundColor: zoneBorderColors[colorIdx] }} onMouseDown={(e) => handleZonePointerDown(e, zone.id, true)}
+                        onTouchStart={(e) => handleZonePointerDown(e, zone.id, true)} />
 
                       {/* Rotation indicator */}
                       {(zone.rotation || 0) !== 0 && (
@@ -895,9 +914,10 @@ export default function AdminProductEditor() {
                                   <Select
                                     value={zone.purpose}
                                     onValueChange={(val: string) => {
+                                      const purpose = val as "custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName";
                                       const autoType = PURPOSE_CONFIG[val]?.autoType || zone.type;
-                                      updateLocalZone(zone.id, { purpose: val, type: autoType });
-                                      updateZoneMut.mutate({ id: zone.id, purpose: val, type: autoType });
+                                      updateLocalZone(zone.id, { purpose, type: autoType });
+                                      updateZoneMut.mutate({ id: zone.id, purpose, type: autoType });
                                     }}
                                   >
                                     <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
