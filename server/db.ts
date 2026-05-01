@@ -27,6 +27,8 @@ import {
   commentReadReceipts,
   InsertOrderComment,
   savedDesigns,
+  sponsorTemplates,
+  InsertSponsorTemplate,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1271,4 +1273,37 @@ export async function deleteSavedDesign(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.delete(savedDesigns).where(eq(savedDesigns.id, id));
+}
+
+// ─── Sponsor Template Helpers ──────────────────────────────────────────────
+export async function createSponsorTemplate(data: InsertSponsorTemplate) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(sponsorTemplates).values(data);
+  return result[0].insertId;
+}
+
+export async function listSponsorTemplates(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sponsorTemplates).where(eq(sponsorTemplates.orgId, orgId)).orderBy(asc(sponsorTemplates.sortOrder));
+}
+
+export async function getSponsorTemplate(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(sponsorTemplates).where(eq(sponsorTemplates.id, id)).limit(1);
+  return result[0];
+}
+
+export async function updateSponsorTemplate(id: number, data: Partial<InsertSponsorTemplate>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(sponsorTemplates).set(data).where(eq(sponsorTemplates.id, id));
+}
+
+export async function deleteSponsorTemplate(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(sponsorTemplates).where(eq(sponsorTemplates.id, id));
 }

@@ -94,6 +94,11 @@ import {
   markCommentsAsRead,
   getUnreadCommentCounts,
   getOtherUserReadReceipt,
+  createSponsorTemplate,
+  listSponsorTemplates,
+  getSponsorTemplate,
+  updateSponsorTemplate,
+  deleteSponsorTemplate,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1576,6 +1581,86 @@ export const appRouter = router({
           throw new Error("Design nicht gefunden oder keine Berechtigung");
         }
         await deleteSavedDesign(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ─── Sponsor Templates ─────────────────────────────────────────────────
+  sponsorTemplate: router({
+    /** Alle Sponsor-Vorlagen einer Organisation abrufen (für alle Mitglieder) */
+    list: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input }) => {
+        return listSponsorTemplates(input.orgId);
+      }),
+
+    /** Einzelne Sponsor-Vorlage abrufen */
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return getSponsorTemplate(input.id);
+      }),
+
+    /** Neue Sponsor-Vorlage erstellen (nur Owner) */
+    create: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        name: z.string().min(1).max(255),
+        logoBase64: z.string(),
+        mimeType: z.string(),
+        category: z.string().max(100).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Prüfe ob User Owner der Org ist
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership || membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Sponsor-Vorlagen erstellen" });
+        }
+        // Upload Logo zu S3
+        const buffer = Buffer.from(input.logoBase64, "base64");
+        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : ".jpg";
+        const key = `org-${input.orgId}/sponsor-templates/${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}`;
+        const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
+        // In DB speichern
+        const id = await createSponsorTemplate({
+          orgId: input.orgId,
+          name: input.name,
+          logoUrl: url,
+          storageKey,
+          category: input.category || null,
+          createdBy: ctx.user.id,
+        });
+        return { id, logoUrl: url };
+      }),
+
+    /** Sponsor-Vorlage aktualisieren (nur Owner) */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        orgId: z.number(),
+        name: z.string().min(1).max(255).optional(),
+        category: z.string().max(100).optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership || membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Sponsor-Vorlagen bearbeiten" });
+        }
+        const { id, orgId, ...data } = input;
+        await updateSponsorTemplate(id, data);
+        return { success: true };
+      }),
+
+    /** Sponsor-Vorlage löschen (nur Owner) */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number(), orgId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership || membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Sponsor-Vorlagen löschen" });
+        }
+        await deleteSponsorTemplate(input.id);
         return { success: true };
       }),
   }),

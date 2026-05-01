@@ -13,7 +13,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
-  ChevronRight, Loader2
+  ChevronRight, Loader2, Megaphone
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -218,6 +218,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
   const { data: departments } = trpc.department.listByOrg.useQuery({ orgId });
   const { data: members } = trpc.membership.listByOrg.useQuery({ orgId });
   const { data: logos } = trpc.orgLogo.list.useQuery({ orgId });
+  const { data: sponsorTemplates } = trpc.sponsorTemplate.list.useQuery({ orgId });
 
   const isOwner = org?.userRole === "owner";
   const isDeptLead = org?.userRole === "department_lead";
@@ -268,6 +269,49 @@ function OrgDetail({ orgId }: { orgId: number }) {
     onSuccess: () => { utils.membership.listByOrg.invalidate({ orgId }); toast.success("Mitglied entfernt"); },
     onError: (e) => toast.error(e.message),
   });
+
+  // ─── Sponsor Templates ───
+  const [showAddSponsor, setShowAddSponsor] = useState(false);
+  const [sponsorName, setSponsorName] = useState("");
+  const [sponsorCategory, setSponsorCategory] = useState("");
+  const [sponsorFile, setSponsorFile] = useState<File | null>(null);
+  const [sponsorPreview, setSponsorPreview] = useState<string | null>(null);
+  const sponsorFileRef = useRef<HTMLInputElement>(null);
+
+  const createSponsor = trpc.sponsorTemplate.create.useMutation({
+    onSuccess: () => { utils.sponsorTemplate.list.invalidate({ orgId }); setShowAddSponsor(false); setSponsorName(""); setSponsorCategory(""); setSponsorFile(null); setSponsorPreview(null); toast.success("Sponsor-Vorlage erstellt"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteSponsorTpl = trpc.sponsorTemplate.delete.useMutation({
+    onSuccess: () => { utils.sponsorTemplate.list.invalidate({ orgId }); toast.success("Sponsor-Vorlage gelöscht"); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const handleSponsorFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Datei zu groß (max. 5 MB)"); return; }
+    setSponsorFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setSponsorPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleUploadSponsor = useCallback(async () => {
+    if (!sponsorFile || !sponsorName.trim()) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      createSponsor.mutate({
+        orgId,
+        name: sponsorName,
+        logoBase64: base64,
+        mimeType: sponsorFile.type,
+        category: sponsorCategory || undefined,
+      });
+    };
+    reader.readAsDataURL(sponsorFile);
+  }, [sponsorFile, sponsorName, sponsorCategory, orgId, createSponsor]);
 
   // ─── Logo Upload ───
   const [showUploadLogo, setShowUploadLogo] = useState(false);
@@ -383,6 +427,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
         <Tabs defaultValue="logos">
           <TabsList className="mb-6">
             <TabsTrigger value="logos" className="gap-2"><Image className="w-4 h-4" />Logos</TabsTrigger>
+            <TabsTrigger value="sponsors" className="gap-2"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>
             <TabsTrigger value="departments" className="gap-2"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>
             <TabsTrigger value="members" className="gap-2"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
           </TabsList>
@@ -509,6 +554,129 @@ function OrgDetail({ orgId }: { orgId: number }) {
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ─── Sponsors Tab ─── */}
+          <TabsContent value="sponsors">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold">Sponsor-Vorlagen</h2>
+                <p className="text-sm text-muted-foreground">Hinterlegen Sie häufig verwendete Sponsoren-Logos, die Trainer per Klick einfügen können.</p>
+              </div>
+              {isOwner && (
+                <Dialog open={showAddSponsor} onOpenChange={setShowAddSponsor}>
+                  <DialogTrigger asChild>
+                    <Button size="sm"><Plus className="w-4 h-4 mr-2" />Sponsor hinzufügen</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Sponsor-Vorlage erstellen</DialogTitle>
+                      <DialogDescription>Laden Sie ein Sponsor-Logo hoch, das Trainer in Sponsor-Zonen verwenden können.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Sponsor-Name</Label>
+                        <Input
+                          value={sponsorName}
+                          onChange={(e) => setSponsorName(e.target.value)}
+                          placeholder="z.B. Stadtwerke Musterstadt"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Kategorie (optional)</Label>
+                        <Select value={sponsorCategory} onValueChange={setSponsorCategory}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Kategorie wählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="hauptsponsor">Hauptsponsor</SelectItem>
+                            <SelectItem value="co-sponsor">Co-Sponsor</SelectItem>
+                            <SelectItem value="ausruester">Ausrüster</SelectItem>
+                            <SelectItem value="sonstige">Sonstige</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Logo-Datei</Label>
+                        <input
+                          ref={sponsorFileRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                          onChange={handleSponsorFileChange}
+                          className="hidden"
+                        />
+                        <div
+                          className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                          onClick={() => sponsorFileRef.current?.click()}
+                        >
+                          {sponsorPreview ? (
+                            <img src={sponsorPreview} alt="Vorschau" className="max-h-32 mx-auto" />
+                          ) : (
+                            <div>
+                              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">Klicken zum Auswählen (max. 5 MB)</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowAddSponsor(false)}>Abbrechen</Button>
+                      <Button
+                        onClick={handleUploadSponsor}
+                        disabled={!sponsorName.trim() || !sponsorFile || createSponsor.isPending}
+                      >
+                        {createSponsor.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                        Erstellen
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+
+            {(!sponsorTemplates || sponsorTemplates.length === 0) ? (
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed">
+                <Megaphone className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Noch keine Sponsor-Vorlagen hinterlegt</p>
+                <p className="text-xs text-muted-foreground mt-1">Sponsor-Logos können von Trainern direkt in Sponsor-Zonen eingefügt werden.</p>
+                {isOwner && (
+                  <Button className="mt-4" size="sm" onClick={() => setShowAddSponsor(true)}>
+                    <Plus className="w-4 h-4 mr-2" />Ersten Sponsor hinzufügen
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sponsorTemplates.map((tpl) => (
+                  <Card key={tpl.id} className="overflow-hidden">
+                    <div className="aspect-video bg-muted/30 flex items-center justify-center p-4 relative">
+                      <img src={tpl.logoUrl} alt={tpl.name} className="max-w-full max-h-full object-contain" />
+                      {tpl.category && (
+                        <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
+                          {{hauptsponsor:"Hauptsponsor","co-sponsor":"Co-Sponsor",ausruester:"Ausrüster",sonstige:"Sonstige"}[tpl.category] || tpl.category}
+                        </Badge>
+                      )}
+                    </div>
+                    <CardContent className="pt-3">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium text-sm">{tpl.name}</p>
+                        {isOwner && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => { if (confirm("Sponsor-Vorlage wirklich löschen?")) deleteSponsorTpl.mutate({ id: tpl.id, orgId }); }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         )}
                       </div>
                     </CardContent>

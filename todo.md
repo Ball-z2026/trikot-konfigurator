@@ -584,3 +584,21 @@
 - [x] Zonen bei T-Shirts korrekt setzen (Spielername + Nummer auf Rückseite verschoben)
 - [x] Zonen bei Trainingsjacken korrekt setzen (fehlende Ärmel-Zone rechts ergänzt)
 - [x] Browser-Verifizierung aller 4 Produkte erfolgreich
+
+## Sponsor-Vorlagen (Nächster Schritt 2)
+
+- [ ] DB-Schema: sponsor_templates Tabelle (id, orgId, name, logoUrl, logoKey, category, sortOrder, createdBy, createdAt)
+- [ ] Backend: tRPC-Prozeduren für CRUD von Sponsor-Vorlagen (Owner-only)
+- [ ] Backend: tRPC-Prozedur zum Abrufen der Vorlagen für Trainer
+- [ ] Frontend: Sponsor-Vorlagen-Verwaltung im Owner-Dashboard (Upload, Benennen, Löschen)
+- [ ] Frontend: Sponsor-Vorlagen-Auswahl im Konfigurator (Klick zum Einfügen in Sponsor-Zonen)
+- [ ] Tests und Browser-Verifizierung
+
+## Bugs: Konfigurator Layout (01.05.2026)
+- [x] BUG: Mobile Ansicht - Zonen-Positionierung ist falsch (Root Cause: Container aspect-ratio 3:4 ≠ Bild-Ratio 0.738 → Bild bestimmt jetzt Container-Höhe)
+- [x] BUG: Desktop/Laptop - Textil-Vorschau nicht sichtbar (Hintergrund #f8f9fa→#e8eaed, Trikotfarbe #d4d4d8→#c8c8cc, drop-shadow)
+- [x] Responsive Layout: Canvas sticky auf Desktop, Bild-basierte Höhe statt fester Aspect-Ratio
+
+## 3D-Mockup (nach Abschluss aller anderen Features)
+- [ ] Nach Freigabe eines Designs: 3D-Mockup aus den konfigurierten Dateien generieren
+- [ ] Optionen evaluieren: Three.js im Browser, KI-Bildgenerierung, oder externe API (Threadcam etc.)

@@ -146,7 +146,7 @@ function useGoogleFonts(zones: ZoneData[]) {
   }, [zones]);
 }
 
-const DEFAULT_JERSEY_COLOR = "#d4d4d8";
+const DEFAULT_JERSEY_COLOR = "#c8c8cc";
 export default function CustomerConfigurator() {
   const { id } = useParams<{ id: string }>();
   const productId = parseInt(id || "0");
@@ -816,7 +816,7 @@ export default function CustomerConfigurator() {
       const dataUrl = await toPng(canvasRef.current, {
         quality: 1,
         pixelRatio: 2,
-        backgroundColor: "#f8f9fa",
+        backgroundColor: "#e8eaed",
       });
       const link = document.createElement("a");
       const partLabel = hasParts && activePart ? activePart.label : activeSide;
@@ -881,7 +881,7 @@ export default function CustomerConfigurator() {
               const dataUrl = await toPng(canvasRef.current, {
                 quality: 1,
                 pixelRatio: 2,
-                backgroundColor: "#f8f9fa",
+                backgroundColor: "#e8eaed",
               });
               const base64 = dataUrl.split(",")[1];
               const safeName = players[i].name.replace(/[^a-zA-Z0-9äöüÄÖÜß_-]/g, "_");
@@ -1107,9 +1107,9 @@ export default function CustomerConfigurator() {
       </header>
 
       <main className="container py-4 sm:py-6 px-3 sm:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6 items-start">
           {/* Left: Canvas */}
-          <div className="space-y-3">
+          <div className="space-y-3 lg:sticky lg:top-4">
             {/* Part Navigation */}
             {hasParts ? (
               <div className="space-y-2">
@@ -1233,7 +1233,7 @@ export default function CustomerConfigurator() {
             {/* Overview Mode */}
             {hasParts && viewMode === "overview" && (
               <Card className="overflow-hidden">
-                <div ref={overviewRef} className="bg-[#f8f9fa] p-3 sm:p-4">
+                <div ref={overviewRef} className="bg-[#e8eaed] p-3 sm:p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                     {sortedParts.map((part) => {
                       const partZones = allZones.filter((z) => z.partId === part.id);
@@ -1285,7 +1285,7 @@ export default function CustomerConfigurator() {
             {/* 2D Composite View */}
             {hasParts && viewMode === "composite" && (
               <Card className="overflow-hidden">
-                <div className="bg-[#f8f9fa] p-4 sm:p-6">
+                <div className="bg-[#e8eaed] p-4 sm:p-6">
                   <div className="relative mx-auto" style={{ width: "100%", maxWidth: "500px", aspectRatio: "3/4" }}>
                     {/* Trikot-Zusammenstellung: Teile werden relativ positioniert */}
                     {/* Vorderteil / Rückteil - Zentral */}
@@ -1480,7 +1480,7 @@ export default function CustomerConfigurator() {
               <Card className="overflow-hidden">
                 <div
                   ref={canvasRef}
-                  className="relative bg-[#f8f9fa] aspect-[3/4]"
+                  className="relative bg-[#e8eaed] w-full mx-auto"
                   onClick={() => setSelectedZoneId(null)}
                 >
                   {/* Color is now baked into the processed image via flood-fill */}
@@ -1488,16 +1488,15 @@ export default function CustomerConfigurator() {
                     <img
                       src={currentImage}
                       alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
-                      className="w-full h-full object-contain pointer-events-none"
+                      className="w-full h-auto block pointer-events-none drop-shadow-md"
                       style={{
                         position: "relative",
                         zIndex: 1,
-
                       }}
                       draggable={false}
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground" style={{ position: "relative", zIndex: 1 }}>
+                    <div className="w-full aspect-[3/4] flex flex-col items-center justify-center text-muted-foreground" style={{ position: "relative", zIndex: 1 }}>
                       <Shirt className="w-12 h-12 sm:w-16 sm:h-16 opacity-20" />
                       <p className="text-xs text-muted-foreground/50 mt-2">
                         {hasParts && activePart ? activePart.label : "Keine Ansicht verf\u00fcgbar"}

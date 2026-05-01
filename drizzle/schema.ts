@@ -419,3 +419,30 @@ export const savedDesigns = mysqlTable("saved_designs", {
 
 export type SavedDesign = typeof savedDesigns.$inferSelect;
 export type InsertSavedDesign = typeof savedDesigns.$inferInsert;
+
+/**
+ * Sponsor Templates – Sponsor-Vorlagen pro Organisation.
+ * Der Owner kann häufig verwendete Sponsoren-Logos als Vorlagen hinterlegen,
+ * die Trainer dann per Klick in Sponsor-Zonen einfügen können.
+ */
+export const sponsorTemplates = mysqlTable("sponsor_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  /** Name des Sponsors (z.B. "Stadtwerke Musterstadt", "Autohaus Müller") */
+  name: varchar("name", { length: 255 }).notNull(),
+  /** URL zum gespeicherten Sponsor-Logo */
+  logoUrl: text("logoUrl").notNull(),
+  /** Storage-Key für S3 */
+  storageKey: text("storageKey"),
+  /** Optionaler Kategorie-Tag (z.B. "Hauptsponsor", "Co-Sponsor", "Ausrüster") */
+  category: varchar("category", { length: 100 }),
+  /** Sortierreihenfolge */
+  sortOrder: int("sortOrder").default(0).notNull(),
+  /** Erstellt von (userId) */
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SponsorTemplate = typeof sponsorTemplates.$inferSelect;
+export type InsertSponsorTemplate = typeof sponsorTemplates.$inferInsert;
