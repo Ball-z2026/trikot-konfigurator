@@ -311,6 +311,10 @@ export default function AdminProductEditor() {
       e.stopPropagation();
       const zone = localZones.find((z) => z.id === zoneId);
       if (!zone) return;
+      // Haptic feedback on touch
+      if ("touches" in e && navigator.vibrate) {
+        navigator.vibrate(15);
+      }
       const pos = getRelativePosition(e);
       setDragStart({ x: pos.x, y: pos.y, zoneX: zone.posX, zoneY: zone.posY, zoneW: zone.width, zoneH: zone.height });
       if (isResize) setResizingZone(zoneId);
@@ -518,7 +522,7 @@ export default function AdminProductEditor() {
               <div
                 ref={canvasRef}
                 className="relative bg-[#f8f9fa] aspect-[3/4] select-none"
-                style={{ cursor: draggingZone ? "grabbing" : "default" }}
+                style={{ cursor: draggingZone ? "grabbing" : "default", touchAction: "none" }}
                 onClick={() => setSelectedZoneId(null)}
               >
                 {currentImage ? (
@@ -587,8 +591,11 @@ export default function AdminProductEditor() {
                       </div>
 
                       {/* Resize Handle */}
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-sm cursor-se-resize" style={{ backgroundColor: zoneBorderColors[colorIdx] }} onMouseDown={(e) => handleZonePointerDown(e, zone.id, true)}
-                        onTouchStart={(e) => handleZonePointerDown(e, zone.id, true)} />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-4 sm:h-4 rounded-sm cursor-se-resize" style={{ backgroundColor: zoneBorderColors[colorIdx] }} onMouseDown={(e) => handleZonePointerDown(e, zone.id, true)}
+                        onTouchStart={(e) => handleZonePointerDown(e, zone.id, true)}>
+                        {/* Erweiterter Touch-Bereich */}
+                        <div className="absolute -top-3 -left-3 -right-1 -bottom-1" onMouseDown={(e) => handleZonePointerDown(e, zone.id, true)} onTouchStart={(e) => handleZonePointerDown(e, zone.id, true)} />
+                      </div>
 
                       {/* Rotation indicator */}
                       {(zone.rotation || 0) !== 0 && (

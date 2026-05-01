@@ -52,6 +52,7 @@ import { AlertTriangle, Info } from "lucide-react";
 import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
 import { storageUrl } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
 
 const AiMockupView = lazy(() => import("@/components/AiMockupView"));
 
@@ -258,6 +259,7 @@ export default function CustomerConfigurator() {
   const dragSponsorRef = useRef<{ id: number; name: string; logoUrl: string } | null>(null);
 
   // ─── Auto-Zuweisung: Org-Logo & Abt.-Schrift ─────────────────────────
+  const isMobile = useIsMobile();
   const { user, isAuthenticated } = useAuth();
   const { data: myMemberships } = trpc.membership.mine.useQuery(undefined, { enabled: isAuthenticated });
   // Org-/Abt.-Auswahl wenn User mehreren Orgs angehört
@@ -441,6 +443,10 @@ export default function CustomerConfigurator() {
       e.stopPropagation();
       const zone = localZones.find((z) => z.id === zoneId);
       if (!zone) return;
+      // Haptic feedback on touch
+      if ("touches" in e && navigator.vibrate) {
+        navigator.vibrate(15);
+      }
       const pos = getRelativePosition(e);
       setDragStart({ x: pos.x, y: pos.y, zoneX: zone.posX, zoneY: zone.posY, zoneW: zone.width, zoneH: zone.height });
       if (isResize) setResizingZone(zoneId);
@@ -1166,7 +1172,7 @@ export default function CustomerConfigurator() {
 
     return (
       <div
-        className={`absolute flex items-center justify-center transition-all ${isBeingDragged ? "" : "duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
+        className={`absolute flex items-center justify-center transition-all ${isBeingDragged ? "shadow-lg scale-[1.02] opacity-90" : "duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
         style={{
           left: `${zone.posX}%`,
           top: `${zone.posY}%`,
@@ -1227,19 +1233,38 @@ export default function CustomerConfigurator() {
             </span>
           </div>
         )}
-        {/* freeZoneMode: Resize-Handle (unten rechts) */}
+        {/* freeZoneMode: Resize-Handle (unten rechts) - größer auf Touch */}
         {isFreeZoneDraggable && isSelected && (
           <div
-            className="absolute bottom-0 right-0 w-3 h-3 bg-primary cursor-se-resize"
-            style={{ zIndex: 30 }}
+            className="absolute bottom-0 right-0 bg-primary cursor-se-resize"
+            style={{
+              zIndex: 30,
+              width: isMobile ? '20px' : '12px',
+              height: isMobile ? '20px' : '12px',
+              borderTopLeftRadius: isMobile ? '4px' : '2px',
+              /* Erweiterter Touch-Bereich über ::after */
+            }}
             onMouseDown={(e) => handleFreeZonePointerDown(e, zone.id, true)}
             onTouchStart={(e) => handleFreeZonePointerDown(e, zone.id, true)}
-          />
+          >
+            {/* Unsichtbarer erweiterter Touch-Bereich */}
+            <div
+              className="absolute"
+              style={{
+                top: isMobile ? '-12px' : '-6px',
+                left: isMobile ? '-12px' : '-6px',
+                right: '-2px',
+                bottom: '-2px',
+              }}
+              onMouseDown={(e) => handleFreeZonePointerDown(e, zone.id, true)}
+              onTouchStart={(e) => handleFreeZonePointerDown(e, zone.id, true)}
+            />
+          </div>
         )}
-        {/* freeZoneMode: Delete-Button (oben rechts) */}
+        {/* freeZoneMode: Delete-Button (oben rechts) - größer auf Touch */}
         {isFreeZoneDraggable && isSelected && canDelete && (
           <button
-            className="absolute top-0 right-0 w-5 h-5 bg-destructive text-white flex items-center justify-center text-xs rounded-bl hover:bg-destructive/80"
+            className={`absolute top-0 right-0 bg-destructive text-white flex items-center justify-center rounded-bl hover:bg-destructive/80 ${isMobile ? 'w-8 h-8 text-base' : 'w-5 h-5 text-xs'}`}
             style={{ zIndex: 30 }}
             onClick={(e) => {
               e.stopPropagation();
@@ -1249,10 +1274,10 @@ export default function CustomerConfigurator() {
             ×
           </button>
         )}
-        {/* freeZoneMode: Label-Badge */}
+        {/* freeZoneMode: Label-Badge - größer auf Touch */}
         {isFreeZoneDraggable && (
           <div
-            className="absolute top-0 left-0 px-1 text-white text-[8px] leading-tight truncate max-w-full"
+            className={`absolute top-0 left-0 text-white leading-tight truncate max-w-full ${isMobile ? 'px-1.5 py-0.5 text-[10px]' : 'px-1 text-[8px]'}`}
             style={{ backgroundColor: zoneBorderColors[colorIdx], zIndex: 25, pointerEvents: "none" }}
           >
             {zone.label}
@@ -1583,7 +1608,8 @@ export default function CustomerConfigurator() {
               <Card className="overflow-hidden">
                 <div
                   ref={canvasRef}
-                  className="relative bg-[#e8eaed] w-full mx-auto"
+                  className="relative bg-[#e8eaed] w-full mx-auto select-none"
+                  style={isFreeZoneMode ? { touchAction: "none" } : undefined}
                   onClick={() => setSelectedZoneId(null)}
                   onDragOver={(e) => {
                     // Erlaube Drop auf dem Canvas (wird von den Zonen abgefangen)

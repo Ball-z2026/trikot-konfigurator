@@ -802,3 +802,17 @@
 - [x] Auto-Fill: Spieler-Initialen automatisch aus Mannschaftsliste in Kürzel-Zone eintragen (war bereits implementiert)
 - [x] Zonen für alle 3 Produkte (Hoodie 540001, Jacke 540002, T-Shirt 540003) in DB angelegt
 - [x] Fehlerhafte verwaiste Zonen (ohne partId) beim T-Shirt bereinigt
+
+## Free-Zone-Modus: Alle Zonen verschiebbar bei Nicht-Trikot-Artikeln
+- [x] Alle Zonen (inkl. Vereinswappen) bei Nicht-Trikot-Artikeln per Drag/Touch verschiebbar machen (war bereits korrekt implementiert)
+- [x] Vereinswappen: Verschiebbar aber Inhalt (Logo) nicht austauschbar (war bereits korrekt implementiert via isZoneLocked)
+
+## Touch-Support Verbesserungen für Free-Zone-Modus
+- [x] Größere Touch-Targets für Zonen (erweiterter unsichtbarer Touch-Bereich)
+- [x] Größerer Resize-Handle (20x20px auf Mobile statt 12x12px, plus erweiterter Touch-Bereich)
+- [x] Scroll-Verhinderung beim Drag (touch-action: none auf Canvas + select-none)
+- [x] Visuelles Feedback beim Drag (shadow-lg, scale-1.02, opacity-90)
+- [x] Haptic Feedback bei Drag-Start (navigator.vibrate 15ms)
+- [x] Delete-Button größer auf Touch (32x32px statt 20x20px)
+- [x] Label-Badge größer auf Touch (10px statt 8px, mehr Padding)
+- [x] Auch AdminProductEditor mit Touch-Verbesserungen aktualisiert
