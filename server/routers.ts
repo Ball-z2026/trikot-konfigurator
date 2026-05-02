@@ -518,6 +518,7 @@ export const appRouter = router({
               posY: z.number(),
               width: z.number(),
               height: z.number(),
+              rotation: z.number().optional(),
             })
           ),
         })
@@ -1876,10 +1877,10 @@ export const appRouter = router({
           ? ` Auf dem Textil befinden sich folgende Elemente: ${input.zoneDescriptions}.`
           : "";
         const sideInfo = input.side === "back"
-          ? " Zeige die RÜCKSEITE des Textils (von hinten betrachtet)."
+          ? " WICHTIG: Zeige AUSSCHLIESSLICH die RÜCKSEITE des Textils (von hinten betrachtet). Kein Reißverschluss, keine Knopfleiste, keine Vorderseiten-Details sichtbar. Die Rückseite zeigt typischerweise den Nackenbereich und die Rückenfläche."
           : " Zeige die VORDERSEITE des Textils (von vorne betrachtet).";
 
-        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund. Nutze das beigefügte Design-Bild als EXAKTE Vorlage – reproduziere die Positionen, Farben, Logos, Wappen, Texte, Nummern und Muster GENAU wie im Referenzbild gezeigt.${colorInfo}${typeInfo}${zoneInfo}${sideInfo} Professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
+        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund.${sideInfo} Nutze das beigefügte Design-Bild als Vorlage für Farben und Stil. Platziere die Elemente EXAKT an den angegebenen Positionen (Prozentangaben beziehen sich auf die Fläche des Textils: 0% = ganz links/oben, 100% = ganz rechts/unten).${colorInfo}${typeInfo}${zoneInfo} Professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
 
         // Wenn ein Design-Bild vorhanden ist, als Referenz übergeben
         const originalImages = input.designImageBase64

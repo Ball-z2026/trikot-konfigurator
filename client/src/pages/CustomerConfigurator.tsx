@@ -189,7 +189,7 @@ export default function CustomerConfigurator() {
   const [newPlayerName, setNewPlayerName] = useState("");
   const [activePlayerIdx, setActivePlayerIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
-  const [cachedMockupScreenshot, setCachedMockupScreenshot] = useState<string | null>(null);
+  const [cachedMockupScreenshots, setCachedMockupScreenshots] = useState<{ front: string | null; back: string | null }>({ front: null, back: null });
   const [mockupSide, setMockupSide] = useState<"front" | "back">("front");
 
   // ─── Mockup-Galerie Mutation ──────────────────────────────────────────────────────────
@@ -408,13 +408,16 @@ export default function CustomerConfigurator() {
   const dragStateRef = useRef<{
     dragging: number | null;
     resizing: number | null;
+    rotating: number | null;
     startX: number;
     startY: number;
     zoneX: number;
     zoneY: number;
     zoneW: number;
     zoneH: number;
-  }>({ dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0 });
+    startAngle: number;
+    startRotation: number;
+  }>({ dragging: null, resizing: null, rotating: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0, startAngle: 0, startRotation: 0 });
 
   // ─── Free Zone: Toggle-State für automatisierte Felder ───
   const [enabledAutoFields, setEnabledAutoFields] = useState<Record<string, boolean>>({
@@ -472,7 +475,7 @@ export default function CustomerConfigurator() {
   }, []);
 
   const handleFreeZonePointerDown = useCallback(
-    (e: React.PointerEvent, zoneId: number, isResize = false) => {
+    (e: React.PointerEvent, zoneId: number, isResize = false, isRotating = false) => {
       if (!isFreeZoneMode) return;
       e.preventDefault();
       e.stopPropagation();
@@ -485,19 +488,36 @@ export default function CustomerConfigurator() {
         navigator.vibrate(15);
       }
       const pos = getRelativePosition(e);
+      
+      // Berechne Startwinkel für Rotation
+      let startAngle = 0;
+      if (isRotating) {
+        const canvasEl = canvasRef.current;
+        if (canvasEl) {
+          const rect = canvasEl.getBoundingClientRect();
+          const zoneCenterX = rect.left + (zone.posX + zone.width / 2) / 100 * rect.width;
+          const zoneCenterY = rect.top + (zone.posY + zone.height / 2) / 100 * rect.height;
+          startAngle = Math.atan2(e.clientY - zoneCenterY, e.clientX - zoneCenterX) * (180 / Math.PI);
+        }
+      }
+      
       // Speichere in Ref für sofortigen Zugriff ohne Re-Render
       dragStateRef.current = {
-        dragging: isResize ? null : zoneId,
+        dragging: (!isResize && !isRotating) ? zoneId : null,
         resizing: isResize ? zoneId : null,
+        rotating: isRotating ? zoneId : null,
         startX: pos.x,
         startY: pos.y,
         zoneX: zone.posX,
         zoneY: zone.posY,
         zoneW: zone.width,
         zoneH: zone.height,
+        startAngle,
+        startRotation: zone.rotation || 0,
       };
       setDragStart({ x: pos.x, y: pos.y, zoneX: zone.posX, zoneY: zone.posY, zoneW: zone.width, zoneH: zone.height });
       if (isResize) setResizingZone(zoneId);
+      else if (isRotating) setDraggingZone(zoneId); // Reuse dragging state for visual feedback
       else setDraggingZone(zoneId);
       setSelectedZoneId(zoneId);
     },
@@ -508,7 +528,7 @@ export default function CustomerConfigurator() {
     if (!isFreeZoneMode) return;
     const handlePointerMove = (e: PointerEvent) => {
       const ds = dragStateRef.current;
-      if (ds.dragging === null && ds.resizing === null) return;
+      if (ds.dragging === null && ds.resizing === null && ds.rotating === null) return;
       e.preventDefault();
       // Cache Koordinaten SOFORT (nicht in rAF) - PointerEvent ist stabil
       const canvasEl = canvasRef.current;
@@ -539,16 +559,37 @@ export default function CustomerConfigurator() {
             )
           );
         }
+        if (ds.rotating !== null) {
+          // Berechne Winkel relativ zum Zentrum der Zone
+          const zone = localZones.find(z => z.id === ds.rotating);
+          if (zone) {
+            const zoneCenterX = rect.left + (zone.posX + zone.width / 2) / 100 * rect.width;
+            const zoneCenterY = rect.top + (zone.posY + zone.height / 2) / 100 * rect.height;
+            const currentAngle = Math.atan2(e.clientY - zoneCenterY, e.clientX - zoneCenterX) * (180 / Math.PI);
+            const deltaAngle = currentAngle - ds.startAngle;
+            // Snap auf 15°-Schritte wenn nahe
+            let newRotation = ds.startRotation + deltaAngle;
+            const snapAngle = Math.round(newRotation / 15) * 15;
+            if (Math.abs(newRotation - snapAngle) < 3) newRotation = snapAngle;
+            setLocalZones((prev) =>
+              prev.map((z) =>
+                z.id === ds.rotating
+                  ? { ...z, rotation: Math.round(newRotation) }
+                  : z
+              )
+            );
+          }
+        }
       });
     };
     const handlePointerUp = () => {
       const ds = dragStateRef.current;
-      if (ds.dragging !== null || ds.resizing !== null) {
+      if (ds.dragging !== null || ds.resizing !== null || ds.rotating !== null) {
         const changedZones = localZones
           .filter((z) => {
             const orig = allZones.find((oz) => oz.id === z.id);
             if (!orig) return false;
-            return orig.posX !== z.posX || orig.posY !== z.posY || orig.width !== z.width || orig.height !== z.height;
+            return orig.posX !== z.posX || orig.posY !== z.posY || orig.width !== z.width || orig.height !== z.height || (orig.rotation || 0) !== (z.rotation || 0);
           })
           .map((z) => ({
             id: z.id,
@@ -556,10 +597,11 @@ export default function CustomerConfigurator() {
             posY: Math.round(z.posY * 100) / 100,
             width: Math.round(z.width * 100) / 100,
             height: Math.round(z.height * 100) / 100,
+            rotation: z.rotation || 0,
           }));
         if (changedZones.length > 0) bulkUpdatePositions.mutate({ productId, zones: changedZones });
       }
-      dragStateRef.current = { dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0 };
+      dragStateRef.current = { dragging: null, resizing: null, rotating: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0, startAngle: 0, startRotation: 0 };
       setDraggingZone(null);
       setResizingZone(null);
       setDragStart(null);
@@ -618,25 +660,47 @@ export default function CustomerConfigurator() {
   const [addZoneDialogOpen, setAddZoneDialogOpen] = useState(false);
   const [newZoneLabel, setNewZoneLabel] = useState("");
   const [newZoneType, setNewZoneType] = useState<"text" | "image" | "both">("both");
+  const [newZonePurpose, setNewZonePurpose] = useState<"custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName">("custom");
+
+  // Zweck-Optionen für das Auswahlfeld
+  const zonePurposeOptions = [
+    { value: "custom" as const, label: "Benutzerdefiniert", defaultType: "both" as const },
+    { value: "logo" as const, label: "Sponsor-Logo", defaultType: "image" as const },
+    { value: "clubLogo" as const, label: "Vereinswappen", defaultType: "image" as const },
+    { value: "playerName" as const, label: "Spielername", defaultType: "text" as const },
+    { value: "playerNumber" as const, label: "Spielernummer", defaultType: "text" as const },
+    { value: "playerInitials" as const, label: "Kürzel", defaultType: "text" as const },
+    { value: "clubName" as const, label: "Vereinsname", defaultType: "text" as const },
+  ];
 
   const handleAddCustomZone = useCallback(() => {
     if (!activePartId || !newZoneLabel.trim()) return;
+    // Standard-Positionen basierend auf Zweck
+    let posX = 30, posY = 30, width = 25, height = 15;
+    if (newZonePurpose === "clubLogo") { posX = 10; posY = 15; width = 15; height = 20; }
+    else if (newZonePurpose === "playerInitials") { posX = 10; posY = 75; width = 12; height = 12; }
+    else if (newZonePurpose === "clubName") { posX = 20; posY = 10; width = 60; height = 10; }
+    else if (newZonePurpose === "playerName") { posX = 20; posY = 15; width = 60; height = 10; }
+    else if (newZonePurpose === "playerNumber") { posX = 30; posY = 30; width = 40; height = 30; }
+    else if (newZonePurpose === "logo") { posX = 25; posY = 40; width = 50; height = 20; }
+    
     createZoneMut.mutate({
       productId,
       label: newZoneLabel.trim(),
-      side: "front",
+      side: activeSide,
       type: newZoneType,
-      purpose: "custom",
-      posX: 30,
-      posY: 30,
-      width: 25,
-      height: 15,
+      purpose: newZonePurpose,
+      posX,
+      posY,
+      width,
+      height,
       sortOrder: allZones.length + 1,
     });
     setNewZoneLabel("");
+    setNewZonePurpose("custom");
     setAddZoneDialogOpen(false);
     toast.success(`Zone "${newZoneLabel.trim()}" hinzugefügt`);
-  }, [activePartId, newZoneLabel, newZoneType, createZoneMut, productId, allZones.length]);
+  }, [activePartId, newZoneLabel, newZoneType, newZonePurpose, activeSide, createZoneMut, productId, allZones.length]);
 
   // ─── Free Zone: Zone löschen (nur nicht-clubLogo) ───
   const handleDeleteFreeZone = useCallback((zone: ZoneData) => {
@@ -1298,6 +1362,28 @@ export default function CustomerConfigurator() {
             </span>
           </div>
         )}
+        {/* freeZoneMode: Rotation-Handle (oben Mitte) */}
+        {isFreeZoneDraggable && isSelected && (
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full flex flex-col items-center"
+            style={{ zIndex: 35, touchAction: 'none' }}
+          >
+            <div
+              className="bg-primary rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing"
+              style={{
+                width: isMobile ? '24px' : '16px',
+                height: isMobile ? '24px' : '16px',
+                marginBottom: isMobile ? '4px' : '2px',
+              }}
+              onPointerDown={(e) => handleFreeZonePointerDown(e, zone.id, false, true)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className={isMobile ? 'w-3.5 h-3.5' : 'w-2.5 h-2.5'}>
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                <polyline points="22 2 22 8 16 8" />
+              </svg>
+            </div>
+          </div>
+        )}
         {/* freeZoneMode: Resize-Handle (unten rechts) - größer auf Touch */}
         {isFreeZoneDraggable && isSelected && (
           <div
@@ -1555,19 +1641,32 @@ export default function CustomerConfigurator() {
                   size="sm"
                   className="h-8 text-xs"
                   onClick={async () => {
+                    // Screenshot der aktuellen Seite erstellen
+                    const currentSide = activeSide;
+                    const screenshots: { front: string | null; back: string | null } = { front: null, back: null };
+                    const { toPng } = await import("html-to-image");
+                    
+                    // Screenshot der aktuellen Seite
                     if (canvasRef.current) {
                       try {
-                        const { toPng } = await import("html-to-image");
-                        const dataUrl = await toPng(canvasRef.current, {
-                          quality: 0.8,
-                          pixelRatio: 1.5,
-                          skipFonts: true,
-                        });
-                        setCachedMockupScreenshot(dataUrl);
-                      } catch {
-                        // Fallback: kein Screenshot
-                      }
+                        screenshots[currentSide] = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                      } catch { /* kein Screenshot */ }
                     }
+                    
+                    // Wechsle zur anderen Seite für den zweiten Screenshot
+                    const otherSide = currentSide === "front" ? "back" : "front";
+                    setActiveSide(otherSide);
+                    await new Promise(r => setTimeout(r, 350));
+                    if (canvasRef.current) {
+                      try {
+                        screenshots[otherSide] = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                      } catch { /* kein Screenshot */ }
+                    }
+                    
+                    // Zurück zur ursprünglichen Seite und Mockup-View öffnen
+                    setActiveSide(currentSide);
+                    setCachedMockupScreenshots(screenshots);
+                    setMockupSide(currentSide);
                     setViewMode("ai-mockup");
                   }}
                 >
@@ -1610,48 +1709,33 @@ export default function CustomerConfigurator() {
                   size="sm"
                   className="h-8 text-xs"
                   onClick={async () => {
-                    // Screenshot aus der Gesamtübersicht nehmen (overviewRef)
-                    // Dazu kurz zur Overview wechseln, Screenshot machen, dann zum Mockup
+                    // Screenshots für beide Seiten aus der Gesamtübersicht erstellen
+                    const { toPng } = await import("html-to-image");
+                    const screenshots: { front: string | null; back: string | null } = { front: null, back: null };
+                    
+                    // Wechsle zur Overview für den Screenshot
                     const prevMode = viewMode;
                     if (prevMode !== "overview") {
                       setViewMode("overview");
-                      // Warte bis DOM gerendert
                       await new Promise(r => setTimeout(r, 300));
                     }
+                    
+                    // Screenshot der Gesamtübersicht (zeigt alle Teile)
                     if (overviewRef.current) {
                       try {
-                        const { toPng } = await import("html-to-image");
-                        const dataUrl = await toPng(overviewRef.current, {
-                          quality: 0.8,
-                          pixelRatio: 1.5,
-                          skipFonts: true,
-                        });
-                        setCachedMockupScreenshot(dataUrl);
-                      } catch {
-                        // Fallback: Versuche canvasRef
-                        if (canvasRef.current) {
-                          try {
-                            const { toPng } = await import("html-to-image");
-                            const dataUrl = await toPng(canvasRef.current, {
-                              quality: 0.8,
-                              pixelRatio: 1.5,
-                              skipFonts: true,
-                            });
-                            setCachedMockupScreenshot(dataUrl);
-                          } catch { /* kein Screenshot */ }
-                        }
-                      }
+                        screenshots.front = await toPng(overviewRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                        // Für die Rückseite verwenden wir den gleichen Screenshot als Basis
+                        // da die Overview alle Teile zeigt
+                        screenshots.back = screenshots.front;
+                      } catch { /* kein Screenshot */ }
                     } else if (canvasRef.current) {
                       try {
-                        const { toPng } = await import("html-to-image");
-                        const dataUrl = await toPng(canvasRef.current, {
-                          quality: 0.8,
-                          pixelRatio: 1.5,
-                          skipFonts: true,
-                        });
-                        setCachedMockupScreenshot(dataUrl);
+                        screenshots.front = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                        screenshots.back = screenshots.front;
                       } catch { /* kein Screenshot */ }
                     }
+                    setCachedMockupScreenshots(screenshots);
+                    setMockupSide("front");
                     setViewMode("ai-mockup");
                   }}
                 >
@@ -1766,16 +1850,17 @@ export default function CustomerConfigurator() {
                     isSublimation={isSublimation}
                     isDtf={isDtf}
                     dtfBaseColor={dtfBaseColor || ""}
-                    cachedScreenshot={cachedMockupScreenshot}
+                    cachedScreenshot={cachedMockupScreenshots[mockupSide]}
                     canvasContainerRef={overviewRef}
                     side={mockupSide}
-                    zoneDescriptions={allZones.map(z => {
+                    zoneDescriptions={allZones.filter(z => z.side === mockupSide).map(z => {
                       const c = zoneContents[z.id];
                       const parts: string[] = [];
                       if (z.label) parts.push(z.label);
                       if (c?.text) parts.push(`Text: "${c.text}"`);
                       if (c?.imageDataUrl || c?.imageUrl) parts.push("Logo/Bild vorhanden");
                       if (z.purpose === "clubLogo") parts.push("Vereinswappen");
+                      parts.push(`Position: ${Math.round(z.posX)}% von links, ${Math.round(z.posY)}% von oben, Größe: ${Math.round(z.width)}%x${Math.round(z.height)}%`);
                       return parts.length > 1 ? parts.join(" - ") : null;
                     }).filter(Boolean).join("; ")}
                     onSaveToGallery={teamIdParam ? (url, side) => {
@@ -1822,16 +1907,17 @@ export default function CustomerConfigurator() {
                     isSublimation={isSublimation}
                     isDtf={isDtf}
                     dtfBaseColor={dtfBaseColor || ""}
-                    cachedScreenshot={cachedMockupScreenshot}
+                    cachedScreenshot={cachedMockupScreenshots[mockupSide]}
                     canvasContainerRef={canvasRef}
                     side={mockupSide}
-                    zoneDescriptions={allZones.map(z => {
+                    zoneDescriptions={allZones.filter(z => z.side === mockupSide).map(z => {
                       const c = zoneContents[z.id];
                       const parts: string[] = [];
                       if (z.label) parts.push(z.label);
                       if (c?.text) parts.push(`Text: "${c.text}"`);
                       if (c?.imageDataUrl || c?.imageUrl) parts.push("Logo/Bild vorhanden");
                       if (z.purpose === "clubLogo") parts.push("Vereinswappen");
+                      parts.push(`Position: ${Math.round(z.posX)}% von links, ${Math.round(z.posY)}% von oben, Größe: ${Math.round(z.width)}%x${Math.round(z.height)}%`);
                       return parts.length > 1 ? parts.join(" - ") : null;
                     }).filter(Boolean).join("; ")}
                     onSaveToGallery={teamIdParam ? (url, side) => {
@@ -2305,6 +2391,27 @@ export default function CustomerConfigurator() {
                       <div className="pt-1">
                         {addZoneDialogOpen ? (
                           <div className="space-y-2 p-2 border rounded-md bg-background">
+                            {/* Zweck-Auswahl */}
+                            <div className="grid grid-cols-4 gap-1">
+                              {zonePurposeOptions.map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  className={`px-1.5 py-1 rounded text-[9px] border transition-colors ${
+                                    newZonePurpose === opt.value ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary/50"
+                                  }`}
+                                  onClick={() => {
+                                    setNewZonePurpose(opt.value);
+                                    setNewZoneType(opt.defaultType);
+                                    // Auto-Label setzen wenn leer
+                                    if (!newZoneLabel.trim() || zonePurposeOptions.some(o => o.label === newZoneLabel)) {
+                                      setNewZoneLabel(opt.label);
+                                    }
+                                  }}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
                             <Input
                               placeholder="Zonen-Name (z.B. Sponsor Rücken)"
                               value={newZoneLabel}
@@ -2329,7 +2436,7 @@ export default function CustomerConfigurator() {
                               <Button size="sm" className="flex-1 h-7 text-xs" onClick={handleAddCustomZone} disabled={!newZoneLabel.trim()}>
                                 <Plus className="w-3 h-3 mr-1" /> Hinzufügen
                               </Button>
-                              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAddZoneDialogOpen(false)}>
+                              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setAddZoneDialogOpen(false); setNewZonePurpose("custom"); }}>
                                 Abbrechen
                               </Button>
                             </div>

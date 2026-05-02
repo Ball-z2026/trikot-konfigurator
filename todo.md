@@ -859,3 +859,14 @@
 ## Bug: Farbe färbt gesamten Hintergrund statt nur Hoodie
 - [x] Farb-Overlay bei freeZoneMode-Produkten (Hoodie, Jacke, T-Shirt) nur auf die Innenfläche des Produktbilds beschränken (CSS-Mask in Gesamtübersicht hinzugefügt)
 - [x] Hintergrund (außerhalb des Produkts) muss weiß/transparent bleiben
+
+## Freie Zonen-Interaktion bei Nicht-Trikot-Produkten
+- [x] Alle Zonen bei Nicht-Trikot-Produkten (Hoodie, Jacke, T-Shirt) frei verschiebbar machen (war bereits implementiert)
+- [x] Alle Zonen bei Nicht-Trikot-Produkten größenanpassbar (Resize) machen (war bereits implementiert)
+- [x] Alle Zonen bei Nicht-Trikot-Produkten rotierbar machen (Rotations-Handle hinzugefügt)
+- [x] Beim Hinzufügen einer Zone: Auswahlfeld für Zweck (Sponsor, Kürzel, Vereinswappen, Spielername, Nummer, Custom)
+- [x] Bei Trikots bleiben die bestehenden Einschränkungen erhalten
+
+## Bug: KI-Mockup Rückseite zeigt Vorderseite
+- [x] Bei "Rückseite"-Tab wird jetzt ein separater Screenshot der Rückseite erstellt und gecacht
+- [x] Positionierung der Elemente im Mockup verbessert (detaillierter Prompt mit Positionsangaben)

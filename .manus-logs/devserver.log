@@ -5304,3 +5304,27 @@
 [2026-05-02T05:00:24.690Z] [Auth] Missing session cookie
 [2026-05-02T05:00:24.736Z] [Auth] Missing session cookie
 [2026-05-02T05:00:24.742Z] [Auth] Missing session cookie
+[2026-05-02T05:24:11.929Z] 1:24:11 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T05:24:23.590Z] 1:24:23 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T05:24:37.978Z] 1:24:37 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T05:24:52.637Z] 1:24:52 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T05:25:21.948Z] 1:25:21 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T05:26:12.162Z] 1:26:12 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-02T05:26:13.853Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T05:26:14.867Z] Server running on http://localhost:3000/
+[2026-05-02T05:26:35.006Z] 1:26:35 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-02T05:26:36.648Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T05:26:37.047Z] Server running on http://localhost:3000/
+[2026-05-02T05:31:26.876Z] 1:31:26 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-02T05:31:28.502Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T05:31:28.878Z] Server running on http://localhost:3000/
+[2026-05-02T05:32:10.734Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.802Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.809Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.816Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.822Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.829Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.833Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.836Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.839Z] [Auth] Missing session cookie
+[2026-05-02T05:32:10.841Z] [Auth] Missing session cookie
