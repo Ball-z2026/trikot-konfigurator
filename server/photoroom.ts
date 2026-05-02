@@ -12,7 +12,7 @@ import { storagePut } from "./storage";
 export type PhotoroomOptions = {
   /** Base64-encoded image of the garment (PNG) */
   imageBase64: string;
-  /** Model preset name (default: "avery") */
+  /** Model preset name (default: "avery") - ignored if customModelImageBase64 is set */
   modelPreset?: string;
   /** Scene preset name (default: "street") */
   scenePreset?: string;
@@ -20,6 +20,8 @@ export type PhotoroomOptions = {
   pose?: string;
   /** Output size (default: "PORTRAIT_HD_3_2") */
   size?: string;
+  /** Base64-encoded custom model photo (person photo to use as model) */
+  customModelImageBase64?: string;
 };
 
 export type PhotoroomResult = {
@@ -80,7 +82,16 @@ export async function generatePhotoroomMockup(
 
   // Add Virtual Model parameters
   addField("virtualModel.mode", "ai.auto");
-  addField("virtualModel.model.preset.name", modelPreset);
+  
+  // Use custom model image or preset
+  if (options.customModelImageBase64) {
+    const cleanModelBase64 = options.customModelImageBase64.replace(/^data:image\/\w+;base64,/, "");
+    const modelBuffer = Buffer.from(cleanModelBase64, "base64");
+    addFile("virtualModel.model.imageFile", "model.png", "image/png", modelBuffer);
+  } else {
+    addField("virtualModel.model.preset.name", modelPreset);
+  }
+  
   addField("virtualModel.scene.preset.name", scenePreset);
   addField("virtualModel.pose", pose);
   addField("virtualModel.size", size);

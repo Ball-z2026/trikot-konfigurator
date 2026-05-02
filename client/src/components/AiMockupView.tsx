@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Download, RefreshCw, Save, Share2, Camera, User } from "lucide-react";
+import { Sparkles, Download, RefreshCw, Save, Share2, Camera, User, Upload, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
@@ -89,6 +89,10 @@ export function AiMockupView({
   const [modelPreset, setModelPreset] = useState("avery");
   const [scenePreset, setScenePreset] = useState("street");
   const [posePreset, setPosePreset] = useState("standing");
+  const [useCustomModel, setUseCustomModel] = useState(false);
+  const [customModelImage, setCustomModelImage] = useState<string | null>(null);
+  const [customModelPreview, setCustomModelPreview] = useState<string | null>(null);
+  const customModelInputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const startTimeRef = useRef<number>(0);
   const animFrameRef = useRef<number>(0);
@@ -202,9 +206,10 @@ export function AiMockupView({
         // Photoroom Virtual Model API
         const result = await generatePhotoroomMockup.mutateAsync({
           designImageBase64,
-          modelPreset,
+          modelPreset: useCustomModel ? undefined : modelPreset,
           scenePreset,
           pose: posePreset,
+          customModelImageBase64: useCustomModel ? (customModelImage || undefined) : undefined,
         });
         resultUrl = result.url;
       } else {
@@ -322,10 +327,36 @@ export function AiMockupView({
 
           {/* Photoroom Optionen */}
           {mode === "photoroom" && isPhotoroomAvailable && (
-            <div className="w-full space-y-2 bg-muted/30 rounded-lg p-3">
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="text-[10px] font-medium text-muted-foreground block mb-1">Model</label>
+            <div className="w-full space-y-3 bg-muted/30 rounded-lg p-3">
+              {/* Model-Auswahl: Preset oder Custom */}
+              <div>
+                <label className="text-[10px] font-medium text-muted-foreground block mb-1.5">Model</label>
+                <div className="grid grid-cols-2 gap-1.5 mb-2">
+                  <button
+                    onClick={() => setUseCustomModel(false)}
+                    className={`text-xs py-1.5 px-2 rounded border transition-all ${
+                      !useCustomModel
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30 font-medium"
+                        : "border-border hover:border-purple-300"
+                    }`}
+                  >
+                    Preset-Model
+                  </button>
+                  <button
+                    onClick={() => setUseCustomModel(true)}
+                    className={`text-xs py-1.5 px-2 rounded border transition-all flex items-center justify-center gap-1 ${
+                      useCustomModel
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30 font-medium"
+                        : "border-border hover:border-purple-300"
+                    }`}
+                  >
+                    <Upload className="w-3 h-3" />
+                    Eigenes Foto
+                  </button>
+                </div>
+
+                {/* Preset-Model Dropdown */}
+                {!useCustomModel && (
                   <select
                     value={modelPreset}
                     onChange={(e) => setModelPreset(e.target.value)}
@@ -335,7 +366,67 @@ export function AiMockupView({
                       <option key={p.value} value={p.value}>{p.label}</option>
                     ))}
                   </select>
-                </div>
+                )}
+
+                {/* Custom Model Upload */}
+                {useCustomModel && (
+                  <div className="space-y-2">
+                    <input
+                      ref={customModelInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 10 * 1024 * 1024) {
+                          toast.error("Bild darf maximal 10 MB groß sein.");
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const dataUrl = reader.result as string;
+                          setCustomModelImage(dataUrl);
+                          setCustomModelPreview(dataUrl);
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    {customModelPreview ? (
+                      <div className="relative">
+                        <img
+                          src={customModelPreview}
+                          alt="Custom Model"
+                          className="w-full h-24 object-cover rounded border"
+                        />
+                        <button
+                          onClick={() => {
+                            setCustomModelImage(null);
+                            setCustomModelPreview(null);
+                            if (customModelInputRef.current) customModelInputRef.current.value = "";
+                          }}
+                          className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <p className="text-[9px] text-green-600 mt-1">Eigenes Model-Foto geladen</p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => customModelInputRef.current?.click()}
+                        className="w-full py-3 border-2 border-dashed rounded-lg text-xs text-muted-foreground hover:border-purple-400 hover:text-purple-600 transition-colors flex flex-col items-center gap-1"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Foto hochladen</span>
+                        <span className="text-[9px]">(Person als Model verwenden)</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Szene und Pose */}
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] font-medium text-muted-foreground block mb-1">Szene</label>
                   <select

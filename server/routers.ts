@@ -1947,6 +1947,8 @@ export const appRouter = router({
         scenePreset: z.string().optional(),
         /** Pose (default: standing) */
         pose: z.string().optional(),
+        /** Custom Model Foto (Base64, optional - ersetzt modelPreset) */
+        customModelImageBase64: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         if (!isPhotoroomConfigured()) {
@@ -1961,6 +1963,7 @@ export const appRouter = router({
           modelPreset: input.modelPreset,
           scenePreset: input.scenePreset,
           pose: input.pose,
+          customModelImageBase64: input.customModelImageBase64,
         });
 
         return { url: result.url };

@@ -1791,7 +1791,7 @@ export default function CustomerConfigurator() {
                             setViewMode("parts");
                           }}
                         >
-                          <div className="aspect-square relative">
+                          <div className="relative">
                             {part.imageUrl ? (
                               <>
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
@@ -1800,11 +1800,11 @@ export default function CustomerConfigurator() {
                                     style={{
                                       backgroundColor: getPartColor(part.id),
                                       WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
-                                      WebkitMaskSize: "contain",
+                                      WebkitMaskSize: "100% 100%",
                                       WebkitMaskRepeat: "no-repeat",
                                       WebkitMaskPosition: "center",
                                       maskImage: `url(${storageUrl(part.imageUrl)})`,
-                                      maskSize: "contain",
+                                      maskSize: "100% 100%",
                                       maskRepeat: "no-repeat",
                                       maskPosition: "center",
                                     }}
@@ -1813,7 +1813,7 @@ export default function CustomerConfigurator() {
                                 <img
                                   src={storageUrl(part.imageUrl)}
                                   alt={part.label}
-                                  className="w-full h-full object-contain p-1 relative"
+                                  className="w-full h-auto block p-1 relative"
                                   draggable={false}
                                   style={{ mixBlendMode: (hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined }}
                                 />
@@ -2560,6 +2560,20 @@ export default function CustomerConfigurator() {
                                 }}
                                 onBlur={(e) => {
                                   const val = e.target.value ? parseFloat(e.target.value) : null;
+                                  // Berechne Zone-Breite basierend auf cm-Seitenverhältnis
+                                  const hCm = zone.heightCm;
+                                  if (val && hCm && canvasRef.current) {
+                                    const rect = canvasRef.current.getBoundingClientRect();
+                                    const canvasAspect = rect.width / rect.height;
+                                    const cmAspect = val / hCm;
+                                    const newWidth = zone.height * cmAspect / canvasAspect;
+                                    setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, width: Math.min(newWidth, 95) } : z));
+                                    // Speichere widthCm + neue width
+                                    bulkUpdatePositions.mutate({
+                                      productId,
+                                      zones: [{ id: zone.id, posX: zone.posX, posY: zone.posY, width: Math.min(newWidth, 95), height: zone.height, rotation: zone.rotation || 0 }],
+                                    });
+                                  }
                                   freeUpdateZoneMut.mutate({ id: zone.id, productId, widthCm: val });
                                 }}
                                 onClick={(e) => e.stopPropagation()}
@@ -2579,6 +2593,20 @@ export default function CustomerConfigurator() {
                                 }}
                                 onBlur={(e) => {
                                   const val = e.target.value ? parseFloat(e.target.value) : null;
+                                  // Berechne Zone-Breite basierend auf cm-Seitenverhältnis (Höhe ist ausschlaggebend)
+                                  const wCm = zone.widthCm;
+                                  if (val && wCm && canvasRef.current) {
+                                    const rect = canvasRef.current.getBoundingClientRect();
+                                    const canvasAspect = rect.width / rect.height;
+                                    const cmAspect = wCm / val;
+                                    const newWidth = zone.height * cmAspect / canvasAspect;
+                                    setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, width: Math.min(newWidth, 95) } : z));
+                                    // Speichere heightCm + neue width
+                                    bulkUpdatePositions.mutate({
+                                      productId,
+                                      zones: [{ id: zone.id, posX: zone.posX, posY: zone.posY, width: Math.min(newWidth, 95), height: zone.height, rotation: zone.rotation || 0 }],
+                                    });
+                                  }
                                   freeUpdateZoneMut.mutate({ id: zone.id, productId, heightCm: val });
                                 }}
                                 onClick={(e) => e.stopPropagation()}

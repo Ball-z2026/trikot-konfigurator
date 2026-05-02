@@ -926,3 +926,18 @@
 ## Bug: Größenangabe (cm) wird nicht auf Zone-Inhalt angewendet
 - [x] Wenn widthCm/heightCm gesetzt: Bild füllt Zone komplett aus (object-fill statt object-contain)
 - [x] Ohne cm-Angabe: Bild wird proportional eingepasst (object-contain, wie bisher)
+
+## Custom Model-Foto für Photoroom
+- [x] Backend: generatePhotoroom Endpoint um customModelImageBase64 Parameter erweitern
+- [x] Backend: Photoroom Helper um custom model (imageUrl/imageFile) Support erweitern
+- [x] Frontend: Toggle zwischen Preset-Model und Custom-Model-Upload
+- [x] Frontend: Bild-Upload für eigenes Model-Foto (Datei oder Kamera)
+
+## Bug: Einzelteil-Ansicht vs. Gesamtübersicht unterschiedlich
+- [x] Die Positionierung der Zonen/Logos in der Einzelteil-Ansicht stimmt nicht mit der Gesamtübersicht überein
+- [x] Beide Ansichten müssen konsistente Ergebnisse zeigen (aspect-square entfernt, h-auto + maskSize 100% 100%)
+
+## Zonen-Rahmen mit cm-Maßen
+- [x] Wenn widthCm/heightCm gesetzt: Rahmen der Zone hat das korrekte Seitenverhältnis (z.B. 20x10cm = 2:1)
+- [x] Inhalt (Logo/Bild) füllt den Rahmen komplett aus
+- [x] Höhe ist ausschlaggebend: Zone-Höhe bestimmt die tatsächliche Größe, Breite ergibt sich aus dem Verhältnis
