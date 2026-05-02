@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { generateImage } from "./_core/imageGeneration";
+import { generatePhotoroomMockup, isPhotoroomConfigured } from "./photoroom";
 import { z } from "zod";
 import {
   listProducts,
@@ -475,6 +476,8 @@ export const appRouter = router({
           posY: z.number().min(0).max(100).default(10),
           width: z.number().min(1).max(100).default(20),
           height: z.number().min(1).max(100).default(15),
+          widthCm: z.number().optional(),
+          heightCm: z.number().optional(),
           sortOrder: z.number().default(0),
         })
       )
@@ -503,6 +506,25 @@ export const appRouter = router({
           throw new TRPCError({ code: "FORBIDDEN", message: "Das Vereinswappen kann nicht entfernt werden." });
         }
         await deleteZone(input.id);
+        return { success: true };
+      }),
+
+    /** Einzelne Zone aktualisieren (nur bei freeZoneMode-Produkten, z.B. widthCm/heightCm) */
+    freeUpdate: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        productId: z.number(),
+        widthCm: z.number().nullable().optional(),
+        heightCm: z.number().nullable().optional(),
+        label: z.string().min(1).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const product = await getProductById(input.productId);
+        if (!product || !product.freeZoneMode) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Freie Zonen-Bearbeitung ist für dieses Produkt nicht aktiviert." });
+        }
+        const { id, productId: _pid, ...data } = input;
+        await updateZone(id, data);
         return { success: true };
       }),
 
@@ -1867,17 +1889,24 @@ export const appRouter = router({
         side: z.enum(["front", "back"]).optional().default("front"),
       }))
       .mutation(async ({ input }) => {
-        // Kurzer, fokussierter Prompt für Image-to-Image Editing
-        // Das Referenzbild (Screenshot des Konfigurators) ist die Hauptvorlage
-        const sideLabel = input.side === "back" ? "Rückseite" : "Vorderseite";
+        const sideLabel = input.side === "back" ? "back" : "front";
         
+        // Bestimme den Kleidungstyp auf Englisch
+        const garmentType = input.productName.toLowerCase().includes("hoodie") ? "hoodie"
+          : input.productName.toLowerCase().includes("jacke") ? "sports jacket"
+          : input.productName.toLowerCase().includes("t-shirt") ? "t-shirt"
+          : input.productName.toLowerCase().includes("polo") ? "polo shirt"
+          : input.productName.toLowerCase().includes("trikot") ? "soccer jersey"
+          : "sportswear garment";
+
         let prompt: string;
         if (input.designImageBase64) {
-          // Image-to-Image: Referenzbild vorhanden -> kurzer Edit-Prompt
-          prompt = `Transform this ${input.productName} design into a photorealistic product photo. Keep ALL logos, text, numbers, and graphics EXACTLY as shown in the reference image - same positions, same sizes, same content. Show the ${sideLabel} on an invisible mannequin against a light gray studio background. Professional product photography with soft studio lighting. Clean, sharp rendering like an online shop photo. No person visible, only the garment on the mannequin.`;
+          // Image-to-Image: Fotorealistisches Mockup mit Person
+          prompt = `Professional fashion photography of a young athletic man wearing this exact ${garmentType} shown in the reference image. The ${sideLabel} of the garment must match the reference EXACTLY - preserve all logos, text, numbers, colors, and graphic placements precisely as shown. Full body shot, model standing naturally on an urban sidewalk with blurred city background. Natural daylight, shallow depth of field, shot on Canon EOS R5 85mm f/1.4. High-end commercial fashion photography style.`;
         } else {
           // Fallback ohne Referenzbild
-          prompt = `Photorealistic product photo of a sport ${input.productName} (${sideLabel}) on an invisible mannequin against a light gray studio background. Professional product photography.`;
+          const colorDesc = input.colorDescription ? ` in colors ${input.colorDescription}` : "";
+          prompt = `Professional fashion photography of a young athletic man wearing a ${garmentType}${colorDesc}. ${sideLabel} view. Full body shot, model standing naturally on an urban sidewalk with blurred city background. Natural daylight, shallow depth of field, shot on Canon EOS R5 85mm f/1.4. High-end commercial fashion photography.`;
         }
 
         // Wenn ein Design-Bild vorhanden ist, als Referenz übergeben
@@ -1891,6 +1920,42 @@ export const appRouter = router({
         const result = await generateImage({ prompt, originalImages });
 
         return { url: result.url };
+      }),
+
+    /** Photoroom Virtual Model Mockup generieren */
+    generatePhotoroom: protectedProcedure
+      .input(z.object({
+        /** Base64-kodiertes Bild des aktuellen Designs (data:image/png;base64,...) */
+        designImageBase64: z.string(),
+        /** Model Preset (default: avery) */
+        modelPreset: z.string().optional(),
+        /** Scene Preset (default: street) */
+        scenePreset: z.string().optional(),
+        /** Pose (default: standing) */
+        pose: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        if (!isPhotoroomConfigured()) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Photoroom API Key ist nicht konfiguriert. Bitte in den Einstellungen hinterlegen.",
+          });
+        }
+
+        const result = await generatePhotoroomMockup({
+          imageBase64: input.designImageBase64,
+          modelPreset: input.modelPreset,
+          scenePreset: input.scenePreset,
+          pose: input.pose,
+        });
+
+        return { url: result.url };
+      }),
+
+    /** Prüfe ob Photoroom API konfiguriert ist */
+    photoroomStatus: protectedProcedure
+      .query(() => {
+        return { configured: isPhotoroomConfigured() };
       }),
   }),
 });

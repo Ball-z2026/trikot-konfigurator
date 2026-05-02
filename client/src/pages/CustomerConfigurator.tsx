@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -41,6 +42,7 @@ import {
   ToggleRight,
   X,
   Sparkles,
+  Ruler,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { getNumberRules, BUNDESLAENDER, type NumberRule } from "@shared/jerseyRules";
@@ -166,11 +168,24 @@ export default function CustomerConfigurator() {
   const { id } = useParams<{ id: string }>();
   const productId = parseInt(id || "0");
 
-  // Team-ID aus Query-Parameter lesen (vom Trainer-Dashboard)
-  const teamIdParam = useMemo(() => {
+  // ─── Auth ────────────────────────────────────────────────────────────
+  const { user, isAuthenticated } = useAuth();
+
+  // Team-ID: Aus URL-Parameter oder Trainer-Mannschaftsauswahl
+  const teamIdFromUrl = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("teamId") ? parseInt(params.get("teamId")!) : null;
   }, []);
+  const [selectedTeamIdState, setSelectedTeamIdState] = useState<number | null>(null);
+  // Lade alle Mannschaften des Trainers (wenn angemeldet)
+  const { data: myTeams } = trpc.team.mine.useQuery(undefined, { enabled: isAuthenticated });
+  // Effektives teamId: URL-Parameter hat Vorrang, dann manuelle Auswahl, dann erste Mannschaft
+  const teamIdParam = useMemo(() => {
+    if (teamIdFromUrl) return teamIdFromUrl;
+    if (selectedTeamIdState) return selectedTeamIdState;
+    if (myTeams && myTeams.length > 0) return myTeams[0].id;
+    return null;
+  }, [teamIdFromUrl, selectedTeamIdState, myTeams]);
 
   const { data: productData, isLoading } = trpc.product.getById.useQuery(
     { id: productId },
@@ -282,7 +297,6 @@ export default function CustomerConfigurator() {
 
   // ─── Auto-Zuweisung: Org-Logo & Abt.-Schrift ─────────────────────────
   const isMobile = useIsMobile();
-  const { user, isAuthenticated } = useAuth();
   const { data: myMemberships } = trpc.membership.mine.useQuery(undefined, { enabled: isAuthenticated });
   // Org-/Abt.-Auswahl wenn User mehreren Orgs angehört
   const [selectedMembershipIdx, setSelectedMembershipIdx] = useState<number>(0);
@@ -449,6 +463,9 @@ export default function CustomerConfigurator() {
     onSuccess: () => utils.product.getById.invalidate({ id: productId }),
   });
   const bulkUpdatePositions = trpc.zone.freeBulkUpdatePositions.useMutation({
+    onSuccess: () => utils.product.getById.invalidate({ id: productId }),
+  });
+  const freeUpdateZoneMut = trpc.zone.freeUpdate.useMutation({
     onSuccess: () => utils.product.getById.invalidate({ id: productId }),
   });
 
@@ -642,8 +659,9 @@ export default function CustomerConfigurator() {
       const d = defaults[purpose];
       createZoneMut.mutate({
         productId,
+        partId: activePartId ?? undefined,
         label: labels[purpose],
-        side: "front",
+        side: activeSide,
         type: "text",
         purpose,
         posX: d.posX,
@@ -654,7 +672,7 @@ export default function CustomerConfigurator() {
       });
       setEnabledAutoFields(prev => ({ ...prev, [purpose]: true }));
     }
-  }, [activePartId, enabledAutoFields, allZones, deleteZoneMut, createZoneMut, productId]);
+  }, [activePartId, activeSide, enabledAutoFields, allZones, deleteZoneMut, createZoneMut, productId]);
 
   // ─── Free Zone: Custom-Zone hinzufügen ───
   const [addZoneDialogOpen, setAddZoneDialogOpen] = useState(false);
@@ -686,6 +704,7 @@ export default function CustomerConfigurator() {
     
     createZoneMut.mutate({
       productId,
+      partId: activePartId ?? undefined,
       label: newZoneLabel.trim(),
       side: activeSide,
       type: newZoneType,
@@ -1085,7 +1104,7 @@ export default function CustomerConfigurator() {
 
   const handleSaveDesign = useCallback(() => {
     if (!teamIdParam) {
-      toast.error("Kein Team zugeordnet - Speichern nur über Trainer-Dashboard möglich");
+      toast.error("Bitte wähle zuerst eine Mannschaft aus dem Dropdown oben");
       return;
     }
     if (currentDesignId) {
@@ -1319,7 +1338,7 @@ export default function CustomerConfigurator() {
           borderRadius: isBeingDragged ? "4px" : "2px",
           cursor: isFreeZoneDraggable ? (isBeingDragged ? "grabbing" : "grab") : interactive ? "pointer" : "default",
           overflow: "hidden",
-          touchAction: isFreeZoneDraggable ? "none" : undefined,
+          touchAction: (isFreeZoneDraggable && (draggingZone !== null || resizingZone !== null)) ? "none" : undefined,
           userSelect: isFreeZoneDraggable ? "none" : undefined,
           WebkitUserSelect: isFreeZoneDraggable ? "none" : undefined,
         }}
@@ -1470,6 +1489,28 @@ export default function CustomerConfigurator() {
               <Badge variant="secondary" className="hidden sm:inline-flex">
                 {productData.category}
               </Badge>
+            )}
+            {/* Mannschafts-Dropdown: Zeige alle Teams des Trainers */}
+            {myTeams && myTeams.length > 0 && (
+              <Select
+                value={teamIdParam?.toString() ?? ""}
+                onValueChange={(val) => {
+                  setSelectedTeamIdState(parseInt(val));
+                  setTeamPlayersLoaded(false); // Spieler neu laden
+                }}
+              >
+                <SelectTrigger className="h-7 sm:h-8 text-xs sm:text-sm w-auto max-w-[140px] sm:max-w-[180px]">
+                  <Users className="w-3.5 h-3.5 mr-1 shrink-0" />
+                  <SelectValue placeholder="Mannschaft" />
+                </SelectTrigger>
+                <SelectContent>
+                  {myTeams.map((team) => (
+                    <SelectItem key={team.id} value={team.id.toString()}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
           <div className="flex gap-1.5 sm:gap-2 shrink-0">
@@ -1927,7 +1968,7 @@ export default function CustomerConfigurator() {
                 <div
                   ref={canvasRef}
                   className="relative bg-[#e8eaed] w-full mx-auto select-none"
-                  style={isFreeZoneMode ? { touchAction: "none" } : undefined}
+                  style={(isFreeZoneMode && (draggingZone !== null || resizingZone !== null)) ? { touchAction: "none" } : undefined}
                   onClick={() => setSelectedZoneId(null)}
                   onDragOver={(e) => {
                     // Erlaube Drop auf dem Canvas (wird von den Zonen abgefangen)
@@ -2500,14 +2541,58 @@ export default function CustomerConfigurator() {
                             )}
                           </div>
 
-                          {/* Dimensions info */}
-                          {(zone.widthCm || zone.heightCm) && (
+                          {/* Dimensions in cm - editierbar bei Nicht-Trikots im freeZoneMode */}
+                          {isFreeZoneMode && productData?.category !== 'Trikot' ? (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <Ruler className="w-3 h-3 text-muted-foreground shrink-0" />
+                              <span className="text-[10px] text-muted-foreground shrink-0">Größe:</span>
+                              <input
+                                type="number"
+                                step="0.5"
+                                min="1"
+                                max="100"
+                                placeholder="B"
+                                className="w-12 h-5 text-[10px] text-center border rounded bg-background px-1"
+                                value={zone.widthCm ?? ""}
+                                onChange={(e) => {
+                                  const val = e.target.value ? parseFloat(e.target.value) : null;
+                                  setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, widthCm: val } : z));
+                                }}
+                                onBlur={(e) => {
+                                  const val = e.target.value ? parseFloat(e.target.value) : null;
+                                  freeUpdateZoneMut.mutate({ id: zone.id, productId, widthCm: val });
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="text-[10px] text-muted-foreground">×</span>
+                              <input
+                                type="number"
+                                step="0.5"
+                                min="1"
+                                max="100"
+                                placeholder="H"
+                                className="w-12 h-5 text-[10px] text-center border rounded bg-background px-1"
+                                value={zone.heightCm ?? ""}
+                                onChange={(e) => {
+                                  const val = e.target.value ? parseFloat(e.target.value) : null;
+                                  setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, heightCm: val } : z));
+                                }}
+                                onBlur={(e) => {
+                                  const val = e.target.value ? parseFloat(e.target.value) : null;
+                                  freeUpdateZoneMut.mutate({ id: zone.id, productId, heightCm: val });
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="text-[10px] text-muted-foreground">cm</span>
+                              {zone.rotation ? <span className="text-[10px] text-muted-foreground ml-1">{zone.rotation}°</span> : null}
+                            </div>
+                          ) : (zone.widthCm || zone.heightCm) ? (
                             <p className="text-[10px] text-muted-foreground">
                               Druckfläche: {zone.widthCm ? `${zone.widthCm} cm` : "–"} ×{" "}
                               {zone.heightCm ? `${zone.heightCm} cm` : "–"}
                               {zone.rotation ? ` · ${zone.rotation}°` : ""}
                             </p>
-                          )}
+                          ) : null}
 
                           {/* Font preview for text zones */}
                           {zone.fontFamily && purpose !== "logo" && (

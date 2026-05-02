@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Download, RefreshCw, Save, Share2 } from "lucide-react";
+import { Sparkles, Download, RefreshCw, Save, Share2, Camera, User } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
@@ -27,12 +27,34 @@ interface AiMockupViewProps {
   onShare?: (mockupUrl: string) => void;
 }
 
-const LOADING_STEPS = [
+type MockupMode = "photoroom" | "ai";
+
+const MODEL_PRESETS = [
+  { value: "avery", label: "Avery (männlich)" },
+  { value: "jackson", label: "Jackson (männlich)" },
+  { value: "ava", label: "Ava (weiblich)" },
+];
+
+const SCENE_PRESETS = [
+  { value: "street", label: "Straße" },
+  { value: "library", label: "Bibliothek" },
+  { value: "bedroom", label: "Schlafzimmer" },
+];
+
+const LOADING_STEPS_AI = [
   { text: "Design wird analysiert...", duration: 3000 },
   { text: "Farben und Muster werden erfasst...", duration: 4000 },
   { text: "Fotorealistisches Mockup wird erstellt...", duration: 8000 },
   { text: "Details werden verfeinert...", duration: 10000 },
   { text: "Bild wird fertiggestellt...", duration: 15000 },
+];
+
+const LOADING_STEPS_PHOTOROOM = [
+  { text: "Bild wird an Photoroom gesendet...", duration: 2000 },
+  { text: "Hintergrund wird entfernt...", duration: 3000 },
+  { text: "Virtuelles Model wird erstellt...", duration: 5000 },
+  { text: "Kleidung wird angepasst...", duration: 8000 },
+  { text: "Szene wird gerendert...", duration: 10000 },
 ];
 
 export function AiMockupView({
@@ -54,22 +76,38 @@ export function AiMockupView({
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [mode, setMode] = useState<MockupMode>("photoroom");
+  const [modelPreset, setModelPreset] = useState("avery");
+  const [scenePreset, setScenePreset] = useState("street");
   const imgRef = useRef<HTMLImageElement>(null);
   const startTimeRef = useRef<number>(0);
   const animFrameRef = useRef<number>(0);
 
-  const generateMockup = trpc.mockup.generateAi.useMutation();
+  const generateAiMockup = trpc.mockup.generateAi.useMutation();
+  const generatePhotoroomMockup = trpc.mockup.generatePhotoroom.useMutation();
+  const { data: photoroomStatus } = trpc.mockup.photoroomStatus.useQuery();
 
-  // Wenn Seite wechselt (Vorderseite <-> Rückseite): Altes Mockup zurücksetzen
+  const isPhotoroomAvailable = photoroomStatus?.configured ?? false;
+
+  // Wenn Photoroom nicht verfügbar ist, auf AI umschalten
+  useEffect(() => {
+    if (photoroomStatus && !photoroomStatus.configured && mode === "photoroom") {
+      setMode("ai");
+    }
+  }, [photoroomStatus, mode]);
+
+  // Wenn Seite wechselt: Altes Mockup zurücksetzen
   useEffect(() => {
     setMockupUrl(null);
     setIsGenerating(false);
   }, [side]);
 
-  // Wenn sich der gecachte Screenshot ändert (neuer Screenshot für andere Seite): Mockup zurücksetzen
+  // Wenn sich der gecachte Screenshot ändert: Mockup zurücksetzen
   useEffect(() => {
     setMockupUrl(null);
   }, [cachedScreenshot]);
+
+  const loadingSteps = mode === "photoroom" ? LOADING_STEPS_PHOTOROOM : LOADING_STEPS_AI;
 
   // Fortschrittsanimation während der Generierung
   useEffect(() => {
@@ -89,10 +127,10 @@ export function AiMockupView({
 
       let stepIndex = 0;
       let accumulated = 0;
-      for (let i = 0; i < LOADING_STEPS.length; i++) {
-        accumulated += LOADING_STEPS[i].duration;
+      for (let i = 0; i < loadingSteps.length; i++) {
+        accumulated += loadingSteps[i].duration;
         if (elapsed < accumulated) break;
-        stepIndex = Math.min(i + 1, LOADING_STEPS.length - 1);
+        stepIndex = Math.min(i + 1, loadingSteps.length - 1);
       }
       setCurrentStep(stepIndex);
 
@@ -106,16 +144,14 @@ export function AiMockupView({
         cancelAnimationFrame(animFrameRef.current);
       }
     };
-  }, [isGenerating]);
+  }, [isGenerating, loadingSteps]);
 
   /** Erstelle ein Referenzbild für die KI-Generierung */
   const captureDesignImage = async (): Promise<string | undefined> => {
-    // Priorität 1: Vorab-gecachter Screenshot (wurde VOR dem Wechsel zum Mockup-Tab erstellt)
     if (cachedScreenshot) {
       return cachedScreenshot;
     }
 
-    // Priorität 2: Verwende canvasContainerRef für einen Screenshot des aktuellen Designs
     if (canvasContainerRef?.current) {
       try {
         const { toPng } = await import("html-to-image");
@@ -126,11 +162,10 @@ export function AiMockupView({
         });
         return dataUrl;
       } catch {
-        // Fallback zu Methode 3
+        // Fallback
       }
     }
 
-    // Priorität 3: Erstelle ein Composite aus den processedPartImages
     const partEntries = sortedParts
       .filter(p => processedPartImages[p.id])
       .map(p => processedPartImages[p.id]);
@@ -143,30 +178,49 @@ export function AiMockupView({
     setIsGenerating(true);
     setMockupUrl(null);
     try {
-      const colorDescriptions = sortedParts.map((part) => {
-        const color = partColors[part.id] || (isDtf ? dtfBaseColor : "#ffffff");
-        return `${part.label}: ${color}`;
-      }).join(", ");
-
-      const productType = isSublimation ? "Sublimation" : isDtf ? "DTF-Druck" : "Standard";
-
-      // Erfasse das aktuelle Design als Referenzbild
       const designImageBase64 = await captureDesignImage();
 
-      const result = await generateMockup.mutateAsync({
-        productName,
-        productType,
-        colorDescription: colorDescriptions,
-        designImageBase64,
-        zoneDescriptions,
-        side,
-      });
+      if (!designImageBase64) {
+        toast.error("Kein Design-Screenshot verfügbar. Bitte zuerst das Design konfigurieren.");
+        setIsGenerating(false);
+        return;
+      }
 
-      if (result.url) {
+      let resultUrl: string | undefined;
+
+      if (mode === "photoroom") {
+        // Photoroom Virtual Model API
+        const result = await generatePhotoroomMockup.mutateAsync({
+          designImageBase64,
+          modelPreset,
+          scenePreset,
+        });
+        resultUrl = result.url;
+      } else {
+        // Standard KI-Generierung
+        const colorDescriptions = sortedParts.map((part) => {
+          const color = partColors[part.id] || (isDtf ? dtfBaseColor : "#ffffff");
+          return `${part.label}: ${color}`;
+        }).join(", ");
+
+        const productType = isSublimation ? "Sublimation" : isDtf ? "DTF-Druck" : "Standard";
+
+        const result = await generateAiMockup.mutateAsync({
+          productName,
+          productType,
+          colorDescription: colorDescriptions,
+          designImageBase64,
+          zoneDescriptions,
+          side,
+        });
+        resultUrl = result.url;
+      }
+
+      if (resultUrl) {
         setProgress(100);
         await new Promise(resolve => setTimeout(resolve, 400));
-        setMockupUrl(result.url);
-        toast.success("KI-Mockup erfolgreich generiert!");
+        setMockupUrl(resultUrl);
+        toast.success("Mockup erfolgreich generiert!");
       } else {
         toast.error("Kein Mockup-Bild erhalten");
       }
@@ -182,7 +236,7 @@ export function AiMockupView({
     if (!mockupUrl) return;
     const a = document.createElement("a");
     a.href = storageUrl(mockupUrl) || mockupUrl;
-    a.download = `${productName.replace(/\s+/g, "_")}_KI_Mockup.png`;
+    a.download = `${productName.replace(/\s+/g, "_")}_Mockup.png`;
     a.target = "_blank";
     a.click();
   };
@@ -199,32 +253,107 @@ export function AiMockupView({
         </div>
       )}
 
-      {/* Initialer Zustand: Generieren-Button */}
+      {/* Initialer Zustand: Modus-Auswahl + Generieren-Button */}
       {!mockupUrl && !isGenerating && (
-        <div className="flex flex-col items-center gap-4 py-4">
+        <div className="flex flex-col items-center gap-4 py-4 w-full max-w-sm">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
             <Sparkles className="w-10 h-10 text-purple-500" />
           </div>
           <div className="text-center max-w-sm">
-            <h3 className="font-semibold text-lg mb-1">KI-Mockup generieren</h3>
+            <h3 className="font-semibold text-lg mb-1">Mockup generieren</h3>
             <p className="text-sm text-muted-foreground">
               Erstelle ein fotorealistisches Mockup basierend auf deinem aktuellen Design.
-              Farben, Logos und Muster werden als Vorlage verwendet.
             </p>
           </div>
+
+          {/* Modus-Auswahl */}
+          <div className="w-full space-y-2">
+            <p className="text-xs font-medium text-muted-foreground text-center">Methode wählen:</p>
+            <div className="grid grid-cols-2 gap-2">
+              {/* Photoroom Option */}
+              <button
+                onClick={() => isPhotoroomAvailable && setMode("photoroom")}
+                className={`relative flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-left ${
+                  mode === "photoroom"
+                    ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"
+                    : isPhotoroomAvailable
+                    ? "border-border hover:border-purple-300"
+                    : "border-border opacity-50 cursor-not-allowed"
+                }`}
+              >
+                <User className="w-5 h-5 text-purple-600" />
+                <span className="text-xs font-medium">Photoroom</span>
+                <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                  Virtuelles Model mit Szene
+                </span>
+                {!isPhotoroomAvailable && (
+                  <span className="text-[9px] text-amber-600 font-medium">API Key fehlt</span>
+                )}
+              </button>
+
+              {/* Standard KI Option */}
+              <button
+                onClick={() => setMode("ai")}
+                className={`relative flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-left ${
+                  mode === "ai"
+                    ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"
+                    : "border-border hover:border-purple-300"
+                }`}
+              >
+                <Camera className="w-5 h-5 text-purple-600" />
+                <span className="text-xs font-medium">Standard KI</span>
+                <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                  KI-generiertes Produktfoto
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Photoroom Optionen */}
+          {mode === "photoroom" && isPhotoroomAvailable && (
+            <div className="w-full space-y-2 bg-muted/30 rounded-lg p-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground block mb-1">Model</label>
+                  <select
+                    value={modelPreset}
+                    onChange={(e) => setModelPreset(e.target.value)}
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                  >
+                    {MODEL_PRESETS.map(p => (
+                      <option key={p.value} value={p.value}>{p.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground block mb-1">Szene</label>
+                  <select
+                    value={scenePreset}
+                    onChange={(e) => setScenePreset(e.target.value)}
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                  >
+                    {SCENE_PRESETS.map(p => (
+                      <option key={p.value} value={p.value}>{p.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Button
             onClick={handleGenerate}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white w-full"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Mockup generieren
+            {mode === "photoroom" ? "Photoroom Mockup generieren" : "KI-Mockup generieren"}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Dauer: ca. 10-60 Sekunden
+            Dauer: ca. {mode === "photoroom" ? "5-15" : "10-60"} Sekunden
           </p>
           {!cachedScreenshot && (
             <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-md">
-              Hinweis: Kein Design-Screenshot verfügbar. Das Mockup wird nur auf Basis der Farbbeschreibung erstellt.
+              Hinweis: Kein Design-Screenshot verfügbar. Bitte zuerst das Design konfigurieren.
             </p>
           )}
         </div>
@@ -233,20 +362,22 @@ export function AiMockupView({
       {/* Ladeanimation */}
       {isGenerating && (
         <div className="flex flex-col items-center gap-6 py-8 w-full max-w-sm">
-          {/* Animierter Kreis mit Pulseffekt */}
           <div className="relative w-28 h-28">
             <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500 border-r-pink-500 animate-spin" style={{ animationDuration: "2s" }} />
             <div className="absolute inset-2 rounded-full border-4 border-transparent border-b-purple-400 border-l-pink-400 animate-spin" style={{ animationDuration: "3s", animationDirection: "reverse" }} />
             <div className="absolute inset-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 animate-pulse flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-purple-500 animate-pulse" />
+              {mode === "photoroom" ? (
+                <User className="w-8 h-8 text-purple-500 animate-pulse" />
+              ) : (
+                <Sparkles className="w-8 h-8 text-purple-500 animate-pulse" />
+              )}
             </div>
           </div>
 
-          {/* Fortschrittsbalken */}
           <div className="w-full space-y-2">
             <div className="flex justify-between items-center text-xs text-muted-foreground">
               <span>{Math.round(progress)}%</span>
-              <span>{LOADING_STEPS[currentStep].text}</span>
+              <span>{loadingSteps[currentStep]?.text}</span>
             </div>
             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
               <div
@@ -256,9 +387,8 @@ export function AiMockupView({
             </div>
           </div>
 
-          {/* Schritte-Anzeige */}
           <div className="w-full space-y-1.5">
-            {LOADING_STEPS.map((step, index) => (
+            {loadingSteps.map((step, index) => (
               <div
                 key={index}
                 className={`flex items-center gap-2 text-xs transition-all duration-300 ${
@@ -292,7 +422,9 @@ export function AiMockupView({
           </div>
 
           <p className="text-xs text-muted-foreground text-center mt-2">
-            Die KI erstellt ein einzigartiges Mockup basierend auf deinem Design.
+            {mode === "photoroom"
+              ? "Photoroom erstellt ein fotorealistisches Mockup mit virtuellem Model."
+              : "Die KI erstellt ein einzigartiges Mockup basierend auf deinem Design."}
             <br />
             Bitte warte, bis der Vorgang abgeschlossen ist.
           </p>
@@ -306,9 +438,13 @@ export function AiMockupView({
             <img
               ref={imgRef}
               src={storageUrl(mockupUrl) || mockupUrl}
-              alt="KI-generiertes Mockup"
+              alt="Generiertes Mockup"
               className="w-full h-auto"
             />
+            {/* Badge für Methode */}
+            <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
+              {mode === "photoroom" ? "Photoroom" : "KI"}
+            </div>
           </div>
           <div className="flex gap-2 flex-wrap justify-center">
             <Button variant="outline" size="sm" onClick={handleGenerate}>
@@ -333,7 +469,9 @@ export function AiMockupView({
             )}
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            KI-generiertes Bild basierend auf deinem Design. Farben und Positionen können leicht abweichen.
+            {mode === "photoroom"
+              ? "Fotorealistisches Mockup erstellt mit Photoroom Virtual Model."
+              : "KI-generiertes Bild basierend auf deinem Design. Farben und Positionen können leicht abweichen."}
           </p>
         </div>
       )}

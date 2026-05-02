@@ -876,3 +876,37 @@
 - [x] X-Button zum Löschen nur im Zonen-Panel unten anzeigen (Delete-Button auf Zone im Canvas entfernt)
 - [x] KI-Mockup: Prompt vereinfacht auf Image-to-Image Editing (kurzer englischer Prompt, Referenzbild als Hauptvorlage)
 - [x] KI-Mockup: Side-Wechsel (Vorderseite/Rückseite) setzt altes Mockup zurück und zeigt neuen Screenshot
+
+## KI-Mockup: Fotorealistisches Bild statt flacher Grafik
+- [x] KI-Mockup Prompt komplett überarbeitet: Jetzt fotorealistisches Fashion-Foto mit Person
+- [x] Prompt beschreibt athletisches Model in urbaner Umgebung mit Canon EOS R5 Stil
+- [x] Referenzbild wird weiterhin als Vorlage für Logos/Texte/Farben verwendet
+- [x] Kleidungstyp wird automatisch aus Produktname erkannt (Hoodie, T-Shirt, Trikot, etc.)
+
+## Kritische Bugs (gemeldet 02.05.2026)
+- [x] Bildschirm lässt sich nicht verschieben/scrollen (touch-action:none nur bei aktivem Drag)
+- [x] Zonen werden beim Hinzufügen nicht angezeigt (partId fehlte beim freeCreate)
+- [x] KI-Mockup: Prompt komplett überarbeitet für fotorealistisches Ergebnis
+
+## Zonen-Größe in cm (Breite x Höhe)
+- [x] Editierbare Eingabefelder (Breite x Höhe in cm) bei allen Zonen außer Trikots
+- [x] DB-Schema: widthCm und heightCm Felder existieren bereits
+- [x] Backend: freeUpdate Endpoint für widthCm/heightCm erstellt
+- [x] UI: Eingabefelder im Zonen-Panel mit Ruler-Icon, speichert bei onBlur
+
+## Bug: Mannschaftsliste nicht sichtbar bei allen Produkten
+- [x] Mannschafts-Dropdown im Konfigurator-Header eingebaut (trpc.team.mine)
+- [x] Automatische Auswahl der ersten Mannschaft wenn keine teamId in URL
+- [x] Mannschaftswechsel lädt Spieler neu (setTeamPlayersLoaded(false))
+
+## Photoroom Virtual Model API Integration
+- [x] Backend: Photoroom API Helper erstellt (server/photoroom.ts)
+- [x] Backend: Mockup Endpoint mit Photoroom Virtual Model API (mockup.generatePhotoroom + mockup.photoroomStatus)
+- [x] Frontend: Photoroom als Mockup-Option in AiMockupView eingebaut (Tab-Auswahl Standard/Photoroom)
+- [x] Secret: PHOTOROOM_API_KEY als Environment Variable eingerichtet (wartet auf Key vom User)
+
+## Produktfotos für neue Produkte
+- [x] Produktfotos generiert für: Fußballtrikot, Handballtrikot, Volleyballtrikot, Basketballtrikot
+- [x] Produktfotos generiert für: Trainingshose, Zip-Jacke, Warme Jacke, Half-Zipper, Aufwaermshirt
+- [x] Alle previewUrls in shared/templates.ts aktualisiert (PNG statt SVG/alte Bilder)
+- [x] Legacy-Templates ebenfalls aktualisiert

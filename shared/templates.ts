@@ -288,7 +288,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "fussball",
     printMethod: "sublimation",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/fussballtrikot_4ce9a56b.png",
     parts: [
       VORDERTEIL,
       RUECKTEIL,
@@ -307,7 +307,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "fussball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/fussballtrikot_4ce9a56b.png",
     parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
   },
   // ===== Handball =====
@@ -319,7 +319,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "handball",
     printMethod: "sublimation",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/handballtrikot_9b890907.png",
     parts: [
       VORDERTEIL,
       RUECKTEIL,
@@ -338,7 +338,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "handball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/handballtrikot_9b890907.png",
     parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
   },
   // ===== Volleyball =====
@@ -350,7 +350,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "volleyball",
     printMethod: "sublimation",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/volleyballtrikot_e57cb4f2.png",
     parts: [
       VORDERTEIL,
       RUECKTEIL,
@@ -369,7 +369,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "volleyball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/volleyballtrikot_e57cb4f2.png",
     parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
   },
   // ===== Basketball =====
@@ -381,7 +381,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "basketball",
     printMethod: "sublimation",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/basketballtrikot_a83cd60a.png",
     parts: [VORDERTEIL, RUECKTEIL],
   },
   {
@@ -392,7 +392,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "basketball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/basketballtrikot_a83cd60a.png",
     parts: [VORDERTEIL, RUECKTEIL],
   },
   // ===== Trikot mit SVG-Silhouetten (DTF) =====
@@ -405,7 +405,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "fussball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_svg_vorderteil_9c36a538.svg",
+    previewUrl: "/manus-storage/fussballtrikot_4ce9a56b.png",
     parts: [
       {
         key: "vorderteil",
@@ -569,7 +569,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "handball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_svg_vorderteil_9c36a538.svg",
+    previewUrl: "/manus-storage/handballtrikot_9b890907.png",
     parts: [
       {
         key: "vorderteil",
@@ -733,7 +733,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "volleyball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_svg_vorderteil_9c36a538.svg",
+    previewUrl: "/manus-storage/volleyballtrikot_e57cb4f2.png",
     parts: [
       {
         key: "vorderteil",
@@ -897,7 +897,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "basketball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_svg_vorderteil_9c36a538.svg",
+    previewUrl: "/manus-storage/basketballtrikot_a83cd60a.png",
     parts: [
       {
         key: "vorderteil",
@@ -1025,7 +1025,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     sport: "fussball",
     printMethod: "dtf",
     freeZoneMode: true,
-    previewUrl: "/manus-storage/trainingshose_front_e7906657.svg",
+    previewUrl: "/manus-storage/trainingshose_3f4fdf1f.png",
     parts: [
       {
         key: "vorderteil",
@@ -1065,7 +1065,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     sport: "fussball",
     printMethod: "dtf",
     freeZoneMode: true,
-    previewUrl: "/manus-storage/aufwaermshirt_front_ae95cc7f.svg",
+    previewUrl: "/manus-storage/aufwaermshirt_f151206a.png",
     parts: [
       {
         key: "vorderteil",
@@ -1105,7 +1105,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     sport: "fussball",
     printMethod: "dtf",
     freeZoneMode: true,
-    previewUrl: "/manus-storage/zipjacke_front_21c5a323.svg",
+    previewUrl: "/manus-storage/zipjacke_2f4f8631.png",
     parts: [
       {
         key: "vorderteil",
@@ -1145,7 +1145,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     sport: "fussball",
     printMethod: "dtf",
     freeZoneMode: true,
-    previewUrl: "/manus-storage/halfzipper_front_a4f66ee1.svg",
+    previewUrl: "/manus-storage/halfzipper_71ba3b19.png",
     parts: [
       {
         key: "vorderteil",
@@ -1185,7 +1185,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     sport: "fussball",
     printMethod: "dtf",
     freeZoneMode: true,
-    previewUrl: "/manus-storage/warmejacke_front_88ce747a.svg",
+    previewUrl: "/manus-storage/warmejacke_509d120a.png",
     parts: [
       {
         key: "vorderteil",
@@ -1225,7 +1225,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "fussball",
     printMethod: "sublimation",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/fussballtrikot_4ce9a56b.png",
     parts: [
       VORDERTEIL,
       RUECKTEIL,
@@ -1244,7 +1244,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "fussball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/trikot_vorderteil_58c100c1.png",
+    previewUrl: "/manus-storage/fussballtrikot_4ce9a56b.png",
     parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
   },
 ];
