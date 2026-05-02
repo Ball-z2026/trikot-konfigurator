@@ -5710,3 +5710,20 @@
 [2026-05-02T19:04:36.924Z] [Auth] Missing session cookie
 [2026-05-02T19:04:36.933Z] [Auth] Missing session cookie
 [2026-05-02T19:04:36.941Z] [Auth] Missing session cookie
+[2026-05-02T19:16:41.395Z] 3:16:41 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:20:12.328Z] [StorageProxy] file fetch error: 403
+[2026-05-02T19:20:16.515Z] Dev server process group stopped
+[2026-05-02T19:20:16.571Z] Dev server exited with code -15
+[2026-05-02T19:20:19.539Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T19:20:21.542Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T19:20:21.989Z] Server running on http://localhost:3000/
+[2026-05-02T19:25:49.382Z] 3:25:49 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:25:58.631Z] 3:25:58 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:27:48.245Z] 3:27:48 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:29:16.412Z] 3:29:16 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:29:30.025Z] 3:29:30 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:34:54.717Z] 3:34:54 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:35:03.298Z] 3:35:03 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:37:38.886Z] 3:37:38 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:38:37.929Z] 3:38:37 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:38:53.407Z] 3:38:53 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css

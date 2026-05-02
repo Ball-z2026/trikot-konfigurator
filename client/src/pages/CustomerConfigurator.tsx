@@ -345,12 +345,23 @@ export default function CustomerConfigurator() {
     { enabled: !!userOrgId }
   );
 
-  // Trikotnummern-Regeln basierend auf Sportart des Vereins
+  // Sportart ermitteln: Primär aus dem Produkt-Template, Fallback auf orgData.sport
+  const effectiveSport: SportartCode | null = useMemo(() => {
+    // 1. Sportart aus dem Produkt-Template (am genauesten, da templateId sportartspezifisch ist)
+    if (productData?.templateId) {
+      const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
+      if (tmpl?.sport) return tmpl.sport as SportartCode;
+    }
+    // 2. Fallback: Sportart der Organisation
+    if (orgData?.sport) return orgData.sport as SportartCode;
+    return null;
+  }, [productData?.templateId, orgData?.sport]);
+
+  // Trikotnummern-Regeln basierend auf Sportart
   const numberRules: NumberRule | null = useMemo(() => {
-    if (!orgData?.sport) return null;
-    const sport = orgData.sport as "fussball" | "volleyball" | "handball" | "basketball";
-    return getNumberRules(sport, "amateur");
-  }, [orgData?.sport]);
+    if (!effectiveSport) return null;
+    return getNumberRules(effectiveSport, "amateur");
+  }, [effectiveSport]);
 
   const orgStateName = useMemo(() => {
     if (!orgData?.state) return null;
@@ -359,10 +370,15 @@ export default function CustomerConfigurator() {
 
   // Vollständiges Regelwerk (Nummern + Sponsoren + Emblem + Spielername + Vereinsname)
   const fullRuleSet: JerseyRuleSet | null = useMemo(() => {
-    if (!orgData?.sport) return null;
-    const sport = orgData.sport as SportartCode;
-    return getJerseyRules(sport, "amateur");
-  }, [orgData?.sport]);
+    if (!effectiveSport) return null;
+    return getJerseyRules(effectiveSport, "amateur");
+  }, [effectiveSport]);
+
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const overviewRef = useRef<HTMLDivElement>(null);
+  const parts: PartData[] = useMemo(() => (productData?.parts as PartData[]) || [], [productData?.parts]);
+  const hasParts = parts.length > 0;
+  const allZones: ZoneData[] = useMemo(() => (productData?.zones as ZoneData[]) || [], [productData?.zones]);
 
   // Live-Validierung der Zonen gegen Verbandsvorgaben
   const [validationWarnings, setValidationWarnings] = useState<ValidationWarning[]>([]);
@@ -387,12 +403,6 @@ export default function CustomerConfigurator() {
     const warnings = validateZonesAgainstRules(zonesForValidation, fullRuleSet);
     setValidationWarnings(warnings);
   }, [fullRuleSet, allZones, parts]);
-
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const overviewRef = useRef<HTMLDivElement>(null);
-  const parts: PartData[] = useMemo(() => (productData?.parts as PartData[]) || [], [productData?.parts]);
-  const hasParts = parts.length > 0;
-  const allZones: ZoneData[] = useMemo(() => (productData?.zones as ZoneData[]) || [], [productData?.zones]);
 
   // Druckverfahren erkennen (auch alte templateIds und Part-Anzahl berücksichtigen)
   const isSublimation = useMemo(() => {
@@ -422,19 +432,18 @@ export default function CustomerConfigurator() {
   }, [productData?.templateId, parts]);
 
   // ─── Erkennung ob Produktbilder Transparenz haben (für Farb-Overlay) ───
-  // Nicht-Trikot-Produkte (T-Shirt, Hoodie, Jacke) haben transparente PNGs
-  // SVG-basierte Templates haben immer Transparenz
-  // Trikot-Kategorie mit PNG-Bildern hat KEINE Transparenz (weißer Hintergrund mit Umriss)
+  // Transparenz-Erkennung: Nur SVG-basierte Bilder sind transparent.
+  // Alle PNG-Bilder (Trikots, Hoodies, T-Shirts, Jacken, etc.) haben weiße Hintergründe
+  // und benötigen den multiply-Overlay statt CSS-Mask.
   const hasTransparentImages = useMemo(() => {
-    if (productData?.category && productData.category !== 'Trikot') return true;
-    if ((productData as any)?.freeZoneMode) return true;
-    // SVG-Templates erkennen
+    // SVG-Templates erkennen (aus TEXTIL_TEMPLATES)
     const tmpl = productData?.templateId ? TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId) : null;
     if (tmpl?.parts?.[0]?.imageUrl?.includes('.svg')) return true;
-    // Prüfe ob die Part-Bilder SVGs sind
+    // Prüfe ob die Part-Bilder SVGs sind (aus DB)
     if (parts.length > 0 && parts[0]?.imageUrl?.includes('.svg')) return true;
+    // Alle anderen (PNG) sind nicht transparent
     return false;
-  }, [productData?.category, productData?.templateId, (productData as any)?.freeZoneMode, parts]);
+  }, [productData?.templateId, parts]);
 
   // ─── Free Zone Mode erkennen (Bekleidung: Trainer definiert Zonen selbst) ───
   const isFreeZoneMode = useMemo(() => {
@@ -1659,9 +1668,17 @@ export default function CustomerConfigurator() {
                           >
                             {part.imageUrl ? (
                               <>
+                                <img
+                                  src={storageUrl(part.imageUrl)}
+                                  alt={part.label}
+                                  className="w-full h-full object-contain relative"
+                                  crossOrigin="anonymous"
+                                />
+                                {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply */}
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
                                   <div className="absolute inset-0 pointer-events-none" style={{
                                     backgroundColor: getPartColor(part.id),
+                                    mixBlendMode: "multiply" as const,
                                     WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
                                     WebkitMaskSize: "contain",
                                     WebkitMaskRepeat: "no-repeat",
@@ -1672,17 +1689,16 @@ export default function CustomerConfigurator() {
                                     maskPosition: "center",
                                   }} />
                                 )}
-                                <img
-                                  src={storageUrl(part.imageUrl)}
-                                  alt={part.label}
-                                  className="w-full h-full object-contain relative"
-                                  crossOrigin="anonymous"
-                                  style={{
-                                    ...((!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage)
-                                      ? { mixBlendMode: "multiply" as const }
-                                      : {}),
-                                  }}
-                                />
+                                {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
+                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                      backgroundColor: getPartColor(part.id),
+                                      mixBlendMode: "multiply" as const,
+                                    }}
+                                  />
+                                )}
                               </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -1853,11 +1869,20 @@ export default function CustomerConfigurator() {
                           <div className="relative">
                             {part.imageUrl ? (
                               <>
+                                <img
+                                  src={storageUrl(part.imageUrl)}
+                                  alt={part.label}
+                                  className="w-full h-auto block p-1 relative"
+                                  draggable={false}
+                                  crossOrigin="anonymous"
+                                />
+                                {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply */}
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
                                   <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
                                       backgroundColor: getPartColor(part.id),
+                                      mixBlendMode: "multiply" as const,
                                       WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
                                       WebkitMaskSize: "100% 100%",
                                       WebkitMaskRepeat: "no-repeat",
@@ -1869,18 +1894,16 @@ export default function CustomerConfigurator() {
                                     }}
                                   />
                                 )}
-                                <img
-                                  src={storageUrl(part.imageUrl)}
-                                  alt={part.label}
-                                  className="w-full h-auto block p-1 relative"
-                                  draggable={false}
-                                  crossOrigin="anonymous"
-                                  style={{
-                                    ...((!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage)
-                                      ? { mixBlendMode: "multiply" as const }
-                                      : {}),
-                                  }}
-                                />
+                                {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
+                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                      backgroundColor: getPartColor(part.id),
+                                      mixBlendMode: "multiply" as const,
+                                    }}
+                                  />
+                                )}
                               </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -2076,12 +2099,21 @@ export default function CustomerConfigurator() {
                   {/* CSS-based coloring: color behind image, visible through transparent areas */}
                   {currentImage ? (
                     <div className="relative w-full" style={{ position: "relative", zIndex: 1 }}>
-                      {/* Color layer - only for transparent images (T-Shirt, Hoodie, SVG) */}
+                      {/* Hauptbild */}
+                      <img
+                        src={currentImage}
+                        alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
+                        className="w-full h-auto block pointer-events-none drop-shadow-md relative"
+                        draggable={false}
+                        crossOrigin="anonymous"
+                      />
+                      {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply über dem Bild */}
                       {hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
                             backgroundColor: activeColor,
+                            mixBlendMode: "multiply" as const,
                             WebkitMaskImage: `url(${currentImage})`,
                             WebkitMaskSize: "100% 100%",
                             WebkitMaskRepeat: "no-repeat",
@@ -2093,19 +2125,16 @@ export default function CustomerConfigurator() {
                           }}
                         />
                       )}
-                      {/* Hauptbild mit Farb-Overlay */}
-                      <img
-                        src={currentImage}
-                        alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
-                        className="w-full h-auto block pointer-events-none drop-shadow-md relative"
-                        draggable={false}
-                        crossOrigin="anonymous"
-                        style={{
-                          ...((!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage)
-                            ? { mixBlendMode: "multiply" as const }
-                            : {}),
-                        }}
-                      />
+                      {/* Farb-Overlay für nicht-transparente Bilder (Trikot-PNGs mit weißem Hintergrund) */}
+                      {!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            backgroundColor: activeColor,
+                            mixBlendMode: "multiply" as const,
+                          }}
+                        />
+                      )}
                     </div>
                   ) : (
                     <div className="w-full aspect-[3/4] flex flex-col items-center justify-center text-muted-foreground" style={{ position: "relative", zIndex: 1 }}>
@@ -2444,7 +2473,7 @@ export default function CustomerConfigurator() {
                 {validationWarnings.length === 0 && fullRuleSet && productData?.category === 'Trikot' && (
                   <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400 bg-green-50/50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md p-2">
                     <span>✅</span>
-                    <span>Alle Verbandsvorgaben eingehalten ({orgData?.sport ? orgData.sport.charAt(0).toUpperCase() + orgData.sport.slice(1) : 'Sportart'}{orgStateName ? `, ${orgStateName}` : ''})</span>
+                    <span>Alle Verbandsvorgaben eingehalten ({effectiveSport ? effectiveSport.charAt(0).toUpperCase() + effectiveSport.slice(1) : 'Sportart'}{orgStateName ? `, ${orgStateName}` : ''})</span>
                   </div>
                 )}
 

@@ -1050,3 +1050,22 @@
 - [x] Backend: Validierungs-Endpoint (zone.validateRules) implementiert
 - [x] Frontend: Warnungen-Banner im Zonen-Tab (Fehler rot, Warnungen gelb)
 - [x] Frontend: jerseyRules + Live-Validierung im CustomerConfigurator
+
+## Bug: Verbandsvorgaben zeigen falsche Sportart (FIVB statt DFB)
+- [x] Sportart wird jetzt primär aus dem Produkt-Template abgeleitet (z.B. fussball_dtf → fussball)
+- [x] Fallback auf orgData.sport wenn Template keine Sportart enthält
+- [x] Anzeige im Regelwerk-Übersicht aktualisiert (effectiveSport statt orgData.sport)
+
+## Bug: Farbauswahl-Einfärbung funktioniert nicht im Hauptbild
+- [x] Farb-Overlay wird jetzt als separates div ÜBER dem Bild gerendert (statt darunter)
+- [x] Für opake PNGs (Trikots, Hoodies): mix-blend-mode:multiply Overlay über dem Bild
+- [x] Für transparente SVGs: CSS-Mask + mix-blend-mode:multiply Overlay über dem Bild
+- [x] Alle 3 Ansichten konsistent gefixt: Hauptbild, Thumbnails, Gesamtübersicht
+- [x] hasTransparentImages-Logik korrigiert: Nur SVG-Bilder gelten als transparent (nicht alle Nicht-Trikots)
+- [x] CMYK-Farbwerte werden überall korrekt angezeigt
+
+## Getestete Artikel
+- [x] Fußballtrikot DTF (690059): Grün korrekt eingefärbt
+- [x] Fußballtrikot SVG DTF (690035): Gelb korrekt eingefärbt
+- [x] Vereins-Hoodie (540001): Schwarz und Rot korrekt eingefärbt
+- [x] Atest-Trikot (180001): Rot und Blau korrekt eingefärbt
