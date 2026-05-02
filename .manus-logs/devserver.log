@@ -5996,3 +5996,13 @@
 [2026-05-02T20:58:30.105Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-02T20:58:32.309Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-02T20:58:32.791Z] Server running on http://localhost:3000/
+[2026-05-02T21:12:07.276Z] 5:12:07 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T21:12:22.051Z] 5:12:22 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T21:12:36.453Z] 5:12:36 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T21:13:09.339Z] Dev server process group stopped
+[2026-05-02T21:13:09.411Z] Dev server exited with code -15
+[2026-05-02T21:13:12.352Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T21:13:14.073Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T21:13:14.614Z] Server running on http://localhost:3000/
+[2026-05-02T21:14:10.236Z] 5:14:10 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T21:14:27.624Z] 5:14:27 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css

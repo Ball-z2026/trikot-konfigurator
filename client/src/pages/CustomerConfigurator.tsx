@@ -1694,6 +1694,7 @@ export default function CustomerConfigurator() {
                                   alt={part.label}
                                   className="w-full h-full object-contain relative"
                                   crossOrigin="anonymous"
+                                  style={(getPartColor(part.id) === "#ffffff" || getPartColor(part.id) === "#FFFFFF") && !dtfBrandImage ? { filter: "brightness(100) saturate(0)" } : undefined}
                                 />
                                 {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply */}
                                  {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
@@ -1923,6 +1924,7 @@ export default function CustomerConfigurator() {
                                   className="w-full h-auto block p-1 relative"
                                   draggable={false}
                                   crossOrigin="anonymous"
+                                  style={(getPartColor(part.id) === "#ffffff" || getPartColor(part.id) === "#FFFFFF") && !dtfBrandImage ? { filter: "brightness(100) saturate(0)" } : undefined}
                                 />
                                 {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
@@ -2146,6 +2148,7 @@ export default function CustomerConfigurator() {
                         className="w-full h-auto block pointer-events-none drop-shadow-md relative"
                         draggable={false}
                         crossOrigin="anonymous"
+                        style={(!activeColor || activeColor === "#ffffff" || activeColor === "#FFFFFF") && !dtfBrandImage ? { filter: "brightness(100) saturate(0)" } : undefined}
                       />
                       {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
                       {/* SVGs werden vom Storage-Proxy als opake PNGs geliefert. */}

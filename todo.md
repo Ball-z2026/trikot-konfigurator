@@ -1102,3 +1102,13 @@
 - [x] Standardfarbe auf Weiß (#ffffff) geändert statt Hellgrau (#c8c8cc)
 - [x] Alle Schriften (Vereinsname, Nummer, Spielername, Kürzel) standardmäßig Schwarz (#000000)
 - [x] Globale Farbauswahl für Vereinsname, Nummer, Spielername im Farben-Tab (eine Farbe gilt für alle drei)
+
+## Bug: Aufwärm-Shirt verschwindet bei weißer Standardfarbe
+- [x] Weiß als Standardfarbe + multiply-Overlay = Bild wird komplett weiß
+- [x] Fix: Bei Weiß (#ffffff) CSS filter brightness(100) saturate(0) angewendet
+
+## Bug: Alle Artikel sollen standardmäßig weiß erscheinen
+- [x] Template-Bilder sind dunkelblau/schwarz – multiply-Overlay mit Weiß ändert nichts
+- [x] Einfärbungslogik geändert: CSS filter brightness(100) saturate(0) bei Weiß auf alle 3 Ansichten (Einzelteile, Thumbnails, Gesamtübersicht)
+- [x] Bei Farbauswahl: Filter wird entfernt, multiply-Overlay mit gewählter Farbe korrekt angewendet
+- [x] Aufwärm-Shirt getestet: Weiß=weißes Shirt, Schwarz=schwarzes Shirt, Gelb=gelbes Shirt
