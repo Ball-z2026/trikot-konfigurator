@@ -28,7 +28,7 @@ export function registerLocalAuthRoutes(app: Express) {
    */
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { role, name, email, password, orgName, deptName, teamName } = req.body;
+      const { role, name, email, password, orgName, orgState, orgSport, deptName, teamName } = req.body;
 
       if (!role || !name || !email || !password) {
         res.status(400).json({ error: "Name, E-Mail, Passwort und Rolle sind erforderlich" });
@@ -78,7 +78,13 @@ export function registerLocalAuthRoutes(app: Express) {
       const userId = Number(userResult[0].insertId);
 
       // Create organization
-      const orgId = Number(await db.createOrganization({ name: orgName, type: "verein", ownerId: userId }));
+      const orgId = Number(await db.createOrganization({
+        name: orgName,
+        type: "verein",
+        ownerId: userId,
+        state: orgState || undefined,
+        sport: orgSport || undefined,
+      }));
 
       let createdDeptId: number | null = null;
       if (role === "verein") {

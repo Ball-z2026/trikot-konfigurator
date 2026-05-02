@@ -564,7 +564,23 @@ export const appRouter = router({
         if (!product || !product.freeZoneMode) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Freie Zonen-Bearbeitung ist für dieses Produkt nicht aktiviert." });
         }
-        await bulkUpdateZones(input.zones);
+        // Bei Trikots: clubLogo-Zonen dürfen nur Position ändern (keine Größe/Rotation)
+        const tmpl = product.templateId ? TEXTIL_TEMPLATES.find(t => t.id === product.templateId) : null;
+        const isTrikot = tmpl?.category === 'Trikot' || product.category === 'Trikot';
+        if (isTrikot) {
+          const existingZones = await listZonesByProduct(input.productId);
+          const clubLogoIds = new Set(existingZones.filter(z => z.purpose === 'clubLogo').map(z => z.id));
+          const protectedZones = input.zones.map(z => {
+            if (clubLogoIds.has(z.id)) {
+              const original = existingZones.find(ez => ez.id === z.id)!;
+              return { ...z, width: original.width, height: original.height, rotation: original.rotation ?? 0 };
+            }
+            return z;
+          });
+          await bulkUpdateZones(protectedZones);
+        } else {
+          await bulkUpdateZones(input.zones);
+        }
         return { success: true };
       }),
   }),

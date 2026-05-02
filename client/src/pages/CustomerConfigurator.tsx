@@ -50,7 +50,7 @@ import { useState, useRef, useCallback, useEffect, useMemo, Suspense, lazy } fro
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle, Info, Move } from "lucide-react";
 import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
 import { storageUrl } from "@/lib/utils";
@@ -498,6 +498,8 @@ export default function CustomerConfigurator() {
       e.stopPropagation();
       const zone = localZones.find((z) => z.id === zoneId);
       if (!zone) return;
+      // Vereinswappen bei Trikots: Nur verschieben erlaubt, kein Resize/Rotation
+      if (zone.purpose === "clubLogo" && productData?.category === 'Trikot' && (isResize || isRotating)) return;
       // Capture pointer for reliable tracking
       (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
       // Haptic feedback on touch
@@ -930,16 +932,14 @@ export default function CustomerConfigurator() {
         const widthCm = zone?.widthCm || null;
         const heightCm = zone?.heightCm || null;
 
-        if (!isPdf && widthCm && heightCm) {
+        if (!isPdf) {
           try {
             const { checkImageDpi } = await import("@/hooks/useDpiCheck");
+            // DPI-Prüfung: Wenn cm-Maße vorhanden, verwende diese; sonst Standard 10x10cm
             const result = await checkImageDpi(file, widthCm, heightCm);
-            if (result.status === "rejected") {
-              toast.error(result.message, { duration: 8000 });
-              return;
-            } else if (result.status === "warning") {
+            if (result.status === "warning") {
               toast.warning(result.message, { duration: 8000 });
-            } else {
+            } else if (result.status === "ok") {
               toast.success(result.message);
             }
           } catch {
@@ -1381,8 +1381,8 @@ export default function CustomerConfigurator() {
             </span>
           </div>
         )}
-        {/* freeZoneMode: Rotation-Handle (oben Mitte) */}
-        {isFreeZoneDraggable && isSelected && (
+        {/* freeZoneMode: Rotation-Handle (oben Mitte) - nicht für clubLogo bei Trikots */}
+        {isFreeZoneDraggable && isSelected && !(zone.purpose === "clubLogo" && productData?.category === 'Trikot') && (
           <div
             className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full flex flex-col items-center"
             style={{ zIndex: 35, touchAction: 'none' }}
@@ -1403,8 +1403,8 @@ export default function CustomerConfigurator() {
             </div>
           </div>
         )}
-        {/* freeZoneMode: Resize-Handle (unten rechts) - größer auf Touch */}
-        {isFreeZoneDraggable && isSelected && (
+        {/* freeZoneMode: Resize-Handle (unten rechts) - nicht für clubLogo bei Trikots */}
+        {isFreeZoneDraggable && isSelected && !(zone.purpose === "clubLogo" && productData?.category === 'Trikot') && (
           <div
             className="absolute bottom-0 right-0 bg-primary cursor-se-resize"
             style={{
@@ -2306,12 +2306,9 @@ export default function CustomerConfigurator() {
                                     try {
                                       const { checkImageDpi } = await import("@/hooks/useDpiCheck");
                                       const result = await checkImageDpi(file, 30, 40);
-                                      if (result.status === "rejected") {
-                                        toast.error(result.message, { duration: 8000 });
-                                        return;
-                                      } else if (result.status === "warning") {
+                                      if (result.status === "warning") {
                                         toast.warning(result.message, { duration: 8000 });
-                                      } else {
+                                      } else if (result.status === "ok") {
                                         toast.success(result.message);
                                       }
                                     } catch { /* Bei Fehler fortfahren */ }
@@ -2683,7 +2680,8 @@ export default function CustomerConfigurator() {
                                     <Upload className="w-3.5 h-3.5 mr-1.5" />
                                     {content?.imageDataUrl ? "Wappen \u00e4ndern" : "Vereinswappen hochladen"}
                                   </Button>
-                                  {content?.imageDataUrl && (
+                                  {/* Wappen-Lösch-Button: Bei Trikots nicht anzeigen (nur verschieben erlaubt) */}
+                                  {content?.imageDataUrl && productData?.category !== 'Trikot' && (
                                     <Button
                                       variant="ghost"
                                       size="icon"
@@ -2696,6 +2694,13 @@ export default function CustomerConfigurator() {
                                       <Trash2 className="w-3.5 h-3.5 text-destructive" />
                                     </Button>
                                   )}
+                                </div>
+                              )}
+                              {/* Hinweis bei Trikots: Wappen kann nur verschoben werden */}
+                              {productData?.category === 'Trikot' && content?.imageDataUrl && !isZoneLocked(zone) && (
+                                <div className="text-xs text-blue-700 bg-blue-50 dark:bg-blue-950/30 dark:text-blue-400 rounded-md p-2 flex items-center gap-2">
+                                  <Move className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Bei Trikots kann das Vereinswappen nur verschoben, nicht gelöscht oder in der Größe verändert werden.</span>
                                 </div>
                               )}
                             </div>

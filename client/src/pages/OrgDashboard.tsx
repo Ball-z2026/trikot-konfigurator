@@ -313,12 +313,9 @@ function OrgDetail({ orgId }: { orgId: number }) {
     if (!isPdfSponsor) try {
       const { checkImageDpi } = await import("@/hooks/useDpiCheck");
       const result = await checkImageDpi(sponsorFile, 26, 10);
-      if (result.status === "rejected") {
-        toast.error(result.message, { duration: 8000 });
-        return;
-      } else if (result.status === "warning") {
+      if (result.status === "warning") {
         toast.warning(result.message, { duration: 8000 });
-      } else {
+      } else if (result.status === "ok") {
         toast.success(result.message);
       }
     } catch { /* Bei Fehler fortfahren */ }
@@ -382,12 +379,9 @@ function OrgDetail({ orgId }: { orgId: number }) {
     if (!isPdfLogo) try {
       const { checkImageDpi } = await import("@/hooks/useDpiCheck");
       const result = await checkImageDpi(logoFile, 10, 10);
-      if (result.status === "rejected") {
-        toast.error(result.message, { duration: 8000 });
-        return;
-      } else if (result.status === "warning") {
+      if (result.status === "warning") {
         toast.warning(result.message, { duration: 8000 });
-      } else {
+      } else if (result.status === "ok") {
         toast.success(result.message);
       }
     } catch { /* Bei Fehler fortfahren */ }

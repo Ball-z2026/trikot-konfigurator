@@ -3,8 +3,10 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2, Users, UserCheck, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { BUNDESLAENDER, SPORTARTEN } from "@shared/jerseyRules";
 
 type RegistrationRole = "verein" | "sparte" | "trainer" | null;
 
@@ -15,6 +17,8 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [orgName, setOrgName] = useState("");
+  const [orgState, setOrgState] = useState("");
+  const [orgSport, setOrgSport] = useState("");
   const [deptName, setDeptName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -49,6 +53,8 @@ export default function Register() {
           email,
           password,
           orgName,
+          orgState: orgState || undefined,
+          orgSport: orgSport || undefined,
           deptName: deptName || undefined,
           teamName: teamName || undefined,
         }),
@@ -234,6 +240,36 @@ export default function Register() {
                 placeholder="z.B. TSV Musterstadt"
                 className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
               />
+            </div>
+
+            {/* Bundesland */}
+            <div className="space-y-2">
+              <label className="text-sm text-slate-400">Bundesland</label>
+              <Select value={orgState} onValueChange={setOrgState}>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                  <SelectValue placeholder="Bundesland wählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {BUNDESLAENDER.map((bl) => (
+                    <SelectItem key={bl.value} value={bl.value}>{bl.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Sportart */}
+            <div className="space-y-2">
+              <label className="text-sm text-slate-400">Sportart</label>
+              <Select value={orgSport} onValueChange={setOrgSport}>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                  <SelectValue placeholder="Sportart wählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPORTARTEN.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {(selectedRole === "sparte" || selectedRole === "trainer") && (

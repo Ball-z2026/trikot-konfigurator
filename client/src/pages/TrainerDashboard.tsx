@@ -112,6 +112,19 @@ function TrainerLogoSection({ orgId }: { orgId: number }) {
 
   const handleUpload = useCallback(async () => {
     if (!logoFile || !logoName.trim()) return;
+    // DPI-Prüfung: Vereinswappen wird bei 10x10cm gedruckt (nur Bilder)
+    const isPdfLogo = logoFile.type === "application/pdf" || logoFile.name.toLowerCase().endsWith(".pdf");
+    if (!isPdfLogo) {
+      try {
+        const { checkImageDpi } = await import("@/hooks/useDpiCheck");
+        const result = await checkImageDpi(logoFile, 10, 10);
+        if (result.status === "warning") {
+          toast.warning(result.message, { duration: 8000 });
+        } else if (result.status === "ok") {
+          toast.success(result.message);
+        }
+      } catch { /* Bei Fehler fortfahren */ }
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;

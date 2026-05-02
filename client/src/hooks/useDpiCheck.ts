@@ -3,9 +3,8 @@
  * Berechnet die effektive DPI basierend auf der Pixel-Auflösung des Bildes
  * und der vorgesehenen Druckfläche in cm.
  * 
- * 3-Stufen-Prüfung:
- * - Unter 250 DPI: Ablehnung (Bild wird nicht akzeptiert)
- * - 250–299 DPI: Warnung (Bild wird zugelassen, aber Hinweis auf geringe Qualität)
+ * 2-Stufen-Prüfung (Upload wird NIE blockiert):
+ * - Unter 300 DPI: Warnung (Bild wird zugelassen, aber Hinweis auf geringe Qualität)
  * - Ab 300 DPI: OK (optimale Druckqualität)
  */
 
@@ -71,10 +70,10 @@ export function calculateDpi(
     valid = true;
     message = `Geringe Auflösung (${minDpi} DPI) – Druckqualität könnte nicht optimal sein. Empfohlen: mindestens ${requiredWidth} × ${requiredHeight} Pixel (300 DPI).`;
   } else {
-    // Unter 250 DPI: Ablehnung
-    status = "rejected";
-    valid = false;
-    message = `Auflösung zu gering: ${minDpi} DPI. Für eine Druckfläche von ${printWidthCm} × ${printHeightCm} cm werden mindestens ${minRequiredWidth} × ${minRequiredHeight} Pixel benötigt (250 DPI). Empfohlen: ${requiredWidth} × ${requiredHeight} Pixel (300 DPI).`;
+    // Unter 250 DPI: Warnung (Upload trotzdem erlaubt)
+    status = "warning";
+    valid = true;
+    message = `Achtung: Niedrige Auflösung (${minDpi} DPI). Für eine Druckfläche von ${printWidthCm} × ${printHeightCm} cm werden mindestens ${minRequiredWidth} × ${minRequiredHeight} Pixel empfohlen (250 DPI). Optimale Qualität: ${requiredWidth} × ${requiredHeight} Pixel (300 DPI).`;
   }
 
   return {

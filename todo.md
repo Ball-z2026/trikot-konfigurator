@@ -941,3 +941,25 @@
 - [x] Wenn widthCm/heightCm gesetzt: Rahmen der Zone hat das korrekte Seitenverhältnis (z.B. 20x10cm = 2:1)
 - [x] Inhalt (Logo/Bild) füllt den Rahmen komplett aus
 - [x] Höhe ist ausschlaggebend: Zone-Höhe bestimmt die tatsächliche Größe, Breite ergibt sich aus dem Verhältnis
+
+## Vereinswappen-Sperre bei Trikots
+- [x] Frontend: Löschen-Button für Zonen mit purpose === "clubLogo" bei Trikots ausblenden
+- [x] Frontend: Resize/Rotation-Handles für clubLogo bei Trikots deaktivieren (nur verschieben erlaubt)
+- [x] Backend: freeBulkUpdatePositions bei clubLogo-Zonen von Trikots: Größe/Rotation wird beibehalten (nur Position ändern erlaubt)
+- [x] Hinweistext bei Trikots: "Vereinswappen kann nur verschoben werden"
+
+## DPI-Prüfung beim Logo-Upload
+- [x] Frontend: DPI aus Bild-Metadaten auslesen (Pixel/physische Größe berechnen) - war bereits implementiert
+- [x] Frontend: Warnung anzeigen bei < 300 DPI ("Geringe Druckqualität")
+- [x] Frontend: OK-Badge (Toast) anzeigen ab 300 DPI ("Druckqualität gut")
+- [x] Frontend: Upload trotzdem erlauben bei < 250 DPI (nur Warnung, kein Block mehr)
+- [x] DPI-Prüfung auch bei Uploads ohne cm-Maße (Standard 10x10cm)
+- [x] DPI-Prüfung im TrainerDashboard Logo-Upload hinzugefügt
+- [x] Alle rejected-Blocks in OrgDashboard und CustomerConfigurator entfernt
+## Bundesland-Feld beim Verein anlegen
+- [x] DB-Schema: Bundesland-Feld (state) bereits in organisations-Tabelle vorhanden
+- [x] Backend: org.create und org.update bereits mit state/sport Feldern
+- [x] Frontend: Bundesland-Dropdown im Verein-Erstellungsdialog (OrgDashboard) - war bereits vorhanden
+- [x] Frontend: Bundesland- und Sportart-Dropdown im Registrierungsflow hinzugefügt
+- [x] Backend: Registrierungs-Endpoint um orgState/orgSport erweitert
+- [x] Spielklasse/Kategorie bei Mannschaften (TrainerDashboard) - war bereits vorhanden
