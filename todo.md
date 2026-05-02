@@ -855,3 +855,7 @@
 - [x] Vergleichsansicht: Unterschiede visuell hervorheben (Titel, Seite, Datum)
 - [x] PDF-Export: Galerie als PDF für Vereins-Präsentationen exportieren
 - [x] PDF-Export: Mockup-Bilder, Titel, Datum und Team-Info im PDF
+
+## Bug: Farbe färbt gesamten Hintergrund statt nur Hoodie
+- [x] Farb-Overlay bei freeZoneMode-Produkten (Hoodie, Jacke, T-Shirt) nur auf die Innenfläche des Produktbilds beschränken (CSS-Mask in Gesamtübersicht hinzugefügt)
+- [x] Hintergrund (außerhalb des Produkts) muss weiß/transparent bleiben

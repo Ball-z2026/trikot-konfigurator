@@ -1682,7 +1682,20 @@ export default function CustomerConfigurator() {
                             {part.imageUrl ? (
                               <>
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id) }} />
+                                  <div
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                      backgroundColor: getPartColor(part.id),
+                                      WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
+                                      WebkitMaskSize: "contain",
+                                      WebkitMaskRepeat: "no-repeat",
+                                      WebkitMaskPosition: "center",
+                                      maskImage: `url(${storageUrl(part.imageUrl)})`,
+                                      maskSize: "contain",
+                                      maskRepeat: "no-repeat",
+                                      maskPosition: "center",
+                                    }}
+                                  />
                                 )}
                                 <img
                                   src={storageUrl(part.imageUrl)}
