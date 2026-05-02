@@ -1084,3 +1084,21 @@
 ## Bug: KI-Mockup Rückseite zeigt falsches Bild
 - [x] Bei KI-Mockup Rückseite wird das falsche Bild angezeigt (Fix: processedPartImages mit partImageMap befüllt, Screenshot-Logik von setViewMode("single") auf setViewMode("parts") geändert, AiMockupView captureDesignImage mit URL-zu-base64 Konvertierung)
 - [x] Fix und Test (im Browser verifiziert: Vorderseite zeigt Vorderteil, Rückseite zeigt Rückteil)
+
+## Bug: KI-Mockup Vorschau zeigt Rohbild statt konfigurierten Screenshot
+- [ ] KI-Mockup Vorschau zeigt das rohe Part-Bild (mit Farbe + Zonen-Platzhalter) statt den sauberen konfigurierten Canvas-Screenshot
+- [ ] Screenshot-Logik muss den Canvas im parts-View korrekt erfassen (mit Farbe, Logos, Texten, ohne Platzhalter)
+- [ ] Fix und Test
+
+## Bug: DTF-Grundfarbe färbt die ganze Konfigurator-Seite ein
+- [x] Die DTF-Grundfarbe wird auf den gesamten Seitenhintergrund angewendet statt nur auf das Trikot-Bild
+- [x] Fix: backgroundColor immer auf #e8eaed gesetzt, Farbe nur als multiply-Overlay auf dem Bild
+
+## Bug: KI-Mockup Rückseite zeigt Model von vorne statt von hinten
+- [x] Bei Rückseite-Mockup werden die Rückseiten-Motive korrekt platziert, aber das Model wird von vorne gezeigt
+- [x] Photoroom API: side-Parameter hinzugefügt, bei back wird virtualModel.prompt auf 'back view' gesetzt
+
+## Standardfarbe und Schriftfarbe
+- [x] Standardfarbe auf Weiß (#ffffff) geändert statt Hellgrau (#c8c8cc)
+- [x] Alle Schriften (Vereinsname, Nummer, Spielername, Kürzel) standardmäßig Schwarz (#000000)
+- [x] Globale Farbauswahl für Vereinsname, Nummer, Spielername im Farben-Tab (eine Farbe gilt für alle drei)

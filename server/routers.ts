@@ -1978,6 +1978,8 @@ export const appRouter = router({
         pose: z.string().optional(),
         /** Custom Model Foto (Base64, optional - ersetzt modelPreset) */
         customModelImageBase64: z.string().optional(),
+        /** Seite des Kleidungsstücks: front oder back */
+        side: z.enum(["front", "back"]).optional(),
       }))
       .mutation(async ({ input }) => {
         if (!isPhotoroomConfigured()) {
@@ -1993,6 +1995,7 @@ export const appRouter = router({
           scenePreset: input.scenePreset,
           pose: input.pose,
           customModelImageBase64: input.customModelImageBase64,
+          side: input.side,
         });
 
         return { url: result.url };

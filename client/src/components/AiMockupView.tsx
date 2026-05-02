@@ -247,6 +247,7 @@ export function AiMockupView({
           scenePreset,
           pose: posePreset,
           customModelImageBase64: useCustomModel ? (customModelImage || undefined) : undefined,
+          side: side as "front" | "back",
         });
         resultUrl = result.url;
       } else {
@@ -295,10 +296,11 @@ export function AiMockupView({
   };
 
   // Bestimme das Vorschau-Bild basierend auf der gewählten Seite
+  // Priorität: cachedScreenshot (konfigurierter Canvas mit Farbe/Logos) > rohe Part-Bilder (nur Fallback)
   const sideKeyForPreview = side === "back" ? "rueckteil" : "vorderteil";
   const sidePartForPreview = sortedParts.find(p => p.key === sideKeyForPreview || p.key.includes(sideKeyForPreview));
   const sidePreviewImage = sidePartForPreview ? processedPartImages[sidePartForPreview.id] : null;
-  const previewImage = sidePreviewImage || cachedScreenshot;
+  const previewImage = cachedScreenshot || sidePreviewImage;
 
   return (
     <div className="flex flex-col items-center gap-4">

@@ -165,7 +165,7 @@ function useGoogleFonts(zones: ZoneData[]) {
   }, [zones]);
 }
 
-const DEFAULT_JERSEY_COLOR = "#c8c8cc";
+const DEFAULT_JERSEY_COLOR = "#ffffff";
 export default function CustomerConfigurator() {
   const { id } = useParams<{ id: string }>();
   const productId = parseInt(id || "0");
@@ -1089,7 +1089,7 @@ export default function CustomerConfigurator() {
         ...content,
         fontFamily: content.fontFamily || zone.fontFamily || "Inter",
         fontSize: content.fontSize || zone.fontSize || 24,
-        fontColor: content.fontColor || zone.fontColor || "#ffffff",
+        fontColor: content.fontColor || zone.fontColor || "#000000",
         fontWeight: content.fontWeight || zone.fontWeight || "700",
         textAlign: content.textAlign || zone.textAlign || "center",
       };
@@ -1125,10 +1125,10 @@ export default function CustomerConfigurator() {
       style={{
         fontFamily: content.fontFamily || "Inter",
         fontSize: "100%",
-        color: content.fontColor || "#ffffff",
+        color: content.fontColor || "#000000",
         fontWeight: (content.fontWeight as any) || "700",
         textAlign: (content.textAlign as any) || "center",
-        textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+        textShadow: "none",
         wordBreak: "break-word",
         lineHeight: 1,
         // SVG-basierte Skalierung: Text füllt die volle Höhe der Zone
@@ -1143,7 +1143,7 @@ export default function CustomerConfigurator() {
           y="50%"
           dominantBaseline="central"
           textAnchor={content.textAlign === "left" ? "start" : content.textAlign === "right" ? "end" : "middle"}
-          fill={content.fontColor || "#ffffff"}
+          fill={content.fontColor || "#000000"}
           fontFamily={content.fontFamily || "Inter"}
           fontWeight={(content.fontWeight as any) || "700"}
           fontSize="90"
@@ -2097,7 +2097,7 @@ export default function CustomerConfigurator() {
                    className="relative w-full mx-auto select-none"
                    style={{
                      ...((isFreeZoneMode && (draggingZone !== null || resizingZone !== null)) ? { touchAction: "none" } : {}),
-                     backgroundColor: (!isColoredBase && !hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? activeColor : "#e8eaed",
+                     backgroundColor: "#e8eaed",
                    }}
                   onClick={() => setSelectedZoneId(null)}
                   onDragOver={(e) => {
@@ -2473,6 +2473,66 @@ export default function CustomerConfigurator() {
                         </div>
                       </CardContent>
                     </Card>
+                  )}
+
+                  {/* Globale Textfarbe für Vereinsname, Nummer, Spielername */}
+                  {allZones.some(z => z.purpose === "playerName" || z.purpose === "playerNumber" || z.purpose === "clubName") && (
+                  <Card>
+                    <CardHeader className="pb-2 sm:pb-3">
+                      <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                        <Type className="w-4 h-4" />
+                        Textfarbe (Name, Nummer, Vereinsname)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                        Wähle eine Farbe für Vereinsname, Spielername und Nummer. Die Farbe gilt für alle drei Felder.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["#000000", "#ffffff", "#1e3a5f", "#dc2626", "#16a34a", "#eab308", "#7c3aed", "#f97316", "#ec4899", "#6b7280"].map((color) => {
+                          // Prüfe ob diese Farbe aktuell aktiv ist
+                          const textZones = allZones.filter(z => z.purpose === "playerName" || z.purpose === "playerNumber" || z.purpose === "clubName");
+                          const firstTextZone = textZones[0];
+                          const currentColor = firstTextZone ? (zoneContents[firstTextZone.id]?.fontColor || firstTextZone.fontColor || "#000000") : "#000000";
+                          return (
+                            <button
+                              key={color}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg border-2 transition-all hover:scale-110 ${
+                                currentColor === color
+                                  ? "border-primary ring-2 ring-primary/30 scale-110"
+                                  : "border-border hover:border-muted-foreground"
+                              }`}
+                              style={{ backgroundColor: color }}
+                              title={`${color} | ${formatCmyk(hexToCmyk(color))}`}
+                              onClick={() => {
+                                // Setze die Farbe für alle relevanten Zonen
+                                allZones.forEach(z => {
+                                  if (z.purpose === "playerName" || z.purpose === "playerNumber" || z.purpose === "clubName") {
+                                    updateZoneContent(z.id, { fontColor: color });
+                                  }
+                                });
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                      <CmykColorPicker
+                        value={(() => {
+                          const textZones = allZones.filter(z => z.purpose === "playerName" || z.purpose === "playerNumber" || z.purpose === "clubName");
+                          const firstTextZone = textZones[0];
+                          return firstTextZone ? (zoneContents[firstTextZone.id]?.fontColor || firstTextZone.fontColor || "#000000") : "#000000";
+                        })()}
+                        onChange={(hex) => {
+                          allZones.forEach(z => {
+                            if (z.purpose === "playerName" || z.purpose === "playerNumber" || z.purpose === "clubName") {
+                              updateZoneContent(z.id, { fontColor: hex });
+                            }
+                          });
+                        }}
+                        label="Eigene Textfarbe (CMYK)"
+                      />
+                    </CardContent>
+                  </Card>
                   )}
                 </TabsContent>
               )}
@@ -3055,9 +3115,9 @@ export default function CustomerConfigurator() {
                           {(purpose === "playerName" || purpose === "playerNumber" || purpose === "playerInitials" || (purpose === "clubName" && !isZoneLocked(zone))) && (
                             <div className="mt-1">
                               <CmykColorPicker
-                                value={content?.fontColor || zone.fontColor || "#ffffff"}
-                                onChange={(hex) => updateZoneContent(zone.id, { fontColor: hex })}
-                                label="Textfarbe (CMYK)"
+                value={content?.fontColor || zone.fontColor || "#000000"}
+                onChange={(hex) => updateZoneContent(zone.id, { fontColor: hex })}
+                label="Textfarbe (CMYK)"
                               />
                             </div>
                           )}
@@ -3087,9 +3147,9 @@ export default function CustomerConfigurator() {
                                 )}
                                 <div className="flex items-center gap-1.5">
                                   <CmykColorPicker
-                                    value={content?.fontColor || zone.fontColor || "#ffffff"}
-                                    onChange={(hex) => updateZoneContent(zone.id, { fontColor: hex })}
-                                    label="Farbe (CMYK)"
+                    value={content?.fontColor || zone.fontColor || "#000000"}
+                    onChange={(hex) => updateZoneContent(zone.id, { fontColor: hex })}
+                    label="Farbe (CMYK)"
                                   />
                                 </div>
                               </div>

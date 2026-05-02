@@ -22,6 +22,8 @@ export type PhotoroomOptions = {
   size?: string;
   /** Base64-encoded custom model photo (person photo to use as model) */
   customModelImageBase64?: string;
+  /** Side of the garment: "front" or "back" */
+  side?: "front" | "back";
 };
 
 export type PhotoroomResult = {
@@ -95,6 +97,11 @@ export async function generatePhotoroomMockup(
   addField("virtualModel.scene.preset.name", scenePreset);
   addField("virtualModel.pose", pose);
   addField("virtualModel.size", size);
+
+  // Add prompt for back view if side is "back"
+  if (options.side === "back") {
+    addField("virtualModel.prompt", "back view of model, showing the back of the garment, model facing away from camera");
+  }
 
   // Keep the original garment design intact
   addField("removeBackground", "false");
