@@ -1200,6 +1200,11 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
     onError: () => toast.error("Löschen fehlgeschlagen"),
   });
 
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedForCompare, setSelectedForCompare] = useState<number[]>([]);
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
+  const [pdfExporting, setPdfExporting] = useState(false);
+
   const handleShare = (shareToken: string) => {
     const shareUrl = `${window.location.origin}/mockup/${shareToken}`;
     navigator.clipboard.writeText(shareUrl);
@@ -1214,6 +1219,91 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
     a.click();
   };
 
+  const toggleCompareSelect = (mockupId: number) => {
+    setSelectedForCompare((prev) => {
+      if (prev.includes(mockupId)) return prev.filter((id) => id !== mockupId);
+      if (prev.length >= 2) return [prev[1], mockupId];
+      return [...prev, mockupId];
+    });
+  };
+
+  const handleOpenCompare = () => {
+    if (selectedForCompare.length === 2) {
+      setShowCompareDialog(true);
+    } else {
+      toast.error("Bitte genau 2 Mockups zum Vergleichen auswählen");
+    }
+  };
+
+  const handlePdfExport = async () => {
+    if (!mockups || mockups.length === 0) return;
+    setPdfExporting(true);
+    try {
+      // Build a printable HTML document with all mockups
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        toast.error("Popup-Blocker verhindert den PDF-Export");
+        setPdfExporting(false);
+        return;
+      }
+
+      const mockupHtml = mockups.map((m) => `
+        <div style="page-break-inside: avoid; margin-bottom: 40px; text-align: center;">
+          <img src="${storageUrl(m.imageUrl) || m.imageUrl}" style="max-width: 100%; max-height: 500px; object-fit: contain; border: 1px solid #e5e7eb; border-radius: 8px;" crossorigin="anonymous" />
+          <div style="margin-top: 12px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600;">${m.title || "KI-Mockup"}</h3>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #6b7280;">${m.side === "front" ? "Vorderseite" : "Rückseite"} &bull; ${new Date(m.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}</p>
+          </div>
+        </div>
+      `).join("");
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${teamName} - Mockup-Galerie</title>
+          <style>
+            @page { margin: 20mm; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
+            .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 24px; color: #1f2937; }
+            .header p { margin: 8px 0 0; font-size: 14px; color: #6b7280; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+            @media print { .grid { grid-template-columns: 1fr 1fr; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${teamName} - Mockup-Galerie</h1>
+            <p>${mockups.length} Mockup${mockups.length !== 1 ? "s" : ""} &bull; Erstellt am ${new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}</p>
+          </div>
+          <div class="grid">
+            ${mockupHtml}
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+
+      // Wait for images to load then trigger print
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+          setPdfExporting(false);
+        }, 500);
+      };
+      // Fallback timeout
+      setTimeout(() => setPdfExporting(false), 5000);
+    } catch (err) {
+      toast.error("PDF-Export fehlgeschlagen");
+      setPdfExporting(false);
+    }
+  };
+
+  const compareItems = selectedForCompare
+    .map((id) => mockups?.find((m) => m.id === id))
+    .filter(Boolean);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -1224,7 +1314,48 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
             <Badge variant="secondary" className="text-xs">{mockups.length}</Badge>
           )}
         </div>
+        {mockups && mockups.length >= 2 && (
+          <div className="flex gap-2">
+            <Button
+              variant={compareMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setCompareMode(!compareMode);
+                setSelectedForCompare([]);
+              }}
+            >
+              <Image className="w-4 h-4 mr-1" />
+              {compareMode ? "Vergleich beenden" : "Vergleichen"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePdfExport}
+              disabled={pdfExporting}
+            >
+              {pdfExporting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
+              PDF-Export
+            </Button>
+          </div>
+        )}
       </div>
+
+      {compareMode && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <p className="text-sm text-blue-700">
+            {selectedForCompare.length === 0
+              ? "Wähle 2 Mockups zum Vergleichen aus"
+              : selectedForCompare.length === 1
+              ? "Noch 1 Mockup auswählen"
+              : "2 Mockups ausgewählt"}
+          </p>
+          {selectedForCompare.length === 2 && (
+            <Button size="sm" onClick={handleOpenCompare}>
+              Vergleich öffnen
+            </Button>
+          )}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-8">
@@ -1241,7 +1372,15 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {mockups.map((mockup) => (
-            <Card key={mockup.id} className="overflow-hidden group">
+            <Card
+              key={mockup.id}
+              className={`overflow-hidden group cursor-pointer transition-all ${
+                compareMode && selectedForCompare.includes(mockup.id)
+                  ? "ring-2 ring-blue-500 ring-offset-2"
+                  : ""
+              }`}
+              onClick={compareMode ? () => toggleCompareSelect(mockup.id) : undefined}
+            >
               <div className="relative aspect-square bg-muted">
                 <img
                   src={storageUrl(mockup.imageUrl) || mockup.imageUrl}
@@ -1253,62 +1392,116 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
                     {mockup.side === "front" ? "Vorderseite" : "Rückseite"}
                   </Badge>
                 </div>
+                {compareMode && selectedForCompare.includes(mockup.id) && (
+                  <div className="absolute top-2 left-2">
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {selectedForCompare.indexOf(mockup.id) + 1}
+                    </div>
+                  </div>
+                )}
               </div>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium truncate">
-                      {mockup.title || "KI-Mockup"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(mockup.createdAt).toLocaleDateString("de-DE", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+              {!compareMode && (
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium truncate">
+                        {mockup.title || "KI-Mockup"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(mockup.createdAt).toLocaleDateString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleShare(mockup.shareToken!)}
+                        title="Teilen"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleDownload(mockup.imageUrl, mockup.title)}
+                        title="Herunterladen"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive"
+                        onClick={() => {
+                          if (confirm("Mockup wirklich löschen?")) {
+                            deleteMockup.mutate({ id: mockup.id });
+                          }
+                        }}
+                        title="Löschen"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleShare(mockup.shareToken!)}
-                      title="Teilen"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleDownload(mockup.imageUrl, mockup.title)}
-                      title="Herunterladen"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
-                      onClick={() => {
-                        if (confirm("Mockup wirklich löschen?")) {
-                          deleteMockup.mutate({ id: mockup.id });
-                        }
-                      }}
-                      title="Löschen"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
+                </CardContent>
+              )}
             </Card>
           ))}
         </div>
       )}
+
+      {/* Compare Dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Mockup-Vergleich</DialogTitle>
+            <DialogDescription>
+              Vergleiche zwei Mockups nebeneinander
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-6 py-4">
+            {compareItems.map((mockup, idx) => (
+              <div key={mockup!.id} className="space-y-3">
+                <div className="aspect-square bg-muted rounded-lg overflow-hidden border">
+                  <img
+                    src={storageUrl(mockup!.imageUrl) || mockup!.imageUrl}
+                    alt={mockup!.title || "KI-Mockup"}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="font-medium text-sm">{mockup!.title || "KI-Mockup"}</p>
+                  <div className="flex items-center justify-center gap-2 mt-1">
+                    <Badge variant="secondary" className="text-[10px]">
+                      {mockup!.side === "front" ? "Vorderseite" : "Rückseite"}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(mockup!.createdAt).toLocaleDateString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCompareDialog(false)}>
+              Schließen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

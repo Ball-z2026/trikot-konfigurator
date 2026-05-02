@@ -849,3 +849,9 @@
 ## Mannschaft bei allen Textilien anzeigen
 - [x] Mannschafts-Panel (Spielerliste, Spieler-Navigation) auch bei freeZoneMode-Produkten (war bereits implementiert)
 - [x] Automatische Befüllung von Spielername/Nummer-Zonen auch bei Nicht-Trikot-Produkten (war bereits implementiert)
+
+## Mockup-Vergleichsansicht & PDF-Export
+- [x] Vergleichsansicht: Zwei Mockups nebeneinander auswählen und vergleichen
+- [x] Vergleichsansicht: Unterschiede visuell hervorheben (Titel, Seite, Datum)
+- [x] PDF-Export: Galerie als PDF für Vereins-Präsentationen exportieren
+- [x] PDF-Export: Mockup-Bilder, Titel, Datum und Team-Info im PDF
