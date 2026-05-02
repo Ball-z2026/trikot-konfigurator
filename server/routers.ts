@@ -1967,7 +1967,7 @@ export const appRouter = router({
       }),
 
     /** Prüfe ob Photoroom API konfiguriert ist */
-    photoroomStatus: protectedProcedure
+    photoroomStatus: publicProcedure
       .query(() => {
         return { configured: isPhotoroomConfigured() };
       }),

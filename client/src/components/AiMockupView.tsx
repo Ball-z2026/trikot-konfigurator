@@ -33,12 +33,21 @@ const MODEL_PRESETS = [
   { value: "avery", label: "Avery (männlich)" },
   { value: "jackson", label: "Jackson (männlich)" },
   { value: "ava", label: "Ava (weiblich)" },
+  { value: "random", label: "Zufällig" },
 ];
 
 const SCENE_PRESETS = [
+  { value: "random", label: "Zufällig" },
   { value: "street", label: "Straße" },
   { value: "library", label: "Bibliothek" },
   { value: "bedroom", label: "Schlafzimmer" },
+];
+
+const POSE_PRESETS = [
+  { value: "random", label: "Zufällig" },
+  { value: "standing", label: "Stehend" },
+  { value: "crossedarms", label: "Arme verschränkt" },
+  { value: "seated", label: "Sitzend" },
 ];
 
 const LOADING_STEPS_AI = [
@@ -79,6 +88,7 @@ export function AiMockupView({
   const [mode, setMode] = useState<MockupMode>("photoroom");
   const [modelPreset, setModelPreset] = useState("avery");
   const [scenePreset, setScenePreset] = useState("street");
+  const [posePreset, setPosePreset] = useState("standing");
   const imgRef = useRef<HTMLImageElement>(null);
   const startTimeRef = useRef<number>(0);
   const animFrameRef = useRef<number>(0);
@@ -194,6 +204,7 @@ export function AiMockupView({
           designImageBase64,
           modelPreset,
           scenePreset,
+          pose: posePreset,
         });
         resultUrl = result.url;
       } else {
@@ -312,7 +323,7 @@ export function AiMockupView({
           {/* Photoroom Optionen */}
           {mode === "photoroom" && isPhotoroomAvailable && (
             <div className="w-full space-y-2 bg-muted/30 rounded-lg p-3">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="text-[10px] font-medium text-muted-foreground block mb-1">Model</label>
                   <select
@@ -337,7 +348,20 @@ export function AiMockupView({
                     ))}
                   </select>
                 </div>
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground block mb-1">Pose</label>
+                  <select
+                    value={posePreset}
+                    onChange={(e) => setPosePreset(e.target.value)}
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                  >
+                    {POSE_PRESETS.map(p => (
+                      <option key={p.value} value={p.value}>{p.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
+              <p className="text-[9px] text-muted-foreground text-center">$0.10 pro Generierung</p>
             </div>
           )}
 

@@ -5427,3 +5427,43 @@
 [2026-05-02T14:34:16.686Z] [Auth] Missing session cookie
 [2026-05-02T14:34:16.707Z] [Auth] Missing session cookie
 [2026-05-02T14:34:16.711Z] [Auth] Missing session cookie
+[2026-05-02T15:08:31.523Z] Dev server process group stopped
+[2026-05-02T15:08:31.578Z] Dev server exited with code -15
+[2026-05-02T15:08:34.564Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T15:08:36.355Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T15:08:36.828Z] Server running on http://localhost:3000/
+[2026-05-02T15:09:03.059Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.108Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.114Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.126Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.134Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.143Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.149Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.160Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.169Z] [Auth] Missing session cookie
+[2026-05-02T15:09:03.176Z] [Auth] Missing session cookie
+[2026-05-02T15:09:15.215Z] Dev server process group stopped
+[2026-05-02T15:09:15.250Z] Dev server exited with code -15
+[2026-05-02T15:09:18.251Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T15:09:20.020Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T15:09:20.411Z] Server running on http://localhost:3000/
+[2026-05-02T15:32:00.465Z] [Auth] Missing session cookie
+[2026-05-02T15:32:16.949Z] 11:32:16 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-02T15:32:18.536Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T15:32:19.700Z] Server running on http://localhost:3000/
+[2026-05-02T15:32:21.594Z] Dev server process group stopped
+[2026-05-02T15:32:21.670Z] Dev server exited with code -15
+[2026-05-02T15:32:24.608Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T15:32:26.431Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T15:32:26.823Z] Server running on http://localhost:3000/
+[2026-05-02T15:32:34.051Z] [Auth] Missing session cookie
+[2026-05-02T15:35:03.946Z] [Auth] Missing session cookie
+[2026-05-02T15:35:03.950Z] [Auth] Missing session cookie
+[2026-05-02T15:35:03.995Z] [Auth] Missing session cookie
+[2026-05-02T15:35:04.008Z] [Auth] Missing session cookie
+[2026-05-02T15:35:04.019Z] [Auth] Missing session cookie
+[2026-05-02T15:35:04.029Z] [Auth] Missing session cookie
+[2026-05-02T15:35:04.036Z] [Auth] Missing session cookie
+[2026-05-02T15:35:04.045Z] [Auth] Missing session cookie
+[2026-05-02T15:35:04.051Z] [Auth] Missing session cookie
+[2026-05-02T15:35:04.057Z] [Auth] Missing session cookie
