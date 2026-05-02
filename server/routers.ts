@@ -1867,20 +1867,18 @@ export const appRouter = router({
         side: z.enum(["front", "back"]).optional().default("front"),
       }))
       .mutation(async ({ input }) => {
-        const colorInfo = input.colorDescription
-          ? ` Die Farben der einzelnen Teile sind: ${input.colorDescription}.`
-          : "";
-        const typeInfo = input.productType
-          ? ` Druckverfahren: ${input.productType}.`
-          : "";
-        const zoneInfo = input.zoneDescriptions
-          ? ` Auf dem Textil befinden sich folgende Elemente: ${input.zoneDescriptions}.`
-          : "";
-        const sideInfo = input.side === "back"
-          ? " WICHTIG: Zeige AUSSCHLIESSLICH die RÜCKSEITE des Textils (von hinten betrachtet). Kein Reißverschluss, keine Knopfleiste, keine Vorderseiten-Details sichtbar. Die Rückseite zeigt typischerweise den Nackenbereich und die Rückenfläche."
-          : " Zeige die VORDERSEITE des Textils (von vorne betrachtet).";
-
-        const prompt = `Fotorealistisches Produktfoto eines Sport-${input.productName} auf einem unsichtbaren Mannequin/Torso vor einem neutralen hellgrauen Studio-Hintergrund.${sideInfo} Nutze das beigefügte Design-Bild als Vorlage für Farben und Stil. Platziere die Elemente EXAKT an den angegebenen Positionen (Prozentangaben beziehen sich auf die Fläche des Textils: 0% = ganz links/oben, 100% = ganz rechts/unten).${colorInfo}${typeInfo}${zoneInfo} Professionelle Produktfotografie mit weichem Studiolicht und leichtem Schattenwurf. Saubere, scharfe Darstellung wie in einem Online-Shop. Keine Person sichtbar, nur das Textil auf dem Mannequin.`;
+        // Kurzer, fokussierter Prompt für Image-to-Image Editing
+        // Das Referenzbild (Screenshot des Konfigurators) ist die Hauptvorlage
+        const sideLabel = input.side === "back" ? "Rückseite" : "Vorderseite";
+        
+        let prompt: string;
+        if (input.designImageBase64) {
+          // Image-to-Image: Referenzbild vorhanden -> kurzer Edit-Prompt
+          prompt = `Transform this ${input.productName} design into a photorealistic product photo. Keep ALL logos, text, numbers, and graphics EXACTLY as shown in the reference image - same positions, same sizes, same content. Show the ${sideLabel} on an invisible mannequin against a light gray studio background. Professional product photography with soft studio lighting. Clean, sharp rendering like an online shop photo. No person visible, only the garment on the mannequin.`;
+        } else {
+          // Fallback ohne Referenzbild
+          prompt = `Photorealistic product photo of a sport ${input.productName} (${sideLabel}) on an invisible mannequin against a light gray studio background. Professional product photography.`;
+        }
 
         // Wenn ein Design-Bild vorhanden ist, als Referenz übergeben
         const originalImages = input.designImageBase64

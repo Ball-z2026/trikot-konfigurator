@@ -60,6 +60,17 @@ export function AiMockupView({
 
   const generateMockup = trpc.mockup.generateAi.useMutation();
 
+  // Wenn Seite wechselt (Vorderseite <-> Rückseite): Altes Mockup zurücksetzen
+  useEffect(() => {
+    setMockupUrl(null);
+    setIsGenerating(false);
+  }, [side]);
+
+  // Wenn sich der gecachte Screenshot ändert (neuer Screenshot für andere Seite): Mockup zurücksetzen
+  useEffect(() => {
+    setMockupUrl(null);
+  }, [cachedScreenshot]);
+
   // Fortschrittsanimation während der Generierung
   useEffect(() => {
     if (!isGenerating) {

@@ -870,3 +870,9 @@
 ## Bug: KI-Mockup Rückseite zeigt Vorderseite
 - [x] Bei "Rückseite"-Tab wird jetzt ein separater Screenshot der Rückseite erstellt und gecacht
 - [x] Positionierung der Elemente im Mockup verbessert (detaillierter Prompt mit Positionsangaben)
+
+## Bug-Fixes: Rotation, X-Button, KI-Mockup
+- [x] Rotation-Handle funktioniert nicht (clientX/clientY werden jetzt VOR dem requestAnimationFrame gecacht)
+- [x] X-Button zum Löschen nur im Zonen-Panel unten anzeigen (Delete-Button auf Zone im Canvas entfernt)
+- [x] KI-Mockup: Prompt vereinfacht auf Image-to-Image Editing (kurzer englischer Prompt, Referenzbild als Hauptvorlage)
+- [x] KI-Mockup: Side-Wechsel (Vorderseite/Rückseite) setzt altes Mockup zurück und zeigt neuen Screenshot

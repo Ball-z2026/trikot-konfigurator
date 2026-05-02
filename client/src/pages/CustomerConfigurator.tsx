@@ -534,8 +534,11 @@ export default function CustomerConfigurator() {
       const canvasEl = canvasRef.current;
       if (!canvasEl) return;
       const rect = canvasEl.getBoundingClientRect();
-      const posX = ((e.clientX - rect.left) / rect.width) * 100;
-      const posY = ((e.clientY - rect.top) / rect.height) * 100;
+      // Cache alle Event-Werte SOFORT (PointerEvent kann im rAF recycled sein)
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      const posX = ((clientX - rect.left) / rect.width) * 100;
+      const posY = ((clientY - rect.top) / rect.height) * 100;
       const dx = posX - ds.startX;
       const dy = posY - ds.startY;
       // Verwende requestAnimationFrame für flüssige Updates
@@ -560,25 +563,22 @@ export default function CustomerConfigurator() {
           );
         }
         if (ds.rotating !== null) {
-          // Berechne Winkel relativ zum Zentrum der Zone
-          const zone = localZones.find(z => z.id === ds.rotating);
-          if (zone) {
-            const zoneCenterX = rect.left + (zone.posX + zone.width / 2) / 100 * rect.width;
-            const zoneCenterY = rect.top + (zone.posY + zone.height / 2) / 100 * rect.height;
-            const currentAngle = Math.atan2(e.clientY - zoneCenterY, e.clientX - zoneCenterX) * (180 / Math.PI);
-            const deltaAngle = currentAngle - ds.startAngle;
-            // Snap auf 15°-Schritte wenn nahe
-            let newRotation = ds.startRotation + deltaAngle;
-            const snapAngle = Math.round(newRotation / 15) * 15;
-            if (Math.abs(newRotation - snapAngle) < 3) newRotation = snapAngle;
-            setLocalZones((prev) =>
-              prev.map((z) =>
-                z.id === ds.rotating
-                  ? { ...z, rotation: Math.round(newRotation) }
-                  : z
-              )
-            );
-          }
+          // Berechne Winkel relativ zum Zentrum der Zone (verwende gecachte clientX/Y)
+          const zoneCenterX = rect.left + (ds.zoneX + ds.zoneW / 2) / 100 * rect.width;
+          const zoneCenterY = rect.top + (ds.zoneY + ds.zoneH / 2) / 100 * rect.height;
+          const currentAngle = Math.atan2(clientY - zoneCenterY, clientX - zoneCenterX) * (180 / Math.PI);
+          const deltaAngle = currentAngle - ds.startAngle;
+          // Snap auf 15°-Schritte wenn nahe
+          let newRotation = ds.startRotation + deltaAngle;
+          const snapAngle = Math.round(newRotation / 15) * 15;
+          if (Math.abs(newRotation - snapAngle) < 3) newRotation = snapAngle;
+          setLocalZones((prev) =>
+            prev.map((z) =>
+              z.id === ds.rotating
+                ? { ...z, rotation: Math.round(newRotation) }
+                : z
+            )
+          );
         }
       });
     };
@@ -1411,19 +1411,7 @@ export default function CustomerConfigurator() {
             />
           </div>
         )}
-        {/* freeZoneMode: Delete-Button (oben rechts) - größer auf Touch */}
-        {isFreeZoneDraggable && isSelected && canDelete && (
-          <button
-            className={`absolute top-0 right-0 bg-destructive text-white flex items-center justify-center rounded-bl hover:bg-destructive/80 ${isMobile ? 'w-8 h-8 text-base' : 'w-5 h-5 text-xs'}`}
-            style={{ zIndex: 30 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteFreeZone(zone);
-            }}
-          >
-            ×
-          </button>
-        )}
+        {/* Delete-Button wurde entfernt - Löschen nur über das Zonen-Panel unten */}
         {/* freeZoneMode: Label-Badge - größer auf Touch, pulsiert beim Drag */}
         {isFreeZoneDraggable && (
           <div
