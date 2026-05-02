@@ -50,7 +50,7 @@ import { useState, useRef, useCallback, useEffect, useMemo, Suspense, lazy } fro
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { AlertTriangle, Info, Move } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
 import { storageUrl } from "@/lib/utils";
