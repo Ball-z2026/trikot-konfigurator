@@ -116,7 +116,7 @@ import { nanoid } from "nanoid";
 import { notifyOwner } from "./_core/notification";
 
 // Shared zone schema for reuse
-const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "custom"]);
+const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "custom"]);
 const zoneType = z.enum(["image", "text", "both"]);
 
 // Admin-only procedure guard

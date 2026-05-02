@@ -963,3 +963,22 @@
 - [x] Frontend: Bundesland- und Sportart-Dropdown im Registrierungsflow hinzugefügt
 - [x] Backend: Registrierungs-Endpoint um orgState/orgSport erweitert
 - [x] Spielklasse/Kategorie bei Mannschaften (TrainerDashboard) - war bereits vorhanden
+
+## Spielklassen-Dropdown sportartabhängig
+- [x] Frontend: Im TrainerDashboard Spielklasse als Select statt Input (abhängig von Sportart der Organisation)
+- [x] Frontend: Spielklassen-Optionen aus shared/jerseyRules.ts laden (getSpielklassen)
+- [x] Frontend: TEAM_KATEGORIEN mit Jugend-Altersklassen (U19 bis U7) statt einfacher Herren/Damen/Jugend
+- [x] Backend: team.create/update akzeptiert league-Wert (bereits vorhanden)
+
+## Kürzel-Zone automatisch auf Nicht-Trikot-Artikeln
+- [x] DB-Schema: purpose-Enum um 'abbreviation' erweitert + Migration
+- [x] Backend: zonePurpose Zod-Enum um 'abbreviation' erweitert
+- [x] Frontend: 'Kürzel (8x8cm)' als Zonen-Zweck verfügbar (unten links, 8x8cm)
+- [x] Frontend: Bild-Upload für abbreviation-Zonen im Zonen-Panel
+- [x] Frontend: PURPOSE_ICONS und PURPOSE_LABELS für abbreviation hinzugefügt
+
+## Bestellstatus-Workflow im Trainer-Dashboard
+- [x] Frontend: Bestellstatus-Anzeige (read-only) mit Stepper (offen, bestellt, in_produktion, geliefert)
+- [x] Frontend: Status-Nachricht je nach aktuellem Status
+- [x] Backend: orderStatus-Feld und updateOrderStatus-Endpoint waren bereits vorhanden
+- [x] Spartenleiter kann Status im DeptDashboard ändern (war bereits implementiert)

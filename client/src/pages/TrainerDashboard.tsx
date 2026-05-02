@@ -53,6 +53,10 @@ import {
   Share2,
   ExternalLink,
   Sparkles,
+  Package,
+  Factory,
+  Truck,
+  CircleDot,
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -60,7 +64,7 @@ import { toast } from "sonner";
 import { PaymentSection } from "./PaymentSection";
 import { OrderCommentThread } from "./OrderCommentThread";
 import { useMemo } from "react";
-import { KONFEKTIONSGROESSEN } from "@shared/jerseyRules";
+import { KONFEKTIONSGROESSEN, getSpielklassen, TEAM_KATEGORIEN, type SportartCode } from "@shared/jerseyRules";
 import { storageUrl } from "@/lib/utils";
 
 // ─── Logo Section für selbstregistrierte Trainer ─────────────────────────────
@@ -418,21 +422,30 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
                   <Select value={teamCategory} onValueChange={setTeamCategory}>
                     <SelectTrigger><SelectValue placeholder="Kategorie wählen..." /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="herren">Herren</SelectItem>
-                      <SelectItem value="damen">Damen</SelectItem>
-                      <SelectItem value="jugend_m">Jugend (männlich)</SelectItem>
-                      <SelectItem value="jugend_w">Jugend (weiblich)</SelectItem>
-                      <SelectItem value="mixed">Mixed</SelectItem>
+                      {TEAM_KATEGORIEN.map((k) => (
+                        <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Spielklasse</Label>
-                  <Input
-                    value={teamLeague}
-                    onChange={(e) => setTeamLeague(e.target.value)}
-                    placeholder="z.B. Landesliga, Bezirksliga, Kreisliga"
-                  />
+                  {org?.sport ? (
+                    <Select value={teamLeague} onValueChange={setTeamLeague}>
+                      <SelectTrigger><SelectValue placeholder="Spielklasse wählen..." /></SelectTrigger>
+                      <SelectContent>
+                        {(getSpielklassen(org.sport as SportartCode) || []).map((sk) => (
+                          <SelectItem key={sk.value} value={sk.value}>{sk.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      value={teamLeague}
+                      onChange={(e) => setTeamLeague(e.target.value)}
+                      placeholder="z.B. Landesliga, Bezirksliga, Kreisliga"
+                    />
+                  )}
                 </div>
               </div>
               <DialogFooter>
@@ -1131,6 +1144,10 @@ function TeamDetail({
         <Separator className="my-6" />
         <MockupGallerySection teamId={teamId} teamName={team.name} orgId={orgId} />
 
+        {/* Bestellstatus */}
+        <Separator className="my-6" />
+        <OrderStatusSection teamId={teamId} orderStatus={(team as any).orderStatus || "offen"} />
+
         {/* Abrechnungs-Bereich */}
         <PaymentSection teamId={teamId} orgId={orgId} players={players} />
         {/* Kommunikation mit Spartenleiter */}
@@ -1141,7 +1158,78 @@ function TeamDetail({
   );
 }
 
-// ─── Main Export ──────────────────────────────────────────────────────────────
+// ─── Bestellstatus-Anzeige (read-only für Trainer) ────────────────────────────────────────────
+const ORDER_STEPS_TRAINER = [
+  { key: "offen" as const, label: "Offen", icon: CircleDot, color: "text-gray-400", bgColor: "bg-gray-100" },
+  { key: "bestellt" as const, label: "Bestellt", icon: Package, color: "text-blue-600", bgColor: "bg-blue-50" },
+  { key: "in_produktion" as const, label: "In Produktion", icon: Factory, color: "text-amber-600", bgColor: "bg-amber-50" },
+  { key: "geliefert" as const, label: "Geliefert", icon: Truck, color: "text-green-600", bgColor: "bg-green-50" },
+] as const;
+
+function OrderStatusSection({ teamId, orderStatus }: { teamId: number; orderStatus: string }) {
+  const currentIndex = ORDER_STEPS_TRAINER.findIndex((s) => s.key === orderStatus);
+  const currentStep = ORDER_STEPS_TRAINER[currentIndex >= 0 ? currentIndex : 0];
+  const CurrentIcon = currentStep.icon;
+
+  return (
+    <div>
+      <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
+        <Package className="w-5 h-5" />
+        Bestellstatus
+      </h3>
+      <Card>
+        <CardContent className="p-4">
+          {/* Status-Stepper (read-only) */}
+          <div className="flex items-center justify-between mb-4">
+            {ORDER_STEPS_TRAINER.map((step, i) => {
+              const Icon = step.icon;
+              const isActive = i <= currentIndex;
+              const isCurrent = i === currentIndex;
+              return (
+                <div key={step.key} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center gap-1">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        isCurrent ? `${step.bgColor} ring-2 ring-offset-1 ring-blue-300` : isActive ? step.bgColor : "bg-gray-100"
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 ${isActive ? step.color : "text-gray-300"}`} />
+                    </div>
+                    <span className={`text-[10px] ${isCurrent ? "font-semibold" : "text-muted-foreground"}`}>
+                      {step.label}
+                    </span>
+                  </div>
+                  {i < ORDER_STEPS_TRAINER.length - 1 && (
+                    <div className={`flex-1 h-0.5 mx-2 mt-[-16px] ${i < currentIndex ? "bg-blue-400" : "bg-gray-200"}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {/* Status-Nachricht */}
+          <div className={`rounded-lg p-3 ${currentStep.bgColor}`}>
+            <div className="flex items-center gap-2">
+              <CurrentIcon className={`w-4 h-4 ${currentStep.color}`} />
+              <span className="text-sm font-medium">
+                {orderStatus === "offen" && "Ihre Bestellung wurde noch nicht aufgegeben."}
+                {orderStatus === "bestellt" && "Ihre Bestellung wurde aufgegeben und wird bearbeitet."}
+                {orderStatus === "in_produktion" && "Ihre Trikots sind in Produktion!"}
+                {orderStatus === "geliefert" && "Ihre Trikots wurden geliefert. Viel Spaß!"}
+              </span>
+            </div>
+          </div>
+          {orderStatus === "offen" && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Der Spartenleiter wird die Bestellung aufgeben, sobald alle Konfigurationen und Zahlungen abgeschlossen sind.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Main Export ──────────────────────────────────────────────────────────────────────────────
 export default function TrainerDashboard() {
   const params = useParams<{
     id?: string;

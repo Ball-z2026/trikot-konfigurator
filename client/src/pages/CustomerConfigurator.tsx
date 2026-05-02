@@ -127,6 +127,7 @@ const PURPOSE_ICONS: Record<string, typeof FileImage> = {
   playerName: User,
   playerNumber: Hash,
   playerInitials: Type,
+  abbreviation: Type,
   clubName: Shield,
   custom: PenTool,
 };
@@ -136,7 +137,8 @@ const PURPOSE_LABELS: Record<string, string> = {
   clubLogo: "Vereinswappen",
   playerName: "Spielername",
   playerNumber: "Nummer",
-  playerInitials: "K\u00fcrzel",
+  playerInitials: "Kürzel",
+  abbreviation: "Kürzel (8x8cm)",
   clubName: "Vereinsname",
   custom: "Freitext",
 };
@@ -680,7 +682,7 @@ export default function CustomerConfigurator() {
   const [addZoneDialogOpen, setAddZoneDialogOpen] = useState(false);
   const [newZoneLabel, setNewZoneLabel] = useState("");
   const [newZoneType, setNewZoneType] = useState<"text" | "image" | "both">("both");
-  const [newZonePurpose, setNewZonePurpose] = useState<"custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName">("custom");
+  const [newZonePurpose, setNewZonePurpose] = useState<"custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "abbreviation" | "clubName">("custom");
 
   // Zweck-Optionen für das Auswahlfeld
   const zonePurposeOptions = [
@@ -690,6 +692,7 @@ export default function CustomerConfigurator() {
     { value: "playerName" as const, label: "Spielername", defaultType: "text" as const },
     { value: "playerNumber" as const, label: "Spielernummer", defaultType: "text" as const },
     { value: "playerInitials" as const, label: "Kürzel", defaultType: "text" as const },
+    { value: "abbreviation" as const, label: "Kürzel (8x8cm)", defaultType: "image" as const },
     { value: "clubName" as const, label: "Vereinsname", defaultType: "text" as const },
   ];
 
@@ -702,6 +705,7 @@ export default function CustomerConfigurator() {
     else if (newZonePurpose === "clubName") { posX = 20; posY = 10; width = 60; height = 10; }
     else if (newZonePurpose === "playerName") { posX = 20; posY = 15; width = 60; height = 10; }
     else if (newZonePurpose === "playerNumber") { posX = 30; posY = 30; width = 40; height = 30; }
+    else if (newZonePurpose === "abbreviation") { posX = 5; posY = 75; width = 15; height = 15; }
     else if (newZonePurpose === "logo") { posX = 25; posY = 40; width = 50; height = 20; }
     
     createZoneMut.mutate({
@@ -715,6 +719,7 @@ export default function CustomerConfigurator() {
       posY,
       width,
       height,
+      ...(newZonePurpose === "abbreviation" ? { widthCm: 8, heightCm: 8 } : {}),
       sortOrder: allZones.length + 1,
     });
     setNewZoneLabel("");
@@ -2704,6 +2709,40 @@ export default function CustomerConfigurator() {
                                 </div>
                               )}
                             </div>
+                          )}
+
+                          {/* Abbreviation zone: Image Upload (8x8cm Kürzel) */}
+                          {purpose === "abbreviation" && (
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-xs flex-1"
+                                  onClick={() => {
+                                    const input = document.createElement("input");
+                                    input.type = "file";
+                                    input.accept = "image/*,.pdf";
+                                    input.onchange = (e) => {
+                                      const file = (e.target as HTMLInputElement).files?.[0];
+                                      if (file) handleImageUploadToZone(file, zone);
+                                    };
+                                    input.click();
+                                  }}
+                                >
+                                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                                  {content?.imageDataUrl || content?.imageUrl ? "Kürzel ändern" : "Kürzel hochladen"}
+                                </Button>
+                                {(content?.imageDataUrl || content?.imageUrl) && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="shrink-0 h-8 w-8"
+                                    onClick={() => updateZoneContent(zone.id, { imageDataUrl: "", imageUrl: "" })}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                )}
+                              </div>
                           )}
 
                           {/* Logo zones: Image Upload (allgemeiner Logo-Upload, z.B. Sponsor) */}
