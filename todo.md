@@ -1031,3 +1031,22 @@
 - [x] Kollektion als "optional" oder "Pflicht" umschalten (setEnforcement)
 - [x] Übersicht aller Kollektionen im Verein (Vereins- + Sparten-/Team-Kollektionen)
 - [x] Neuer "Kollektionen"-Tab im OrgDashboard
+
+## Bug: Farbauswahl ändert Hintergrund statt Shirt
+- [x] Transparente PNGs (Bekleidung): mask-image Overlay (funktioniert korrekt)
+- [x] Opake PNGs (Trikots): mix-blend-mode:multiply auf img + Container-Hintergrund = Farbe
+- [x] Alle 3 Ansichten angepasst: Canvas, Teile-Vorschau, Gesamtübersicht
+
+## Bug: Kürzel-Zone erscheint auf Trikots
+- [x] Filter korrekt: abbreviation nur bei freeZoneMode (Bekleidung) im Zweck-Auswahlfeld
+- [x] Bei Trikots (isFreeZoneMode=false) wird abbreviation nicht angeboten
+
+## Sportartspezifische Verbandsvorgaben für Trikots
+- [x] Recherche: DFB/DFL Fußball-Trikotregeln (Nummerngrößen, Sponsoren, Abstände, Vereinsname)
+- [x] Recherche: DHB Handball-Trikotregeln
+- [x] Recherche: DVV Volleyball-Trikotregeln
+- [x] Recherche: DBB Basketball-Trikotregeln
+- [x] Regelwerk in shared/jerseyRules.ts als Datenstruktur implementiert (getJerseyRules, validateZonesAgainstRules)
+- [x] Backend: Validierungs-Endpoint (zone.validateRules) implementiert
+- [x] Frontend: Warnungen-Banner im Zonen-Tab (Fehler rot, Warnungen gelb)
+- [x] Frontend: jerseyRules + Live-Validierung im CustomerConfigurator

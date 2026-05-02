@@ -7,6 +7,7 @@ import { generateImage } from "./_core/imageGeneration";
 import { generatePhotoroomMockup, isPhotoroomConfigured } from "./photoroom";
 import { z } from "zod";
 import { TEXTIL_TEMPLATES } from "../shared/templates";
+import { getJerseyRules, validateZonesAgainstRules, type ZoneForValidation, type SportartCode } from "../shared/jerseyRules";
 import {
   listProducts,
   getProductById,
@@ -2253,6 +2254,37 @@ export const appRouter = router({
         await requireOrgOwner(ctx.user.id, coll.orgId);
         await updateCollection(input.id, { enforcement: input.enforcement });
         return { success: true };
+      }),
+  }),
+
+  /** Verbandsvorgaben-Validierung */
+  jerseyRules: router({
+    /** Regelwerk für eine Sportart/Level laden */
+    getRules: publicProcedure
+      .input(z.object({
+        sportart: z.enum(["fussball", "volleyball", "handball", "basketball"]),
+        level: z.enum(["profi", "semi", "amateur"]).default("amateur"),
+      }))
+      .query(({ input }) => {
+        return getJerseyRules(input.sportart as SportartCode, input.level);
+      }),
+
+    /** Zonen gegen Verbandsvorgaben validieren */
+    validate: publicProcedure
+      .input(z.object({
+        sportart: z.enum(["fussball", "volleyball", "handball", "basketball"]),
+        level: z.enum(["profi", "semi", "amateur"]).default("amateur"),
+        zones: z.array(z.object({
+          purpose: z.string(),
+          widthCm: z.number().optional(),
+          heightCm: z.number().optional(),
+          part: z.string(),
+        })),
+      }))
+      .query(({ input }) => {
+        const rules = getJerseyRules(input.sportart as SportartCode, input.level);
+        const warnings = validateZonesAgainstRules(input.zones as ZoneForValidation[], rules);
+        return { rules, warnings };
       }),
   }),
 });

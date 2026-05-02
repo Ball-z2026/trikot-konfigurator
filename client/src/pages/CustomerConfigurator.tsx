@@ -45,7 +45,7 @@ import {
   Ruler,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
-import { getNumberRules, BUNDESLAENDER, type NumberRule } from "@shared/jerseyRules";
+import { getNumberRules, getJerseyRules, validateZonesAgainstRules, BUNDESLAENDER, type NumberRule, type JerseyRuleSet, type ValidationWarning, type ZoneForValidation, type SportartCode } from "@shared/jerseyRules";
 import { useState, useRef, useCallback, useEffect, useMemo, Suspense, lazy } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
@@ -356,6 +356,37 @@ export default function CustomerConfigurator() {
     if (!orgData?.state) return null;
     return BUNDESLAENDER.find(b => b.value === orgData.state)?.label || orgData.state;
   }, [orgData?.state]);
+
+  // Vollständiges Regelwerk (Nummern + Sponsoren + Emblem + Spielername + Vereinsname)
+  const fullRuleSet: JerseyRuleSet | null = useMemo(() => {
+    if (!orgData?.sport) return null;
+    const sport = orgData.sport as SportartCode;
+    return getJerseyRules(sport, "amateur");
+  }, [orgData?.sport]);
+
+  // Live-Validierung der Zonen gegen Verbandsvorgaben
+  const [validationWarnings, setValidationWarnings] = useState<ValidationWarning[]>([]);
+
+  useEffect(() => {
+    if (!fullRuleSet || !allZones.length) {
+      setValidationWarnings([]);
+      return;
+    }
+    // Zonen in das Validierungs-Format konvertieren
+    const zonesForValidation: ZoneForValidation[] = allZones.map(z => {
+      // Part-Name aus der Zone bestimmen
+      const part = parts.find(p => p.id === z.partId);
+      const partKey = part?.key || "front";
+      return {
+        purpose: z.purpose || "custom",
+        widthCm: z.widthCm || undefined,
+        heightCm: z.heightCm || undefined,
+        part: partKey,
+      };
+    });
+    const warnings = validateZonesAgainstRules(zonesForValidation, fullRuleSet);
+    setValidationWarnings(warnings);
+  }, [fullRuleSet, allZones, parts]);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -1623,18 +1654,34 @@ export default function CustomerConfigurator() {
                             setViewMode("parts");
                           }}
                         >
-                          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-muted/30 rounded overflow-hidden relative">
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded overflow-hidden relative"
+                            style={{ backgroundColor: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? getPartColor(part.id) : undefined }}
+                          >
                             {part.imageUrl ? (
                               <>
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: getPartColor(part.id) }} />
+                                  <div className="absolute inset-0 pointer-events-none" style={{
+                                    backgroundColor: getPartColor(part.id),
+                                    WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
+                                    WebkitMaskSize: "contain",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    WebkitMaskPosition: "center",
+                                    maskImage: `url(${storageUrl(part.imageUrl)})`,
+                                    maskSize: "contain",
+                                    maskRepeat: "no-repeat",
+                                    maskPosition: "center",
+                                  }} />
                                 )}
                                 <img
                                   src={storageUrl(part.imageUrl)}
                                   alt={part.label}
                                   className="w-full h-full object-contain relative"
                                   crossOrigin="anonymous"
-                                  style={{ mixBlendMode: (hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined }}
+                                  style={{
+                                    ...((!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage)
+                                      ? { mixBlendMode: "multiply" as const }
+                                      : {}),
+                                  }}
                                 />
                               </>
                             ) : (
@@ -1796,7 +1843,8 @@ export default function CustomerConfigurator() {
                       return (
                         <div
                           key={part.id}
-                          className="relative bg-white rounded-lg border overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
+                          className="relative rounded-lg border overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
+                          style={{ backgroundColor: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? getPartColor(part.id) : "#ffffff" }}
                           onClick={() => {
                             setActivePartId(part.id);
                             setViewMode("parts");
@@ -1827,7 +1875,11 @@ export default function CustomerConfigurator() {
                                   className="w-full h-auto block p-1 relative"
                                   draggable={false}
                                   crossOrigin="anonymous"
-                                  style={{ mixBlendMode: (hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined }}
+                                  style={{
+                                    ...((!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage)
+                                      ? { mixBlendMode: "multiply" as const }
+                                      : {}),
+                                  }}
                                 />
                               </>
                             ) : (
@@ -1979,8 +2031,11 @@ export default function CustomerConfigurator() {
               <Card className="overflow-hidden">
                 <div
                   ref={canvasRef}
-                  className="relative bg-[#e8eaed] w-full mx-auto select-none"
-                  style={(isFreeZoneMode && (draggingZone !== null || resizingZone !== null)) ? { touchAction: "none" } : undefined}
+                   className="relative w-full mx-auto select-none"
+                   style={{
+                     ...((isFreeZoneMode && (draggingZone !== null || resizingZone !== null)) ? { touchAction: "none" } : {}),
+                     backgroundColor: (!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? activeColor : "#e8eaed",
+                   }}
                   onClick={() => setSelectedZoneId(null)}
                   onDragOver={(e) => {
                     // Erlaube Drop auf dem Canvas (wird von den Zonen abgefangen)
@@ -2038,13 +2093,7 @@ export default function CustomerConfigurator() {
                           }}
                         />
                       )}
-                      {/* Color indicator badge for opaque images (Trikot PNGs) */}
-                      {!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
-                        <div className="absolute top-3 left-3 z-10 flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm pointer-events-none">
-                          <div className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: activeColor }} />
-                          <span className="text-xs font-medium text-gray-700">Grundfarbe</span>
-                        </div>
-                      )}
+                      {/* Hauptbild mit Farb-Overlay */}
                       <img
                         src={currentImage}
                         alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
@@ -2052,7 +2101,9 @@ export default function CustomerConfigurator() {
                         draggable={false}
                         crossOrigin="anonymous"
                         style={{
-                          mixBlendMode: (hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined,
+                          ...((!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage)
+                            ? { mixBlendMode: "multiply" as const }
+                            : {}),
                         }}
                       />
                     </div>
@@ -2365,6 +2416,38 @@ export default function CustomerConfigurator() {
 
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                {/* Verbandsvorgaben-Warnungen */}
+                {validationWarnings.length > 0 && productData?.category === 'Trikot' && (
+                  <Card className="border-amber-300 bg-amber-50/50 dark:border-amber-700 dark:bg-amber-950/30">
+                    <CardContent className="pt-3 pb-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600" />
+                        <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">Verbandsvorgaben-Prüfung</span>
+                        <Badge variant="outline" className="ml-auto text-[10px] border-amber-400 text-amber-700">
+                          {validationWarnings.filter(w => w.severity === 'error').length} Fehler, {validationWarnings.filter(w => w.severity === 'warning').length} Hinweise
+                        </Badge>
+                      </div>
+                      <div className="space-y-1.5 ml-6">
+                        {validationWarnings.map((w, i) => (
+                          <div key={i} className={`text-xs flex items-start gap-1.5 ${w.severity === 'error' ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                            <span className="shrink-0">{w.severity === 'error' ? '❌' : '⚠️'}</span>
+                            <span><strong>{w.zone}:</strong> {w.message}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-amber-600/70 mt-2 ml-6">Quelle: {fullRuleSet?.number.source}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Regelwerk-Übersicht (wenn keine Warnungen, aber Regeln vorhanden) */}
+                {validationWarnings.length === 0 && fullRuleSet && productData?.category === 'Trikot' && (
+                  <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400 bg-green-50/50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md p-2">
+                    <span>✅</span>
+                    <span>Alle Verbandsvorgaben eingehalten ({orgData?.sport ? orgData.sport.charAt(0).toUpperCase() + orgData.sport.slice(1) : 'Sportart'}{orgStateName ? `, ${orgStateName}` : ''})</span>
+                  </div>
+                )}
+
                 {/* Club Name Input (if any zone uses clubName) */}
                 {allZones.some((z) => z.purpose === "clubName") && (
                   <Card className={isTrainer ? "border-amber-200 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-950/20" : ""}>
