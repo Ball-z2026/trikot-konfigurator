@@ -173,6 +173,8 @@ export function AiMockupView({
           quality: 0.8,
           pixelRatio: 1.5,
           skipFonts: true,
+          cacheBust: true,
+          includeQueryParams: true,
         });
         return dataUrl;
       } catch {

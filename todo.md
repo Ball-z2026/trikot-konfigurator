@@ -982,3 +982,12 @@
 - [x] Frontend: Status-Nachricht je nach aktuellem Status
 - [x] Backend: orderStatus-Feld und updateOrderStatus-Endpoint waren bereits vorhanden
 - [x] Spartenleiter kann Status im DeptDashboard ändern (war bereits implementiert)
+
+## Bug: Vereinswappen fehlt im KI-Mockup
+- [x] crossOrigin="anonymous" zu allen img-Tags im Canvas hinzugefügt (Zone-Bilder, Hauptbild, Übersicht)
+- [x] cacheBust + includeQueryParams bei allen toPng()-Aufrufen für html-to-image
+- [x] Storage-Proxy setzt bereits Access-Control-Allow-Origin: * (CORS-kompatibel)
+
+## Bug: Kürzel-Zone bei Trikots verfügbar
+- [x] abbreviation nur bei freeZoneMode (Bekleidung) im Zweck-Auswahlfeld angezeigt
+- [x] ZoneData-Typ um 'abbreviation' erweitert (TS-Fehler behoben)

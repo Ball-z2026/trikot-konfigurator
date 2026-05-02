@@ -87,7 +87,7 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom" | "abbreviation";
   posX: number;
   posY: number;
   width: number;
@@ -1099,7 +1099,7 @@ export default function CustomerConfigurator() {
     if (!canvasRef.current) return undefined;
     try {
       const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(canvasRef.current, { quality: 0.6, pixelRatio: 0.5 });
+      const dataUrl = await toPng(canvasRef.current, { quality: 0.6, pixelRatio: 0.5, cacheBust: true, includeQueryParams: true });
       // Entferne den data:image/png;base64, Prefix
       return dataUrl.split(",")[1];
     } catch {
@@ -1184,6 +1184,8 @@ export default function CustomerConfigurator() {
         quality: 1,
         pixelRatio: 2,
         backgroundColor: "#e8eaed",
+        cacheBust: true,
+        includeQueryParams: true,
       });
       const link = document.createElement("a");
       const partLabel = hasParts && activePart ? activePart.label : activeSide;
@@ -1249,6 +1251,8 @@ export default function CustomerConfigurator() {
                 quality: 1,
                 pixelRatio: 2,
                 backgroundColor: "#e8eaed",
+                cacheBust: true,
+                includeQueryParams: true,
               });
               const base64 = dataUrl.split(",")[1];
               const safeName = players[i].name.replace(/[^a-zA-Z0-9äöüÄÖÜß_-]/g, "_");
@@ -1366,6 +1370,7 @@ export default function CustomerConfigurator() {
             alt=""
             className={`w-full h-full ${zone.widthCm && zone.heightCm ? 'object-fill' : 'object-contain'}`}
             draggable={false}
+            crossOrigin="anonymous"
           />
         )}
         {content?.text && !content?.imageDataUrl && !content?.imageUrl && renderZoneText(content, scale)}
@@ -1628,6 +1633,7 @@ export default function CustomerConfigurator() {
                                   src={storageUrl(part.imageUrl)}
                                   alt={part.label}
                                   className="w-full h-full object-contain relative"
+                                  crossOrigin="anonymous"
                                   style={{ mixBlendMode: (hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined }}
                                 />
                               </>
@@ -1683,7 +1689,7 @@ export default function CustomerConfigurator() {
                     // Screenshot der aktuellen Seite
                     if (canvasRef.current) {
                       try {
-                        screenshots[currentSide] = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                        screenshots[currentSide] = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
                       } catch { /* kein Screenshot */ }
                     }
                     
@@ -1693,7 +1699,7 @@ export default function CustomerConfigurator() {
                     await new Promise(r => setTimeout(r, 350));
                     if (canvasRef.current) {
                       try {
-                        screenshots[otherSide] = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                        screenshots[otherSide] = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
                       } catch { /* kein Screenshot */ }
                     }
                     
@@ -1757,14 +1763,14 @@ export default function CustomerConfigurator() {
                     // Screenshot der Gesamtübersicht (zeigt alle Teile)
                     if (overviewRef.current) {
                       try {
-                        screenshots.front = await toPng(overviewRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                        screenshots.front = await toPng(overviewRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
                         // Für die Rückseite verwenden wir den gleichen Screenshot als Basis
                         // da die Overview alle Teile zeigt
                         screenshots.back = screenshots.front;
                       } catch { /* kein Screenshot */ }
                     } else if (canvasRef.current) {
                       try {
-                        screenshots.front = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true });
+                        screenshots.front = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
                         screenshots.back = screenshots.front;
                       } catch { /* kein Screenshot */ }
                     }
@@ -1820,6 +1826,7 @@ export default function CustomerConfigurator() {
                                   alt={part.label}
                                   className="w-full h-auto block p-1 relative"
                                   draggable={false}
+                                  crossOrigin="anonymous"
                                   style={{ mixBlendMode: (hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined }}
                                 />
                               </>
@@ -2043,6 +2050,7 @@ export default function CustomerConfigurator() {
                         alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
                         className="w-full h-auto block pointer-events-none drop-shadow-md relative"
                         draggable={false}
+                        crossOrigin="anonymous"
                         style={{
                           mixBlendMode: (hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? "multiply" : undefined,
                         }}
@@ -2424,7 +2432,11 @@ export default function CustomerConfigurator() {
                           <div className="space-y-2 p-2 border rounded-md bg-background">
                             {/* Zweck-Auswahl */}
                             <div className="grid grid-cols-4 gap-1">
-                              {zonePurposeOptions.map((opt) => (
+                              {zonePurposeOptions.filter(opt => {
+                                // Kürzel (abbreviation) nur bei Bekleidung (freeZoneMode), nicht bei Trikots
+                                if (opt.value === 'abbreviation' && !isFreeZoneMode) return false;
+                                return true;
+                              }).map((opt) => (
                                 <button
                                   key={opt.value}
                                   className={`px-1.5 py-1 rounded text-[9px] border transition-colors ${
@@ -2724,7 +2736,14 @@ export default function CustomerConfigurator() {
                                     input.accept = "image/*,.pdf";
                                     input.onchange = (e) => {
                                       const file = (e.target as HTMLInputElement).files?.[0];
-                                      if (file) handleImageUploadToZone(file, zone);
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = () => {
+                                          updateZoneContent(zone.id, { imageDataUrl: reader.result as string });
+                                          toast.success("Kürzel platziert");
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
                                     };
                                     input.click();
                                   }}
