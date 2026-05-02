@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { generateImage } from "./_core/imageGeneration";
 import { generatePhotoroomMockup, isPhotoroomConfigured } from "./photoroom";
 import { z } from "zod";
+import { TEXTIL_TEMPLATES } from "../shared/templates";
 import {
   listProducts,
   getProductById,
@@ -211,6 +212,19 @@ export const appRouter = router({
         if (!product.published && ctx.user?.role !== "admin") return null;
         const parts = await listPartsByProduct(input.id);
         const zones = await listZonesByProduct(input.id);
+        // Wenn Produkt ein Template hat, imageUrls der Parts aus dem aktuellen Template nehmen
+        // (damit Template-Updates sofort wirken ohne DB-Migration)
+        if (product.templateId) {
+          const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === product.templateId);
+          if (tmpl) {
+            for (const part of parts) {
+              const tmplPart = tmpl.parts.find((tp) => tp.key === part.key);
+              if (tmplPart) {
+                part.imageUrl = tmplPart.imageUrl;
+              }
+            }
+          }
+        }
         return { ...product, parts, zones };
       }),
 

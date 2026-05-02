@@ -918,3 +918,11 @@
 ## Verbandsregeln nur für Trikots
 - [x] Verbandsregeln werden nur bei category === 'Trikot' angezeigt
 - [x] Bei Bekleidung (Hoodie, Jacke, T-Shirt etc.) keine Verbandseinschränkungen
+
+## Bug: Alte SVG-Dateien noch im Konfigurator
+- [x] product.getById Endpoint aktualisiert: imageUrls werden jetzt aus aktuellem Template geladen
+- [x] Template-Änderungen wirken sofort ohne DB-Migration
+
+## Bug: Größenangabe (cm) wird nicht auf Zone-Inhalt angewendet
+- [x] Wenn widthCm/heightCm gesetzt: Bild füllt Zone komplett aus (object-fill statt object-contain)
+- [x] Ohne cm-Angabe: Bild wird proportional eingepasst (object-contain, wie bisher)

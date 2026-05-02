@@ -1359,7 +1359,7 @@ export default function CustomerConfigurator() {
           <img
             src={storageUrl(content.imageDataUrl || content.imageUrl || "") || content.imageDataUrl || content.imageUrl || ""}
             alt=""
-            className="w-full h-full object-contain"
+            className={`w-full h-full ${zone.widthCm && zone.heightCm ? 'object-fill' : 'object-contain'}`}
             draggable={false}
           />
         )}

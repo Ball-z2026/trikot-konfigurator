@@ -5414,3 +5414,16 @@
 [2026-05-02T14:25:32.075Z] [Auth] Missing session cookie
 [2026-05-02T14:25:32.107Z] [Auth] Missing session cookie
 [2026-05-02T14:25:32.111Z] [Auth] Missing session cookie
+[2026-05-02T14:33:06.892Z] 10:33:06 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-02T14:33:08.609Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T14:33:09.076Z] Server running on http://localhost:3000/
+[2026-05-02T14:34:16.569Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.636Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.647Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.658Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.666Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.673Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.680Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.686Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.707Z] [Auth] Missing session cookie
+[2026-05-02T14:34:16.711Z] [Auth] Missing session cookie
