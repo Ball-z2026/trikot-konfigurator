@@ -6016,3 +6016,10 @@
 [2026-05-02T21:45:03.085Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-02T21:45:04.717Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-02T21:45:05.087Z] Server running on http://localhost:3000/
+[2026-05-02T21:47:33.215Z] 5:47:33 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T21:54:51.901Z] 5:54:51 PM [vite] (client) hmr update /src/pages/Home.tsx, /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-02T21:54:52.069Z] 5:54:52 PM [tsx] change in ./shared/templates.ts Restarting...
+[2026-05-02T21:54:53.959Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T21:54:54.467Z] Server running on http://localhost:3000/
+[2026-05-02T22:08:15.770Z] 6:08:15 PM [vite] (client) hmr update /src/index.css
+[2026-05-02T22:08:19.359Z] 6:08:19 PM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css

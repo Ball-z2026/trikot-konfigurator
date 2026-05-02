@@ -1117,3 +1117,9 @@
 - [x] Alle 17 Template-Bilder durch weiße Versionen ersetzt (Pillow: RGB auf 255,255,255, Alpha beibehalten)
 - [x] Hintergrund leicht grau (#e8eaed) war bereits gesetzt
 - [x] CSS-Filter-Hack (brightness) entfernt - nicht mehr nötig da Bilder jetzt weiß sind
+
+## Hintergrund-Fix: Weißes Textil auf weißem Hintergrund nicht erkennbar
+- [x] --background von oklch(0.985) auf oklch(0.93) geändert (deutlich sichtbares Grau)
+- [x] --muted von oklch(0.96) auf oklch(0.91) geändert
+- [x] Home-Seite Produktvorschau von bg-muted/50 auf bg-[#e0e2e6] geändert
+- [x] SVG-Trikots (4 Stück) auf published=0 gesetzt (waren bereits aussortiert)

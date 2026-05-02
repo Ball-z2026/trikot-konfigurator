@@ -2480,7 +2480,7 @@ export default function CustomerConfigurator() {
 
                   {/* Globale Textfarbe für Vereinsname, Nummer, Spielername */}
                   {allZones.some(z => z.purpose === "playerName" || z.purpose === "playerNumber" || z.purpose === "clubName") && (
-                  <Card>
+                    <Card>
                     <CardHeader className="pb-2 sm:pb-3">
                       <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                         <Type className="w-4 h-4" />
