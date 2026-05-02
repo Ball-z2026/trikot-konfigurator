@@ -2730,7 +2730,7 @@ export default function CustomerConfigurator() {
                           )}
 
                           {/* Landesverband-Regeln für Nummern-Zonen */}
-                          {purpose === "playerNumber" && numberRules && (
+                          {purpose === "playerNumber" && numberRules && productData?.category === 'Trikot' && (
                             <div className="text-xs rounded-md p-2 mt-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                               <div className="flex items-center gap-1.5 mb-1.5">
                                 <Info className="w-3.5 h-3.5 shrink-0" />

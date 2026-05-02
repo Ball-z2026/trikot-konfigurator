@@ -910,3 +910,11 @@
 - [x] Produktfotos generiert für: Trainingshose, Zip-Jacke, Warme Jacke, Half-Zipper, Aufwaermshirt
 - [x] Alle previewUrls in shared/templates.ts aktualisiert (PNG statt SVG/alte Bilder)
 - [x] Legacy-Templates ebenfalls aktualisiert
+
+## Bug: Produktfotos nur auf Startseite, nicht im Konfigurator
+- [x] Konfigurator zeigt jetzt echte Produktfotos statt SVG-Silhouetten
+- [x] Alle 5 Bekleidungs-Templates (Trainingshose, Aufwaermshirt, Zip-Jacke, Half-Zipper, Warme Jacke) haben Vorder-/Rückseiten-PNGs
+
+## Verbandsregeln nur für Trikots
+- [x] Verbandsregeln werden nur bei category === 'Trikot' angezeigt
+- [x] Bei Bekleidung (Hoodie, Jacke, T-Shirt etc.) keine Verbandseinschränkungen

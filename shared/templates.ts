@@ -1030,7 +1030,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "vorderteil",
         label: "Vorderseite",
-        imageUrl: "/manus-storage/trainingshose_front_e7906657.svg",
+        imageUrl: "/manus-storage/trainingshose_front_dd84fe17.png",
         sortOrder: 1,
         zones: [
           {
@@ -1050,7 +1050,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "rueckteil",
         label: "Rückseite",
-        imageUrl: "/manus-storage/trainingshose_back_efd89dfa.svg",
+        imageUrl: "/manus-storage/trainingshose_back_e4911fd9.png",
         sortOrder: 2,
         zones: [],
       },
@@ -1070,7 +1070,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "vorderteil",
         label: "Vorderseite",
-        imageUrl: "/manus-storage/aufwaermshirt_front_ae95cc7f.svg",
+        imageUrl: "/manus-storage/aufwaermshirt_front_fdb72ff5.png",
         sortOrder: 1,
         zones: [
           {
@@ -1090,7 +1090,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "rueckteil",
         label: "Rückseite",
-        imageUrl: "/manus-storage/aufwaermshirt_back_ce952a93.svg",
+        imageUrl: "/manus-storage/aufwaermshirt_back_ef757ce0.png",
         sortOrder: 2,
         zones: [],
       },
@@ -1110,7 +1110,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "vorderteil",
         label: "Vorderseite",
-        imageUrl: "/manus-storage/zipjacke_front_21c5a323.svg",
+        imageUrl: "/manus-storage/zipjacke_front_cad3fffd.png",
         sortOrder: 1,
         zones: [
           {
@@ -1130,7 +1130,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "rueckteil",
         label: "Rückseite",
-        imageUrl: "/manus-storage/zipjacke_back_8fd59235.svg",
+        imageUrl: "/manus-storage/zipjacke_back_3f8d0d33.png",
         sortOrder: 2,
         zones: [],
       },
@@ -1150,7 +1150,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "vorderteil",
         label: "Vorderseite",
-        imageUrl: "/manus-storage/halfzipper_front_a4f66ee1.svg",
+        imageUrl: "/manus-storage/halfzipper_front_7901ea4a.png",
         sortOrder: 1,
         zones: [
           {
@@ -1170,7 +1170,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "rueckteil",
         label: "Rückseite",
-        imageUrl: "/manus-storage/halfzipper_back_bb8bc0d7.svg",
+        imageUrl: "/manus-storage/halfzipper_back_16787698.png",
         sortOrder: 2,
         zones: [],
       },
@@ -1190,7 +1190,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "vorderteil",
         label: "Vorderseite",
-        imageUrl: "/manus-storage/warmejacke_front_88ce747a.svg",
+        imageUrl: "/manus-storage/warmejacke_front_8a993cc6.png",
         sortOrder: 1,
         zones: [
           {
@@ -1210,7 +1210,7 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
       {
         key: "rueckteil",
         label: "Rückseite",
-        imageUrl: "/manus-storage/warmejacke_back_344fce0a.svg",
+        imageUrl: "/manus-storage/warmejacke_back_90b8976a.png",
         sortOrder: 2,
         zones: [],
       },
