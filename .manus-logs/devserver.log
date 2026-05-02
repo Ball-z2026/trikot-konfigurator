@@ -6006,3 +6006,13 @@
 [2026-05-02T21:13:14.614Z] Server running on http://localhost:3000/
 [2026-05-02T21:14:10.236Z] 5:14:10 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-02T21:14:27.624Z] 5:14:27 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T21:42:51.340Z] 5:42:51 PM [vite] (client) hmr update /src/pages/Home.tsx, /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-02T21:42:51.463Z] 5:42:51 PM [tsx] change in ./shared/templates.ts Restarting...
+[2026-05-02T21:42:53.307Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T21:42:54.357Z] Server running on http://localhost:3000/
+[2026-05-02T21:43:19.531Z] 5:43:19 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T21:45:00.039Z] Dev server process group stopped
+[2026-05-02T21:45:00.046Z] Dev server exited with code -15
+[2026-05-02T21:45:03.085Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T21:45:04.717Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T21:45:05.087Z] Server running on http://localhost:3000/
