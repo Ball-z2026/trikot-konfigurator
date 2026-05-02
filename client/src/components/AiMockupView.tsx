@@ -160,12 +160,44 @@ export function AiMockupView({
     };
   }, [isGenerating, loadingSteps]);
 
+  /** Konvertiere eine Bild-URL in base64 data-URL */
+  const imageUrlToBase64 = async (url: string): Promise<string | undefined> => {
+    try {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Image load failed"));
+        img.src = url;
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return undefined;
+      ctx.drawImage(img, 0, 0);
+      return canvas.toDataURL("image/png");
+    } catch {
+      return undefined;
+    }
+  };
+
   /** Erstelle ein Referenzbild für die KI-Generierung */
   const captureDesignImage = async (): Promise<string | undefined> => {
+    // Priorität 1: cachedScreenshot (bereits base64)
     if (cachedScreenshot) {
       return cachedScreenshot;
     }
 
+    // Priorität 2: Part-Bild für die richtige Seite (URL → base64 konvertieren)
+    const sideKey = side === "back" ? "rueckteil" : "vorderteil";
+    const sidePart = sortedParts.find(p => p.key === sideKey || p.key.includes(sideKey));
+    if (sidePart && processedPartImages[sidePart.id]) {
+      const base64 = await imageUrlToBase64(processedPartImages[sidePart.id]);
+      if (base64) return base64;
+    }
+
+    // Priorität 3: canvasContainerRef Screenshot
     if (canvasContainerRef?.current) {
       try {
         const { toPng } = await import("html-to-image");
@@ -182,12 +214,15 @@ export function AiMockupView({
       }
     }
 
-    const partEntries = sortedParts
-      .filter(p => processedPartImages[p.id])
-      .map(p => processedPartImages[p.id]);
+    // Priorität 4: Erstes verfügbares Part-Bild (URL → base64)
+    for (const part of sortedParts) {
+      if (processedPartImages[part.id]) {
+        const base64 = await imageUrlToBase64(processedPartImages[part.id]);
+        if (base64) return base64;
+      }
+    }
 
-    if (partEntries.length === 0) return undefined;
-    return partEntries[0];
+    return undefined;
   };
 
   const handleGenerate = async () => {
@@ -259,14 +294,20 @@ export function AiMockupView({
     a.click();
   };
 
+  // Bestimme das Vorschau-Bild basierend auf der gewählten Seite
+  const sideKeyForPreview = side === "back" ? "rueckteil" : "vorderteil";
+  const sidePartForPreview = sortedParts.find(p => p.key === sideKeyForPreview || p.key.includes(sideKeyForPreview));
+  const sidePreviewImage = sidePartForPreview ? processedPartImages[sidePartForPreview.id] : null;
+  const previewImage = sidePreviewImage || cachedScreenshot;
+
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* Vorschau des gecachten Screenshots */}
-      {cachedScreenshot && !mockupUrl && !isGenerating && (
+      {/* Vorschau des aktuellen Designs für die gewählte Seite */}
+      {previewImage && !mockupUrl && !isGenerating && (
         <div className="w-full max-w-xs mx-auto mb-2">
-          <p className="text-xs text-muted-foreground text-center mb-1.5">Dein aktuelles Design (Vorlage):</p>
+          <p className="text-xs text-muted-foreground text-center mb-1.5">Dein aktuelles Design ({side === "back" ? "Rückseite" : "Vorderseite"}):</p>
           <div className="rounded-lg overflow-hidden border bg-white shadow-sm">
-            <img src={cachedScreenshot} alt="Aktuelles Design" className="w-full h-auto" />
+            <img src={previewImage} alt={`Design ${side === "back" ? "Rückseite" : "Vorderseite"}`} className="w-full h-auto" />
           </div>
         </div>
       )}

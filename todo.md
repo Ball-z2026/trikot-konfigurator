@@ -1069,3 +1069,18 @@
 - [x] Fußballtrikot SVG DTF (690035): Gelb korrekt eingefärbt
 - [x] Vereins-Hoodie (540001): Schwarz und Rot korrekt eingefärbt
 - [x] Atest-Trikot (180001): Rot und Blau korrekt eingefärbt
+
+## Export-Funktionen: PDF für Druck + PNG zum Teilen
+- [ ] PDF-Export: Druckfertige PDF-Datei mit allen Teilen, Farben, Zonen-Inhalten
+- [ ] PNG-Export: Vorschau-Bild zum Teilen (einzelne Teile oder Gesamtübersicht)
+- [ ] Export-Buttons im Konfigurator-UI (Exportieren-Dropdown mit PDF/PNG Optionen)
+- [ ] PDF enthält CMYK-Farbinformationen und Maßangaben
+- [ ] PNG-Export in hoher Auflösung für Social Media / Vorschau
+
+## Bug: Aufwärm-Shirt Farben ändern funktioniert nicht
+- [ ] Farbauswahl beim Aufwärm-Shirt färbt das Bild nicht ein
+- [ ] Fix und Test
+
+## Bug: KI-Mockup Rückseite zeigt falsches Bild
+- [x] Bei KI-Mockup Rückseite wird das falsche Bild angezeigt (Fix: processedPartImages mit partImageMap befüllt, Screenshot-Logik von setViewMode("single") auf setViewMode("parts") geändert, AiMockupView captureDesignImage mit URL-zu-base64 Konvertierung)
+- [x] Fix und Test (im Browser verifiziert: Vorderseite zeigt Vorderteil, Rückseite zeigt Rückteil)

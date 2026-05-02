@@ -5727,3 +5727,163 @@
 [2026-05-02T19:37:38.886Z] 3:37:38 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-02T19:38:37.929Z] 3:38:37 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-02T19:38:53.407Z] 3:38:53 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:42:49.735Z] Dev server process group stopped
+[2026-05-02T19:42:49.803Z] Dev server exited with code -15
+[2026-05-02T19:42:52.780Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T19:42:54.484Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T19:42:54.892Z] 3:42:54 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+[2026-05-02T19:42:54.917Z] Server running on http://localhost:3000/
+[2026-05-02T19:50:37.466Z] 3:50:37 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:50:52.369Z] 3:50:52 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:51:11.860Z] 3:51:11 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:51:11.963Z] 3:51:11 PM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx: Unexpected token, expected ":" (1692:35)
+[2026-05-02T19:51:11.964Z] 
+[2026-05-02T19:51:11.965Z] 1690 |                                        maskRepeat: "no-repeat",
+[2026-05-02T19:51:11.966Z] 1691 |                                     maskPosition: "center",
+[2026-05-02T19:51:11.966Z] > 1692 |                                   }} />
+[2026-05-02T19:51:11.966Z] |                                    ^
+[2026-05-02T19:51:11.967Z] 1693 |                                 )}
+[2026-05-02T19:51:11.967Z] 1694 |                                 {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
+[2026-05-02T19:51:11.967Z] 1695 |                                 {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+[2026-05-02T19:51:11.967Z] Plugin: vite:react-babel
+[2026-05-02T19:51:11.968Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:1692:35
+[2026-05-02T19:51:11.968Z] 1690 |                                         maskRepeat: "no-repeat",
+[2026-05-02T19:51:11.969Z] 1691 |                                      maskPosition: "center",
+[2026-05-02T19:51:11.969Z] 1692 |                                    }} />
+[2026-05-02T19:51:11.970Z] |                                     ^
+[2026-05-02T19:51:11.970Z] 1693 |                                  )}
+[2026-05-02T19:51:11.970Z] 1694 |                                  {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
+[2026-05-02T19:51:11.971Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-02T19:51:11.971Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-02T19:51:11.971Z] at unexpected (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1544:16)
+[2026-05-02T19:51:11.972Z] at expect (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/util.ts:157:12)
+[2026-05-02T19:51:11.972Z] at parseConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:404:12)
+[2026-05-02T19:51:11.973Z] at parseConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3393:20)
+[2026-05-02T19:51:11.973Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:390:17)
+[2026-05-02T19:51:11.973Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-02T19:51:11.974Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-02T19:51:11.974Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-05-02T19:51:11.975Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3197:12)
+[2026-05-02T19:51:11.975Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-05-02T19:51:11.975Z] at parseMaybeAssignAllowInOrVoidPattern (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3311:17)
+[2026-05-02T19:51:11.976Z] at parseParenAndDistinguishExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1825:16)
+[2026-05-02T19:51:11.976Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1170:21)
+[2026-05-02T19:51:11.976Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+[2026-05-02T19:51:11.977Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+[2026-05-02T19:51:11.977Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-02T19:51:11.977Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-02T19:51:11.978Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-02T19:51:11.978Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-02T19:51:11.979Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-02T19:51:11.979Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-02T19:51:11.981Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-02T19:51:11.981Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-02T19:51:11.983Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-05-02T19:51:11.984Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3197:12)
+[2026-05-02T19:51:11.984Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-05-02T19:51:11.984Z] at parseSpread (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:423:26)
+[2026-05-02T19:51:11.985Z] at parsePropertyDefinition (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2184:19)
+[2026-05-02T19:51:11.985Z] at parseObjectLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2098:21)
+[2026-05-02T19:51:11.986Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1181:21)
+[2026-05-02T19:51:11.986Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+[2026-05-02T19:51:11.986Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+[2026-05-02T19:51:11.987Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-02T19:51:11.987Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-02T19:51:11.988Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-02T19:51:11.988Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-02T19:51:11.988Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-02T19:51:11.988Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-02T19:51:11.989Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-02T19:51:11.989Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-02T19:51:11.989Z] at parseExpressionBase (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:226:23)
+[2026-05-02T19:51:11.990Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:39)
+[2026-05-02T19:51:11.990Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3197:12)
+[2026-05-02T19:51:11.991Z] at parseExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:17)
+[2026-05-02T19:51:11.991Z] at jsxParseExpressionContainer (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:376:33)
+[2026-05-02T19:51:11.992Z] at jsxParseAttributeValue (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:331:23)
+[2026-05-02T19:51:11.992Z] at jsxParseAttribute (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:414:43)
+[2026-05-02T19:51:11.993Z] at jsxParseOpeningElementAfterName (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:440:30)
+[2026-05-02T19:51:12.078Z] 3:51:12 PM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx: Unexpected token, expected ":" (1692:35)
+[2026-05-02T19:51:12.079Z] 
+[2026-05-02T19:51:12.080Z] 1690 |                                        maskRepeat: "no-repeat",
+[2026-05-02T19:51:12.080Z] 1691 |                                     maskPosition: "center",
+[2026-05-02T19:51:12.081Z] > 1692 |                                   }} />
+[2026-05-02T19:51:12.081Z] |                                    ^
+[2026-05-02T19:51:12.082Z] 1693 |                                 )}
+[2026-05-02T19:51:12.082Z] 1694 |                                 {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
+[2026-05-02T19:51:12.083Z] 1695 |                                 {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+[2026-05-02T19:51:12.083Z] Plugin: vite:react-babel
+[2026-05-02T19:51:12.084Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:1692:35
+[2026-05-02T19:51:12.084Z] 1690 |                                         maskRepeat: "no-repeat",
+[2026-05-02T19:51:12.084Z] 1691 |                                      maskPosition: "center",
+[2026-05-02T19:51:12.085Z] 1692 |                                    }} />
+[2026-05-02T19:51:12.085Z] |                                     ^
+[2026-05-02T19:51:12.086Z] 1693 |                                  )}
+[2026-05-02T19:51:12.086Z] 1694 |                                  {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
+[2026-05-02T19:51:22.669Z] 3:51:22 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:51:37.720Z] 3:51:37 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:51:49.073Z] Dev server process group stopped
+[2026-05-02T19:51:49.135Z] Dev server exited with code -15
+[2026-05-02T19:51:52.106Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T19:51:53.917Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T19:51:54.353Z] Server running on http://localhost:3000/
+[2026-05-02T19:53:28.714Z] 3:53:28 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:53:41.163Z] 3:53:41 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:53:53.073Z] 3:53:53 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:54:06.570Z] 3:54:06 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:54:10.742Z] Dev server process group stopped
+[2026-05-02T19:54:10.827Z] Dev server exited with code -15
+[2026-05-02T19:54:13.792Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T19:54:15.625Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T19:54:16.028Z] Server running on http://localhost:3000/
+[2026-05-02T19:58:46.337Z] 3:58:46 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:59:12.926Z] [Auth] Missing session cookie
+[2026-05-02T19:59:17.446Z] [Auth] Missing session cookie
+[2026-05-02T19:59:43.381Z] 3:59:43 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T19:59:58.971Z] 3:59:58 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:00:29.120Z] Dev server process group stopped
+[2026-05-02T20:00:29.171Z] Dev server exited with code -15
+[2026-05-02T20:00:32.161Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T20:00:34.416Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T20:00:34.846Z] Server running on http://localhost:3000/
+[2026-05-02T20:01:07.315Z] 4:01:07 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:04:43.357Z] 4:04:43 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:04:56.746Z] Dev server process group stopped
+[2026-05-02T20:04:56.819Z] Dev server exited with code -15
+[2026-05-02T20:04:59.784Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T20:05:01.516Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T20:05:01.919Z] Server running on http://localhost:3000/
+[2026-05-02T20:09:19.969Z] 4:09:19 PM [vite] (client) hmr update /src/index.css, /src/components/AiMockupView.tsx
+[2026-05-02T20:09:51.310Z] Dev server process group stopped
+[2026-05-02T20:09:51.351Z] Dev server exited with code -15
+[2026-05-02T20:09:54.352Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T20:09:56.262Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T20:09:56.711Z] Server running on http://localhost:3000/
+[2026-05-02T20:13:09.669Z] 4:13:09 PM [vite] (client) hmr update /src/index.css, /src/components/AiMockupView.tsx
+[2026-05-02T20:14:26.767Z] Dev server process group stopped
+[2026-05-02T20:14:26.827Z] Dev server exited with code -15
+[2026-05-02T20:14:29.810Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T20:14:31.942Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T20:14:32.468Z] Server running on http://localhost:3000/
+[2026-05-02T20:15:17.998Z] [Auth] Missing session cookie
+[2026-05-02T20:21:05.038Z] 4:21:05 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:21:50.415Z] 4:21:50 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:22:09.596Z] Dev server process group stopped
+[2026-05-02T20:22:09.656Z] Dev server exited with code -15
+[2026-05-02T20:22:12.636Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T20:22:14.508Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T20:22:14.936Z] Server running on http://localhost:3000/
+[2026-05-02T20:27:05.059Z] 4:27:05 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:27:19.150Z] Dev server process group stopped
+[2026-05-02T20:27:19.231Z] Dev server exited with code -15
+[2026-05-02T20:27:22.189Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T20:27:24.048Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T20:27:24.444Z] Server running on http://localhost:3000/
+[2026-05-02T20:27:35.009Z] 4:27:35 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:28:05.433Z] 4:28:05 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-02T20:28:46.413Z] 4:28:46 PM [vite] (client) hmr update /src/index.css
+[2026-05-02T20:30:02.756Z] Dev server process group stopped
+[2026-05-02T20:30:02.812Z] Dev server exited with code -15
+[2026-05-02T20:30:05.802Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-02T20:30:07.841Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-02T20:30:08.299Z] Server running on http://localhost:3000/

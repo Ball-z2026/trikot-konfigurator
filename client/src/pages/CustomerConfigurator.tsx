@@ -431,19 +431,28 @@ export default function CustomerConfigurator() {
     return false;
   }, [productData?.templateId, parts]);
 
-  // ─── Erkennung ob Produktbilder Transparenz haben (für Farb-Overlay) ───
-  // Transparenz-Erkennung: Nur SVG-basierte Bilder sind transparent.
-  // Alle PNG-Bilder (Trikots, Hoodies, T-Shirts, Jacken, etc.) haben weiße Hintergründe
-  // und benötigen den multiply-Overlay statt CSS-Mask.
-  const hasTransparentImages = useMemo(() => {
-    // SVG-Templates erkennen (aus TEXTIL_TEMPLATES)
-    const tmpl = productData?.templateId ? TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId) : null;
-    if (tmpl?.parts?.[0]?.imageUrl?.includes('.svg')) return true;
-    // Prüfe ob die Part-Bilder SVGs sind (aus DB)
-    if (parts.length > 0 && parts[0]?.imageUrl?.includes('.svg')) return true;
-    // Alle anderen (PNG) sind nicht transparent
+  // ─── Erkennung ob Produktbilder farbige Hintergründe haben ───
+  // Bekleidungs-Templates (Aufwärmshirt, Zip-Jacke, Half-Zipper, Warme Jacke, Trainingshose)
+  // haben farbige PNGs (z.B. dunkelblau). Für diese brauchen wir 'color' blend mode.
+  // Trikot-Templates haben weiße PNGs und brauchen 'multiply' blend mode.
+  // SVG-basierte Templates (z.B. fussball_dtf_svg) haben ebenfalls farbige Bilder.
+  const isColoredBase = useMemo(() => {
+    if (!productData?.templateId) return false;
+    const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
+    if (!tmpl) {
+      // Fallback: Prüfe Produkt-Kategorie aus DB
+      const cat = (productData as any)?.category;
+      if (cat && cat !== 'Trikot') return true;
+      return false;
+    }
+    // Bekleidungs-Templates haben farbige PNGs
+    if (tmpl.category === 'Bekleidung') return true;
+    // SVG-basierte Templates haben farbige Bilder (vom Proxy als PNG geliefert)
+    if (tmpl.parts?.[0]?.imageUrl?.includes('.svg')) return true;
     return false;
-  }, [productData?.templateId, parts]);
+  }, [productData?.templateId, productData]);
+  // Legacy alias for backward compatibility
+  const hasTransparentImages = isColoredBase;
 
   // ─── Free Zone Mode erkennen (Bekleidung: Trainer definiert Zonen selbst) ───
   const isFreeZoneMode = useMemo(() => {
@@ -889,6 +898,16 @@ export default function CustomerConfigurator() {
   const activePart = parts.find((p) => p.id === activePartId);
   const sortedParts = useMemo(() => [...parts].sort((a, b) => a.sortOrder - b.sortOrder), [parts]);
 
+  // Build a map of partId → image URL for the AiMockupView
+  const partImageMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const part of parts) {
+      const url = storageUrl(part.imageUrl);
+      if (url) map[part.id] = url;
+    }
+    return map;
+  }, [parts]);
+
   const rawCurrentImage = hasParts
     ? activePart?.imageUrl || null
     : activeSide === "front"
@@ -905,6 +924,8 @@ export default function CustomerConfigurator() {
   // CSS-based coloring: no Canvas/CORS needed. The image is shown directly and
   // colored via a CSS overlay with mix-blend-mode.
   const currentImage = storageUrl(rawCurrentImage) || null;
+  // For SVG-based products, keep the raw SVG URL for CSS-mask (storage proxy converts SVGs to PNGs)
+  // rawMaskUrl no longer needed - using 'color' blend mode instead of CSS-mask
   // activeColor is used as CSS overlay color in the rendering section below
 
   // Part colors for CSS overlay (no Canvas processing needed)
@@ -1675,18 +1696,10 @@ export default function CustomerConfigurator() {
                                   crossOrigin="anonymous"
                                 />
                                 {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply */}
-                                {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                  <div className="absolute inset-0 pointer-events-none" style={{
-                                    backgroundColor: getPartColor(part.id),
-                                    mixBlendMode: "multiply" as const,
-                                    WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
-                                    WebkitMaskSize: "contain",
-                                    WebkitMaskRepeat: "no-repeat",
-                                    WebkitMaskPosition: "center",
-                                    maskImage: `url(${storageUrl(part.imageUrl)})`,
-                                    maskSize: "contain",
-                                    maskRepeat: "no-repeat",
-                                    maskPosition: "center",
+                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                   <div className="absolute inset-0 pointer-events-none" style={{
+                                     backgroundColor: getPartColor(part.id),
+                                     mixBlendMode: "color" as const,
                                   }} />
                                 )}
                                 {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
@@ -1812,30 +1825,65 @@ export default function CustomerConfigurator() {
                   size="sm"
                   className="h-8 text-xs"
                   onClick={async () => {
-                    // Screenshots für beide Seiten aus der Gesamtübersicht erstellen
+                    // Screenshots für beide Seiten erstellen
                     const { toPng } = await import("html-to-image");
                     const screenshots: { front: string | null; back: string | null } = { front: null, back: null };
                     
-                    // Wechsle zur Overview für den Screenshot
-                    const prevMode = viewMode;
-                    if (prevMode !== "overview") {
-                      setViewMode("overview");
-                      await new Promise(r => setTimeout(r, 300));
-                    }
-                    
-                    // Screenshot der Gesamtübersicht (zeigt alle Teile)
-                    if (overviewRef.current) {
-                      try {
-                        screenshots.front = await toPng(overviewRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
-                        // Für die Rückseite verwenden wir den gleichen Screenshot als Basis
-                        // da die Overview alle Teile zeigt
-                        screenshots.back = screenshots.front;
-                      } catch { /* kein Screenshot */ }
-                    } else if (canvasRef.current) {
-                      try {
-                        screenshots.front = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
-                        screenshots.back = screenshots.front;
-                      } catch { /* kein Screenshot */ }
+                    if (hasParts) {
+                      // Für Produkte mit Parts: Wechsle zum parts-View und mache Screenshots
+                      const sorted = [...parts].sort((a, b) => a.sortOrder - b.sortOrder);
+                      const frontPart = sorted.find(p => p.key === "vorderteil" || p.key.includes("vorderteil"));
+                      const backPart = sorted.find(p => p.key === "rueckteil" || p.key.includes("rueckteil"));
+                      const prevPartId = activePartId;
+                      const prevMode = viewMode;
+                      
+                      // Sicherstellen dass wir im parts-View sind (wo canvasRef gerendert wird)
+                      if (prevMode !== "parts") {
+                        setViewMode("parts");
+                        await new Promise(r => setTimeout(r, 350));
+                      }
+                      
+                      // Screenshot Vorderseite
+                      if (frontPart) {
+                        setActivePartId(frontPart.id);
+                        await new Promise(r => setTimeout(r, 400));
+                        if (canvasRef.current) {
+                          try {
+                            screenshots.front = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
+                          } catch { /* kein Screenshot */ }
+                        }
+                      }
+                      
+                      // Screenshot Rückseite
+                      if (backPart) {
+                        setActivePartId(backPart.id);
+                        await new Promise(r => setTimeout(r, 400));
+                        if (canvasRef.current) {
+                          try {
+                            screenshots.back = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
+                          } catch { /* kein Screenshot */ }
+                        }
+                      }
+                      
+                      // Zurück zum ursprünglichen Part
+                      setActivePartId(prevPartId);
+                    } else {
+                      // Für Produkte ohne Parts: Wechsle activeSide
+                      setActiveSide("front");
+                      await new Promise(r => setTimeout(r, 350));
+                      if (canvasRef.current) {
+                        try {
+                          screenshots.front = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
+                        } catch { /* kein Screenshot */ }
+                      }
+                      setActiveSide("back");
+                      await new Promise(r => setTimeout(r, 350));
+                      if (canvasRef.current) {
+                        try {
+                          screenshots.back = await toPng(canvasRef.current, { quality: 0.8, pixelRatio: 1.5, skipFonts: true, cacheBust: true, includeQueryParams: true });
+                        } catch { /* kein Screenshot */ }
+                      }
+                      setActiveSide("front");
                     }
                     setCachedMockupScreenshots(screenshots);
                     setMockupSide("front");
@@ -1876,21 +1924,13 @@ export default function CustomerConfigurator() {
                                   draggable={false}
                                   crossOrigin="anonymous"
                                 />
-                                {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply */}
+                                {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
                                   <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
                                       backgroundColor: getPartColor(part.id),
-                                      mixBlendMode: "multiply" as const,
-                                      WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
-                                      WebkitMaskSize: "100% 100%",
-                                      WebkitMaskRepeat: "no-repeat",
-                                      WebkitMaskPosition: "center",
-                                      maskImage: `url(${storageUrl(part.imageUrl)})`,
-                                      maskSize: "100% 100%",
-                                      maskRepeat: "no-repeat",
-                                      maskPosition: "center",
+                                      mixBlendMode: "color" as const,
                                     }}
                                   />
                                 )}
@@ -1961,7 +2001,7 @@ export default function CustomerConfigurator() {
                   <AiMockupView
                     productName={productData?.name || "Trikot"}
                     sortedParts={sortedParts}
-                    processedPartImages={{}}
+                    processedPartImages={partImageMap}
                     partColors={partColors}
                     isSublimation={isSublimation}
                     isDtf={isDtf}
@@ -2018,7 +2058,7 @@ export default function CustomerConfigurator() {
                   <AiMockupView
                     productName={productData?.name || "Textil"}
                     sortedParts={sortedParts}
-                    processedPartImages={{}}
+                    processedPartImages={partImageMap}
                     partColors={partColors}
                     isSublimation={isSublimation}
                     isDtf={isDtf}
@@ -2057,7 +2097,7 @@ export default function CustomerConfigurator() {
                    className="relative w-full mx-auto select-none"
                    style={{
                      ...((isFreeZoneMode && (draggingZone !== null || resizingZone !== null)) ? { touchAction: "none" } : {}),
-                     backgroundColor: (!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? activeColor : "#e8eaed",
+                     backgroundColor: (!isColoredBase && !hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? activeColor : "#e8eaed",
                    }}
                   onClick={() => setSelectedZoneId(null)}
                   onDragOver={(e) => {
@@ -2107,21 +2147,15 @@ export default function CustomerConfigurator() {
                         draggable={false}
                         crossOrigin="anonymous"
                       />
-                      {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply über dem Bild */}
+                      {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
+                      {/* SVGs werden vom Storage-Proxy als opake PNGs geliefert. */}
+                      {/* 'color' blend mode ändert nur Farbton+Sättigung, behält Helligkeit/Details */}
                       {hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
                             backgroundColor: activeColor,
-                            mixBlendMode: "multiply" as const,
-                            WebkitMaskImage: `url(${currentImage})`,
-                            WebkitMaskSize: "100% 100%",
-                            WebkitMaskRepeat: "no-repeat",
-                            WebkitMaskPosition: "center",
-                            maskImage: `url(${currentImage})`,
-                            maskSize: "100% 100%",
-                            maskRepeat: "no-repeat",
-                            maskPosition: "center",
+                            mixBlendMode: "color" as const,
                           }}
                         />
                       )}
