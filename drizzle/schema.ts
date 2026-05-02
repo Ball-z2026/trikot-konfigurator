@@ -482,3 +482,74 @@ export const mockupGallery = mysqlTable("mockup_gallery", {
 
 export type MockupGalleryItem = typeof mockupGallery.$inferSelect;
 export type InsertMockupGalleryItem = typeof mockupGallery.$inferInsert;
+
+/**
+ * Collections – Kollektionen von Designs.
+ * 
+ * Hierarchie:
+ * - Trainer erstellt Kollektion (scope: team) → sichtbar in seiner Sparte
+ * - Spartenleiter erstellt Kollektion (scope: department) → sichtbar in seiner Sparte
+ * - Owner erstellt Vereinskollektion (scope: org) → sichtbar für alle
+ * 
+ * Enforcement (nur für scope: org):
+ * - optional: Kollektion steht zur Auswahl
+ * - mandatory: Kollektion ist Pflicht für alle Mannschaften
+ */
+export const collections = mysqlTable("collections", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Name der Kollektion (z.B. "Saison 2025/26 Heimtrikot-Set") */
+  name: varchar("name", { length: 255 }).notNull(),
+  /** Optionale Beschreibung */
+  description: text("description"),
+  /** Organisation */
+  orgId: int("orgId").notNull(),
+  /** Abteilung (null = organisationsweit) */
+  departmentId: int("departmentId"),
+  /** Ersteller */
+  createdByUserId: int("createdByUserId").notNull(),
+  /** Sichtbarkeitsbereich: team = nur Sparte, department = Sparte, org = gesamter Verein */
+  scope: mysqlEnum("scope", ["team", "department", "org"]).default("team").notNull(),
+  /** Verbindlichkeit (nur bei scope=org relevant): optional oder Pflicht */
+  enforcement: mysqlEnum("enforcement", ["optional", "mandatory"]).default("optional").notNull(),
+  /** Thumbnail-Vorschau-URL */
+  thumbnailUrl: text("thumbnailUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Collection = typeof collections.$inferSelect;
+export type InsertCollection = typeof collections.$inferInsert;
+
+/**
+ * Collection Items – Einzelne Designs innerhalb einer Kollektion.
+ * Verknüpft ein gespeichertes Design (savedDesign) mit einer Kollektion.
+ */
+export const collectionItems = mysqlTable("collection_items", {
+  id: int("id").autoincrement().primaryKey(),
+  collectionId: int("collectionId").notNull(),
+  /** Referenz auf das gespeicherte Design */
+  savedDesignId: int("savedDesignId").notNull(),
+  /** Sortierreihenfolge innerhalb der Kollektion */
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CollectionItem = typeof collectionItems.$inferSelect;
+export type InsertCollectionItem = typeof collectionItems.$inferInsert;
+
+/**
+ * Collection Assignments – Spartenleiter weist eine Kollektion seiner Sparte zu.
+ * Damit wird die Kollektion für alle Trainer in der Sparte sichtbar/empfohlen.
+ */
+export const collectionAssignments = mysqlTable("collection_assignments", {
+  id: int("id").autoincrement().primaryKey(),
+  collectionId: int("collectionId").notNull(),
+  /** Ziel-Abteilung der Zuweisung */
+  departmentId: int("departmentId").notNull(),
+  /** Wer hat zugewiesen */
+  assignedByUserId: int("assignedByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CollectionAssignment = typeof collectionAssignments.$inferSelect;
+export type InsertCollectionAssignment = typeof collectionAssignments.$inferInsert;

@@ -31,6 +31,12 @@ import {
   InsertSponsorTemplate,
   mockupGallery,
   InsertMockupGalleryItem,
+  collections,
+  InsertCollection,
+  collectionItems,
+  InsertCollectionItem,
+  collectionAssignments,
+  InsertCollectionAssignment,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1371,4 +1377,132 @@ export async function deleteMockupGalleryItem(id: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(mockupGallery).where(and(eq(mockupGallery.id, id), eq(mockupGallery.userId, userId)));
+}
+
+// ─── Collection Helpers ────────────────────────────────────────────────────
+
+export async function createCollection(data: InsertCollection) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(collections).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getCollection(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(collections).where(eq(collections.id, id)).limit(1);
+  return result[0];
+}
+
+export async function updateCollection(id: number, data: Partial<InsertCollection>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(collections).set(data).where(eq(collections.id, id));
+}
+
+export async function deleteCollection(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Lösche zuerst Items und Assignments
+  await db.delete(collectionItems).where(eq(collectionItems.collectionId, id));
+  await db.delete(collectionAssignments).where(eq(collectionAssignments.collectionId, id));
+  await db.delete(collections).where(eq(collections.id, id));
+}
+
+/**
+ * Listet Kollektionen für einen Benutzer basierend auf seiner Rolle:
+ * - Trainer: Eigene + Sparten-Kollektionen + zugewiesene + Org-Kollektionen
+ * - Spartenleiter: Alle in seiner Sparte + Org-Kollektionen + alle anderen Sparten
+ * - Owner: Alle Org-Kollektionen
+ */
+export async function listCollectionsForOrg(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(collections)
+    .where(eq(collections.orgId, orgId))
+    .orderBy(desc(collections.updatedAt));
+}
+
+export async function listCollectionsForDepartment(departmentId: number, orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Alle Kollektionen die für diese Sparte relevant sind:
+  // 1. Direkt in der Sparte erstellt (departmentId match)
+  // 2. Der Sparte zugewiesen (via collectionAssignments)
+  // 3. Org-weite Kollektionen
+  const allOrgCollections = await db.select().from(collections)
+    .where(eq(collections.orgId, orgId))
+    .orderBy(desc(collections.updatedAt));
+  
+  const assignments = await db.select().from(collectionAssignments)
+    .where(eq(collectionAssignments.departmentId, departmentId));
+  const assignedIds = new Set(assignments.map(a => a.collectionId));
+
+  return allOrgCollections.filter(c => 
+    c.departmentId === departmentId || 
+    c.scope === "org" || 
+    assignedIds.has(c.id)
+  );
+}
+
+// ─── Collection Items ──────────────────────────────────────────────────────
+
+export async function addCollectionItem(data: InsertCollectionItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(collectionItems).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function listCollectionItems(collectionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({
+    item: collectionItems,
+    design: savedDesigns,
+  }).from(collectionItems)
+    .innerJoin(savedDesigns, eq(collectionItems.savedDesignId, savedDesigns.id))
+    .where(eq(collectionItems.collectionId, collectionId))
+    .orderBy(asc(collectionItems.sortOrder));
+}
+
+export async function removeCollectionItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(collectionItems).where(eq(collectionItems.id, id));
+}
+
+// ─── Collection Assignments ────────────────────────────────────────────────
+
+export async function assignCollectionToDepartment(data: InsertCollectionAssignment) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(collectionAssignments).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function unassignCollectionFromDepartment(collectionId: number, departmentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(collectionAssignments).where(
+    and(
+      eq(collectionAssignments.collectionId, collectionId),
+      eq(collectionAssignments.departmentId, departmentId)
+    )
+  );
+}
+
+export async function listAssignmentsForCollection(collectionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(collectionAssignments)
+    .where(eq(collectionAssignments.collectionId, collectionId));
+}
+
+export async function listAssignmentsForDepartment(departmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(collectionAssignments)
+    .where(eq(collectionAssignments.departmentId, departmentId));
 }

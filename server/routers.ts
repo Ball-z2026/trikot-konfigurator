@@ -108,6 +108,18 @@ import {
   listMockupsByTeam,
   getMockupByShareToken,
   deleteMockupGalleryItem,
+  createCollection,
+  getCollection,
+  updateCollection,
+  deleteCollection,
+  listCollectionsForOrg,
+  listCollectionsForDepartment,
+  addCollectionItem,
+  listCollectionItems,
+  removeCollectionItem,
+  assignCollectionToDepartment,
+  unassignCollectionFromDepartment,
+  listAssignmentsForCollection,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1989,6 +2001,258 @@ export const appRouter = router({
     photoroomStatus: publicProcedure
       .query(() => {
         return { configured: isPhotoroomConfigured() };
+      }),
+  }),
+
+  // ─── Kollektions-System ──────────────────────────────────────────────────
+  collection: router({
+    /** Kollektion erstellen */
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(255),
+        description: z.string().optional(),
+        orgId: z.number(),
+        departmentId: z.number().optional(),
+        scope: z.enum(["team", "department", "org"]),
+        enforcement: z.enum(["optional", "mandatory"]).optional(),
+        thumbnailUrl: z.string().optional(),
+        savedDesignIds: z.array(z.number()).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Berechtigungsprüfung basierend auf scope
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Mitglied dieser Organisation" });
+
+        if (input.scope === "org" && membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsinhaber kann Vereinskollektionen erstellen" });
+        }
+        if (input.scope === "department" && membership.role !== "department_lead" && membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur Spartenleiter oder Owner können Sparten-Kollektionen erstellen" });
+        }
+
+        const collectionId = await createCollection({
+          name: input.name,
+          description: input.description || null,
+          orgId: input.orgId,
+          departmentId: input.departmentId || null,
+          createdByUserId: ctx.user.id,
+          scope: input.scope,
+          enforcement: input.enforcement || "optional",
+          thumbnailUrl: input.thumbnailUrl || null,
+        });
+
+        // Designs hinzufügen falls angegeben
+        if (input.savedDesignIds && input.savedDesignIds.length > 0) {
+          for (let i = 0; i < input.savedDesignIds.length; i++) {
+            await addCollectionItem({
+              collectionId,
+              savedDesignId: input.savedDesignIds[i],
+              sortOrder: i,
+            });
+          }
+        }
+
+        return { id: collectionId };
+      }),
+
+    /** Kollektionen auflisten (basierend auf Org) */
+    list: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        departmentId: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN" });
+
+        let colls;
+        if (input.departmentId) {
+          colls = await listCollectionsForDepartment(input.departmentId, input.orgId);
+        } else {
+          colls = await listCollectionsForOrg(input.orgId);
+        }
+
+        // Für jeden Kollektion die Items laden
+        const result = await Promise.all(colls.map(async (c) => {
+          const items = await listCollectionItems(c.id);
+          const assignments = await listAssignmentsForCollection(c.id);
+          return {
+            ...c,
+            items: items.map(i => ({ ...i.item, design: i.design })),
+            assignedDepartments: assignments.map(a => a.departmentId),
+          };
+        }));
+
+        return result;
+      }),
+
+    /** Einzelne Kollektion mit Items laden */
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const coll = await getCollection(input.id);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, coll.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN" });
+
+        const items = await listCollectionItems(coll.id);
+        const assignments = await listAssignmentsForCollection(coll.id);
+
+        return {
+          ...coll,
+          items: items.map(i => ({ ...i.item, design: i.design })),
+          assignedDepartments: assignments.map(a => a.departmentId),
+        };
+      }),
+
+    /** Kollektion aktualisieren */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).max(255).optional(),
+        description: z.string().optional(),
+        enforcement: z.enum(["optional", "mandatory"]).optional(),
+        thumbnailUrl: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const coll = await getCollection(input.id);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, coll.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN" });
+
+        // Nur Ersteller, Spartenleiter oder Owner dürfen bearbeiten
+        if (coll.createdByUserId !== ctx.user.id && membership.role !== "owner" && membership.role !== "department_lead") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        }
+
+        // enforcement nur für Owner änderbar
+        if (input.enforcement && membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Owner kann die Verbindlichkeit ändern" });
+        }
+
+        const updateData: Record<string, unknown> = {};
+        if (input.name) updateData.name = input.name;
+        if (input.description !== undefined) updateData.description = input.description;
+        if (input.enforcement) updateData.enforcement = input.enforcement;
+        if (input.thumbnailUrl) updateData.thumbnailUrl = input.thumbnailUrl;
+
+        await updateCollection(input.id, updateData as any);
+        return { success: true };
+      }),
+
+    /** Kollektion löschen */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const coll = await getCollection(input.id);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, coll.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN" });
+
+        if (coll.createdByUserId !== ctx.user.id && membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+        }
+
+        await deleteCollection(input.id);
+        return { success: true };
+      }),
+
+    /** Design zu Kollektion hinzufügen */
+    addItem: protectedProcedure
+      .input(z.object({
+        collectionId: z.number(),
+        savedDesignId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const coll = await getCollection(input.collectionId);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, coll.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN" });
+
+        // Aktuelle Items zählen für sortOrder
+        const items = await listCollectionItems(input.collectionId);
+        const id = await addCollectionItem({
+          collectionId: input.collectionId,
+          savedDesignId: input.savedDesignId,
+          sortOrder: items.length,
+        });
+        return { id };
+      }),
+
+    /** Design aus Kollektion entfernen */
+    removeItem: protectedProcedure
+      .input(z.object({ itemId: z.number(), collectionId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const coll = await getCollection(input.collectionId);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, coll.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN" });
+
+        await removeCollectionItem(input.itemId);
+        return { success: true };
+      }),
+
+    /** Spartenleiter: Kollektion für Sparte freigeben */
+    assign: protectedProcedure
+      .input(z.object({
+        collectionId: z.number(),
+        departmentId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Nur Spartenleiter oder Owner
+        const coll = await getCollection(input.collectionId);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, coll.orgId);
+        if (!membership || (membership.role !== "department_lead" && membership.role !== "owner")) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur Spartenleiter oder Owner" });
+        }
+
+        const id = await assignCollectionToDepartment({
+          collectionId: input.collectionId,
+          departmentId: input.departmentId,
+          assignedByUserId: ctx.user.id,
+        });
+        return { id };
+      }),
+
+    /** Spartenleiter: Freigabe zurücknehmen */
+    unassign: protectedProcedure
+      .input(z.object({
+        collectionId: z.number(),
+        departmentId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const coll = await getCollection(input.collectionId);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, coll.orgId);
+        if (!membership || (membership.role !== "department_lead" && membership.role !== "owner")) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        await unassignCollectionFromDepartment(input.collectionId, input.departmentId);
+        return { success: true };
+      }),
+
+    /** Owner: Verbindlichkeit setzen (optional/mandatory) */
+    setEnforcement: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        enforcement: z.enum(["optional", "mandatory"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const coll = await getCollection(input.id);
+        if (!coll) throw new TRPCError({ code: "NOT_FOUND" });
+
+        await requireOrgOwner(ctx.user.id, coll.orgId);
+        await updateCollection(input.id, { enforcement: input.enforcement });
+        return { success: true };
       }),
   }),
 });

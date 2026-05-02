@@ -57,6 +57,9 @@ import {
   Factory,
   Truck,
   CircleDot,
+  FolderOpen,
+  Library,
+  Lock,
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -1144,6 +1147,10 @@ function TeamDetail({
         <Separator className="my-6" />
         <MockupGallerySection teamId={teamId} teamName={team.name} orgId={orgId} />
 
+        {/* Kollektionen */}
+        <Separator className="my-6" />
+        <CollectionsSection orgId={orgId} departmentId={deptId} teamId={teamId} />
+
         {/* Bestellstatus */}
         <Separator className="my-6" />
         <OrderStatusSection teamId={teamId} orderStatus={(team as any).orderStatus || "offen"} />
@@ -1158,7 +1165,309 @@ function TeamDetail({
   );
 }
 
-// ─── Bestellstatus-Anzeige (read-only für Trainer) ────────────────────────────────────────────
+//// ─── Kollektions-Sektion (Trainer) ──────────────────────────────────────────────────────────────────────────────
+function CollectionsSection({ orgId, departmentId, teamId }: { orgId: number; departmentId: number; teamId: number }) {
+  const utils = trpc.useUtils();
+  const { data: collections, isLoading } = trpc.collection.list.useQuery(
+    { orgId, departmentId },
+    { enabled: orgId > 0 }
+  );
+  const { data: savedDesigns } = trpc.savedDesign.list.useQuery(
+    { teamId },
+    { enabled: teamId > 0 }
+  );
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [collName, setCollName] = useState("");
+  const [collDesc, setCollDesc] = useState("");
+  const [selectedDesignIds, setSelectedDesignIds] = useState<number[]>([]);
+
+  const createColl = trpc.collection.create.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId, departmentId });
+      setShowCreate(false);
+      setCollName("");
+      setCollDesc("");
+      setSelectedDesignIds([]);
+      toast.success("Kollektion erstellt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const addItem = trpc.collection.addItem.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId, departmentId });
+      toast.success("Design zur Kollektion hinzugefügt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const removeItem = trpc.collection.removeItem.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId, departmentId });
+      toast.success("Design aus Kollektion entfernt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteColl = trpc.collection.delete.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId, departmentId });
+      toast.success("Kollektion gelöscht");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const mandatoryCollections = (collections || []).filter(
+    (c: any) => c.scope === "org" && c.enforcement === "mandatory"
+  );
+  const optionalCollections = (collections || []).filter(
+    (c: any) => !(c.scope === "org" && c.enforcement === "mandatory")
+  );
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Library className="w-5 h-5" />
+            Kollektionen
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Design-Zusammenstellungen für Ihre Mannschaft
+          </p>
+        </div>
+        <Dialog open={showCreate} onOpenChange={setShowCreate}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Kollektion erstellen
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Neue Kollektion</DialogTitle>
+              <DialogDescription>
+                Fassen Sie mehrere Designs zu einer Kollektion zusammen, die andere Trainer übernehmen können.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  placeholder="z.B. Saison 2025/26 Heimtrikot-Set"
+                  value={collName}
+                  onChange={(e) => setCollName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Beschreibung (optional)</Label>
+                <Input
+                  placeholder="Kurze Beschreibung der Kollektion"
+                  value={collDesc}
+                  onChange={(e) => setCollDesc(e.target.value)}
+                />
+              </div>
+              {savedDesigns && savedDesigns.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Designs auswählen</Label>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {savedDesigns.map((d: any) => (
+                      <button
+                        key={d.id}
+                        type="button"
+                        className={`flex items-center gap-2 p-2 rounded-lg border text-left text-sm transition-colors ${
+                          selectedDesignIds.includes(d.id)
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => {
+                          setSelectedDesignIds((prev) =>
+                            prev.includes(d.id)
+                              ? prev.filter((id) => id !== d.id)
+                              : [...prev, d.id]
+                          );
+                        }}
+                      >
+                        {d.thumbnailUrl ? (
+                          <img
+                            src={storageUrl(d.thumbnailUrl)}
+                            alt={d.name}
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                            <Shirt className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className="truncate flex-1">{d.name}</span>
+                        {selectedDesignIds.includes(d.id) && (
+                          <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>
+                Abbrechen
+              </Button>
+              <Button
+                onClick={() =>
+                  createColl.mutate({
+                    name: collName,
+                    description: collDesc || undefined,
+                    orgId,
+                    departmentId,
+                    scope: "team",
+                    savedDesignIds: selectedDesignIds.length > 0 ? selectedDesignIds : undefined,
+                  })
+                }
+                disabled={!collName.trim() || createColl.isPending}
+              >
+                {createColl.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                Erstellen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : !collections || collections.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            <FolderOpen className="w-10 h-10 mx-auto mb-2 opacity-50" />
+            <p>Noch keine Kollektionen vorhanden.</p>
+            <p className="text-xs mt-1">Erstellen Sie eine Kollektion oder warten Sie auf Freigaben vom Spartenleiter.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {mandatoryCollections.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-destructive flex items-center gap-1.5 mb-2">
+                <Lock className="w-4 h-4" />
+                Pflicht-Kollektionen (Verein)
+              </h3>
+              {mandatoryCollections.map((coll: any) => (
+                <CollectionCard key={coll.id} coll={coll} orgId={orgId} departmentId={departmentId} teamId={teamId} savedDesigns={savedDesigns || []} onAddItem={addItem} onRemoveItem={removeItem} onDelete={deleteColl} isMandatory />
+              ))}
+            </div>
+          )}
+          {optionalCollections.map((coll: any) => (
+            <CollectionCard key={coll.id} coll={coll} orgId={orgId} departmentId={departmentId} teamId={teamId} savedDesigns={savedDesigns || []} onAddItem={addItem} onRemoveItem={removeItem} onDelete={deleteColl} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CollectionCard({ coll, orgId, departmentId, teamId, savedDesigns, onAddItem, onRemoveItem, onDelete, isMandatory }: {
+  coll: any; orgId: number; departmentId: number; teamId: number; savedDesigns: any[]; onAddItem: any; onRemoveItem: any; onDelete: any; isMandatory?: boolean;
+}) {
+  const { user } = useAuth();
+  const [showAddDesign, setShowAddDesign] = useState(false);
+  const isOwner = coll.createdByUserId === user?.id;
+
+  const scopeLabel = coll.scope === "org" ? "Verein" : coll.scope === "department" ? "Sparte" : "Team";
+  const scopeColor = coll.scope === "org" ? "bg-purple-100 text-purple-700" : coll.scope === "department" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700";
+
+  return (
+    <Card className={isMandatory ? "border-destructive/30" : ""}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">{coll.name}</CardTitle>
+            <Badge variant="outline" className={`text-[10px] ${scopeColor}`}>{scopeLabel}</Badge>
+            {isMandatory && (
+              <Badge variant="destructive" className="text-[10px]">
+                <Lock className="w-3 h-3 mr-1" /> Pflicht
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {isOwner && !isMandatory && (
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive"
+                onClick={() => { if (confirm(`Kollektion "${coll.name}" wirklich löschen?`)) onDelete.mutate({ id: coll.id }); }}>
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            )}
+          </div>
+        </div>
+        {coll.description && <CardDescription className="text-xs">{coll.description}</CardDescription>}
+      </CardHeader>
+      <CardContent>
+        {coll.items && coll.items.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {coll.items.map((item: any) => (
+              <div key={item.id} className="relative group">
+                <div className="aspect-square rounded-lg border bg-muted/30 overflow-hidden">
+                  {item.design?.thumbnailUrl ? (
+                    <img src={storageUrl(item.design.thumbnailUrl)} alt={item.design?.name || "Design"} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center"><Shirt className="w-8 h-8 text-muted-foreground" /></div>
+                  )}
+                </div>
+                <p className="text-xs mt-1 truncate">{item.design?.name || "Design"}</p>
+                {isOwner && !isMandatory && (
+                  <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 bg-background/80 hover:bg-background"
+                    onClick={() => onRemoveItem.mutate({ itemId: item.id, collectionId: coll.id })}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-4">Noch keine Designs in dieser Kollektion.</p>
+        )}
+        {isOwner && !isMandatory && (
+          <div className="mt-3">
+            <Dialog open={showAddDesign} onOpenChange={setShowAddDesign}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full">
+                  <Plus className="w-4 h-4 mr-2" /> Design hinzufügen
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Design zur Kollektion hinzufügen</DialogTitle></DialogHeader>
+                <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto py-4">
+                  {savedDesigns
+                    .filter((d: any) => !coll.items?.some((item: any) => item.savedDesignId === d.id))
+                    .map((d: any) => (
+                      <button key={d.id} type="button" className="flex items-center gap-2 p-2 rounded-lg border border-border hover:border-primary/50 text-left text-sm"
+                        onClick={() => { onAddItem.mutate({ collectionId: coll.id, savedDesignId: d.id }); setShowAddDesign(false); }}>
+                        {d.thumbnailUrl ? (
+                          <img src={storageUrl(d.thumbnailUrl)} alt={d.name} className="w-10 h-10 rounded object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center"><Shirt className="w-5 h-5 text-muted-foreground" /></div>
+                        )}
+                        <span className="truncate flex-1">{d.name}</span>
+                      </button>
+                    ))}
+                  {savedDesigns.filter((d: any) => !coll.items?.some((item: any) => item.savedDesignId === d.id)).length === 0 && (
+                    <p className="col-span-2 text-sm text-muted-foreground text-center py-4">Alle Designs sind bereits in dieser Kollektion.</p>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Bestellstatus-Anzeige (read-only für Trainer) ────────────────────────────────────────
 const ORDER_STEPS_TRAINER = [
   { key: "offen" as const, label: "Offen", icon: CircleDot, color: "text-gray-400", bgColor: "bg-gray-100" },
   { key: "bestellt" as const, label: "Bestellt", icon: Package, color: "text-blue-600", bgColor: "bg-blue-50" },

@@ -43,6 +43,11 @@ import {
   Truck,
   CircleDot,
   ChevronRight,
+  Library,
+  FolderOpen,
+  Lock,
+  Shirt,
+  CheckCircle2,
 } from "lucide-react";
 import { useState, useRef, useCallback, useMemo } from "react";
 import { Link } from "wouter";
@@ -255,6 +260,11 @@ export default function DeptDashboard() {
           deptId={deptId}
           members={members}
         />
+
+        <Separator />
+
+        {/* Kollektionen */}
+        <DeptCollectionsSection orgId={orgId} deptId={deptId} />
 
         <Separator />
 
@@ -1189,7 +1199,191 @@ function TrainerSection({
 }
 
 
-// ─── Order Overview Section (Bestellübersicht) ──────────────────────────────
+// ─── Kollektions-Verwaltung (Spartenleiter) ──────────────────────────────────────────
+function DeptCollectionsSection({ orgId, deptId }: { orgId: number; deptId: number }) {
+  const utils = trpc.useUtils();
+  const { data: allCollections, isLoading } = trpc.collection.list.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+  const { data: departments } = trpc.department.listByOrg.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [collName, setCollName] = useState("");
+  const [collDesc, setCollDesc] = useState("");
+
+  const createColl = trpc.collection.create.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId });
+      setShowCreate(false);
+      setCollName("");
+      setCollDesc("");
+      toast.success("Kollektion erstellt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const assignColl = trpc.collection.assign.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId });
+      toast.success("Kollektion für Sparte freigegeben");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const unassignColl = trpc.collection.unassign.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId });
+      toast.success("Freigabe zurückgenommen");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteColl = trpc.collection.delete.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId });
+      toast.success("Kollektion gelöscht");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  // Alle Kollektionen anzeigen (Spartenleiter sieht alles)
+  const collections = allCollections || [];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Library className="w-5 h-5" />
+            Kollektionen
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Verwalten und freigeben von Design-Kollektionen für Ihre Sparte
+          </p>
+        </div>
+        <Dialog open={showCreate} onOpenChange={setShowCreate}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Sparten-Kollektion
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Sparten-Kollektion erstellen</DialogTitle>
+              <DialogDescription>
+                Erstellen Sie eine Kollektion, die allen Trainern in Ihrer Sparte zur Verfügung steht.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input placeholder="z.B. Saison 2025/26" value={collName} onChange={(e) => setCollName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Beschreibung (optional)</Label>
+                <Input placeholder="Kurze Beschreibung" value={collDesc} onChange={(e) => setCollDesc(e.target.value)} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>Abbrechen</Button>
+              <Button
+                onClick={() => createColl.mutate({ name: collName, description: collDesc || undefined, orgId, departmentId: deptId, scope: "department" })}
+                disabled={!collName.trim() || createColl.isPending}
+              >
+                {createColl.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Erstellen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : collections.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            <FolderOpen className="w-10 h-10 mx-auto mb-2 opacity-50" />
+            <p>Noch keine Kollektionen vorhanden.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {collections.map((coll: any) => {
+            const scopeLabel = coll.scope === "org" ? "Verein" : coll.scope === "department" ? "Sparte" : "Team";
+            const scopeColor = coll.scope === "org" ? "bg-purple-100 text-purple-700" : coll.scope === "department" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700";
+            const isAssigned = coll.assignedDepartments?.includes(deptId);
+            const isMandatory = coll.scope === "org" && coll.enforcement === "mandatory";
+
+            return (
+              <Card key={coll.id} className={isMandatory ? "border-destructive/30" : ""}>
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{coll.name}</span>
+                      <Badge variant="outline" className={`text-[10px] ${scopeColor}`}>{scopeLabel}</Badge>
+                      {isMandatory && <Badge variant="destructive" className="text-[10px]"><Lock className="w-3 h-3 mr-1" /> Pflicht</Badge>}
+                      {isAssigned && <Badge className="text-[10px] bg-green-100 text-green-700"><CheckCircle2 className="w-3 h-3 mr-1" /> Freigegeben</Badge>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* Freigabe-Toggle (nur für nicht-org Kollektionen) */}
+                      {coll.scope !== "org" && (
+                        isAssigned ? (
+                          <Button variant="outline" size="sm" onClick={() => unassignColl.mutate({ collectionId: coll.id, departmentId: deptId })}>
+                            Freigabe zurücknehmen
+                          </Button>
+                        ) : (
+                          <Button size="sm" onClick={() => assignColl.mutate({ collectionId: coll.id, departmentId: deptId })}>
+                            Für Sparte freigeben
+                          </Button>
+                        )
+                      )}
+                      {/* Löschen (nur eigene, nicht Pflicht) */}
+                      {!isMandatory && coll.scope !== "org" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"
+                          onClick={() => { if (confirm(`"${coll.name}" löschen?`)) deleteColl.mutate({ id: coll.id }); }}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {coll.description && <p className="text-xs text-muted-foreground mt-1">{coll.description}</p>}
+                  {coll.items && coll.items.length > 0 && (
+                    <div className="flex gap-2 mt-3 overflow-x-auto">
+                      {coll.items.slice(0, 6).map((item: any) => (
+                        <div key={item.id} className="w-14 h-14 rounded border bg-muted/30 overflow-hidden shrink-0">
+                          {item.design?.thumbnailUrl ? (
+                            <img src={storageUrl(item.design.thumbnailUrl)} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Shirt className="w-5 h-5 text-muted-foreground" /></div>
+                          )}
+                        </div>
+                      ))}
+                      {coll.items.length > 6 && (
+                        <div className="w-14 h-14 rounded border bg-muted/30 flex items-center justify-center shrink-0">
+                          <span className="text-xs text-muted-foreground">+{coll.items.length - 6}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Order Overview Section (Bestellübersicht) ──────────────────────────────────────────
 function OrderOverviewSection({
   orgId,
   deptId,

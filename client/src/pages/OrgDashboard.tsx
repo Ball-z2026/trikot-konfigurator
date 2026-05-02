@@ -13,7 +13,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
-  ChevronRight, Loader2, Megaphone
+  ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -469,6 +469,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
             <TabsTrigger value="sponsors" className="gap-2"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>
             <TabsTrigger value="departments" className="gap-2"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>
             <TabsTrigger value="members" className="gap-2"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
+            <TabsTrigger value="collections" className="gap-2"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>
           </TabsList>
 
           {/* ─── Logos Tab ─── */}
@@ -1011,15 +1012,230 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
               </div>
             )}
           </TabsContent>
+
+          {/* ─── Kollektionen Tab ─── */}
+          <TabsContent value="collections">
+            <OrgCollectionsSection orgId={orgId} isOwner={isOwner} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
   );
 }
 
-// ─── Main Export ──────────────────────────────────────────────────────────────
-export default function OrgDashboard() {
-  const params = useParams<{ id?: string }>();
+// ─── Kollektionen-Verwaltung (Owner) ──────────────────────────────────────────────────────
+function OrgCollectionsSection({ orgId, isOwner }: { orgId: number; isOwner: boolean }) {
+  const utils = trpc.useUtils();
+  const { data: collections, isLoading } = trpc.collection.list.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [collName, setCollName] = useState("");
+  const [collDesc, setCollDesc] = useState("");
+  const [enforcement, setEnforcement] = useState<"optional" | "mandatory">("optional");
+
+  const createColl = trpc.collection.create.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId });
+      setShowCreate(false);
+      setCollName("");
+      setCollDesc("");
+      setEnforcement("optional");
+      toast.success("Vereinskollektion erstellt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const setEnforcementMut = trpc.collection.setEnforcement.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId });
+      toast.success("Verbindlichkeit geändert");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteColl = trpc.collection.delete.useMutation({
+    onSuccess: () => {
+      utils.collection.list.invalidate({ orgId });
+      toast.success("Kollektion gelöscht");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const allCollections = collections || [];
+  const orgCollections = allCollections.filter((c: any) => c.scope === "org");
+  const otherCollections = allCollections.filter((c: any) => c.scope !== "org");
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Library className="w-5 h-5" />
+            Vereinskollektionen
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Erstellen Sie Kollektionen für den gesamten Verein (optional oder Pflicht)
+          </p>
+        </div>
+        {isOwner && (
+          <Dialog open={showCreate} onOpenChange={setShowCreate}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                Vereinskollektion
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Vereinskollektion erstellen</DialogTitle>
+                <DialogDescription>
+                  Diese Kollektion gilt für den gesamten Verein. Sie können sie als optional oder als Pflicht markieren.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Name</Label>
+                  <Input placeholder="z.B. Vereinskollektion 2025/26" value={collName} onChange={(e) => setCollName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Beschreibung (optional)</Label>
+                  <Input placeholder="Kurze Beschreibung" value={collDesc} onChange={(e) => setCollDesc(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Verbindlichkeit</Label>
+                  <Select value={enforcement} onValueChange={(v) => setEnforcement(v as "optional" | "mandatory")}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="optional">Optional (zur Auswahl)</SelectItem>
+                      <SelectItem value="mandatory">Pflicht (für alle Mannschaften)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowCreate(false)}>Abbrechen</Button>
+                <Button
+                  onClick={() => createColl.mutate({ name: collName, description: collDesc || undefined, orgId, scope: "org", enforcement })}
+                  disabled={!collName.trim() || createColl.isPending}
+                >
+                  {createColl.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  Erstellen
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : allCollections.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            <FolderOpen className="w-10 h-10 mx-auto mb-2 opacity-50" />
+            <p>Noch keine Kollektionen vorhanden.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {/* Vereinskollektionen */}
+          {orgCollections.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Vereinskollektionen</h3>
+              <div className="space-y-3">
+                {orgCollections.map((coll: any) => (
+                  <Card key={coll.id} className={coll.enforcement === "mandatory" ? "border-destructive/30" : ""}>
+                    <CardContent className="py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{coll.name}</span>
+                          {coll.enforcement === "mandatory" ? (
+                            <Badge variant="destructive" className="text-[10px]"><Lock className="w-3 h-3 mr-1" /> Pflicht</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] bg-green-100 text-green-700">Optional</Badge>
+                          )}
+                        </div>
+                        {isOwner && (
+                          <div className="flex items-center gap-2">
+                            {/* Toggle Pflicht/Optional */}
+                            <Button variant="outline" size="sm"
+                              onClick={() => setEnforcementMut.mutate({
+                                id: coll.id,
+                                enforcement: coll.enforcement === "mandatory" ? "optional" : "mandatory"
+                              })}>
+                              {coll.enforcement === "mandatory" ? "Auf Optional setzen" : "Auf Pflicht setzen"}
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"
+                              onClick={() => { if (confirm(`"${coll.name}" löschen?`)) deleteColl.mutate({ id: coll.id }); }}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      {coll.description && <p className="text-xs text-muted-foreground mt-1">{coll.description}</p>}
+                      {coll.items && coll.items.length > 0 && (
+                        <div className="flex gap-2 mt-3 overflow-x-auto">
+                          {coll.items.slice(0, 8).map((item: any) => (
+                            <div key={item.id} className="w-12 h-12 rounded border bg-muted/30 overflow-hidden shrink-0">
+                              {item.design?.thumbnailUrl ? (
+                                <img src={storageUrl(item.design.thumbnailUrl)} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center"><Shirt className="w-4 h-4 text-muted-foreground" /></div>
+                              )}
+                            </div>
+                          ))}
+                          {coll.items.length > 8 && (
+                            <div className="w-12 h-12 rounded border bg-muted/30 flex items-center justify-center shrink-0">
+                              <span className="text-xs text-muted-foreground">+{coll.items.length - 8}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Andere Kollektionen (Sparten/Teams) */}
+          {otherCollections.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Übersicht: Sparten- & Team-Kollektionen</h3>
+              <div className="space-y-2">
+                {otherCollections.map((coll: any) => {
+                  const scopeLabel = coll.scope === "department" ? "Sparte" : "Team";
+                  const scopeColor = coll.scope === "department" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700";
+                  return (
+                    <Card key={coll.id}>
+                      <CardContent className="py-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{coll.name}</span>
+                            <Badge variant="outline" className={`text-[10px] ${scopeColor}`}>{scopeLabel}</Badge>
+                            <span className="text-xs text-muted-foreground">{coll.items?.length || 0} Designs</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Export ────────────────────────────────────────────────────────────────────
+export default function OrgDashboard() {const params = useParams<{ id?: string }>();
   const orgId = params.id ? parseInt(params.id) : null;
 
   if (!orgId) return <OrgList />;

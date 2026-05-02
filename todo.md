@@ -991,3 +991,43 @@
 ## Bug: Kürzel-Zone bei Trikots verfügbar
 - [x] abbreviation nur bei freeZoneMode (Bekleidung) im Zweck-Auswahlfeld angezeigt
 - [x] ZoneData-Typ um 'abbreviation' erweitert (TS-Fehler behoben)
+
+## Kollektions-System
+
+### DB-Schema
+- [x] collections-Tabelle: id, name, description, orgId, departmentId, createdByUserId, scope, enforcement, thumbnailUrl
+- [x] collection_items-Tabelle: id, collectionId, savedDesignId, sortOrder
+- [x] collection_assignments-Tabelle: id, collectionId, departmentId, assignedByUserId
+- [x] Migration erfolgreich ausgeführt
+
+### Backend tRPC-Prozeduren
+- [x] collection.create – Kollektion erstellen (Trainer: scope=team, Spartenleiter: scope=department, Owner: scope=org)
+- [x] collection.list – Kollektionen auflisten (gefiltert nach Rolle/Sichtbarkeit)
+- [x] collection.getById – Einzelne Kollektion mit Items laden
+- [x] collection.update – Kollektion bearbeiten (Name, Beschreibung, enforcement)
+- [x] collection.delete – Kollektion löschen (inkl. Items und Assignments)
+- [x] collection.addItem – Design zu Kollektion hinzufügen
+- [x] collection.removeItem – Design aus Kollektion entfernen
+- [x] collection.assign – Spartenleiter: Kollektion für Sparte freigeben
+- [x] collection.unassign – Spartenleiter: Freigabe zurücknehmen
+- [x] collection.setEnforcement – Owner: Kollektion als Pflicht/optional setzen
+
+### Frontend: TrainerDashboard
+- [x] Kollektions-Sektion im TeamDetail (zwischen Mockup-Galerie und Bestellstatus)
+- [x] Kollektions-Übersicht: Eigene + freigegebene + Pflicht-Kollektionen
+- [x] Kollektion erstellen: Name, Beschreibung, Designs auswählen
+- [x] Design zu Kollektion hinzufügen/entfernen
+- [x] Pflicht-Kollektionen (vom Owner) hervorgehoben mit Lock-Badge
+- [x] CollectionCard mit Scope-Badge (Team/Sparte/Verein)
+
+### Frontend: DeptDashboard (Spartenleiter)
+- [x] Alle Kollektionen der Organisation sehen (alle Scopes)
+- [x] Kollektion für eigene Sparte freigeben/zurücknehmen (assign/unassign)
+- [x] Eigene Sparten-Kollektion erstellen (scope: department)
+- [x] Pflicht-Kollektionen hervorgehoben, Löschen nur bei eigenen Nicht-Pflicht-Kollektionen
+
+### Frontend: OrgDashboard (Owner)
+- [x] Vereinskollektion erstellen (scope: org, mit enforcement-Auswahl)
+- [x] Kollektion als "optional" oder "Pflicht" umschalten (setEnforcement)
+- [x] Übersicht aller Kollektionen im Verein (Vereins- + Sparten-/Team-Kollektionen)
+- [x] Neuer "Kollektionen"-Tab im OrgDashboard
