@@ -1380,3 +1380,11 @@
 - [x] DB: logoMimeType Feld hinzugefügt
 - [x] Bestehende PDF-Logos in DB mit korrektem mimeType aktualisiert
 - [x] PDF-Logo-Fallback (FileText-Icon) in OrgDashboard, SponsorManagement, CustomerConfigurator und SponsorReview
+
+## Sponsor-Dialog: Sparten- und Mannschafts-Auswahlfelder
+- [x] Bei Sponsor-Typ "Spartensponsor": Dropdown zur Auswahl der Sparte/Abteilung
+- [x] Bei Sponsor-Typ "Mannschaftssponsor": Dropdown zur Auswahl der Mannschaft (mit optionalem Sparten-Filter)
+- [x] Felder in OrgDashboard Sponsor-Dialog implementieren
+- [x] SponsorManagement hatte die Felder bereits implementiert
+- [x] Validierung: Sparte ist Pflicht bei Spartensponsor, Mannschaft ist Pflicht bei Mannschaftssponsor
+- [x] Backend: team.listByOrg Prozedur und listTeamsByOrg DB-Funktion hinzugefügt

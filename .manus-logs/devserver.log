@@ -7064,3 +7064,15 @@
 [2026-05-03T12:33:55.787Z] 8:33:55 AM [tsx] change in ./server/routers.ts Restarting...
 [2026-05-03T12:33:57.436Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-03T12:33:57.846Z] Server running on http://localhost:3000/
+[2026-05-03T12:37:37.854Z] 8:37:37 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T12:37:39.578Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T12:37:39.978Z] Server running on http://localhost:3000/
+[2026-05-03T12:37:48.436Z] 8:37:48 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T12:37:50.140Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T12:37:50.587Z] Server running on http://localhost:3000/
+[2026-05-03T12:37:59.441Z] 8:37:59 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T12:38:00.993Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T12:38:01.381Z] Server running on http://localhost:3000/
+[2026-05-03T12:38:16.127Z] 8:38:16 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T12:38:29.301Z] 8:38:29 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T12:38:53.910Z] 8:38:53 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css

@@ -60,6 +60,7 @@ import {
   createTeam,
   getTeamById,
   listTeamsByDepartment,
+  listTeamsByOrg,
   listTeamsByTrainer,
   listTeamsByTrainerAndOrg,
   updateTeam,
@@ -1302,6 +1303,14 @@ export const appRouter = router({
           return allTeams.filter(t => t.trainerId === ctx.user.id);
         }
         return listTeamsByDepartment(input.departmentId);
+      }),
+
+    /** Alle Mannschaften einer Organisation */
+    listByOrg: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        await requireOrgMember(ctx.user.id, input.orgId);
+        return listTeamsByOrg(input.orgId);
       }),
 
     /** Alle Mannschaften des aktuellen Trainers */

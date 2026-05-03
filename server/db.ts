@@ -794,6 +794,12 @@ export async function listTeamsByDepartment(departmentId: number) {
   return db.select().from(teams).where(eq(teams.departmentId, departmentId));
 }
 
+export async function listTeamsByOrg(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(teams).where(eq(teams.orgId, orgId));
+}
+
 export async function listTeamsByTrainer(trainerId: number) {
   const db = await getDb();
   if (!db) return [];

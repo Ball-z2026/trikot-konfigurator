@@ -264,6 +264,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
   const { data: members } = trpc.membership.listByOrg.useQuery({ orgId });
   const { data: logos } = trpc.orgLogo.list.useQuery({ orgId });
   const { data: sponsorTemplates } = trpc.sponsorTemplate.list.useQuery({ orgId });
+  const { data: allTeams } = trpc.team.listByOrg.useQuery({ orgId });
 
   const isOwner = org?.userRole === "owner";
   const isDeptLead = org?.userRole === "department_lead";
@@ -857,6 +858,58 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                               </Select>
                             </div>
                           </div>
+                          {/* Sparten-Auswahl bei Spartensponsor */}
+                          {sponsorForm.sponsorType === "spartensponsor" && (
+                            <div>
+                              <Label>Sparte / Abteilung <span className="text-red-500">*</span></Label>
+                              <Select value={sponsorForm.departmentId?.toString() || ""} onValueChange={(v) => setSponsorForm(p => ({...p, departmentId: Number(v), teamId: undefined}))}>
+                                <SelectTrigger><SelectValue placeholder="Sparte auswählen..." /></SelectTrigger>
+                                <SelectContent>
+                                  {departments?.map((dept) => (
+                                    <SelectItem key={dept.id} value={dept.id.toString()}>{dept.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {(!departments || departments.length === 0) && (
+                                <p className="text-xs text-muted-foreground mt-1">Keine Abteilungen vorhanden. Bitte legen Sie zuerst eine Abteilung an.</p>
+                              )}
+                            </div>
+                          )}
+                          {/* Mannschafts-Auswahl bei Mannschaftssponsor */}
+                          {sponsorForm.sponsorType === "mannschaftssponsor" && (
+                            <div className="space-y-3">
+                              <div>
+                                <Label>Sparte / Abteilung</Label>
+                                <Select value={sponsorForm.departmentId?.toString() || ""} onValueChange={(v) => setSponsorForm(p => ({...p, departmentId: Number(v), teamId: undefined}))}>
+                                  <SelectTrigger><SelectValue placeholder="Sparte auswählen (optional)..." /></SelectTrigger>
+                                  <SelectContent>
+                                    {departments?.map((dept) => (
+                                      <SelectItem key={dept.id} value={dept.id.toString()}>{dept.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label>Mannschaft <span className="text-red-500">*</span></Label>
+                                <Select value={sponsorForm.teamId?.toString() || ""} onValueChange={(v) => setSponsorForm(p => ({...p, teamId: Number(v)}))}>
+                                  <SelectTrigger><SelectValue placeholder="Mannschaft auswählen..." /></SelectTrigger>
+                                  <SelectContent>
+                                    {(sponsorForm.departmentId
+                                      ? allTeams?.filter(t => t.departmentId === sponsorForm.departmentId)
+                                      : allTeams
+                                    )?.map((team) => (
+                                      <SelectItem key={team.id} value={team.id.toString()}>
+                                        {team.name}{team.league ? ` (${team.league})` : ""}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {(!allTeams || allTeams.length === 0) && (
+                                  <p className="text-xs text-muted-foreground mt-1">Keine Mannschaften vorhanden. Bitte legen Sie zuerst eine Mannschaft an.</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       {/* Logo-Upload */}
@@ -917,13 +970,13 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                       {/* Erstellen-Button */}
                       <Button
                         onClick={handleUploadSponsor}
-                        disabled={!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city || createSponsor.isPending}
+                        disabled={!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city || (sponsorForm.sponsorType === "spartensponsor" && !sponsorForm.departmentId) || (sponsorForm.sponsorType === "mannschaftssponsor" && !sponsorForm.teamId) || createSponsor.isPending}
                         className="w-full" size="lg"
                       >
                         {createSponsor.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                         {createSponsor.isPending ? "Wird angelegt..." : "Sponsor anlegen"}
                       </Button>
-                      {(!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city) && (
+                      {(!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city || (sponsorForm.sponsorType === "spartensponsor" && !sponsorForm.departmentId) || (sponsorForm.sponsorType === "mannschaftssponsor" && !sponsorForm.teamId)) && (
                         <p className="text-xs text-red-500 text-center">Bitte alle Pflichtfelder (*) ausfüllen</p>
                       )}
                     </div>
