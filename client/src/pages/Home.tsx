@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shirt, Building2, Palette, ArrowRight, LogIn, LogOut, Menu, Users, Shield, LayoutDashboard } from "lucide-react";
+import { Shirt, Building2, Palette, ArrowRight, LogIn, LogOut, Menu, Users, Shield, LayoutDashboard, PenTool } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
@@ -112,7 +112,7 @@ export default function Home() {
       {/* 3 Module */}
       <section className="pb-12 sm:pb-20">
         <div className="container px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
 
             {/* Modul 1: Verwaltung */}
             <Card
@@ -142,7 +142,35 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Modul 2: Konfigurator (ersetzt alten Produktdesigner) */}
+            {/* Modul 2: Produktdesigner */}
+            <Card
+              className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
+              onClick={() => setLocation("/designer/products")}
+            >
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center mb-4">
+                  <PenTool className="w-7 h-7 text-orange-600" />
+                </div>
+                <CardTitle className="text-xl">Produktdesigner</CardTitle>
+                <CardDescription className="text-sm">
+                  Produkte erstellen, Zonen definieren und Vorlagen verwalten
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                  <li>• Sportart wählen (Pflicht bei Trikots)</li>
+                  <li>• Produkte erstellen und bearbeiten</li>
+                  <li>• Zonen und Positionen definieren</li>
+                  <li>• Bild-Analyse für Positionierung</li>
+                </ul>
+                <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  Zum Designer
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Modul 3: Konfigurator */}
             <Card
               className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
               onClick={() => setLocation("/konfigurator")}
@@ -153,15 +181,15 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-xl">Konfigurator</CardTitle>
                 <CardDescription className="text-sm">
-                  Trikots und Bekleidung konfigurieren, Vorlagen nutzen und erstellen
+                  Fertige Produkte konfigurieren – Farben, Logos, Spieler
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-1 mb-4">
-                  <li>• Sportart und Mannschaft wählen</li>
-                  <li>• Vorlagen und Templates</li>
-                  <li>• Farben, Logos, Nummern</li>
-                  <li>• Verbandsvorgaben automatisch</li>
+                  <li>• Mannschaft und Spieler zuweisen</li>
+                  <li>• Farben und Logos platzieren</li>
+                  <li>• Nummern und Namen</li>
+                  <li>• Export als PNG/ZIP</li>
                 </ul>
                 <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   Zum Konfigurator
@@ -170,7 +198,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Modul 3: Vorlagen */}
+            {/* Modul 4: Mitglieder */}
             <Card
               className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
               onClick={() => setLocation("/verwaltung/org")}

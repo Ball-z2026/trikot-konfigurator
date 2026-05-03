@@ -170,7 +170,23 @@ import {
   deleteDesignTemplate,
   updateDesignTemplate,
 } from "./db";
-import { storagePut } from "./storage";
+import { storagePut, storageGet } from "./storage";
+import {
+  generateAllPrintSheets,
+  fillZonesForPlayer,
+  type PrintSheetConfig,
+  type PrintZone,
+  type PlayerPrintData,
+  type PrintJobConfig,
+} from "./printSheet";
+import {
+  getSizeDimensions,
+  getAvailableSizes,
+  genderFromTeamCategory,
+  type SizeCode,
+  type SportCode,
+  type GenderCode,
+} from "../shared/sizeCharts";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
@@ -1054,7 +1070,7 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    /** KI-Bild-Analyse: Positionen von Name, Nummer, Logo etc. erkennen */
+    /** KI-Bild-Analyse: Positionen, Stil, Farben, Bogentext von Name, Nummer, Logo etc. erkennen */
     analyzeImage: protectedProcedure
       .input(z.object({
         imageUrl: z.string(),
@@ -1064,29 +1080,37 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { invokeLLM } = await import("./_core/llm");
 
-        const systemPrompt = `Du bist ein Experte für Sportbekleidung und Textildesign. Analysiere das hochgeladene Bild eines Trikots oder Sportbekleidungsstücks.
+        const systemPrompt = `Du bist ein Experte für Sportbekleidung und Textildesign mit jahrelanger Erfahrung in der Druckproduktion. Analysiere das hochgeladene Bild eines Trikots oder Sportbekleidungsstücks EXTREM GENAU.
 
-Erkenne alle sichtbaren Elemente und ihre Positionen auf dem Kleidungsstück. Gib für jedes erkannte Element die Position als Prozentwerte (0-100) relativ zum gesamten Bild zurück.
+Deine Aufgabe: Erkenne ALLE sichtbaren Text- und Grafik-Elemente und deren EXAKTE Positionen auf dem Kleidungsstück. Das Ziel ist eine 100%-ige Positionskopie – die erkannten Positionen müssen so präzise sein, dass sie 1:1 auf ein anderes Trikot übertragen werden können.
 
 Mögliche Elemente:
-- playerName: Spielername (meist oben auf dem Rücken)
-- playerNumber: Rücken-/Frontnummer
-- clubName: Vereins-/Teamname
-- logo: Vereinswappen/Logo (meist auf der Herzseite)
+- playerName: Spielername (meist oben auf dem Rücken, oft GEBOGEN/GEWÖLBT)
+- playerNumber: Rücken-/Frontnummer (große Ziffern)
+- clubName: Vereins-/Teamname (oft auf der Vorderseite, manchmal GEBOGEN)
+- logo: Vereinswappen/Logo (meist auf der Herzseite/links oben)
 - sponsor: Sponsoren-Logo
 - abbreviation: Kürzel
 - custom: Sonstige Elemente
 
-Gib die Ergebnisse als JSON-Array zurück. Jedes Element hat:
-- name: Beschreibender Name (z.B. "Spielername Rücken", "Rückennnummer", "Vereinswappen")
-- purpose: Einer der oben genannten Typen
-- x: X-Position in Prozent (linke Kante der Zone)
-- y: Y-Position in Prozent (obere Kante der Zone)
-- width: Breite in Prozent
-- height: Höhe in Prozent
-- side: "front" oder "back" (Vorder- oder Rückseite, falls erkennbar)
+Für JEDES erkannte Element gib zurück:
+1. POSITION: x, y (obere linke Ecke), width, height – alles in Prozent (0-100) relativ zum sichtbaren Kleidungsstück (NICHT zum gesamten Bild). Messe vom oberen Rand des Kleidungsstücks, nicht vom Bildrand.
+2. TEXTSTIL:
+   - textStyle: "arc" (gebogen/gewölbt wie auf echten Trikots) oder "straight" (gerade)
+   - arcDegree: Bogengrad in Grad (0 = gerade, positiv = nach oben gewölbt, negativ = nach unten). Typisch: 15-30° für Spielernamen auf dem Rücken
+   - fontColor: Hauptfarbe des Textes als HEX (z.B. "#FFFFFF" für weiß)
+   - outlineColor: Outline/Umrandungsfarbe als HEX (z.B. "#FF0000" für rot), oder null wenn keine Outline
+   - outlineWidth: Breite der Outline in Prozent der Schrifthöhe (z.B. 10 für 10%), oder 0
+   - fontStyle: Schriftart-Kategorie: "block" (fette Blockschrift), "serif" (Serifenschrift), "sans" (serifenlos), "script" (Schreibschrift), "outline" (nur Umriss), "shadow" (mit Schatten)
+   - fontWeight: "normal" oder "bold"
+   - fontSize: Geschätzte Schrifthöhe relativ zur Zonenhöhe in Prozent (z.B. 80 = Text füllt 80% der Zonenhöhe)
 
-Wichtig: Schätze die Positionen so genau wie möglich basierend auf dem Bild.`;
+WICHTIG:
+- Sei EXTREM PRÄZISE bei den Positionen. Achte auf Symmetrie (z.B. zentrierte Nummern).
+- Erkenne ob das Bild Vorder- UND Rückseite zeigt (z.B. nebeneinander).
+- Bei gebogenem Text: Der Bogen ist typisch für Spielernamen auf Basketball-, Football- und Baseball-Trikots.
+- Schätze Farben so genau wie möglich aus dem Bild.
+- Wenn ein Element eine Outline/Umrandung hat (z.B. weiße Schrift mit roter Umrandung), erkenne BEIDE Farben.`;
 
         const response = await invokeLLM({
           messages: [
@@ -1100,7 +1124,7 @@ Wichtig: Schätze die Positionen so genau wie möglich basierend auf dem Bild.`;
                 },
                 {
                   type: "text",
-                  text: `Analysiere dieses ${input.category || "Sportbekleidungs"}-Bild${input.sport ? " (Sportart: " + input.sport + ")" : ""}. Erkenne alle Elemente (Name, Nummer, Logo, Sponsor etc.) und gib ihre Positionen als JSON-Array zurück.`,
+                  text: `Analysiere dieses ${input.category || "Sportbekleidungs"}-Bild${input.sport ? " (Sportart: " + input.sport + ")" : ""} EXTREM GENAU. Erkenne alle Elemente (Name, Nummer, Logo, Vereinsname, Sponsor etc.), ihre EXAKTEN Positionen und den STIL (gebogen/gerade, Farben, Outline, Schriftart). Ziel: 100%-ige Positionskopie auf ein anderes Trikot.`,
                 },
               ],
             },
@@ -1108,7 +1132,7 @@ Wichtig: Schätze die Positionen so genau wie möglich basierend auf dem Bild.`;
           response_format: {
             type: "json_schema",
             json_schema: {
-              name: "zone_positions",
+              name: "zone_analysis",
               strict: true,
               schema: {
                 type: "object",
@@ -1118,15 +1142,23 @@ Wichtig: Schätze die Positionen so genau wie möglich basierend auf dem Bild.`;
                     items: {
                       type: "object",
                       properties: {
-                        name: { type: "string", description: "Beschreibender Name der Zone" },
+                        name: { type: "string", description: "Beschreibender Name der Zone (z.B. 'Spielername Rücken')" },
                         purpose: { type: "string", enum: ["playerName", "playerNumber", "clubName", "logo", "sponsor", "abbreviation", "custom"], description: "Zonentyp" },
-                        x: { type: "number", description: "X-Position in Prozent (0-100)" },
-                        y: { type: "number", description: "Y-Position in Prozent (0-100)" },
+                        x: { type: "number", description: "X-Position in Prozent (0-100), linke Kante relativ zum Kleidungsstück" },
+                        y: { type: "number", description: "Y-Position in Prozent (0-100), obere Kante relativ zum Kleidungsstück" },
                         width: { type: "number", description: "Breite in Prozent (0-100)" },
                         height: { type: "number", description: "Höhe in Prozent (0-100)" },
                         side: { type: "string", enum: ["front", "back"], description: "Vorder- oder Rückseite" },
+                        textStyle: { type: "string", enum: ["arc", "straight"], description: "Textstil: arc = gebogen/gewölbt, straight = gerade" },
+                        arcDegree: { type: "number", description: "Bogengrad (0 = gerade, 15-30 = typischer Bogen, negativ = nach unten)" },
+                        fontColor: { type: "string", description: "Hauptfarbe des Textes als HEX (z.B. #FFFFFF)" },
+                        outlineColor: { type: "string", description: "Outline-Farbe als HEX oder 'none' wenn keine Outline" },
+                        outlineWidth: { type: "number", description: "Outline-Breite in % der Schrifthöhe (0 = keine)" },
+                        fontStyle: { type: "string", enum: ["block", "serif", "sans", "script", "outline", "shadow"], description: "Schriftart-Kategorie" },
+                        fontWeight: { type: "string", enum: ["normal", "bold"], description: "Schriftstärke" },
+                        fontSize: { type: "number", description: "Geschätzte Schrifthöhe in % der Zonenhöhe (z.B. 80)" },
                       },
-                      required: ["name", "purpose", "x", "y", "width", "height", "side"],
+                      required: ["name", "purpose", "x", "y", "width", "height", "side", "textStyle", "arcDegree", "fontColor", "outlineColor", "outlineWidth", "fontStyle", "fontWeight", "fontSize"],
                       additionalProperties: false,
                     },
                   },
@@ -3473,6 +3505,365 @@ Wichtig: Schätze die Positionen so genau wie möglich basierend auf dem Bild.`;
         const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
         if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
         return countOrgMembers(input.orgId);
+      }),
+  }),
+
+  // ─── Druckbogen (Print Sheets) ──────────────────────────────────────────
+  printSheet: router({
+    /** Verfügbare Größen für eine Sportart + Geschlecht */
+    availableSizes: protectedProcedure
+      .input(z.object({
+        sport: z.enum(["fussball", "handball", "volleyball", "basketball"]),
+        gender: z.enum(["herren", "damen", "kinder"]).default("herren"),
+      }))
+      .query(({ input }) => {
+        return getAvailableSizes(input.sport as SportCode, input.gender as GenderCode);
+      }),
+
+    /** Maße für eine bestimmte Größe */
+    sizeDimensions: protectedProcedure
+      .input(z.object({
+        sport: z.enum(["fussball", "handball", "volleyball", "basketball"]),
+        size: z.string(),
+        gender: z.enum(["herren", "damen", "kinder"]).default("herren"),
+      }))
+      .query(({ input }) => {
+        return getSizeDimensions(input.sport as SportCode, input.size as SizeCode, input.gender as GenderCode);
+      }),
+
+    /** Druckbögen für einen einzelnen Spieler generieren */
+    generateForPlayer: protectedProcedure
+      .input(z.object({
+        designId: z.number(),
+        playerId: z.number(),
+        orgId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Berechtigungsprüfung
+        await requireOrgMember(ctx.user.id, input.orgId);
+
+        // Design laden
+        const design = await getSavedDesign(input.designId);
+        if (!design) throw new TRPCError({ code: "NOT_FOUND", message: "Design nicht gefunden" });
+
+        // Spieler laden
+        const player = await getPlayerById(input.playerId);
+        if (!player) throw new TRPCError({ code: "NOT_FOUND", message: "Spieler nicht gefunden" });
+
+        // Team laden für Kategorie
+        const team = await getTeamById(player.teamId);
+        if (!team) throw new TRPCError({ code: "NOT_FOUND", message: "Team nicht gefunden" });
+
+        // Organisation laden für Vereinsname
+        const org = await getOrganizationById(input.orgId);
+        if (!org) throw new TRPCError({ code: "NOT_FOUND", message: "Organisation nicht gefunden" });
+
+        // Sport und Geschlecht bestimmen
+        const sport = (design.sport || "fussball") as SportCode;
+        const gender = genderFromTeamCategory(team.kategorie || "herren");
+        const playerSize = (player.size || "L") as SizeCode;
+
+        // Design-Konfiguration parsen
+        const designConfig = typeof design.config === "string" ? JSON.parse(design.config) : design.config;
+
+        // Parts aus dem Design extrahieren und mit Spielerdaten befüllen
+        const parts: PrintSheetConfig[] = [];
+        const partMappings = [
+          { key: "vorderteil", label: "Vorderseite" },
+          { key: "rueckteil", label: "Rückseite" },
+          { key: "aermel_links", label: "Ärmel Links" },
+          { key: "aermel_rechts", label: "Ärmel Rechts" },
+        ];
+
+        for (const mapping of partMappings) {
+          const partConfig = designConfig?.parts?.[mapping.key];
+          if (!partConfig) continue;
+
+          // Maße für die Spielergröße berechnen
+          const dims = getSizeDimensions(sport, playerSize, gender);
+          const isBody = mapping.key === "vorderteil" || mapping.key === "rueckteil";
+          const isSleeve = mapping.key.includes("aermel");
+
+          let widthCm = partConfig.realWidthCm || 55;
+          let heightCm = partConfig.realHeightCm || 72;
+
+          if (dims) {
+            if (isBody) {
+              widthCm = dims.body.widthCm;
+              heightCm = dims.body.heightCm;
+            } else if (isSleeve && dims.sleeve) {
+              widthCm = dims.sleeve.widthCm;
+              heightCm = dims.sleeve.heightCm;
+            }
+          }
+
+          // Zonen aus dem Design extrahieren
+          const rawZones: PrintZone[] = (partConfig.zones || []).map((z: any) => ({
+            purpose: z.purpose || "custom",
+            content: z.content || z.text || "",
+            posXPercent: z.x ?? z.posXPercent ?? 0,
+            posYPercent: z.y ?? z.posYPercent ?? 0,
+            widthPercent: z.width ?? z.widthPercent ?? 10,
+            heightPercent: z.height ?? z.heightPercent ?? 10,
+            textStyle: z.textStyle || "straight",
+            arcDegree: z.arcDegree || 0,
+            fontColor: z.fontColor || "#000000",
+            outlineColor: z.outlineColor || "none",
+            outlineWidth: z.outlineWidth || 0,
+            fontStyle: z.fontStyle || "block",
+            fontWeight: z.fontWeight || "bold",
+            fontFamily: z.fontFamily || undefined,
+            fontSize: z.fontSize || 80,
+            textAlign: z.textAlign || "center",
+            rotation: z.rotation || 0,
+            isImage: z.isImage || z.purpose === "logo" || z.purpose === "clubLogo",
+            imageUrl: z.imageUrl || undefined,
+          }));
+
+          // Spielerdaten in die Zonen einfüllen
+          const playerData: PlayerPrintData = {
+            playerId: player.id,
+            playerName: player.name,
+            playerNumber: player.number || "",
+            size: playerSize,
+            initials: player.name
+              .split(" ")
+              .map((n: string) => n.charAt(0).toUpperCase())
+              .join(""),
+          };
+
+          const filledZones = fillZonesForPlayer(rawZones, playerData, org.name);
+
+          parts.push({
+            partKey: mapping.key,
+            partLabel: mapping.label,
+            realWidthCm: widthCm,
+            realHeightCm: heightCm,
+            zones: filledZones,
+          });
+        }
+
+        // Druckbögen generieren
+        const printConfig: PrintJobConfig = {
+          clubName: org.name,
+          sport,
+          gender,
+          player: {
+            playerId: player.id,
+            playerName: player.name,
+            playerNumber: player.number || "",
+            size: playerSize,
+            initials: player.name
+              .split(" ")
+              .map((n: string) => n.charAt(0).toUpperCase())
+              .join(""),
+          },
+          parts,
+          bleedMm: 3,
+          dpi: 300,
+        };
+
+        const sheets = await generateAllPrintSheets(printConfig);
+
+        // PDFs in S3 speichern
+        const results: { partKey: string; partLabel: string; url: string; key: string }[] = [];
+        for (const sheet of sheets) {
+          const fileName = `druckboegen/${input.orgId}/${input.designId}/${player.id}_${sheet.partKey}_${playerSize}.pdf`;
+          const { key, url } = await storagePut(fileName, sheet.pdf, "application/pdf");
+          results.push({
+            partKey: sheet.partKey,
+            partLabel: sheet.partLabel,
+            url,
+            key,
+          });
+        }
+
+        return {
+          player: {
+            id: player.id,
+            name: player.name,
+            number: player.number,
+            size: playerSize,
+          },
+          sheets: results,
+        };
+      }),
+
+    /** Druckbögen für alle Spieler eines Teams generieren */
+    generateForTeam: protectedProcedure
+      .input(z.object({
+        designId: z.number(),
+        teamId: z.number(),
+        orgId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Berechtigungsprüfung
+        await requireOrgMember(ctx.user.id, input.orgId);
+
+        // Alle Spieler des Teams laden
+        const players = await listPlayersByTeam(input.teamId);
+        if (players.length === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Keine Spieler im Team" });
+        }
+
+        const allResults: {
+          player: { id: number; name: string; number: string | null; size: string };
+          sheets: { partKey: string; partLabel: string; url: string; key: string }[];
+        }[] = [];
+
+        // Für jeden Spieler Druckbögen generieren
+        for (const player of players) {
+          try {
+            // Design laden
+            const design = await getSavedDesign(input.designId);
+            if (!design) continue;
+
+            const team = await getTeamById(player.teamId);
+            const org = await getOrganizationById(input.orgId);
+            if (!team || !org) continue;
+
+            const sport = (design.sport || "fussball") as SportCode;
+            const gender = genderFromTeamCategory(team.kategorie || "herren");
+            const playerSize = (player.size || "L") as SizeCode;
+
+            const designConfig = typeof design.config === "string" ? JSON.parse(design.config) : design.config;
+
+            const parts: PrintSheetConfig[] = [];
+            const partMappings = [
+              { key: "vorderteil", label: "Vorderseite" },
+              { key: "rueckteil", label: "Rückseite" },
+              { key: "aermel_links", label: "Ärmel Links" },
+              { key: "aermel_rechts", label: "Ärmel Rechts" },
+            ];
+
+            for (const mapping of partMappings) {
+              const partConfig = designConfig?.parts?.[mapping.key];
+              if (!partConfig) continue;
+
+              const dims = getSizeDimensions(sport, playerSize, gender);
+              const isBody = mapping.key === "vorderteil" || mapping.key === "rueckteil";
+              const isSleeve = mapping.key.includes("aermel");
+
+              let widthCm = partConfig.realWidthCm || 55;
+              let heightCm = partConfig.realHeightCm || 72;
+
+              if (dims) {
+                if (isBody) {
+                  widthCm = dims.body.widthCm;
+                  heightCm = dims.body.heightCm;
+                } else if (isSleeve && dims.sleeve) {
+                  widthCm = dims.sleeve.widthCm;
+                  heightCm = dims.sleeve.heightCm;
+                }
+              }
+
+              const rawZones: PrintZone[] = (partConfig.zones || []).map((z: any) => ({
+                purpose: z.purpose || "custom",
+                content: z.content || z.text || "",
+                posXPercent: z.x ?? z.posXPercent ?? 0,
+                posYPercent: z.y ?? z.posYPercent ?? 0,
+                widthPercent: z.width ?? z.widthPercent ?? 10,
+                heightPercent: z.height ?? z.heightPercent ?? 10,
+                textStyle: z.textStyle || "straight",
+                arcDegree: z.arcDegree || 0,
+                fontColor: z.fontColor || "#000000",
+                outlineColor: z.outlineColor || "none",
+                outlineWidth: z.outlineWidth || 0,
+                fontStyle: z.fontStyle || "block",
+                fontWeight: z.fontWeight || "bold",
+                fontFamily: z.fontFamily || undefined,
+                fontSize: z.fontSize || 80,
+                textAlign: z.textAlign || "center",
+                rotation: z.rotation || 0,
+                isImage: z.isImage || z.purpose === "logo" || z.purpose === "clubLogo",
+                imageUrl: z.imageUrl || undefined,
+              }));
+
+              const playerData: PlayerPrintData = {
+                playerId: player.id,
+                playerName: player.name,
+                playerNumber: player.number || "",
+                size: playerSize,
+                initials: player.name
+                  .split(" ")
+                  .map((n: string) => n.charAt(0).toUpperCase())
+                  .join(""),
+              };
+
+              const filledZones = fillZonesForPlayer(rawZones, playerData, org.name);
+
+              parts.push({
+                partKey: mapping.key,
+                partLabel: mapping.label,
+                realWidthCm: widthCm,
+                realHeightCm: heightCm,
+                zones: filledZones,
+              });
+            }
+
+            const printConfig: PrintJobConfig = {
+              clubName: org.name,
+              sport,
+              gender,
+              player: {
+                playerId: player.id,
+                playerName: player.name,
+                playerNumber: player.number || "",
+                size: playerSize,
+                initials: player.name
+                  .split(" ")
+                  .map((n: string) => n.charAt(0).toUpperCase())
+                  .join(""),
+              },
+              parts,
+              bleedMm: 3,
+              dpi: 300,
+            };
+
+            const sheets = await generateAllPrintSheets(printConfig);
+
+            const results: { partKey: string; partLabel: string; url: string; key: string }[] = [];
+            for (const sheet of sheets) {
+              const fileName = `druckboegen/${input.orgId}/${input.designId}/${player.id}_${sheet.partKey}_${playerSize}.pdf`;
+              const { key, url } = await storagePut(fileName, sheet.pdf, "application/pdf");
+              results.push({
+                partKey: sheet.partKey,
+                partLabel: sheet.partLabel,
+                url,
+                key,
+              });
+            }
+
+            allResults.push({
+              player: {
+                id: player.id,
+                name: player.name,
+                number: player.number,
+                size: playerSize,
+              },
+              sheets: results,
+            });
+          } catch (err) {
+            console.error(`Fehler bei Druckbogen für Spieler ${player.name}:`, err);
+            allResults.push({
+              player: {
+                id: player.id,
+                name: player.name,
+                number: player.number,
+                size: (player.size || "L") as string,
+              },
+              sheets: [],
+            });
+          }
+        }
+
+        return {
+          teamId: input.teamId,
+          designId: input.designId,
+          totalPlayers: players.length,
+          successCount: allResults.filter(r => r.sheets.length > 0).length,
+          results: allResults,
+        };
       }),
   }),
 });

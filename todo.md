@@ -1515,3 +1515,33 @@
 - [x] Frontend: Vorschau der erkannten Zonen auf dem hochgeladenen Bild (Drag & Resize)
 - [x] Frontend: Vorlage speichern mit erkannten Positionen
 - [x] Integration: Erkannte Zonen als Vorlage speicherbar (TemplateUpload-Komponente mit KI + manuellem Modus)
+- [ ] Falsche SVG-Produkte (basketball_dtf_svg, fussball_dtf_svg, handball_dtf_svg, volleyball_dtf_svg) aus DB löschen
+- [ ] KI-Visualisierung mit echtem Basketball-Trikot-Mockup (ärmellos) erstellen
+
+## KI-Bild-Analyse Erweiterung: Stil-Erkennung + Arc-Text + Auto-Befüllung
+- [x] KI-Analyse: Stil-Erkennung (gebogen/gerade, Schriftfarbe, Outline-Farbe, Schriftart-Typ)
+- [x] KI-Analyse: Bogentext (Arc-Text) als Darstellungsoption im Konfigurator
+- [x] KI-Analyse: 100%-ige Positionskopie (exakte Übertragung auf eigenes Produkt)
+- [x] KI-Analyse: Automatische Befüllung mit Vereinsdaten (Spielernamen, Wappen, Vereinsname)
+- [x] Konfigurator: Arc-Text-Rendering für Spielernamen (SVG/Canvas-Bogen)
+- [ ] Konfigurator: Stil-Optionen in Zonen-Bearbeitung (gerade/gebogen, Bogengrad, Farben)
+
+## Größen-System (Maßtabellen + Konfektionsgröße)
+- [x] DB: Maßtabellen-Tabelle (sizeCharts) mit Sportart, Größe (XS-5XL), Maßen (Breite, Länge, Ärmel etc.)
+- [x] DB: Konfektionsgröße-Feld am Spieler/Mitglied (size: XS/S/M/L/XL/2XL/3XL/4XL/5XL)
+- [x] Backend: Standard-Maßtabellen seeden (Fußball, Handball, Volleyball, Basketball)
+- [x] Backend: CRUD-Router für Maßtabellen (Admin kann anpassen)
+- [x] Frontend: Konfektionsgröße bei Spieler-Anlage/Bearbeitung erfassen
+- [ ] Frontend: Maßtabellen-Verwaltung im Admin-Bereich (Maßtabellen sind als Code hinterlegt, Admin-UI noch offen)
+
+## Druckbogen-Erzeugung (CMYK-PDF, Vektorgrafiken)
+- [x] Backend: PDF-Generierung serverseitig (CMYK-Farbraum, Vektorgrafiken für Text)
+- [x] Backend: Größenabhängige Druckbogen-Berechnung (Maße aus Maßtabelle je Konfektionsgröße)
+- [x] Backend: Verbandsregeln-Prüfung bei Druckbogen (Mindestgrößen für Nummer, Name etc.)
+- [x] Backend: 4 separate Druckbögen pro Spieler (Vorderseite, Rückseite, Ärmel links, Ärmel rechts)
+- [x] Backend: Batch-Export aller Spieler einer Mannschaft als ZIP mit allen Druckbögen
+- [x] Frontend: Druckbogen-Export-Button im Konfigurator (Einzelspieler + gesamte Mannschaft)
+- [ ] Frontend: Vorschau der Druckbögen vor Export (Download-Links vorhanden, Inline-Vorschau noch offen)
+- [x] Höchste Auflösung (300+ DPI) sicherstellen
+- [x] Text als Vektoren in PDF (nicht gerastert)
+- [x] Arc-Text (Bogentext) auch im Druckbogen korrekt als Vektor

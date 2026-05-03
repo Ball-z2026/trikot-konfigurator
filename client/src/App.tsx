@@ -25,6 +25,7 @@ import SponsorReview from "./pages/SponsorReview";
 import SponsorForm from "./pages/SponsorForm";
 import TwoFactorSetup from "./pages/TwoFactorSetup";
 import AdminDashboard from "./pages/AdminDashboard";
+import PrintSheetExport from "./pages/PrintSheetExport";
 
 function Router() {
   return (
@@ -52,11 +53,11 @@ function Router() {
       <Route path="/verwaltung/admin/users" component={AdminUsers} />
       <Route path="/verwaltung/sponsoren" component={SponsorManagement} />
 
-      {/* ─── Modul 2: Konfigurator (ersetzt alten Produktdesigner) ─── */}
-      <Route path="/designer/products" component={ProductSelect} />
+      {/* ─── Modul 2: Produktdesigner (Produkte erstellen/bearbeiten) ─── */}
+      <Route path="/designer/products" component={AdminProducts} />
       <Route path="/designer/products/:id" component={AdminProductEditor} />
 
-      {/* ─── Modul 3: Konfigurator ─── */}
+      {/* ─── Modul 3: Konfigurator (fertige Produkte konfigurieren) ─── */}
       <Route path="/konfigurator" component={ProductSelect} />
       <Route path="/konfigurator/:id" component={CustomerConfigurator} />
       <Route path="/mockup/:token" component={MockupShare} />
@@ -65,6 +66,9 @@ function Router() {
 
       {/* Sicherheit */}
       <Route path="/verwaltung/sicherheit/2fa" component={TwoFactorSetup} />
+
+      {/* Druckbogen-Export */}
+      <Route path="/druckbogen/:orgId/:designId/:teamId" component={PrintSheetExport} />
 
       {/* Zahlung */}
       <Route path="/payment/confirm/:token" component={PaymentConfirm} />

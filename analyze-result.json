@@ -1,0 +1,38 @@
+[
+  {
+    "name": "YOURNAME (Back)",
+    "purpose": "playerName",
+    "x_cm": 15,
+    "y_cm": 13.5,
+    "width_cm": 25,
+    "height_cm": 6,
+    "side": "back"
+  },
+  {
+    "name": "00 (Back)",
+    "purpose": "playerNumber",
+    "x_cm": 17.5,
+    "y_cm": 22.5,
+    "width_cm": 20,
+    "height_cm": 15,
+    "side": "back"
+  },
+  {
+    "name": "TEAMNAME (Front)",
+    "purpose": "clubName",
+    "x_cm": 60,
+    "y_cm": 27,
+    "width_cm": 25,
+    "height_cm": 6,
+    "side": "front"
+  },
+  {
+    "name": "00 (Front)",
+    "purpose": "playerNumber",
+    "x_cm": 62.5,
+    "y_cm": 36,
+    "width_cm": 20,
+    "height_cm": 15,
+    "side": "front"
+  }
+]

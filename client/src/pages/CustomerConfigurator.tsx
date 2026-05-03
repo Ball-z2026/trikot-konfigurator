@@ -43,6 +43,7 @@ import {
   X,
   Sparkles,
   Ruler,
+  Printer,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { getNumberRules, getJerseyRules, validateZonesAgainstRules, BUNDESLAENDER, type NumberRule, type JerseyRuleSet, type ValidationWarning, type ZoneForValidation, type SportartCode } from "@shared/jerseyRules";
@@ -1693,6 +1694,18 @@ export default function CustomerConfigurator() {
                 )}
                 <span className="hidden sm:inline">Alle exportieren ({players.length})</span>
                 <span className="sm:hidden">{players.length}</span>
+              </Button>
+            )}
+            {/* Druckbogen-Export Button */}
+            {currentDesignId && teamIdParam && userOrgId && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs sm:text-sm border-red-200 text-red-700 hover:bg-red-50"
+                onClick={() => window.open(`/druckbogen/${userOrgId}/${currentDesignId}/${teamIdParam}`, '_blank')}
+              >
+                <Printer className="w-3.5 h-3.5 sm:mr-1.5" />
+                <span className="hidden sm:inline">Druckbögen</span>
               </Button>
             )}
           </div>

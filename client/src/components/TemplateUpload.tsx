@@ -19,6 +19,15 @@ interface Zone {
   width: number; // Prozent
   height: number; // Prozent
   side?: "front" | "back";
+  // Stil-Erkennung durch KI
+  textStyle?: "arc" | "straight";
+  arcDegree?: number; // Bogengrad (0 = gerade, 15-30 = typisch)
+  fontColor?: string; // HEX
+  outlineColor?: string; // HEX oder "none"
+  outlineWidth?: number; // % der Schrifthöhe
+  fontStyle?: "block" | "serif" | "sans" | "script" | "outline" | "shadow";
+  fontWeight?: "normal" | "bold";
+  fontSize?: number; // % der Zonenhöhe
 }
 
 interface TemplateUploadProps {
@@ -166,7 +175,7 @@ export function TemplateUpload({
       });
 
       if (result.zones && result.zones.length > 0) {
-        // Erkannte Zonen übernehmen
+        // Erkannte Zonen übernehmen inkl. Stil-Informationen
         const newZones: Zone[] = result.zones.map((z: any, idx: number) => ({
           id: `ai_zone_${Date.now()}_${idx}`,
           name: z.name,
@@ -176,10 +185,26 @@ export function TemplateUpload({
           width: Math.max(5, Math.min(100 - z.x, z.width)),
           height: Math.max(5, Math.min(100 - z.y, z.height)),
           side: z.side,
+          // Stil-Informationen von KI
+          textStyle: z.textStyle || "straight",
+          arcDegree: z.arcDegree || 0,
+          fontColor: z.fontColor || "#000000",
+          outlineColor: z.outlineColor === "none" ? undefined : z.outlineColor,
+          outlineWidth: z.outlineWidth || 0,
+          fontStyle: z.fontStyle || "block",
+          fontWeight: z.fontWeight || "bold",
+          fontSize: z.fontSize || 80,
         }));
 
         setZones(newZones);
-        toast.success(`${newZones.length} Zonen automatisch erkannt!`);
+        
+        // Zusammenfassung der erkannten Stile
+        const arcCount = newZones.filter(z => z.textStyle === "arc").length;
+        const outlineCount = newZones.filter(z => z.outlineColor).length;
+        let summary = `${newZones.length} Zonen erkannt`;
+        if (arcCount > 0) summary += `, ${arcCount} mit Bogentext`;
+        if (outlineCount > 0) summary += `, ${outlineCount} mit Outline`;
+        toast.success(summary + "!");
       } else {
         toast.info("Keine Elemente erkannt. Versuchen Sie ein deutlicheres Bild.");
       }
@@ -407,23 +432,55 @@ export function TemplateUpload({
                 {zones.map((zone) => (
                   <div
                     key={zone.id}
-                    className="absolute border-2 border-blue-500 bg-blue-500/20 cursor-move flex items-center justify-center"
+                    className="absolute border-2 cursor-move flex items-center justify-center"
                     style={{
                       left: `${zone.x}%`,
                       top: `${zone.y}%`,
                       width: `${zone.width}%`,
                       height: `${zone.height}%`,
+                      borderColor: zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6",
+                      backgroundColor: `${zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6"}33`,
                     }}
                     onMouseDown={(e) => handleMouseDown(e, zone.id, "drag")}
                   >
-                    <span className="text-xs font-medium text-blue-900 bg-white/80 px-1 rounded truncate max-w-full">
-                      {zone.name}
-                    </span>
+                    {/* Zonenname + Stil-Info */}
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-xs font-medium text-blue-900 bg-white/90 px-1 rounded truncate max-w-full">
+                        {zone.name}
+                      </span>
+                      {/* Stil-Badges */}
+                      <div className="flex gap-0.5">
+                        {zone.textStyle === "arc" && (
+                          <span className="text-[8px] bg-purple-600 text-white px-1 rounded">
+                            ⌒ Bogen {zone.arcDegree}°
+                          </span>
+                        )}
+                        {zone.outlineColor && zone.outlineColor !== "none" && (
+                          <span className="text-[8px] text-white px-1 rounded" style={{ backgroundColor: zone.outlineColor }}>
+                            Outline
+                          </span>
+                        )}
+                        {zone.fontStyle && zone.fontStyle !== "block" && (
+                          <span className="text-[8px] bg-gray-600 text-white px-1 rounded">
+                            {zone.fontStyle}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     {/* Side-Indicator */}
                     {zone.side && (
                       <span className="absolute top-0 left-0 text-[9px] bg-blue-600 text-white px-1 rounded-br">
                         {zone.side === "front" ? "V" : "R"}
                       </span>
+                    )}
+                    {/* Farb-Indikator */}
+                    {zone.fontColor && (
+                      <div className="absolute bottom-0 left-0 flex gap-0.5 p-0.5">
+                        <div className="w-3 h-3 rounded-full border border-white" style={{ backgroundColor: zone.fontColor }} title={`Textfarbe: ${zone.fontColor}`} />
+                        {zone.outlineColor && zone.outlineColor !== "none" && (
+                          <div className="w-3 h-3 rounded-full border border-white" style={{ backgroundColor: zone.outlineColor }} title={`Outline: ${zone.outlineColor}`} />
+                        )}
+                      </div>
                     )}
                     {/* Resize-Handle */}
                     <div
@@ -478,30 +535,64 @@ export function TemplateUpload({
             )}
 
             {zones.length > 0 && (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
+              <div className="space-y-2 max-h-80 overflow-y-auto">
                 {zones.map((zone) => (
-                  <div key={zone.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg text-sm">
-                    <Move className="w-4 h-4 text-muted-foreground shrink-0" />
-                    <span className="font-medium truncate">{zone.name}</span>
-                    <span className="text-muted-foreground text-xs shrink-0">
-                      ({ZONE_PURPOSES.find((p) => p.value === zone.purpose)?.label})
-                    </span>
-                    {zone.side && (
-                      <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded shrink-0">
-                        {zone.side === "front" ? "Vorne" : "Rücken"}
+                  <div key={zone.id} className="p-2 bg-muted rounded-lg text-sm space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Move className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span className="font-medium truncate">{zone.name}</span>
+                      <span className="text-muted-foreground text-xs shrink-0">
+                        ({ZONE_PURPOSES.find((p) => p.value === zone.purpose)?.label})
                       </span>
+                      {zone.side && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded shrink-0">
+                          {zone.side === "front" ? "Vorne" : "Rücken"}
+                        </span>
+                      )}
+                      <span className="text-muted-foreground text-xs ml-auto shrink-0">
+                        {Math.round(zone.width)}% x {Math.round(zone.height)}%
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-red-500 shrink-0"
+                        onClick={() => removeZone(zone.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    {/* Stil-Details (nur wenn KI-Analyse Daten vorhanden) */}
+                    {(zone.textStyle || zone.fontColor) && (
+                      <div className="flex items-center gap-2 pl-8 flex-wrap">
+                        {zone.textStyle === "arc" && (
+                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">
+                            ⌒ Bogen {zone.arcDegree}°
+                          </span>
+                        )}
+                        {zone.textStyle === "straight" && (
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                            → Gerade
+                          </span>
+                        )}
+                        {zone.fontColor && (
+                          <span className="text-[10px] flex items-center gap-1">
+                            <span className="w-3 h-3 rounded-full border inline-block" style={{ backgroundColor: zone.fontColor }} />
+                            {zone.fontColor}
+                          </span>
+                        )}
+                        {zone.outlineColor && zone.outlineColor !== "none" && (
+                          <span className="text-[10px] flex items-center gap-1">
+                            <span className="w-3 h-3 rounded-full border inline-block" style={{ backgroundColor: zone.outlineColor }} />
+                            Outline {zone.outlineWidth}%
+                          </span>
+                        )}
+                        {zone.fontStyle && (
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                            {zone.fontStyle} / {zone.fontWeight}
+                          </span>
+                        )}
+                      </div>
                     )}
-                    <span className="text-muted-foreground text-xs ml-auto shrink-0">
-                      {Math.round(zone.width)}% x {Math.round(zone.height)}%
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 w-6 p-0 text-red-500 shrink-0"
-                      onClick={() => removeZone(zone.id)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
                   </div>
                 ))}
               </div>
