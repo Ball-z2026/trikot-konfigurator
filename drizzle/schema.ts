@@ -793,3 +793,38 @@ export const orgMembers = mysqlTable("org_members", {
 
 export type OrgMember = typeof orgMembers.$inferSelect;
 export type InsertOrgMember = typeof orgMembers.$inferInsert;
+
+
+/**
+ * Department Suppliers – Ausrüster pro Sparte.
+ * 
+ * Jede Sparte kann einen eigenen Ausrüster haben (z.B. Fußball → Nike, Handball → Kempa).
+ * Der Vereins-Ausrüster (in organizations.supplierBrand) gilt als Fallback,
+ * wenn keine Sparten-spezifische Zuordnung existiert.
+ * 
+ * Bindungsbereich (scope):
+ * - alle_artikel: Ausrüster gilt für alle Artikel der Sparte
+ * - nur_trikots: Ausrüster gilt nur für Trikots/Spielkleidung
+ */
+export const departmentSuppliers = mysqlTable("department_suppliers", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Zugehörige Sparte */
+  departmentId: int("departmentId").notNull(),
+  /** Zugehörige Organisation */
+  orgId: int("orgId").notNull(),
+  /** Ausrüster-Marke (z.B. "Nike", "Adidas", "Kempa", "Erima") */
+  brand: varchar("brand", { length: 100 }).notNull(),
+  /** Bindungsbereich: alle_artikel oder nur_trikots */
+  scope: mysqlEnum("scope", ["alle_artikel", "nur_trikots"]).default("alle_artikel").notNull(),
+  /** Vertragslaufzeit Start */
+  contractStart: timestamp("contractStart"),
+  /** Vertragslaufzeit Ende */
+  contractEnd: timestamp("contractEnd"),
+  /** Erstellt von (userId) */
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DepartmentSupplier = typeof departmentSuppliers.$inferSelect;
+export type InsertDepartmentSupplier = typeof departmentSuppliers.$inferInsert;

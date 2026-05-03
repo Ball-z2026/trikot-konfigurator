@@ -179,6 +179,98 @@ export default function MemberManagement({
   const accentStyle = primaryColor ? { backgroundColor: primaryColor, color: '#fff' } : undefined;
   const accentBorder = primaryColor ? { borderColor: `${primaryColor}30` } : undefined;
 
+  // ─── CSV/Excel Import ───
+  const [showImport, setShowImport] = useState(false);
+  const [importData, setImportData] = useState<Array<{ firstName: string; lastName: string; email?: string; phone?: string; status: "aktiv" | "passiv"; departmentId?: number | null; teamId?: number | null; memberNumber?: string }>>([]);
+  const [importFileName, setImportFileName] = useState("");
+
+  const bulkImport = trpc.orgMember.bulkImport.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.imported} Mitglieder importiert`);
+      utils.orgMember.list.invalidate({ orgId });
+      setShowImport(false);
+      setImportData([]);
+      setImportFileName("");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target?.result as string;
+      if (!text) return;
+
+      // CSV parsen (Semikolon oder Komma als Trennzeichen)
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) {
+        toast.error("Die Datei enthält keine Daten (mindestens Kopfzeile + 1 Zeile erwartet)");
+        return;
+      }
+
+      // Trennzeichen erkennen
+      const sep = lines[0].includes(";") ? ";" : ",";
+      const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/[\uFEFF]/g, ""));
+
+      // Spalten-Mapping (flexibel)
+      const colMap = {
+        firstName: headers.findIndex(h => h.includes("vorname") || h === "firstname" || h === "first_name"),
+        lastName: headers.findIndex(h => h.includes("nachname") || h.includes("name") && !h.includes("vor") || h === "lastname" || h === "last_name"),
+        email: headers.findIndex(h => h.includes("mail") || h === "email" || h === "e-mail"),
+        phone: headers.findIndex(h => h.includes("telefon") || h.includes("phone") || h.includes("tel")),
+        status: headers.findIndex(h => h.includes("status")),
+        memberNumber: headers.findIndex(h => h.includes("mitglied") || h.includes("nummer") || h.includes("member")),
+      };
+
+      if (colMap.firstName === -1 && colMap.lastName === -1) {
+        toast.error("Spalten 'Vorname' und 'Nachname' nicht gefunden. Bitte prüfen Sie die Kopfzeile.");
+        return;
+      }
+
+      const parsed: typeof importData = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(sep).map(c => c.trim());
+        const firstName = colMap.firstName >= 0 ? cols[colMap.firstName] || "" : "";
+        const lastName = colMap.lastName >= 0 ? cols[colMap.lastName] || "" : "";
+        if (!firstName && !lastName) continue;
+
+        const statusRaw = colMap.status >= 0 ? cols[colMap.status]?.toLowerCase() : "aktiv";
+        const status = statusRaw === "passiv" ? "passiv" as const : "aktiv" as const;
+
+        parsed.push({
+          firstName: firstName || "Unbekannt",
+          lastName: lastName || "Unbekannt",
+          email: colMap.email >= 0 ? cols[colMap.email] || undefined : undefined,
+          phone: colMap.phone >= 0 ? cols[colMap.phone] || undefined : undefined,
+          status,
+          memberNumber: colMap.memberNumber >= 0 ? cols[colMap.memberNumber] || undefined : undefined,
+          departmentId: filterDepartmentId || null,
+          teamId: filterTeamId || null,
+        });
+      }
+
+      if (parsed.length === 0) {
+        toast.error("Keine gültigen Einträge gefunden");
+        return;
+      }
+
+      setImportData(parsed);
+      setShowImport(true);
+    };
+    reader.readAsText(file, "utf-8");
+    // Reset input
+    e.target.value = "";
+  };
+
+  const handleImportConfirm = () => {
+    if (importData.length === 0) return;
+    bulkImport.mutate({ orgId, members: importData });
+  };
+
   // ─── CSV Export ───
   const handleExport = () => {
     if (!filteredMembers.length) { toast.error("Keine Mitglieder zum Exportieren"); return; }
@@ -349,6 +441,20 @@ export default function MemberManagement({
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="w-4 h-4 mr-1" />CSV
           </Button>
+          {canCreate && canDelete && (
+            <>
+              <input
+                type="file"
+                accept=".csv,.txt,.xlsx,.xls"
+                className="hidden"
+                id="member-import-file"
+                onChange={handleFileSelect}
+              />
+              <Button variant="outline" size="sm" onClick={() => document.getElementById('member-import-file')?.click()}>
+                <Upload className="w-4 h-4 mr-1" />Import
+              </Button>
+            </>
+          )}
           {canCreate && (
             <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
@@ -360,6 +466,58 @@ export default function MemberManagement({
             </Dialog>
           )}
         </div>
+
+        {/* Import-Vorschau Dialog */}
+        <Dialog open={showImport} onOpenChange={setShowImport}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>CSV-Import Vorschau</DialogTitle>
+              <DialogDescription>
+                {importFileName} – {importData.length} Mitglieder erkannt. Bitte prüfen Sie die Daten vor dem Import.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="border rounded-lg overflow-auto max-h-[400px]">
+              <table className="w-full text-sm">
+                <thead className="bg-muted sticky top-0">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-medium">#</th>
+                    <th className="px-3 py-2 text-left font-medium">Vorname</th>
+                    <th className="px-3 py-2 text-left font-medium">Nachname</th>
+                    <th className="px-3 py-2 text-left font-medium">E-Mail</th>
+                    <th className="px-3 py-2 text-left font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importData.slice(0, 50).map((m, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-3 py-1.5 text-muted-foreground">{i + 1}</td>
+                      <td className="px-3 py-1.5">{m.firstName}</td>
+                      <td className="px-3 py-1.5">{m.lastName}</td>
+                      <td className="px-3 py-1.5 text-muted-foreground">{m.email || "–"}</td>
+                      <td className="px-3 py-1.5">
+                        <Badge variant={m.status === "aktiv" ? "default" : "secondary"} className="text-xs">
+                          {m.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {importData.length > 50 && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  ... und {importData.length - 50} weitere Einträge
+                </p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => { setShowImport(false); setImportData([]); }}>Abbrechen</Button>
+              <Button onClick={handleImportConfirm} disabled={bulkImport.isPending}>
+                {bulkImport.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {importData.length} Mitglieder importieren
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Filter-Leiste */}

@@ -1416,6 +1416,17 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Vereinsmitglieder Tab (optional) ─── */}
           <TabsContent value="org-members">
+            <Card className="border-amber-200 bg-amber-50 mb-4">
+              <CardContent className="py-4">
+                <div className="flex gap-3 items-start">
+                  <UserPlus className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                  <div className="text-sm text-amber-800">
+                    <p className="font-medium">Optionales Feature</p>
+                    <p>Die Mitgliederverwaltung ist ein optionales Zusatzmodul. Sie können Mitglieder manuell anlegen oder per Excel-Upload importieren. Wenn Sie die Mitgliederverwaltung nicht benötigen, können Sie diesen Bereich einfach ignorieren.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             <MemberManagement
               orgId={orgId}
               primaryColor={org.primaryColor}
@@ -1996,6 +2007,38 @@ function SupplierSection({ org, orgId }: { org: any; orgId: number }) {
   );
   const [editing, setEditing] = useState(false);
 
+  // Sparten-Ausrüster
+  const { data: departments } = trpc.department.listByOrg.useQuery({ orgId });
+  const { data: deptSuppliers, isLoading: deptSuppliersLoading } = trpc.departmentSupplier.listByOrg.useQuery({ orgId });
+  const [showAddDeptSupplier, setShowAddDeptSupplier] = useState(false);
+  const [deptSupplierDeptId, setDeptSupplierDeptId] = useState<number | null>(null);
+  const [deptSupplierBrand, setDeptSupplierBrand] = useState("");
+  const [deptSupplierScope, setDeptSupplierScope] = useState<"alle_artikel" | "nur_trikots">("alle_artikel");
+  const [deptSupplierContractStart, setDeptSupplierContractStart] = useState("");
+  const [deptSupplierContractEnd, setDeptSupplierContractEnd] = useState("");
+
+  const createDeptSupplier = trpc.departmentSupplier.create.useMutation({
+    onSuccess: () => {
+      utils.departmentSupplier.listByOrg.invalidate({ orgId });
+      setShowAddDeptSupplier(false);
+      setDeptSupplierDeptId(null);
+      setDeptSupplierBrand("");
+      setDeptSupplierScope("alle_artikel");
+      setDeptSupplierContractStart("");
+      setDeptSupplierContractEnd("");
+      toast.success("Sparten-Ausrüster hinzugefügt");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const deleteDeptSupplier = trpc.departmentSupplier.delete.useMutation({
+    onSuccess: () => {
+      utils.departmentSupplier.listByOrg.invalidate({ orgId });
+      toast.success("Sparten-Ausrüster entfernt");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   const updateMutation = trpc.org.update.useMutation({
     onSuccess: () => {
       toast.success("Ausstatter gespeichert");
@@ -2228,6 +2271,180 @@ function SupplierSection({ org, orgId }: { org: any; orgId: number }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* ─── Sparten-Ausrüster ─── */}
+      <Separator className="my-6" />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              Sparten-Ausrüster
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Jede Sparte kann einen eigenen Ausrüster haben (z.B. Fußball → Nike, Handball → Kempa)
+            </p>
+          </div>
+          <Dialog open={showAddDeptSupplier} onOpenChange={setShowAddDeptSupplier}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline">
+                <Plus className="w-4 h-4 mr-2" />Sparten-Ausrüster
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Sparten-Ausrüster hinzufügen</DialogTitle>
+                <DialogDescription>
+                  Weisen Sie einer Sparte einen eigenen Ausrüster zu. Dieser überschreibt den Vereins-Ausrüster für diese Sparte.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label className="font-medium">Sparte *</Label>
+                  <Select value={deptSupplierDeptId?.toString() || ""} onValueChange={(v) => setDeptSupplierDeptId(parseInt(v))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sparte wählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(departments || []).map((d: any) => (
+                        <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-medium">Marke *</Label>
+                  <Select value={deptSupplierBrand} onValueChange={setDeptSupplierBrand}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Ausrüster wählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SPORT_BRANDS.map((b) => (
+                        <SelectItem key={b} value={b}>
+                          <span className={b === "Ball-z" ? "font-bold text-primary" : ""}>{b}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-medium">Bindungsbereich</Label>
+                  <Select value={deptSupplierScope} onValueChange={(v) => setDeptSupplierScope(v as "alle_artikel" | "nur_trikots")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alle_artikel">Alle Artikel der Sparte</SelectItem>
+                      <SelectItem value="nur_trikots">Nur Trikots / Spielkleidung</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Vertragsbeginn</Label>
+                    <Input type="date" value={deptSupplierContractStart} onChange={(e) => setDeptSupplierContractStart(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vertragsende</Label>
+                    <Input type="date" value={deptSupplierContractEnd} onChange={(e) => setDeptSupplierContractEnd(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowAddDeptSupplier(false)}>Abbrechen</Button>
+                <Button
+                  onClick={() => {
+                    if (!deptSupplierDeptId || !deptSupplierBrand) {
+                      toast.error("Bitte Sparte und Marke auswählen");
+                      return;
+                    }
+                    createDeptSupplier.mutate({
+                      departmentId: deptSupplierDeptId,
+                      orgId,
+                      brand: deptSupplierBrand,
+                      scope: deptSupplierScope,
+                      contractStart: deptSupplierContractStart ? new Date(deptSupplierContractStart) : null,
+                      contractEnd: deptSupplierContractEnd ? new Date(deptSupplierContractEnd) : null,
+                    });
+                  }}
+                  disabled={!deptSupplierDeptId || !deptSupplierBrand || createDeptSupplier.isPending}
+                >
+                  {createDeptSupplier.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  Hinzufügen
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {deptSuppliersLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : !deptSuppliers || deptSuppliers.length === 0 ? (
+          <Card>
+            <CardContent className="py-6 text-center text-muted-foreground">
+              <Building2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>Keine Sparten-Ausrüster festgelegt.</p>
+              <p className="text-xs mt-1">Es gilt der Vereins-Ausrüster für alle Sparten.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {(departments || []).map((dept: any) => {
+              const suppliers = (deptSuppliers || []).filter((s: any) => s.departmentId === dept.id);
+              if (suppliers.length === 0) return null;
+              return (
+                <Card key={dept.id}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      {dept.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {suppliers.map((s: any) => {
+                        const isActive = s.contractEnd ? new Date(s.contractEnd) > new Date() : true;
+                        return (
+                          <div key={s.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-3">
+                              <ShieldCheck className="w-4 h-4 text-primary" />
+                              <div>
+                                <p className="font-medium">{s.brand}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {s.scope === "nur_trikots" ? "Nur Trikots" : "Alle Artikel"}
+                                  {s.contractEnd && ` · bis ${new Date(s.contractEnd).toLocaleDateString("de-DE")}`}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {isActive ? (
+                                <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">Aktiv</Badge>
+                              ) : (
+                                <Badge variant="destructive" className="text-xs">Abgelaufen</Badge>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                onClick={() => deleteDeptSupplier.mutate({ id: s.id, orgId })}
+                                disabled={deleteDeptSupplier.isPending}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

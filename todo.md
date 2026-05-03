@@ -1486,3 +1486,13 @@
 - [x] Pflicht-Zuordnung zu Sparte für aktive Mitglieder wiederhergestellt (Backend + Frontend)
 - [x] Bug-Fix: foundedYear Validierung – leeres Feld sendet 0, Minimum-Check schlägt fehl bei Stammdaten-Eingabe
 - [x] Bug-Fix: PDF-Vorschau bei Sponsoren funktioniert nicht mehr (pdfjs-dist v5 API: canvas statt canvasContext)
+
+## Ausrüster pro Sparte (Verwaltung)
+- [x] DB: department_suppliers Tabelle (Sparte ↔ Ausrüster-Zuordnung, Mehrfachauswahl)
+- [x] Backend: CRUD-Router für Sparten-Ausrüster
+- [x] Frontend OrgDashboard: Ausrüster pro Sparte verwalten (Mehrfachauswahl)
+- [x] Frontend DeptDashboard: Ausrüster-Anzeige/Bearbeitung für eigene Sparte
+
+## Mitgliederverwaltung Verbesserungen
+- [x] Mitgliederverwaltung: Hinweis dass Feature optional ist
+- [x] Mitgliederverwaltung: CSV/Excel-Import implementiert (Upload + Vorschau + Bulk-Import)

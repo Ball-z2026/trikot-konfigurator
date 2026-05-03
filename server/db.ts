@@ -45,6 +45,8 @@ import {
   InsertSponsorInvitation,
   orgMembers,
   InsertOrgMember,
+  departmentSuppliers,
+  InsertDepartmentSupplier,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1919,4 +1921,51 @@ export async function countOrgMembers(orgId: number) {
   if (!db) return 0;
   const [row] = await db.select({ count: sql<number>`count(*)` }).from(orgMembers).where(eq(orgMembers.orgId, orgId));
   return Number(row.count);
+}
+
+
+// ─── Department Supplier Helpers ────────────────────────────────────────────
+
+/** Alle Ausrüster einer Organisation (über alle Sparten) */
+export async function listDepartmentSuppliers(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(departmentSuppliers).where(eq(departmentSuppliers.orgId, orgId)).orderBy(departmentSuppliers.createdAt);
+}
+
+/** Ausrüster einer bestimmten Sparte */
+export async function listSuppliersByDepartment(departmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(departmentSuppliers).where(eq(departmentSuppliers.departmentId, departmentId)).orderBy(departmentSuppliers.createdAt);
+}
+
+/** Einzelnen Ausrüster laden */
+export async function getDepartmentSupplierById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db.select().from(departmentSuppliers).where(eq(departmentSuppliers.id, id));
+  return row || null;
+}
+
+/** Ausrüster einer Sparte zuweisen */
+export async function createDepartmentSupplier(data: InsertDepartmentSupplier) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(departmentSuppliers).values(data).$returningId();
+  return result;
+}
+
+/** Ausrüster aktualisieren */
+export async function updateDepartmentSupplier(id: number, data: Partial<Omit<InsertDepartmentSupplier, "id">>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(departmentSuppliers).set({ ...data, updatedAt: new Date() }).where(eq(departmentSuppliers.id, id));
+}
+
+/** Ausrüster-Zuordnung löschen */
+export async function deleteDepartmentSupplier(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(departmentSuppliers).where(eq(departmentSuppliers.id, id));
 }

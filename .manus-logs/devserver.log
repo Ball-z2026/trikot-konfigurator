@@ -8503,3 +8503,44 @@
 [2026-05-03T20:19:25.739Z] Server running on http://localhost:3000/
 [2026-05-03T20:20:03.688Z] 4:20:03 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
 [2026-05-03T20:20:25.281Z] 4:20:25 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
+[2026-05-03T20:25:21.433Z] 4:25:21 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T20:25:23.104Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:25:23.688Z] Server running on http://localhost:3000/
+[2026-05-03T20:25:56.269Z] 4:25:56 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T20:25:57.818Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:25:58.253Z] Server running on http://localhost:3000/
+[2026-05-03T20:26:07.743Z] 4:26:07 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T20:26:09.396Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:26:09.830Z] Server running on http://localhost:3000/
+[2026-05-03T20:26:43.985Z] 4:26:43 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T20:26:45.478Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:26:45.882Z] Server running on http://localhost:3000/
+[2026-05-03T20:27:02.966Z] 4:27:02 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T20:27:04.646Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:27:05.064Z] Server running on http://localhost:3000/
+[2026-05-03T20:28:13.858Z] 4:28:13 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T20:28:46.750Z] 4:28:46 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T20:28:52.374Z] Dev server process group stopped
+[2026-05-03T20:28:52.459Z] Dev server exited with code -15
+[2026-05-03T20:28:55.412Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-03T20:28:57.118Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:28:57.543Z] Server running on http://localhost:3000/
+[2026-05-03T20:29:37.121Z] 4:29:37 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-03T20:30:14.488Z] 4:30:14 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-03T20:30:45.729Z] 4:30:45 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T20:31:00.747Z] 4:31:00 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-03T20:43:14.308Z] 4:43:14 PM [vite] (client) hmr update /src/index.css, /src/components/MemberManagement.tsx
+[2026-05-03T20:43:19.520Z] 4:43:19 PM [vite] (client) hmr update /src/index.css, /src/components/MemberManagement.tsx
+[2026-05-03T20:43:38.598Z] [Auth] Missing session cookie
+[2026-05-03T20:43:38.602Z] [Auth] Missing session cookie
+[2026-05-03T20:43:38.960Z] [Auth] Missing session cookie
+[2026-05-03T20:43:39.018Z] [Auth] Missing session cookie
+[2026-05-03T20:43:39.024Z] [Auth] Missing session cookie
+[2026-05-03T20:43:39.041Z] [Auth] Missing session cookie
+[2026-05-03T20:43:39.047Z] [Auth] Missing session cookie
+[2026-05-03T20:43:39.054Z] [Auth] Missing session cookie
+[2026-05-03T20:43:39.058Z] [Auth] Missing session cookie
+[2026-05-03T20:43:39.062Z] [Auth] Missing session cookie
+[2026-05-03T20:43:45.344Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-03T20:43:45.347Z] [Auth] Missing session cookie
+[2026-05-03T20:43:45.351Z] [Auth] Missing session cookie

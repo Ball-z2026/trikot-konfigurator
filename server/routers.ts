@@ -158,6 +158,12 @@ import {
   deleteOrgMember,
   bulkCreateOrgMembers,
   countOrgMembers,
+  listDepartmentSuppliers,
+  listSuppliersByDepartment,
+  getDepartmentSupplierById,
+  createDepartmentSupplier,
+  updateDepartmentSupplier,
+  deleteDepartmentSupplier,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -884,6 +890,76 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         await requireOrgOwner(ctx.user.id, input.orgId);
         await deleteDepartment(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ─── Department Suppliers (Ausrüster pro Sparte) ─────────────────────────
+  departmentSupplier: router({
+    /** Alle Ausrüster einer Organisation (über alle Sparten) */
+    listByOrg: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        await requireOrgMember(ctx.user.id, input.orgId);
+        return listDepartmentSuppliers(input.orgId);
+      }),
+
+    /** Ausrüster einer bestimmten Sparte */
+    listByDepartment: protectedProcedure
+      .input(z.object({ departmentId: z.number(), orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        await requireOrgMember(ctx.user.id, input.orgId);
+        return listSuppliersByDepartment(input.departmentId);
+      }),
+
+    /** Ausrüster einer Sparte zuweisen (Owner oder Spartenleiter) */
+    create: protectedProcedure
+      .input(z.object({
+        departmentId: z.number(),
+        orgId: z.number(),
+        brand: z.string().min(1).max(100),
+        scope: z.enum(["alle_artikel", "nur_trikots"]).default("alle_artikel"),
+        contractStart: z.date().optional().nullable(),
+        contractEnd: z.date().optional().nullable(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await requireDepartmentLead(ctx.user.id, input.orgId, input.departmentId);
+        const result = await createDepartmentSupplier({
+          ...input,
+          contractStart: input.contractStart || null,
+          contractEnd: input.contractEnd || null,
+          createdBy: ctx.user.id,
+        });
+        return result;
+      }),
+
+    /** Ausrüster aktualisieren (Owner oder Spartenleiter) */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        orgId: z.number(),
+        brand: z.string().min(1).max(100).optional(),
+        scope: z.enum(["alle_artikel", "nur_trikots"]).optional(),
+        contractStart: z.date().optional().nullable(),
+        contractEnd: z.date().optional().nullable(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const supplier = await getDepartmentSupplierById(input.id);
+        if (!supplier) throw new TRPCError({ code: "NOT_FOUND" });
+        await requireDepartmentLead(ctx.user.id, input.orgId, supplier.departmentId);
+        const { id, orgId, ...data } = input;
+        await updateDepartmentSupplier(id, data);
+        return { success: true };
+      }),
+
+    /** Ausrüster-Zuordnung löschen (Owner oder Spartenleiter) */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number(), orgId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const supplier = await getDepartmentSupplierById(input.id);
+        if (!supplier) throw new TRPCError({ code: "NOT_FOUND" });
+        await requireDepartmentLead(ctx.user.id, input.orgId, supplier.departmentId);
+        await deleteDepartmentSupplier(input.id);
         return { success: true };
       }),
   }),
