@@ -750,3 +750,46 @@ export const mockupApprovals = mysqlTable("mockup_approvals", {
 
 export type MockupApproval = typeof mockupApprovals.$inferSelect;
 export type InsertMockupApproval = typeof mockupApprovals.$inferInsert;
+
+
+/**
+ * Organization Members – Vereinsmitglieder (nicht zu verwechseln mit memberships = System-Benutzer-Rollen).
+ * 
+ * Dies sind die tatsächlichen Vereinsmitglieder (Spieler, passive Mitglieder etc.),
+ * die vom Owner oder Spartenleiter verwaltet werden.
+ * 
+ * Status:
+ * - aktiv: Aktives Mitglied, muss einer Sparte zugeordnet sein
+ * - passiv: Passives Mitglied, Sparte/Mannschaft optional
+ */
+export const orgMembers = mysqlTable("org_members", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  /** Vorname */
+  firstName: varchar("firstName", { length: 255 }).notNull(),
+  /** Nachname */
+  lastName: varchar("lastName", { length: 255 }).notNull(),
+  /** E-Mail-Adresse */
+  email: varchar("email", { length: 320 }),
+  /** Handynummer */
+  phone: varchar("phone", { length: 50 }),
+  /** Status: aktiv oder passiv */
+  status: mysqlEnum("status", ["aktiv", "passiv"]).default("aktiv").notNull(),
+  /** Zugeordnete Sparte (Pflicht bei aktiven Mitgliedern) */
+  departmentId: int("departmentId"),
+  /** Zugeordnete Mannschaft (optional) */
+  teamId: int("teamId"),
+  /** Mitgliedsnummer (optional, vom Verein vergeben) */
+  memberNumber: varchar("memberNumber", { length: 50 }),
+  /** Geburtsdatum (optional) */
+  birthDate: timestamp("birthDate"),
+  /** Zusätzliche Notizen */
+  notes: text("notes"),
+  /** Erstellt von (userId) */
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type OrgMember = typeof orgMembers.$inferSelect;
+export type InsertOrgMember = typeof orgMembers.$inferInsert;

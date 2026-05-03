@@ -8062,3 +8062,42 @@
 [2026-05-03T19:08:17.072Z] 3:08:17 PM [tsx] change in ./server/routers.ts Restarting...
 [2026-05-03T19:08:18.760Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-03T19:08:19.243Z] Server running on http://localhost:3000/
+[2026-05-03T19:13:32.223Z] 3:13:32 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T19:13:33.907Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T19:13:34.357Z] Server running on http://localhost:3000/
+[2026-05-03T19:14:22.338Z] 3:14:22 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T19:14:23.910Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T19:14:24.335Z] Server running on http://localhost:3000/
+[2026-05-03T19:14:45.845Z] 3:14:45 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T19:14:47.546Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T19:14:47.984Z] Server running on http://localhost:3000/
+[2026-05-03T19:17:09.641Z] 3:17:09 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T19:17:11.393Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T19:17:11.856Z] Server running on http://localhost:3000/
+[2026-05-03T19:17:54.762Z] 3:17:54 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T19:17:56.436Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T19:17:56.882Z] Server running on http://localhost:3000/
+[2026-05-03T19:24:06.258Z] 3:24:06 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T19:24:07.998Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T19:24:08.453Z] Server running on http://localhost:3000/
+[2026-05-03T19:24:12.620Z] 3:24:12 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T19:24:14.452Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T19:24:14.905Z] Server running on http://localhost:3000/
+[2026-05-03T19:31:00.273Z] 3:31:00 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-03T19:31:10.306Z] 3:31:10 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-03T19:32:43.678Z] 3:32:43 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-03T19:32:54.156Z] 3:32:54 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-03T19:34:09.759Z] 3:34:09 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-03T19:34:17.444Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.454Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.915Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.957Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.967Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.975Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.982Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.989Z] [Auth] Missing session cookie
+[2026-05-03T19:34:17.995Z] [Auth] Missing session cookie
+[2026-05-03T19:34:18.003Z] [Auth] Missing session cookie
+[2026-05-03T19:34:24.929Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-03T19:34:24.933Z] [Auth] Missing session cookie
+[2026-05-03T19:34:24.938Z] [Auth] Missing session cookie

@@ -72,6 +72,7 @@ import { useMemo } from "react";
 import { KONFEKTIONSGROESSEN, getSpielklassen, TEAM_KATEGORIEN, type SportartCode } from "@shared/jerseyRules";
 import { storageUrl } from "@/lib/utils";
 import { SponsorLogoImage } from "@/components/SponsorLogoImage";
+import MemberManagement from "@/components/MemberManagement";
 
 // ─── Logo Section für selbstregistrierte Trainer ─────────────────────────────
 function TrainerLogoSection({ orgId }: { orgId: number }) {
@@ -339,7 +340,7 @@ function TrainerSponsorSection({ orgId, deptId }: { orgId: number; deptId: numbe
   const utils = trpc.useUtils();
   const { data: sponsors, isLoading } = trpc.sponsorTemplate.list.useQuery({ orgId });
   const { data: teams } = trpc.team.listByOrg.useQuery({ orgId });
-  const { data: departments } = trpc.department.list.useQuery({ orgId });
+  const { data: departments } = trpc.department.listByOrg.useQuery({ orgId });
   const [showCreate, setShowCreate] = useState(false);
   const [sponsorForm, setSponsorForm] = useState({
     name: "",
@@ -705,6 +706,9 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
 
         {/* Sponsor-Bereich: Trainer kann Mannschaftssponsoren anlegen */}
         <TrainerSponsorSection orgId={orgId} deptId={deptId} />
+
+        {/* Mannschaftsmitglieder (optional) */}
+        <TrainerMemberSection orgId={orgId} deptId={deptId} teams={teams || []} />
 
         {!teams || teams.length === 0 ? (
           <div className="text-center py-16 bg-muted/30 rounded-xl border border-dashed">
@@ -2315,6 +2319,33 @@ function TrainerCommentSection({ teamId, teamName }: { teamId: number; teamName:
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Trainer Member Section (Mannschaftsmitglieder, optional) ──────────────────
+function TrainerMemberSection({ orgId, deptId, teams }: { orgId: number; deptId: number; teams: any[] }) {
+  const { data: departments } = trpc.department.listByOrg.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+
+  const deptTeams = teams.filter(t => t.departmentId === deptId);
+
+  if (deptTeams.length === 0) return null;
+
+  return (
+    <div className="mt-6">
+      <Separator className="mb-6" />
+      <MemberManagement
+        orgId={orgId}
+        primaryColor={null}
+        secondaryColor={null}
+        userRole="trainer"
+        departments={departments?.map(d => ({ id: d.id, name: d.name })) || []}
+        teams={deptTeams.map(t => ({ id: t.id, name: t.name, departmentId: t.departmentId }))}
+        filterDepartmentId={deptId}
+      />
     </div>
   );
 }

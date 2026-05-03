@@ -61,6 +61,7 @@ import { OrderCommentThread } from "./OrderCommentThread";
 import { storageUrl } from "@/lib/utils";
 import { PdfPreview } from "@/components/PdfPreview";
 import { SponsorLogoImage } from "@/components/SponsorLogoImage";
+import MemberManagement from "@/components/MemberManagement";
 
 /** Vordefinierte Google-Fonts-Auswahl */
 const PRESET_FONTS = [
@@ -282,6 +283,11 @@ export default function DeptDashboard() {
 
         {/* Bestellübersicht */}
         <OrderOverviewSection orgId={orgId} deptId={deptId} />
+
+        <Separator />
+
+        {/* Spartenmitglieder (optional) */}
+        <MemberManagementSection orgId={orgId} deptId={deptId} />
       </div>
     </div>
   );
@@ -2084,5 +2090,31 @@ function OrderStatusStepper({
         </Badge>
       )}
     </div>
+  );
+}
+
+// ─── Member Management Section (Spartenmitglieder, optional) ──────────────────
+function MemberManagementSection({ orgId, deptId }: { orgId: number; deptId: number }) {
+  const { data: departments } = trpc.department.listByOrg.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+  const { data: teams } = trpc.team.listByOrg.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+
+  const deptTeams = teams?.filter(t => t.departmentId === deptId) || [];
+
+  return (
+    <MemberManagement
+      orgId={orgId}
+      primaryColor={null}
+      secondaryColor={null}
+      userRole="department_lead"
+      departments={departments?.map(d => ({ id: d.id, name: d.name })) || []}
+      teams={deptTeams.map(t => ({ id: t.id, name: t.name, departmentId: t.departmentId }))}
+      filterDepartmentId={deptId}
+    />
   );
 }

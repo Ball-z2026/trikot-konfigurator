@@ -149,6 +149,15 @@ import {
   updateUserBackupCodes,
   listAllOrganizations,
   getAdminDashboardStats,
+  createOrgMember,
+  getOrgMemberById,
+  listOrgMembers,
+  listOrgMembersByDepartment,
+  listOrgMembersByTeam,
+  updateOrgMember,
+  deleteOrgMember,
+  bulkCreateOrgMembers,
+  countOrgMembers,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -2986,6 +2995,211 @@ export const appRouter = router({
         await updateUserBackupCodes(ctx.user.id, JSON.stringify(hashed));
 
         return { backupCodes: plaintext };
+      }),
+  }),
+
+  // ─── Vereinsmitglieder (orgMembers) ─────────────────────────────────────────
+  orgMember: router({
+    /** Mitglieder auflisten – rollenbasiert gefiltert */
+    list: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        departmentId: z.number().optional(),
+        teamId: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        // Prüfe Mitgliedschaft
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+
+        // Owner sieht alles
+        if (membership.role === "owner") {
+          if (input.departmentId) {
+            return listOrgMembersByDepartment(input.orgId, input.departmentId);
+          }
+          if (input.teamId) {
+            return listOrgMembersByTeam(input.orgId, input.teamId);
+          }
+          return listOrgMembers(input.orgId);
+        }
+
+        // Spartenleiter sieht nur seine Sparte
+        if (membership.role === "department_lead" && membership.departmentId) {
+          if (input.teamId) {
+            return listOrgMembersByTeam(input.orgId, input.teamId);
+          }
+          return listOrgMembersByDepartment(input.orgId, membership.departmentId);
+        }
+
+        // Trainer sieht nur seine Mannschaften
+        if (membership.role === "trainer") {
+          const trainerTeams = await listTeamsByTrainerAndOrg(ctx.user.id, input.orgId);
+          if (input.teamId) {
+            const hasAccess = trainerTeams.some(t => t.id === input.teamId);
+            if (!hasAccess) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff auf diese Mannschaft" });
+            return listOrgMembersByTeam(input.orgId, input.teamId);
+          }
+          // Alle Mitglieder aus allen Mannschaften des Trainers
+          const allMembers = [];
+          for (const team of trainerTeams) {
+            const members = await listOrgMembersByTeam(input.orgId, team.id);
+            allMembers.push(...members);
+          }
+          // Deduplizieren nach ID
+          const seen = new Set<number>();
+          return allMembers.filter(m => {
+            if (seen.has(m.id)) return false;
+            seen.add(m.id);
+            return true;
+          });
+        }
+
+        throw new TRPCError({ code: "FORBIDDEN", message: "Keine Berechtigung" });
+      }),
+
+    /** Mitglied erstellen */
+    create: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        firstName: z.string().min(1, "Vorname ist erforderlich"),
+        lastName: z.string().min(1, "Nachname ist erforderlich"),
+        email: z.string().email("Ungültige E-Mail").optional().or(z.literal("")),
+        phone: z.string().optional().or(z.literal("")),
+        status: z.enum(["aktiv", "passiv"]),
+        departmentId: z.number().optional().nullable(),
+        teamId: z.number().optional().nullable(),
+        memberNumber: z.string().optional().or(z.literal("")),
+        birthDate: z.string().optional().or(z.literal("")),
+        notes: z.string().optional().or(z.literal("")),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        // Nur Owner und Spartenleiter dürfen Mitglieder erstellen
+        if (membership.role === "trainer") {
+          // Trainer darf nur in seinen Mannschaften erstellen (wenn Mannschaft angegeben)
+          if (input.teamId) {
+            const trainerTeams = await listTeamsByTrainerAndOrg(ctx.user.id, input.orgId);
+            if (!trainerTeams.some(t => t.id === input.teamId)) {
+              throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff auf diese Mannschaft" });
+            }
+          }
+        }
+        // Sparte/Mannschaft-Zuordnung ist optional
+        const id = await createOrgMember({
+          orgId: input.orgId,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          email: input.email || null,
+          phone: input.phone || null,
+          status: input.status,
+          departmentId: input.departmentId || null,
+          teamId: input.teamId || null,
+          memberNumber: input.memberNumber || null,
+          birthDate: input.birthDate ? new Date(input.birthDate) : null,
+          notes: input.notes || null,
+          createdBy: ctx.user.id,
+        });
+        return { id };
+      }),
+
+    /** Mitglied aktualisieren */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        orgId: z.number(),
+        firstName: z.string().min(1).optional(),
+        lastName: z.string().min(1).optional(),
+        email: z.string().email().optional().or(z.literal("")),
+        phone: z.string().optional().or(z.literal("")),
+        status: z.enum(["aktiv", "passiv"]).optional(),
+        departmentId: z.number().optional().nullable(),
+        teamId: z.number().optional().nullable(),
+        memberNumber: z.string().optional().or(z.literal("")),
+        birthDate: z.string().optional().or(z.literal("")),
+        notes: z.string().optional().or(z.literal("")),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        const { id, orgId, ...data } = input;
+        const updateData: Record<string, any> = {};
+        if (data.firstName !== undefined) updateData.firstName = data.firstName;
+        if (data.lastName !== undefined) updateData.lastName = data.lastName;
+        if (data.email !== undefined) updateData.email = data.email || null;
+        if (data.phone !== undefined) updateData.phone = data.phone || null;
+        if (data.status !== undefined) updateData.status = data.status;
+        if (data.departmentId !== undefined) updateData.departmentId = data.departmentId;
+        if (data.teamId !== undefined) updateData.teamId = data.teamId;
+        if (data.memberNumber !== undefined) updateData.memberNumber = data.memberNumber || null;
+        if (data.birthDate !== undefined) updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
+        if (data.notes !== undefined) updateData.notes = data.notes || null;
+        // Sparte/Mannschaft-Zuordnung ist optional
+        await updateOrgMember(id, updateData);
+        return { success: true };
+      }),
+
+    /** Mitglied löschen */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number(), orgId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        // Trainer dürfen keine Mitglieder löschen
+        if (membership.role === "trainer") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Trainer dürfen keine Mitglieder löschen" });
+        }
+        await deleteOrgMember(input.id);
+        return { success: true };
+      }),
+
+    /** Excel/CSV-Import: Mehrere Mitglieder auf einmal erstellen */
+    bulkImport: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        members: z.array(z.object({
+          firstName: z.string().min(1),
+          lastName: z.string().min(1),
+          email: z.string().optional().or(z.literal("")),
+          phone: z.string().optional().or(z.literal("")),
+          status: z.enum(["aktiv", "passiv"]),
+          departmentId: z.number().optional().nullable(),
+          teamId: z.number().optional().nullable(),
+          memberNumber: z.string().optional().or(z.literal("")),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        // Nur Owner und Spartenleiter dürfen importieren
+        if (membership.role === "trainer") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Trainer dürfen keinen Massenimport durchführen" });
+        }
+        const membersToInsert = input.members.map(m => ({
+          orgId: input.orgId,
+          firstName: m.firstName,
+          lastName: m.lastName,
+          email: m.email || null,
+          phone: m.phone || null,
+          status: m.status as "aktiv" | "passiv",
+          departmentId: m.departmentId || null,
+          teamId: m.teamId || null,
+          memberNumber: m.memberNumber || null,
+          birthDate: null,
+          notes: null,
+          createdBy: ctx.user.id,
+        }));
+        const count = await bulkCreateOrgMembers(membersToInsert);
+        return { imported: count };
+      }),
+
+    /** Anzahl Mitglieder */
+    count: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership) throw new TRPCError({ code: "FORBIDDEN", message: "Kein Zugriff" });
+        return countOrgMembers(input.orgId);
       }),
   }),
 });

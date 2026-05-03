@@ -25,6 +25,7 @@ import { storageUrl } from "@/lib/utils";
 import { PdfPreview } from "@/components/PdfPreview";
 import { SponsorLogoImage } from "@/components/SponsorLogoImage";
 import { LogoCropEditor } from "@/components/LogoCropEditor";
+import MemberManagement from "@/components/MemberManagement";
 
 // ─── Org List (when no org selected) ─────────────────────────────────────────
 function OrgList() {
@@ -718,6 +719,8 @@ function OrgDetail({ orgId }: { orgId: number }) {
             <TabsTrigger value="members" className="gap-2 data-[state=active]:shadow-sm"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
             {/* Owner + SL sehen Kollektionen */}
             {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2 data-[state=active]:shadow-sm"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
+            {/* Owner + SL sehen Vereinsmitglieder (optional) */}
+            {(isOwner || isDeptLead) && <TabsTrigger value="org-members" className="gap-2 data-[state=active]:shadow-sm"><UserPlus className="w-4 h-4" />Vereinsmitglieder</TabsTrigger>}
             {isOwner && <TabsTrigger value="supplier" className="gap-2 data-[state=active]:shadow-sm"><ShieldCheck className="w-4 h-4" />Ausstatter</TabsTrigger>}
           </TabsList>
 
@@ -1409,6 +1412,18 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
           {/* ─── Kollektionen Tab ─── */}
           <TabsContent value="collections">
             <OrgCollectionsSection orgId={orgId} isOwner={isOwner} org={org} />
+          </TabsContent>
+
+          {/* ─── Vereinsmitglieder Tab (optional) ─── */}
+          <TabsContent value="org-members">
+            <MemberManagement
+              orgId={orgId}
+              primaryColor={org.primaryColor}
+              secondaryColor={org.secondaryColor}
+              userRole={isOwner ? "owner" : isDeptLead ? "department_lead" : "trainer"}
+              departments={departments || []}
+              teams={allTeams || []}
+            />
           </TabsContent>
 
           {/* ─── Ausstatter Tab ─── */}

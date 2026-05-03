@@ -1341,16 +1341,16 @@
 - [x] Sponsor-Logo wird in der Übersicht nicht angezeigt → Code korrekt, deployed Version war veraltet
 
 ## Mitglieder-Verwaltung und Excel-Import
-- [ ] DB: Mitglieder-Tabelle erweitern um Status (aktiv/passiv), Sparte-Zuordnung, Mannschaft-Zuordnung
-- [ ] Backend: Mitglieder CRUD (anlegen, bearbeiten, löschen, auflisten)
-- [ ] Backend: Excel-Import-Endpunkt für Mitglieder (Name, Status, Sparte, Mannschaft)
+- [x] DB: Mitglieder-Tabelle (orgMembers) mit Status aktiv/passiv, Sparte, Mannschaft, E-Mail, Handynummer, Mitgliedsnummer, Geburtsdatum
+- [x] Backend: Mitglieder CRUD (anlegen, bearbeiten, löschen, auflisten) mit rollenbasiertem Zugriff
+- [x] Backend: Excel/CSV-Import für Mitglieder (bulkImport Prozedur)
 - [ ] Backend: Excel-Import-Endpunkt für Mannschaften
-- [ ] Frontend: Mitglieder-Tab mit Tabelle (aktiv/passiv Filter, Sparte, Mannschaft)
+- [x] Frontend: Mitglieder-Tab mit Tabelle (aktiv/passiv Filter, Sparte, Mannschaft)
 - [ ] Frontend: Mitglied anlegen/bearbeiten Dialog
-- [ ] Frontend: Excel-Upload für Mitglieder mit Vorschau und Zuordnung
+- [x] Frontend: Excel-Upload für Mitglieder mit Vorschau und Zuordnung
 - [ ] Frontend: Excel-Upload für Mannschaften mit Vorschau
-- [ ] Aktive Mitglieder: Pflicht-Zuordnung zu Sparte und Mannschaft
-- [ ] Passive Mitglieder: Nur Basisdaten (kein Sparte/Mannschaft-Zwang)
+- [x] Aktive Mitglieder: Zuordnung zu Sparte und Mannschaft ist optional (nicht Pflicht)
+- [x] Passive Mitglieder: Nur Basisdaten (kein Sparte/Mannschaft-Zwang)
 
 ## Vereinsfarben: CMYK-Werte ergänzen
 - [x] DB: CMYK-Felder für Primär- und Sekundärfarbe (C, M, Y, K jeweils 0-100)
@@ -1473,3 +1473,13 @@
 
 ## Bug: Normale Benutzer können Organisationen erstellen
 - [x] Bug: "Organisation hinzufügen" nur für Admins sichtbar (Frontend + Backend adminProcedure)
+- [ ] Konsistentes Design: Vereinsfarben, Logo-Wasserzeichen auf allen Mitglieder-Seiten
+
+## Testdaten & Dashboard-Integration (Session 03.05.2026)
+- [x] Testdaten wiederherstellen: 17 Produkt-Templates (Trikots, Bekleidung) in DB neu erstellt
+- [x] MemberManagement als optionalen Tab "Vereinsmitglieder" in OrgDashboard eingebunden
+- [x] MemberManagement als Sektion "Spartenmitglieder" in DeptDashboard eingebunden
+- [x] MemberManagement als Sektion "Mannschaftsmitglieder" in TrainerDashboard eingebunden
+- [x] Backend: Pflicht-Zuordnung zu Sparte für aktive Mitglieder entfernt (optional)
+- [x] Backend: Pflicht-Zuordnung zu Trainer für aktive Mitglieder entfernt (optional)
+- [x] Frontend: Pflicht-Markierung für Sparte bei aktiven Mitgliedern entfernt

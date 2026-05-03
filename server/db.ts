@@ -43,6 +43,8 @@ import {
   InsertMockupApproval,
   sponsorInvitations,
   InsertSponsorInvitation,
+  orgMembers,
+  InsertOrgMember,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1777,4 +1779,144 @@ export async function getAdminDashboardStats() {
     departments: Number(deptCount.count),
     memberships: Number(membershipCount.count),
   };
+}
+
+
+// ─── Org Members (Vereinsmitglieder) ─────────────────────────────────────────
+
+/** Mitglied erstellen */
+export async function createOrgMember(data: InsertOrgMember) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(orgMembers).values(data).$returningId();
+  return result.id;
+}
+
+/** Mitglied nach ID abrufen */
+export async function getOrgMemberById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(orgMembers).where(eq(orgMembers.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+/** Alle Mitglieder einer Organisation auflisten (für Owner) */
+export async function listOrgMembers(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: orgMembers.id,
+      orgId: orgMembers.orgId,
+      firstName: orgMembers.firstName,
+      lastName: orgMembers.lastName,
+      email: orgMembers.email,
+      phone: orgMembers.phone,
+      status: orgMembers.status,
+      departmentId: orgMembers.departmentId,
+      teamId: orgMembers.teamId,
+      memberNumber: orgMembers.memberNumber,
+      birthDate: orgMembers.birthDate,
+      notes: orgMembers.notes,
+      createdAt: orgMembers.createdAt,
+      updatedAt: orgMembers.updatedAt,
+      departmentName: departments.name,
+      teamName: teams.name,
+    })
+    .from(orgMembers)
+    .leftJoin(departments, eq(orgMembers.departmentId, departments.id))
+    .leftJoin(teams, eq(orgMembers.teamId, teams.id))
+    .where(eq(orgMembers.orgId, orgId))
+    .orderBy(orgMembers.lastName, orgMembers.firstName);
+}
+
+/** Mitglieder einer Sparte auflisten (für Spartenleiter) */
+export async function listOrgMembersByDepartment(orgId: number, departmentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: orgMembers.id,
+      orgId: orgMembers.orgId,
+      firstName: orgMembers.firstName,
+      lastName: orgMembers.lastName,
+      email: orgMembers.email,
+      phone: orgMembers.phone,
+      status: orgMembers.status,
+      departmentId: orgMembers.departmentId,
+      teamId: orgMembers.teamId,
+      memberNumber: orgMembers.memberNumber,
+      birthDate: orgMembers.birthDate,
+      notes: orgMembers.notes,
+      createdAt: orgMembers.createdAt,
+      updatedAt: orgMembers.updatedAt,
+      departmentName: departments.name,
+      teamName: teams.name,
+    })
+    .from(orgMembers)
+    .leftJoin(departments, eq(orgMembers.departmentId, departments.id))
+    .leftJoin(teams, eq(orgMembers.teamId, teams.id))
+    .where(and(eq(orgMembers.orgId, orgId), eq(orgMembers.departmentId, departmentId)))
+    .orderBy(orgMembers.lastName, orgMembers.firstName);
+}
+
+/** Mitglieder einer Mannschaft auflisten (für Trainer) */
+export async function listOrgMembersByTeam(orgId: number, teamId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: orgMembers.id,
+      orgId: orgMembers.orgId,
+      firstName: orgMembers.firstName,
+      lastName: orgMembers.lastName,
+      email: orgMembers.email,
+      phone: orgMembers.phone,
+      status: orgMembers.status,
+      departmentId: orgMembers.departmentId,
+      teamId: orgMembers.teamId,
+      memberNumber: orgMembers.memberNumber,
+      birthDate: orgMembers.birthDate,
+      notes: orgMembers.notes,
+      createdAt: orgMembers.createdAt,
+      updatedAt: orgMembers.updatedAt,
+      departmentName: departments.name,
+      teamName: teams.name,
+    })
+    .from(orgMembers)
+    .leftJoin(departments, eq(orgMembers.departmentId, departments.id))
+    .leftJoin(teams, eq(orgMembers.teamId, teams.id))
+    .where(and(eq(orgMembers.orgId, orgId), eq(orgMembers.teamId, teamId)))
+    .orderBy(orgMembers.lastName, orgMembers.firstName);
+}
+
+/** Mitglied aktualisieren */
+export async function updateOrgMember(id: number, data: Partial<InsertOrgMember>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(orgMembers).set(data).where(eq(orgMembers.id, id));
+}
+
+/** Mitglied löschen */
+export async function deleteOrgMember(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(orgMembers).where(eq(orgMembers.id, id));
+}
+
+/** Mehrere Mitglieder auf einmal erstellen (Excel-Import) */
+export async function bulkCreateOrgMembers(members: InsertOrgMember[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (members.length === 0) return 0;
+  await db.insert(orgMembers).values(members);
+  return members.length;
+}
+
+/** Anzahl Mitglieder einer Organisation */
+export async function countOrgMembers(orgId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const [row] = await db.select({ count: sql<number>`count(*)` }).from(orgMembers).where(eq(orgMembers.orgId, orgId));
+  return Number(row.count);
 }
