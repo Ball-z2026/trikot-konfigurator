@@ -1219,7 +1219,7 @@
 - [x] Koordinaten-Zone zeigt Breitengrad/Längengrad des Vereins auf dem Trikot (auto-fill aus orgData)
 
 ### Bugs
-- [ ] BUG: Abteilungs-Tab zeigt nur Fußball statt alle 4 Abteilungen
+- [x] BUG: Abteilungs-Tab zeigt nur Fußball statt alle 4 Abteilungen (gefixt - alle 4 Sparten werden korrekt angezeigt)
 
 ## Hashtag-Feld für Vereine
 
@@ -1232,3 +1232,49 @@
 
 ### Produktdesigner
 - [x] Neuer Zone-Typ "Hashtag" im Produktdesigner (zeigt Vereins-Hashtag auf dem Trikot, purpose: hashtag, auto-fill aus orgData)
+
+## Erweiterte Vereins-Stammdaten
+
+### DB-Schema
+- [x] organizations-Tabelle: Offizielle Vereinsbezeichnung (officialName)
+- [x] organizations-Tabelle: Ansprechpartner (contactFirstName, contactLastName, contactRole)
+- [x] organizations-Tabelle: Kontaktdaten (phone, email, website, fax)
+- [x] organizations-Tabelle: Bundesland (state) - bereits vorhanden
+- [x] organizations-Tabelle: Vereinsregister-Nr. (registerNumber)
+- [x] organizations-Tabelle: Steuernummer/USt-IdNr. (taxId)
+- [x] organizations-Tabelle: Gründungsjahr (foundedYear)
+- [x] Migration ausführen (0031_complete_joshua_kane.sql)
+
+### Backend
+- [x] tRPC: org.create und org.update um alle neuen Felder erweitert
+
+### Frontend
+- [x] Stammdaten-Tab: Alle neuen Felder im Formular anzeigen und bearbeitbar machen
+- [x] Felder gruppiert: Vereinsdaten, Ansprechpartner, Kontakt, Rechtliches
+
+## Rollenbasierte Berechtigungen in der Verwaltung
+
+### Rollen-Definition
+- [x] Owner (Hauptverantwortlicher): Sieht alles, kann alles machen (alle Sparten, Mannschaften, Daten)
+- [x] Spartenleiter: Sieht NUR seine eigene Sparte, kann dort alles machen (Mannschaften, Spieler, Schriften, Sponsoren)
+- [x] Trainer: Sieht NUR seine Mannschaft, kann dort Spieler anlegen und Mannschaftssponsoren hochladen
+
+### Backend
+- [x] Abteilungen-Endpunkte: Spartenleiter sieht nur seine Abteilung(en) (bereits implementiert)
+- [x] Mannschaften-Endpunkte: Spartenleiter sieht nur Mannschaften seiner Abteilung (bereits implementiert)
+- [x] Mitglieder-Endpunkte: Spartenleiter sieht nur Mitglieder seiner Abteilung + Owner
+- [x] Sponsoren: Spartenleiter sieht nur Hauptsponsoren + Spartensponsor + Mannschaftssponsoren seiner Abteilung
+- [x] Trainer sieht nur seine Mannschaft und deren Mitglieder
+
+### Frontend
+- [x] OrgDashboard: Tabs nach Rolle filtern (Owner sieht alle Tabs, SL nur relevante)
+- [x] Abteilungen-Tab: SL sieht nur seine Abteilung
+- [x] Mitglieder-Tab: SL sieht nur Mitglieder seiner Abteilung
+- [x] Stammdaten: SL kann Stammdaten nur lesen, nicht bearbeiten (nur Owner)
+- [x] Sponsoren: SL sieht nur Spartensponsor seiner Abteilung + Mannschaftssponsoren
+- [x] SponsorManagement: Neuer-Sponsor-Button mit canCreateSponsor Rollenprüfung
+- [x] SponsorManagement: Trainer sieht nur Mannschaftssponsor-Typ, SL sieht Sparten+Mannschaft
+- [x] SponsorManagement: Trainer teamId automatisch vorausfüllen
+- [x] Trainer: Mannschaftssponsoren hochladen (nur Typ "Mannschaftssponsor" für seine Mannschaft)
+- [x] Trainer: Spieler in seiner Mannschaft anlegen/bearbeiten (bereits implementiert - trainerId-Check)
+- [x] Trainer: Kann keine Vereins-Stammdaten oder andere Sparten sehen (Abteilungs-Filter + Stammdaten nur Owner)

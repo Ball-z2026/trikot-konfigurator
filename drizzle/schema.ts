@@ -39,6 +39,21 @@ export const organizations = mysqlTable("organizations", {
   zip: varchar("zip", { length: 10 }),
   city: varchar("city", { length: 255 }),
   country: varchar("country", { length: 100 }).default("Deutschland"),
+  /** Offizielle Vereinsbezeichnung (z.B. "Turn- und Sportverein Musterstadt 1920 e.V.") */
+  officialName: varchar("officialName", { length: 500 }),
+  /** Ansprechpartner */
+  contactFirstName: varchar("contactFirstName", { length: 100 }),
+  contactLastName: varchar("contactLastName", { length: 100 }),
+  contactRole: varchar("contactRole", { length: 100 }),
+  /** Kontaktdaten */
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 255 }),
+  website: varchar("website", { length: 500 }),
+  fax: varchar("fax", { length: 50 }),
+  /** Rechtliches */
+  registerNumber: varchar("registerNumber", { length: 100 }),
+  taxId: varchar("taxId", { length: 50 }),
+  foundedYear: int("foundedYear"),
   /** Hashtag des Vereins (z.B. #TSVMusterstadt) */
   hashtag: varchar("hashtag", { length: 100 }),
   /** Koordinaten (automatisch aus Adresse generiert) */

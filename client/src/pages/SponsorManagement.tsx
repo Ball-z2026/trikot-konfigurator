@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -186,6 +186,19 @@ export default function SponsorManagement() {
   // Lade die erste Organisation des Users
   const { data: orgs } = trpc.org.list.useQuery();
   const org = orgs?.[0];
+  const userRole = org?.userRole as string | undefined;
+  const isOwner = userRole === "owner";
+  const isDeptLead = userRole === "department_lead";
+  const isTrainer = userRole === "trainer";
+  // Trainer darf nur Mannschaftssponsoren erstellen
+  const canCreateSponsor = isOwner || isDeptLead || isTrainer;
+
+  // Trainer: sponsorType beim ersten Render auf mannschaftssponsor setzen
+  useEffect(() => {
+    if (isTrainer && form.sponsorType !== "mannschaftssponsor") {
+      setForm((prev) => ({ ...prev, sponsorType: "mannschaftssponsor" }));
+    }
+  }, [isTrainer]);
 
   // Lade Sponsoren der Organisation
   const { data: sponsors, refetch } = trpc.sponsorTemplate.list.useQuery(
@@ -208,6 +221,13 @@ export default function SponsorManagement() {
     undefined,
     { enabled: !!org && form.sponsorType === "mannschaftssponsor" }
   );
+
+  // Trainer: teamId automatisch vorausfüllen wenn nur ein Team vorhanden
+  useEffect(() => {
+    if (isTrainer && teams && teams.length === 1 && !form.teamId) {
+      setForm((prev) => ({ ...prev, teamId: teams[0].id }));
+    }
+  }, [isTrainer, teams]);
 
   // Produkt-Zuweisungs-Mutation
   const syncProductsMutation = trpc.sponsorTemplate.syncProducts.useMutation({
@@ -234,7 +254,11 @@ export default function SponsorManagement() {
   });
 
   function resetForm() {
-    setForm({ ...EMPTY_FORM });
+    setForm({
+      ...EMPTY_FORM,
+      // Trainer: immer Mannschaftssponsor
+      sponsorType: isTrainer ? "mannschaftssponsor" : EMPTY_FORM.sponsorType,
+    });
     setLogoFile(null);
     setLogoPreview(null);
   }
@@ -355,11 +379,13 @@ export default function SponsorManagement() {
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" /> Neuer Sponsor
-              </Button>
-            </DialogTrigger>
+            {canCreateSponsor && (
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" /> Neuer Sponsor
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Neuen Sponsor anlegen</DialogTitle>
@@ -384,14 +410,18 @@ export default function SponsorManagement() {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Label>Sponsor-Typ</Label>
-                        <Select value={form.sponsorType} onValueChange={(v) => updateForm("sponsorType", v)}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="hauptsponsor">Hauptsponsor</SelectItem>
-                            <SelectItem value="spartensponsor">Spartensponsor</SelectItem>
-                            <SelectItem value="mannschaftssponsor">Mannschaftssponsor</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {isTrainer ? (
+                          <Input value="Mannschaftssponsor" disabled />
+                        ) : (
+                          <Select value={form.sponsorType} onValueChange={(v) => updateForm("sponsorType", v)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {isOwner && <SelectItem value="hauptsponsor">Hauptsponsor</SelectItem>}
+                              {(isOwner || isDeptLead) && <SelectItem value="spartensponsor">Spartensponsor</SelectItem>}
+                              <SelectItem value="mannschaftssponsor">Mannschaftssponsor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
 
                       {(form.sponsorType === "hauptsponsor" || form.sponsorType === "spartensponsor") && (

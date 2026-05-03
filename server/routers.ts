@@ -632,6 +632,17 @@ export const appRouter = router({
         zip: z.string().max(10).optional(),
         city: z.string().max(255).optional(),
         country: z.string().max(100).optional(),
+        officialName: z.string().max(500).optional(),
+        contactFirstName: z.string().max(100).optional(),
+        contactLastName: z.string().max(100).optional(),
+        contactRole: z.string().max(100).optional(),
+        phone: z.string().max(50).optional(),
+        email: z.string().max(255).optional(),
+        website: z.string().max(500).optional(),
+        fax: z.string().max(50).optional(),
+        registerNumber: z.string().max(100).optional(),
+        taxId: z.string().max(50).optional(),
+        foundedYear: z.number().int().min(1800).max(2100).optional(),
         hashtag: z.string().max(100).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
@@ -644,6 +655,17 @@ export const appRouter = router({
           zip: input.zip || null,
           city: input.city || null,
           country: input.country || "Deutschland",
+          officialName: input.officialName || null,
+          contactFirstName: input.contactFirstName || null,
+          contactLastName: input.contactLastName || null,
+          contactRole: input.contactRole || null,
+          phone: input.phone || null,
+          email: input.email || null,
+          website: input.website || null,
+          fax: input.fax || null,
+          registerNumber: input.registerNumber || null,
+          taxId: input.taxId || null,
+          foundedYear: input.foundedYear || null,
           hashtag: input.hashtag || null,
           ownerId: ctx.user.id,
         });
@@ -681,6 +703,17 @@ export const appRouter = router({
         zip: z.string().max(10).optional(),
         city: z.string().max(255).optional(),
         country: z.string().max(100).optional(),
+        officialName: z.string().max(500).optional(),
+        contactFirstName: z.string().max(100).optional(),
+        contactLastName: z.string().max(100).optional(),
+        contactRole: z.string().max(100).optional(),
+        phone: z.string().max(50).optional(),
+        email: z.string().max(255).optional(),
+        website: z.string().max(500).optional(),
+        fax: z.string().max(50).optional(),
+        registerNumber: z.string().max(100).optional(),
+        taxId: z.string().max(50).optional(),
+        foundedYear: z.number().int().min(1800).max(2100).optional(),
         hashtag: z.string().max(100).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
@@ -797,12 +830,23 @@ export const appRouter = router({
       return listMembershipsByUser(ctx.user.id);
     }),
 
-    /** Alle Mitglieder einer Organisation */
+    /** Alle Mitglieder einer Organisation (gefiltert nach Rolle) */
     listByOrg: protectedProcedure
       .input(z.object({ orgId: z.number() }))
       .query(async ({ input, ctx }) => {
-        await requireOrgMember(ctx.user.id, input.orgId);
-        return listMembershipsByOrg(input.orgId);
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const allMembers = await listMembershipsByOrg(input.orgId);
+        // Owner sieht alle
+        if (membership.role === "owner") return allMembers;
+        // Spartenleiter sieht nur Mitglieder seiner Abteilung + Owner
+        if (membership.role === "department_lead" && membership.departmentId) {
+          return allMembers.filter(m => m.departmentId === membership.departmentId || m.role === "owner");
+        }
+        // Trainer sieht nur seine Mannschaftsmitglieder + Owner + seinen SL
+        if (membership.role === "trainer" && membership.departmentId) {
+          return allMembers.filter(m => m.departmentId === membership.departmentId || m.role === "owner");
+        }
+        return allMembers;
       }),
 
     /** Mitglieder einer Abteilung */
@@ -1852,11 +1896,33 @@ export const appRouter = router({
 
   // ─── Sponsor Templates ─────────────────────────────────────────────────
   sponsorTemplate: router({
-    /** Alle Sponsor-Vorlagen einer Organisation abrufen (für alle Mitglieder) */
+    /** Alle Sponsor-Vorlagen einer Organisation abrufen (gefiltert nach Rolle) */
     list: protectedProcedure
       .input(z.object({ orgId: z.number() }))
-      .query(async ({ input }) => {
-        return listSponsorTemplates(input.orgId);
+      .query(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        const allSponsors = await listSponsorTemplates(input.orgId);
+        // Owner sieht alle Sponsoren
+        if (membership.role === "owner") return allSponsors;
+        // Spartenleiter sieht: Hauptsponsoren + Spartensponsor seiner Abteilung + Mannschaftssponsoren seiner Abteilung
+        if (membership.role === "department_lead" && membership.departmentId) {
+          return allSponsors.filter(s =>
+            s.sponsorType === "hauptsponsor" ||
+            (s.sponsorType === "spartensponsor" && s.departmentId === membership.departmentId) ||
+            (s.sponsorType === "mannschaftssponsor" && s.departmentId === membership.departmentId)
+          );
+        }
+        // Trainer sieht: Hauptsponsoren + Spartensponsor seiner Abteilung + Mannschaftssponsoren seiner Mannschaft
+        if (membership.role === "trainer") {
+          const trainerTeams = await listTeamsByTrainer(ctx.user.id);
+          const trainerTeamIds = trainerTeams.map(t => t.id);
+          return allSponsors.filter(s =>
+            s.sponsorType === "hauptsponsor" ||
+            (s.sponsorType === "spartensponsor" && s.departmentId === membership.departmentId) ||
+            (s.sponsorType === "mannschaftssponsor" && s.teamId && trainerTeamIds.includes(s.teamId))
+          );
+        }
+        return allSponsors;
       }),
 
     /** Verpflichtende Sponsoren einer Organisation abrufen */
@@ -1904,11 +1970,30 @@ export const appRouter = router({
         billingCountry: z.string().max(100).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        // Prüfe ob User Owner der Org ist
-        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
-        if (!membership || membership.role !== "owner") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Sponsor-Vorlagen erstellen" });
+        // Rollenbasierte Berechtigung prüfen
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer") {
+          // Trainer darf nur Mannschaftssponsoren für seine eigene Mannschaft erstellen
+          if (input.sponsorType !== "mannschaftssponsor") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Trainer können nur Mannschaftssponsoren erstellen" });
+          }
+          if (!input.teamId) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Mannschaft muss angegeben werden" });
+          }
+          const trainerTeams = await listTeamsByTrainer(ctx.user.id);
+          if (!trainerTeams.some(t => t.id === input.teamId)) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Sie können nur Sponsoren für Ihre eigene Mannschaft erstellen" });
+          }
+        } else if (membership.role === "department_lead") {
+          // Spartenleiter darf Spartensponsor + Mannschaftssponsoren seiner Abteilung erstellen
+          if (input.sponsorType === "hauptsponsor") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Hauptsponsoren erstellen" });
+          }
+          if (input.sponsorType === "spartensponsor" && input.departmentId !== membership.departmentId) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Sie können nur Spartensponsor für Ihre eigene Abteilung erstellen" });
+          }
         }
+        // Owner darf alles
         // Upload Logo zu S3
         const buffer = Buffer.from(input.logoBase64, "base64");
         const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : ".jpg";

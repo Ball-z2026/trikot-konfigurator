@@ -14,7 +14,7 @@ import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
   ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
-  MapPin, Hash, Save
+  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -224,6 +224,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   const isOwner = org?.userRole === "owner";
   const isDeptLead = org?.userRole === "department_lead";
+  const isTrainer = org?.userRole === "trainer";
   const canManageLogos = isOwner || isDeptLead;
 
   // ─── Department CRUD ───
@@ -464,14 +465,19 @@ function OrgDetail({ orgId }: { orgId: number }) {
       </header>
 
       <div className="container py-6">
-        <Tabs defaultValue="stammdaten">
+        <Tabs defaultValue={isOwner ? "stammdaten" : isDeptLead ? "departments" : "members"}>
           <TabsList className="mb-6 flex-wrap">
-            <TabsTrigger value="stammdaten" className="gap-2"><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>
-            <TabsTrigger value="logos" className="gap-2"><Image className="w-4 h-4" />Logos</TabsTrigger>
-            <TabsTrigger value="sponsors" className="gap-2"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>
-            <TabsTrigger value="departments" className="gap-2"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>
+            {/* Owner sieht alle Tabs */}
+            {isOwner && <TabsTrigger value="stammdaten" className="gap-2"><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>}
+            {isOwner && <TabsTrigger value="logos" className="gap-2"><Image className="w-4 h-4" />Logos</TabsTrigger>}
+            {/* Owner + SL sehen Sponsoren */}
+            {(isOwner || isDeptLead) && <TabsTrigger value="sponsors" className="gap-2"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>}
+            {/* Owner + SL sehen Abteilungen */}
+            {(isOwner || isDeptLead) && <TabsTrigger value="departments" className="gap-2"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>}
+            {/* Alle sehen Mitglieder (gefiltert nach Rolle im Backend) */}
             <TabsTrigger value="members" className="gap-2"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
-            <TabsTrigger value="collections" className="gap-2"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>
+            {/* Owner + SL sehen Kollektionen */}
+            {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
           </TabsList>
 
           {/* ─── Stammdaten Tab ─── */}
@@ -1244,10 +1250,27 @@ function OrgCollectionsSection({ orgId, isOwner }: { orgId: number; isOwner: boo
 // ─── OrgStammdaten Komponente ──────────────────────────────────────────────────────────────────────
 function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwner: boolean }) {
   const utils = trpc.useUtils();
+  // Vereinsdaten
+  const [officialName, setOfficialName] = useState(org.officialName || "");
+  const [foundedYear, setFoundedYear] = useState<string>(org.foundedYear?.toString() || "");
+  // Ansprechpartner
+  const [contactFirstName, setContactFirstName] = useState(org.contactFirstName || "");
+  const [contactLastName, setContactLastName] = useState(org.contactLastName || "");
+  const [contactRole, setContactRole] = useState(org.contactRole || "");
+  // Kontaktdaten
+  const [phone, setPhone] = useState(org.phone || "");
+  const [email, setEmail] = useState(org.email || "");
+  const [website, setWebsite] = useState(org.website || "");
+  const [fax, setFax] = useState(org.fax || "");
+  // Adresse
   const [street, setStreet] = useState(org.street || "");
   const [zip, setZip] = useState(org.zip || "");
   const [city, setCity] = useState(org.city || "");
   const [country, setCountry] = useState(org.country || "Deutschland");
+  // Rechtliches
+  const [registerNumber, setRegisterNumber] = useState(org.registerNumber || "");
+  const [taxId, setTaxId] = useState(org.taxId || "");
+  // Hashtag
   const [hashtag, setHashtag] = useState(org.hashtag || "");
   const [saving, setSaving] = useState(false);
 
@@ -1262,21 +1285,108 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
 
   const handleSave = () => {
     setSaving(true);
-    // Hashtag automatisch mit # präfixen wenn nötig
     const cleanHashtag = hashtag.trim() ? (hashtag.trim().startsWith("#") ? hashtag.trim() : `#${hashtag.trim()}`) : undefined;
     updateOrg.mutate({
       id: orgId,
+      officialName: officialName || undefined,
+      foundedYear: foundedYear ? parseInt(foundedYear) : undefined,
+      contactFirstName: contactFirstName || undefined,
+      contactLastName: contactLastName || undefined,
+      contactRole: contactRole || undefined,
+      phone: phone || undefined,
+      email: email || undefined,
+      website: website || undefined,
+      fax: fax || undefined,
       street: street || undefined,
       zip: zip || undefined,
       city: city || undefined,
       country: country || undefined,
+      registerNumber: registerNumber || undefined,
+      taxId: taxId || undefined,
       hashtag: cleanHashtag,
     });
   };
 
   return (
     <div className="space-y-6">
-      {/* Adresse */}
+      {/* Vereinsdaten */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Landmark className="w-5 h-5" />Vereinsdaten</CardTitle>
+          <CardDescription>Offizielle Bezeichnung und Grunddaten des Vereins.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2 md:col-span-2">
+              <Label>Offizielle Vereinsbezeichnung</Label>
+              <Input value={officialName} onChange={(e) => setOfficialName(e.target.value)} placeholder="z.B. Turn- und Sportverein Musterstadt 1920 e.V." disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label>Kurzname</Label>
+              <Input value={org.name} disabled className="bg-muted" />
+              <p className="text-xs text-muted-foreground">Wird in der Vereins-Übersicht geändert.</p>
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Gründungsjahr</Label>
+              <Input type="number" value={foundedYear} onChange={(e) => setFoundedYear(e.target.value)} placeholder="z.B. 1920" min={1800} max={2100} disabled={!isOwner} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Ansprechpartner */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><User className="w-5 h-5" />Ansprechpartner</CardTitle>
+          <CardDescription>Hauptansprechpartner des Vereins für Rückfragen.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Vorname</Label>
+              <Input value={contactFirstName} onChange={(e) => setContactFirstName(e.target.value)} placeholder="Max" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label>Nachname</Label>
+              <Input value={contactLastName} onChange={(e) => setContactLastName(e.target.value)} placeholder="Mustermann" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label>Funktion/Rolle</Label>
+              <Input value={contactRole} onChange={(e) => setContactRole(e.target.value)} placeholder="z.B. 1. Vorsitzender" disabled={!isOwner} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Kontaktdaten */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Phone className="w-5 h-5" />Kontaktdaten</CardTitle>
+          <CardDescription>Erreichbarkeit des Vereins.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />Telefon</Label>
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="z.B. 0231 123456" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />Fax</Label>
+              <Input value={fax} onChange={(e) => setFax(e.target.value)} placeholder="z.B. 0231 123457" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />E-Mail</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@tsv-musterstadt.de" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />Website</Label>
+              <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="www.tsv-musterstadt.de" disabled={!isOwner} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Adresse & Koordinaten */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" />Adresse & Koordinaten</CardTitle>
@@ -1301,8 +1411,6 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
               <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Deutschland" disabled={!isOwner} />
             </div>
           </div>
-
-          {/* Koordinaten-Anzeige */}
           {(org.latitude && org.longitude) ? (
             <div className="mt-4 p-4 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
@@ -1329,6 +1437,26 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Rechtliches */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" />Rechtliches</CardTitle>
+          <CardDescription>Vereinsregister und steuerliche Angaben.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Vereinsregister-Nr.</Label>
+              <Input value={registerNumber} onChange={(e) => setRegisterNumber(e.target.value)} placeholder="z.B. VR 12345" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label>Steuernummer / USt-IdNr.</Label>
+              <Input value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="z.B. DE123456789" disabled={!isOwner} />
+            </div>
+          </div>
         </CardContent>
       </Card>
 

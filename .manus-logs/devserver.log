@@ -6519,3 +6519,40 @@
 [2026-05-03T08:14:59.448Z] 4:14:59 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-03T08:15:04.006Z] 4:15:04 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-03T08:15:15.960Z] 4:15:15 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T08:33:07.021Z] 4:33:07 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T08:33:08.677Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:33:09.106Z] Server running on http://localhost:3000/
+[2026-05-03T08:33:56.486Z] 4:33:56 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T08:33:58.131Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:33:58.529Z] Server running on http://localhost:3000/
+[2026-05-03T08:34:28.529Z] 4:34:28 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:35:16.089Z] 4:35:16 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:38:17.890Z] 4:38:17 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T08:38:19.581Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:38:19.975Z] Server running on http://localhost:3000/
+[2026-05-03T08:38:46.018Z] 4:38:46 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T08:38:47.593Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:38:47.988Z] Server running on http://localhost:3000/
+[2026-05-03T08:39:07.599Z] 4:39:07 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T08:39:09.148Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:39:09.541Z] Server running on http://localhost:3000/
+[2026-05-03T08:39:59.699Z] 4:39:59 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:40:22.778Z] 4:40:22 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:41:59.513Z] 4:41:59 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:42:13.680Z] 4:42:13 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:42:30.206Z] 4:42:30 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:42:34.689Z] 4:42:34 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:42:41.249Z] 4:42:41 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:42:45.884Z] 4:42:45 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:42:50.347Z] 4:42:50 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:43:52.286Z] 4:43:52 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:44:20.732Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.807Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.815Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.821Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.828Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.833Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.836Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.841Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.844Z] [Auth] Missing session cookie
+[2026-05-03T08:44:20.851Z] [Auth] Missing session cookie
