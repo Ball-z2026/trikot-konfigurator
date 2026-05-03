@@ -828,3 +828,50 @@ export const departmentSuppliers = mysqlTable("department_suppliers", {
 
 export type DepartmentSupplier = typeof departmentSuppliers.$inferSelect;
 export type InsertDepartmentSupplier = typeof departmentSuppliers.$inferInsert;
+
+
+/**
+ * Design Templates – Wiederverwendbare Vorlagen für den Konfigurator.
+ * 
+ * Benutzer können ein Bild hochladen, die Positionierung von Elementen festlegen
+ * und dies als Vorlage speichern. Andere Vereinsmitglieder können diese Vorlage
+ * dann als Ausgangspunkt für ihre Konfiguration verwenden.
+ * 
+ * Sichtbarkeit:
+ * - private: Nur der Ersteller sieht die Vorlage
+ * - team: Alle Mitglieder der Mannschaft sehen die Vorlage
+ * - department: Alle Mitglieder der Sparte sehen die Vorlage
+ * - org: Alle Vereinsmitglieder sehen die Vorlage
+ */
+export const designTemplates = mysqlTable("design_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Name der Vorlage */
+  name: varchar("name", { length: 255 }).notNull(),
+  /** Beschreibung (optional) */
+  description: text("description"),
+  /** Hochgeladenes Vorlagen-Bild (URL) */
+  imageUrl: text("imageUrl").notNull(),
+  /** Storage-Key für S3 */
+  storageKey: text("storageKey"),
+  /** Positionierungs-Daten als JSON (Zonen, Positionen, Größen) */
+  positionsConfig: json("positionsConfig"),
+  /** Zugehörige Organisation */
+  orgId: int("orgId").notNull(),
+  /** Zugehörige Sparte (optional) */
+  departmentId: int("departmentId"),
+  /** Zugehörige Mannschaft (optional) */
+  teamId: int("teamId"),
+  /** Sportart (Pflicht bei Trikots) */
+  sport: mysqlEnum("sport", ["fussball", "handball", "volleyball", "basketball"]),
+  /** Kategorie: Trikot oder Bekleidung */
+  category: mysqlEnum("category", ["Trikot", "Bekleidung"]).default("Trikot"),
+  /** Sichtbarkeit */
+  visibility: mysqlEnum("visibility", ["private", "team", "department", "org"]).default("team").notNull(),
+  /** Ersteller */
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DesignTemplate = typeof designTemplates.$inferSelect;
+export type InsertDesignTemplate = typeof designTemplates.$inferInsert;

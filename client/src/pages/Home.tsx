@@ -142,57 +142,57 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Modul 2: Produktdesigner */}
-            <Card
-              className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
-              onClick={() => setLocation("/designer/products")}
-            >
-              <CardHeader className="pb-4">
-                <div className="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
-                  <Palette className="w-7 h-7 text-purple-600" />
-                </div>
-                <CardTitle className="text-xl">Produktdesigner</CardTitle>
-                <CardDescription className="text-sm">
-                  Produkte anlegen, Zonen definieren und Kollektionen erstellen
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm text-muted-foreground space-y-1 mb-4">
-                  <li>• Produkte und Templates</li>
-                  <li>• Druckzonen definieren</li>
-                  <li>• Kollektionen zusammenstellen</li>
-                  <li>• Verbandsvorgaben</li>
-                </ul>
-                <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  Zum Designer
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Modul 3: Konfigurator */}
+            {/* Modul 2: Konfigurator (ersetzt alten Produktdesigner) */}
             <Card
               className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
               onClick={() => setLocation("/konfigurator")}
             >
               <CardHeader className="pb-4">
-                <div className="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center mb-4">
-                  <Shirt className="w-7 h-7 text-green-600" />
+                <div className="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
+                  <Palette className="w-7 h-7 text-purple-600" />
                 </div>
                 <CardTitle className="text-xl">Konfigurator</CardTitle>
                 <CardDescription className="text-sm">
-                  Textilien konfigurieren: Farben, Logos, Spielernamen
+                  Trikots und Bekleidung konfigurieren, Vorlagen nutzen und erstellen
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-sm text-muted-foreground space-y-1 mb-4">
-                  <li>• Farben auswählen</li>
-                  <li>• Logos platzieren</li>
-                  <li>• Spielernamen und Nummern</li>
-                  <li>• Mockup-Vorschau und Export</li>
+                  <li>• Sportart und Mannschaft wählen</li>
+                  <li>• Vorlagen und Templates</li>
+                  <li>• Farben, Logos, Nummern</li>
+                  <li>• Verbandsvorgaben automatisch</li>
                 </ul>
                 <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   Zum Konfigurator
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Modul 3: Vorlagen */}
+            <Card
+              className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50"
+              onClick={() => setLocation("/verwaltung/org")}
+            >
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center mb-4">
+                  <Users className="w-7 h-7 text-green-600" />
+                </div>
+                <CardTitle className="text-xl">Mitglieder</CardTitle>
+                <CardDescription className="text-sm">
+                  Vereinsmitglieder verwalten und Mannschaften zuordnen
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                  <li>• Mitglieder anlegen</li>
+                  <li>• Excel-Import</li>
+                  <li>• Sparten-Zuordnung</li>
+                  <li>• Mannschafts-Zuordnung</li>
+                </ul>
+                <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  Zur Mitgliederverwaltung
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </CardContent>

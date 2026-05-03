@@ -15,24 +15,19 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 /**
  * POST /api/upload
  * Accepts base64-encoded file data and uploads to S3 storage.
- * Requires admin authentication.
+ * Requires authentication (all logged-in users can upload).
  * Body: { fileName: string, data: string (base64), contentType: string }
  * Returns: { url: string, key: string }
  */
 export function registerUploadRoute(app: Express) {
   app.post("/api/upload", async (req: Request, res: Response) => {
     try {
-      // Auth check: only admins can upload product images
+      // Auth check: alle authentifizierten Benutzer dürfen Bilder hochladen
       let user;
       try {
         user = await sdk.authenticateRequest(req);
       } catch {
         res.status(401).json({ error: "Nicht authentifiziert" });
-        return;
-      }
-
-      if (user.role !== "admin") {
-        res.status(403).json({ error: "Nur Administratoren dürfen Bilder hochladen" });
         return;
       }
 

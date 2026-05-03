@@ -164,6 +164,11 @@ import {
   createDepartmentSupplier,
   updateDepartmentSupplier,
   deleteDepartmentSupplier,
+  createDesignTemplate,
+  listDesignTemplates,
+  getDesignTemplateById,
+  deleteDesignTemplate,
+  updateDesignTemplate,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -960,6 +965,92 @@ export const appRouter = router({
         if (!supplier) throw new TRPCError({ code: "NOT_FOUND" });
         await requireDepartmentLead(ctx.user.id, input.orgId, supplier.departmentId);
         await deleteDepartmentSupplier(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ─── Design Templates (Vorlagen-System) ───────────────────────────────────
+  designTemplate: router({
+    /** Vorlagen auflisten (sichtbar für den Benutzer) */
+    list: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        departmentId: z.number().optional(),
+        teamId: z.number().optional(),
+      }))
+      .query(async ({ input, ctx }) => {
+        return listDesignTemplates(input.orgId, ctx.user.id, input.departmentId, input.teamId);
+      }),
+
+    /** Einzelne Vorlage laden */
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return getDesignTemplateById(input.id);
+      }),
+
+    /** Neue Vorlage erstellen (alle Vereinsmitglieder dürfen) */
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(255),
+        description: z.string().optional(),
+        imageUrl: z.string(),
+        storageKey: z.string().optional(),
+        positionsConfig: z.any().optional(),
+        orgId: z.number(),
+        departmentId: z.number().optional(),
+        teamId: z.number().optional(),
+        sport: z.enum(["fussball", "handball", "volleyball", "basketball"]).optional(),
+        category: z.enum(["Trikot", "Bekleidung"]).optional(),
+        visibility: z.enum(["private", "team", "department", "org"]).default("team"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Sportart ist Pflicht bei Trikots
+        if (input.category === "Trikot" && !input.sport) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Bei Trikots muss eine Sportart angegeben werden.",
+          });
+        }
+        const id = await createDesignTemplate({
+          ...input,
+          createdByUserId: ctx.user.id,
+        });
+        return { id };
+      }),
+
+    /** Vorlage aktualisieren (nur Ersteller) */
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).max(255).optional(),
+        description: z.string().optional(),
+        positionsConfig: z.any().optional(),
+        visibility: z.enum(["private", "team", "department", "org"]).optional(),
+        sport: z.enum(["fussball", "handball", "volleyball", "basketball"]).optional(),
+        category: z.enum(["Trikot", "Bekleidung"]).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const tmpl = await getDesignTemplateById(input.id);
+        if (!tmpl) throw new TRPCError({ code: "NOT_FOUND" });
+        if (tmpl.createdByUserId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Ersteller kann die Vorlage bearbeiten." });
+        }
+        const { id, ...data } = input;
+        await updateDesignTemplate(id, data);
+        return { success: true };
+      }),
+
+    /** Vorlage löschen (nur Ersteller) */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const tmpl = await getDesignTemplateById(input.id);
+        if (!tmpl) throw new TRPCError({ code: "NOT_FOUND" });
+        if (tmpl.createdByUserId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Ersteller kann die Vorlage löschen." });
+        }
+        await deleteDesignTemplate(input.id);
         return { success: true };
       }),
   }),

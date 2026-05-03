@@ -8544,3 +8544,44 @@
 [2026-05-03T20:43:45.344Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-03T20:43:45.347Z] [Auth] Missing session cookie
 [2026-05-03T20:43:45.351Z] [Auth] Missing session cookie
+[2026-05-03T20:49:45.912Z] 4:49:45 PM [vite] (client) hmr update /src/pages/ProductSelect.tsx, /src/index.css
+[2026-05-03T20:50:21.775Z] 4:50:21 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T20:50:34.587Z] 4:50:34 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T20:51:24.173Z] 4:51:24 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T20:51:25.728Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:51:26.257Z] Server running on http://localhost:3000/
+[2026-05-03T20:51:48.502Z] 4:51:48 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T20:51:50.249Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:51:50.719Z] Server running on http://localhost:3000/
+[2026-05-03T20:52:03.454Z] 4:52:03 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T20:52:04.950Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:52:05.351Z] Server running on http://localhost:3000/
+[2026-05-03T20:53:52.400Z] 4:53:52 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T20:53:54.013Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:53:54.474Z] Server running on http://localhost:3000/
+[2026-05-03T20:54:12.367Z] 4:54:12 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T20:54:13.884Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:54:14.287Z] Server running on http://localhost:3000/
+[2026-05-03T20:54:29.239Z] 4:54:29 PM [tsx] change in ./server/uploadRoute.ts Restarting...
+[2026-05-03T20:54:30.758Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:54:31.180Z] Server running on http://localhost:3000/
+[2026-05-03T20:54:37.986Z] 4:54:37 PM [tsx] change in ./server/uploadRoute.ts Restarting...
+[2026-05-03T20:54:39.512Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:54:39.922Z] Server running on http://localhost:3000/
+[2026-05-03T20:55:04.348Z] 4:55:04 PM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-05-03T20:55:20.574Z] 4:55:20 PM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-05-03T20:55:37.108Z] 4:55:37 PM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-05-03T20:55:42.073Z] 4:55:42 PM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-05-03T20:56:18.834Z] [Auth] Missing session cookie
+[2026-05-03T20:56:18.841Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.228Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.276Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.282Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.290Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.296Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.307Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.315Z] [Auth] Missing session cookie
+[2026-05-03T20:56:19.348Z] [Auth] Missing session cookie
+[2026-05-03T20:56:26.409Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-03T20:56:26.413Z] [Auth] Missing session cookie
+[2026-05-03T20:56:26.419Z] [Auth] Missing session cookie

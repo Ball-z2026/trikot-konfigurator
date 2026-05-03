@@ -47,6 +47,8 @@ import {
   InsertOrgMember,
   departmentSuppliers,
   InsertDepartmentSupplier,
+  designTemplates,
+  InsertDesignTemplate,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1968,4 +1970,51 @@ export async function deleteDepartmentSupplier(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(departmentSuppliers).where(eq(departmentSuppliers.id, id));
+}
+
+
+// ─── Design Templates Helpers ─────────────────────────────────────────────────
+
+export async function createDesignTemplate(data: InsertDesignTemplate) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const [result] = await db.insert(designTemplates).values(data);
+  return result.insertId;
+}
+
+export async function listDesignTemplates(orgId: number, userId: number, departmentId?: number, teamId?: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Alle Vorlagen die der Benutzer sehen darf:
+  // 1. Eigene (private)
+  // 2. Team-Vorlagen (wenn teamId passt)
+  // 3. Department-Vorlagen (wenn departmentId passt)
+  // 4. Org-Vorlagen
+  const all = await db.select().from(designTemplates).where(eq(designTemplates.orgId, orgId));
+  return all.filter(t => {
+    if (t.createdByUserId === userId) return true; // Eigene immer sichtbar
+    if (t.visibility === "org") return true;
+    if (t.visibility === "department" && departmentId && t.departmentId === departmentId) return true;
+    if (t.visibility === "team" && teamId && t.teamId === teamId) return true;
+    return false;
+  });
+}
+
+export async function getDesignTemplateById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [result] = await db.select().from(designTemplates).where(eq(designTemplates.id, id));
+  return result || null;
+}
+
+export async function deleteDesignTemplate(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(designTemplates).where(eq(designTemplates.id, id));
+}
+
+export async function updateDesignTemplate(id: number, data: Partial<InsertDesignTemplate>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(designTemplates).set(data).where(eq(designTemplates.id, id));
 }

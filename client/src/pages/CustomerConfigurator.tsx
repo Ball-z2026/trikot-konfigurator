@@ -200,10 +200,14 @@ export default function CustomerConfigurator() {
   // ─── Auth ────────────────────────────────────────────────────────────
   const { user, isAuthenticated } = useAuth();
 
-  // Team-ID: Aus URL-Parameter oder Trainer-Mannschaftsauswahl
+  // Team-ID und Sportart: Aus URL-Parameter
   const teamIdFromUrl = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("teamId") ? parseInt(params.get("teamId")!) : null;
+  }, []);
+  const sportFromUrl = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("sport") as SportartCode | null;
   }, []);
   const [selectedTeamIdState, setSelectedTeamIdState] = useState<number | null>(null);
   // Lade alle Mannschaften des Trainers (wenn angemeldet)
@@ -378,17 +382,19 @@ export default function CustomerConfigurator() {
     { enabled: !!userOrgId }
   );
 
-  // Sportart ermitteln: Primär aus dem Produkt-Template, Fallback auf orgData.sport
+  // Sportart ermitteln: Primär aus dem Produkt-Template, dann URL-Parameter, dann orgData
   const effectiveSport: SportartCode | null = useMemo(() => {
     // 1. Sportart aus dem Produkt-Template (am genauesten, da templateId sportartspezifisch ist)
     if (productData?.templateId) {
       const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
       if (tmpl?.sport) return tmpl.sport as SportartCode;
     }
-    // 2. Fallback: Sportart der Organisation
+    // 2. Sportart aus URL-Parameter (von der Einstiegsseite übergeben)
+    if (sportFromUrl) return sportFromUrl;
+    // 3. Fallback: Sportart der Organisation
     if (orgData?.sport) return orgData.sport as SportartCode;
     return null;
-  }, [productData?.templateId, orgData?.sport]);
+  }, [productData?.templateId, sportFromUrl, orgData?.sport]);
 
   // Trikotnummern-Regeln basierend auf Sportart
   const numberRules: NumberRule | null = useMemo(() => {

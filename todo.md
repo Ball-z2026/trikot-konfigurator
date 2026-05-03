@@ -1496,3 +1496,14 @@
 ## Mitgliederverwaltung Verbesserungen
 - [x] Mitgliederverwaltung: Hinweis dass Feature optional ist
 - [x] Mitgliederverwaltung: CSV/Excel-Import implementiert (Upload + Vorschau + Bulk-Import)
+
+## Konfigurator-Redesign
+- [x] Neue Einstiegsseite: Sportart-Auswahl (Pflicht bei Trikots)
+- [x] Neue Einstiegsseite: Mannschafts-Auswahl
+- [x] Neue Einstiegsseite: Vorlage/Produkt-Auswahl (mit Ausrüster-Filter)
+- [x] Editor: Sportart-Pflicht-Validierung integrieren (URL-Parameter übernahme)
+- [x] Editor: Ausrüster-Regel (nur erlaubte Produkte wenn Ausrüster vorgeschrieben)
+- [x] Vorlagen-System: DB-Tabelle + CRUD-Router + Upload für alle
+- [x] Zugang für alle Vereinsmitglieder (Upload-Route geöffnet)
+- [x] Routing anpassen: /designer/products leitet auf neuen Konfigurator um
+- [x] Home-Seite: Alten Produktdesigner-Link durch Konfigurator ersetzt

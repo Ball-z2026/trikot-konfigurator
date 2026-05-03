@@ -52,8 +52,8 @@ function Router() {
       <Route path="/verwaltung/admin/users" component={AdminUsers} />
       <Route path="/verwaltung/sponsoren" component={SponsorManagement} />
 
-      {/* ─── Modul 2: Produktdesigner ─── */}
-      <Route path="/designer/products" component={AdminProducts} />
+      {/* ─── Modul 2: Konfigurator (ersetzt alten Produktdesigner) ─── */}
+      <Route path="/designer/products" component={ProductSelect} />
       <Route path="/designer/products/:id" component={AdminProductEditor} />
 
       {/* ─── Modul 3: Konfigurator ─── */}
@@ -76,7 +76,7 @@ function Router() {
       <Route path="/org/:id/dept/:deptId" component={DeptFonts} />
       <Route path="/trainer/:id/:deptId" component={TrainerDashboard} />
       <Route path="/trainer/:id/:deptId/team/:teamId" component={TrainerDashboard} />
-      <Route path="/admin/products" component={AdminProducts} />
+      <Route path="/admin/products" component={ProductSelect} />
       <Route path="/admin/products/:id" component={AdminProductEditor} />
       <Route path="/admin/users" component={AdminUsers} />
 
