@@ -59,6 +59,13 @@ export const organizations = mysqlTable("organizations", {
   /** Koordinaten (automatisch aus Adresse generiert) */
   latitude: double("latitude"),
   longitude: double("longitude"),
+  /** Vereinsfarben */
+  primaryColor: varchar("primaryColor", { length: 7 }),
+  secondaryColor: varchar("secondaryColor", { length: 7 }),
+  /** Vereinsname auf dem Trikot (kann vom offiziellen Namen abweichen) */
+  jerseyName: varchar("jerseyName", { length: 255 }),
+  /** Onboarding abgeschlossen (alle Pflichtfelder ausgefüllt + Logo hochgeladen) */
+  onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
   /** Ersteller (Hauptverantwortlicher) */
   ownerId: int("ownerId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

@@ -225,6 +225,13 @@
       "when": 1777797194622,
       "tag": "0031_complete_joshua_kane",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1777801732340,
+      "tag": "0032_boring_living_tribunal",
+      "breakpoints": true
     }
   ]
 }

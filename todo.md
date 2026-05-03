@@ -1278,3 +1278,36 @@
 - [x] Trainer: Mannschaftssponsoren hochladen (nur Typ "Mannschaftssponsor" für seine Mannschaft)
 - [x] Trainer: Spieler in seiner Mannschaft anlegen/bearbeiten (bereits implementiert - trainerId-Check)
 - [x] Trainer: Kann keine Vereins-Stammdaten oder andere Sparten sehen (Abteilungs-Filter + Stammdaten nur Owner)
+
+## Bug: Neue Benutzer sehen Daten von anderen Vereinen
+
+- [x] Neue Benutzer sehen fremde Vereinsdaten statt leerer Ansicht (war bereits korrekt via Memberships gefiltert)
+- [x] Daten müssen strikt nach Benutzer-Mitgliedschaft gefiltert werden (bereits implementiert)
+- [x] Ohne Mitgliedschaft soll alles leer sein (nur "Verein erstellen" angeboten)
+
+## Vereins-Onboarding und Vereinsfarben
+
+### DB-Schema
+- [x] organizations-Tabelle: primaryColor (Vereinsfarbe 1, Hex)
+- [x] organizations-Tabelle: secondaryColor (Vereinsfarbe 2, Hex)
+- [x] organizations-Tabelle: jerseyName (Vereinsname auf dem Trikot, kann vom offiziellen Namen abweichen)
+- [x] organizations-Tabelle: onboardingComplete (boolean, ob Pflichtdaten ausgefüllt)
+- [x] Migration ausgeführt
+
+### Backend
+- [x] org.create/update: Neue Felder (primaryColor, secondaryColor, jerseyName) speichern
+- [x] Onboarding-Status: Prüfung ob alle Pflichtfelder ausgefüllt + Logo hochgeladen
+
+### Frontend Onboarding
+- [x] Bei Erstanmeldung: Onboarding-Flow erzwingen (alle Pflichtfelder ausfüllen)
+- [x] Pflichtfelder: Name, Vereinsfarben (primär/sekundär), Logo-Upload, Vereinsname auf Trikot
+- [x] Solange Onboarding nicht abgeschlossen: Onboarding-Wizard wird angezeigt
+
+### Vereinsfarben-Anwendung
+- [x] Alle Vereinsseiten in Vereinsfarben einfärben (Header, Akzente)
+- [x] Vereinslogo automatisch auf allen relevanten Seiten anzeigen
+- [x] Vereinsname (jerseyName) automatisch platzieren
+
+### Datenisolation
+- [x] Neue Benutzer sehen keine fremden Vereinsdaten (via Memberships gefiltert)
+- [x] Ohne Mitgliedschaft: Nur "Verein erstellen" angeboten

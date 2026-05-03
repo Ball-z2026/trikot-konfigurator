@@ -6556,3 +6556,29 @@
 [2026-05-03T08:44:20.841Z] [Auth] Missing session cookie
 [2026-05-03T08:44:20.844Z] [Auth] Missing session cookie
 [2026-05-03T08:44:20.851Z] [Auth] Missing session cookie
+[2026-05-03T09:48:45.456Z] 5:48:45 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T09:48:47.045Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T09:48:47.431Z] Server running on http://localhost:3000/
+[2026-05-03T09:49:16.367Z] 5:49:16 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T09:49:17.931Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T09:49:18.346Z] Server running on http://localhost:3000/
+[2026-05-03T09:49:21.560Z] 5:49:21 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T09:49:23.232Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T09:49:23.614Z] Server running on http://localhost:3000/
+[2026-05-03T09:51:01.176Z] 5:51:01 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T09:51:15.836Z] 5:51:15 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T09:51:25.320Z] 5:51:25 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T09:51:51.455Z] 5:51:51 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T09:51:59.144Z] 5:51:59 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T09:52:13.713Z] 5:52:13 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T09:52:55.452Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.156Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.181Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.185Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.197Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.200Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.211Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.218Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.227Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.255Z] [Auth] Missing session cookie
+[2026-05-03T09:53:24.260Z] [Auth] Missing session cookie

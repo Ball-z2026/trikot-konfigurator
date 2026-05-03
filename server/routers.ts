@@ -644,6 +644,9 @@ export const appRouter = router({
         taxId: z.string().max(50).optional(),
         foundedYear: z.number().int().min(1800).max(2100).optional(),
         hashtag: z.string().max(100).optional(),
+        primaryColor: z.string().max(7).optional(),
+        secondaryColor: z.string().max(7).optional(),
+        jerseyName: z.string().max(255).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const orgId = await createOrganization({
@@ -667,6 +670,9 @@ export const appRouter = router({
           taxId: input.taxId || null,
           foundedYear: input.foundedYear || null,
           hashtag: input.hashtag || null,
+          primaryColor: input.primaryColor || null,
+          secondaryColor: input.secondaryColor || null,
+          jerseyName: input.jerseyName || null,
           ownerId: ctx.user.id,
         });
         // Ersteller als Owner-Mitglied hinzufügen
@@ -715,6 +721,10 @@ export const appRouter = router({
         taxId: z.string().max(50).optional(),
         foundedYear: z.number().int().min(1800).max(2100).optional(),
         hashtag: z.string().max(100).optional(),
+        primaryColor: z.string().max(7).optional(),
+        secondaryColor: z.string().max(7).optional(),
+        jerseyName: z.string().max(255).optional(),
+        onboardingComplete: z.boolean().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         await requireOrgOwner(ctx.user.id, input.id);

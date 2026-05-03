@@ -14,10 +14,11 @@ import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
   ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
-  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark
+  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
+import OrgOnboarding from "./OrgOnboarding";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
 
@@ -177,24 +178,36 @@ function OrgList() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {orgs.map((org) => (
+            {orgs.map((org: any) => (
               <Card
                 key={org.id}
-                className="group cursor-pointer hover:shadow-lg transition-all"
+                className="group cursor-pointer hover:shadow-lg transition-all overflow-hidden"
                 onClick={() => setLocation(`/org/${org.id}`)}
               >
+                {/* Vereinsfarben-Akzent oben */}
+                {org.primaryColor && (
+                  <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${org.primaryColor} 0%, ${org.secondaryColor || org.primaryColor} 100%)` }} />
+                )}
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="w-5 h-5 text-primary" />
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: org.primaryColor ? `${org.primaryColor}20` : undefined }}
+                      >
+                        <Building2 className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />
                       </div>
                       <div>
-                        <CardTitle className="text-base">{org.name}</CardTitle>
+                        <CardTitle className="text-base">{org.jerseyName || org.name}</CardTitle>
                         <CardDescription>
                           <Badge variant="secondary" className="text-xs mt-1">
                             {org.type === "verein" ? "Verein" : "Firma"}
                           </Badge>
+                          {!org.onboardingComplete && (
+                            <Badge variant="outline" className="text-xs mt-1 ml-1 text-amber-600 border-amber-300">
+                              Einrichtung ausstehend
+                            </Badge>
+                          )}
                         </CardDescription>
                       </div>
                     </div>
@@ -417,6 +430,19 @@ function OrgDetail({ orgId }: { orgId: number }) {
     );
   }
 
+  // Onboarding-Check: Wenn nicht abgeschlossen und User ist Owner, zeige Onboarding-Wizard
+  if (!org.onboardingComplete && org.userRole === "owner") {
+    return (
+      <OrgOnboarding
+        orgId={orgId}
+        orgName={org.name}
+        onComplete={() => {
+          utils.org.getById.invalidate({ id: orgId });
+        }}
+      />
+    );
+  }
+
   const roleLabel = (role: string) => {
     switch (role) {
       case "owner": return "Hauptverantwortlicher";
@@ -426,21 +452,34 @@ function OrgDetail({ orgId }: { orgId: number }) {
     }
   };
 
+  // Vereinslogo aus der Logo-Liste holen (Default-Logo)
+  const defaultLogo = logos?.find((l: any) => l.isDefault) || logos?.[0];
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-30">
+      {/* Header - eingefärbt in Vereinsfarben */}
+      <header
+        className="border-b sticky top-0 z-30"
+        style={{
+          backgroundColor: org.primaryColor || undefined,
+          borderColor: org.secondaryColor || undefined,
+        }}
+      >
         <div className="container flex items-center justify-between h-14 sm:h-16">
           <div className="flex items-center gap-3">
             <Link href="/org">
-              <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
+              <Button variant="ghost" size="icon" className={org.primaryColor ? "text-white hover:bg-white/20" : ""}><ArrowLeft className="w-5 h-5" /></Button>
             </Link>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-primary" />
-              </div>
+              {defaultLogo ? (
+                <img src={storageUrl(defaultLogo.imageUrl)} alt="Logo" className="w-10 h-10 rounded-lg object-contain bg-white/90 p-0.5" />
+              ) : (
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: org.secondaryColor || 'rgba(0,0,0,0.1)' }}>
+                  <Building2 className="w-5 h-5" style={{ color: org.primaryColor ? '#fff' : undefined }} />
+                </div>
+              )}
               <div>
-                <h1 className="text-lg font-bold">{org.name}</h1>
+                <h1 className="text-lg font-bold" style={{ color: org.primaryColor ? '#fff' : undefined }}>{org.jerseyName || org.name}</h1>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-xs">
                     {org.type === "verein" ? "Verein" : "Firma"}
@@ -457,7 +496,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
             </div>
           </div>
           <Link href="/">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className={org.primaryColor ? "border-white/40 text-white hover:bg-white/20" : ""}>
               <Shirt className="w-4 h-4 mr-2" />Konfigurator
             </Button>
           </Link>
@@ -1270,6 +1309,10 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
   // Rechtliches
   const [registerNumber, setRegisterNumber] = useState(org.registerNumber || "");
   const [taxId, setTaxId] = useState(org.taxId || "");
+  // Vereinsfarben & Trikotname
+  const [primaryColor, setPrimaryColor] = useState(org.primaryColor || "");
+  const [secondaryColor, setSecondaryColor] = useState(org.secondaryColor || "");
+  const [jerseyName, setJerseyName] = useState(org.jerseyName || "");
   // Hashtag
   const [hashtag, setHashtag] = useState(org.hashtag || "");
   const [saving, setSaving] = useState(false);
@@ -1304,11 +1347,50 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       registerNumber: registerNumber || undefined,
       taxId: taxId || undefined,
       hashtag: cleanHashtag,
+      primaryColor: primaryColor || undefined,
+      secondaryColor: secondaryColor || undefined,
+      jerseyName: jerseyName || undefined,
     });
   };
 
   return (
     <div className="space-y-6">
+      {/* Vereinsfarben & Trikotname */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Palette className="w-5 h-5" />Vereinsfarben & Trikotname</CardTitle>
+          <CardDescription>Primär- und Sekundärfarbe sowie der Name auf dem Trikot.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Primärfarbe</Label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={primaryColor || "#003399"} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" disabled={!isOwner} />
+                <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono w-28" maxLength={7} disabled={!isOwner} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Sekundärfarbe</Label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={secondaryColor || "#ffffff"} onChange={(e) => setSecondaryColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" disabled={!isOwner} />
+                <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono w-28" maxLength={7} disabled={!isOwner} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Vereinsname auf dem Trikot</Label>
+              <Input value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} placeholder="z.B. TSV Musterstadt" disabled={!isOwner} />
+            </div>
+          </div>
+          {primaryColor && secondaryColor && (
+            <div className="mt-2 p-4 rounded-lg" style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 60%, ${secondaryColor} 100%)` }}>
+              <p className="text-white font-bold drop-shadow-md">{jerseyName || org.name}</p>
+              <p className="text-white/70 text-xs">Vereinsfarben-Vorschau</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Vereinsdaten */}
       <Card>
         <CardHeader>
