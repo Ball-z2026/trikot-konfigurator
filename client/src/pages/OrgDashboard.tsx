@@ -16,7 +16,7 @@ import {
   ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
   MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette, RefreshCw
 } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import OrgOnboarding from "./OrgOnboarding";
 import { toast } from "sonner";
@@ -27,10 +27,21 @@ import { PdfPreview } from "@/components/PdfPreview";
 function OrgList() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
-  const { data: orgs, isLoading, refetch: refetchOrgs, isFetching } = trpc.org.list.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: orgs, isLoading, refetch: refetchOrgs, isFetching, dataUpdatedAt } = trpc.org.list.useQuery(undefined, { enabled: isAuthenticated });
   const utils = trpc.useUtils();
 
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const prevDataRef = useRef<string>("");
+
+  useEffect(() => {
+    if (orgs) {
+      const snapshot = JSON.stringify(orgs);
+      if (prevDataRef.current && prevDataRef.current !== snapshot) {
+        setLastUpdated(new Date());
+      }
+      prevDataRef.current = snapshot;
+    }
+  }, [orgs]);
   const [showCreate, setShowCreate] = useState(false);
   const [newOrgName, setNewOrgName] = useState("");
   const [newOrgType, setNewOrgType] = useState<"verein" | "firma">("verein");
@@ -95,7 +106,7 @@ function OrgList() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => { refetchOrgs().then(() => setLastUpdated(new Date())); }}
+              onClick={() => { refetchOrgs(); }}
               disabled={isFetching}
               title="Status aktualisieren"
             >
@@ -1347,6 +1358,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
 // ─── Kollektionen-Verwaltung (Owner) ──────────────────────────────────────────────────────
 function OrgCollectionsSection({ orgId, isOwner, org }: { orgId: number; isOwner: boolean; org: any }) {
+  const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const { data: collections, isLoading } = trpc.collection.list.useQuery(
     { orgId },
@@ -1359,13 +1371,15 @@ function OrgCollectionsSection({ orgId, isOwner, org }: { orgId: number; isOwner
   const [enforcement, setEnforcement] = useState<"optional" | "mandatory">("optional");
 
   const createColl = trpc.collection.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       utils.collection.list.invalidate({ orgId });
       setShowCreate(false);
       setCollName("");
       setCollDesc("");
       setEnforcement("optional");
-      toast.success("Vereinskollektion erstellt");
+      toast.success("Vereinskollektion erstellt – Produktdesigner wird geöffnet");
+      // Weiterleitung zum Produktdesigner
+      setLocation("/designer/products");
     },
     onError: (e) => toast.error(e.message),
   });

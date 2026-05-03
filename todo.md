@@ -1433,3 +1433,13 @@
 ## Neuladen-Funktion für Einrichtungsstatus
 - [x] Aktualisieren-Button in der Organisations-Liste implementiert (RefreshCw-Icon mit Lade-Animation)
 - [x] "Zuletzt aktualisiert"-Zeitstempel neben dem Aktualisieren-Button anzeigen
+- [ ] Zeitstempel nur aktualisieren wenn tatsächlich neue Daten vorhanden sind (Datenvergleich)
+
+## Bug: Sponsoren-Logo wird beim Anlegen nicht angezeigt
+- [x] Bug: Beim Sponsor anlegen beim Verein OHC wird das Sponsoren-Logo nicht angezeigt (storageUrl fehlte in SponsorManagement.tsx)
+
+## Bug: Admin-Bereich geht nicht ins Backend/Dashboard
+- [x] Bug: Admin-Bereich / Vereinskollektion leitet jetzt zum Produktdesigner weiter
+
+## Bug: Vereinskollektion öffnet nicht den Produktdesigner
+- [x] Bug: Nach Erstellen einer Vereinskollektion wird der Produktdesigner automatisch geöffnet

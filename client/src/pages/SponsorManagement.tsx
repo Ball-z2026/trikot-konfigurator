@@ -14,6 +14,7 @@ import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, 
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { PdfPreview } from "@/components/PdfPreview";
+import { storageUrl } from "@/lib/utils";
 
 type SponsorType = "hauptsponsor" | "spartensponsor" | "mannschaftssponsor";
 type Obligation = "alle_produkte" | "nur_trikot" | "nicht_verpflichtend";
@@ -699,9 +700,9 @@ export default function SponsorManagement() {
                     {/* Logo */}
                     <div className="w-14 h-14 bg-white border rounded flex items-center justify-center flex-shrink-0">
                       {(sponsor.logoMimeType === 'application/pdf' || sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                        <PdfPreview url={sponsor.logoUrl} width={48} height={48} />
+                        <PdfPreview url={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} width={48} height={48} />
                       ) : (
-                        <img src={sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
+                        <img src={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
                       )}
                     </div>
 
