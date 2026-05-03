@@ -30,6 +30,7 @@ function OrgList() {
   const { data: orgs, isLoading, refetch: refetchOrgs, isFetching } = trpc.org.list.useQuery(undefined, { enabled: isAuthenticated });
   const utils = trpc.useUtils();
 
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [showCreate, setShowCreate] = useState(false);
   const [newOrgName, setNewOrgName] = useState("");
   const [newOrgType, setNewOrgType] = useState<"verein" | "firma">("verein");
@@ -88,10 +89,13 @@ function OrgList() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground hidden sm:inline">
+              Zuletzt aktualisiert: {lastUpdated.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+            </span>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => refetchOrgs()}
+              onClick={() => { refetchOrgs().then(() => setLastUpdated(new Date())); }}
               disabled={isFetching}
               title="Status aktualisieren"
             >

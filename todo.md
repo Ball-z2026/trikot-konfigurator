@@ -1432,3 +1432,4 @@
 
 ## Neuladen-Funktion für Einrichtungsstatus
 - [x] Aktualisieren-Button in der Organisations-Liste implementiert (RefreshCw-Icon mit Lade-Animation)
+- [x] "Zuletzt aktualisiert"-Zeitstempel neben dem Aktualisieren-Button anzeigen
