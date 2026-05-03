@@ -1323,8 +1323,8 @@
 - [x] Org-Liste: Karten mit Logo und Vereinsfarben-Styling
 
 ## Design-Fix: Logo und Wasserzeichen
-- [ ] Vereinslogo groß/prominent im Header anzeigen (nicht nur als kleines Icon)
-- [ ] Wasserzeichen als durchgehender Hintergrund auf ALLEN Vereinsseiten (alle Tabs)
+- [x] Vereinslogo groß/prominent im Header anzeigen (80x80px mit weißem Container)
+- [x] Wasserzeichen als durchgehender Hintergrund auf ALLEN Vereinsseiten (fixed inset-0, repeat-pattern)
 
 ## Sponsor-Datenmatrix: Pflichtfelder für Rechnungsstellung
 - [x] DB: sponsorTemplates um Rechnungsfelder erweitern (Ansprechpartner, E-Mail, Adresse, Steuernr)
@@ -1334,3 +1334,8 @@
 - [x] Sponsor-Daten in der Verwaltung sichtbar anzeigen
 - [x] Sponsoring-Summe nur für Owner sichtbar (im Formular + Detailansicht)
 - [x] Sponsor kann Logo selbst hochladen (öffentliches Formular /sponsor-form/:token)
+
+## Bug: Sponsor-Probleme auf deployed Version
+- [x] Kategorie-Dropdown zeigt alte Optionen → Lokaler Code hat bereits korrekte Optionen, deployed Version war veraltet
+- [x] Pflichtfelder-Validierung wird nicht erzwungen → Button disabled + Hinweistext wenn Pflichtfelder fehlen
+- [x] Sponsor-Logo wird in der Übersicht nicht angezeigt → Code korrekt, deployed Version war veraltet

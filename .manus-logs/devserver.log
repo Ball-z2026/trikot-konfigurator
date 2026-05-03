@@ -7023,3 +7023,15 @@
 [2026-05-03T11:05:52.413Z] [Auth] Missing session cookie
 [2026-05-03T11:05:52.421Z] [Auth] Missing session cookie
 [2026-05-03T11:05:52.425Z] [Auth] Missing session cookie
+[2026-05-03T11:14:53.680Z] 7:14:53 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T11:18:09.245Z] 7:18:09 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T11:19:22.003Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.032Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.043Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.052Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.059Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.077Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.094Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.102Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.105Z] [Auth] Missing session cookie
+[2026-05-03T11:19:22.109Z] [Auth] Missing session cookie

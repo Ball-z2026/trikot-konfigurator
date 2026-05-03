@@ -662,12 +662,15 @@ export default function SponsorManagement() {
                 {/* ─── Erstellen-Button ─── */}
                 <Button
                   onClick={handleCreate}
-                  disabled={!form.name || !logoFile || createMutation.isPending}
+                  disabled={!form.name || !logoFile || !form.contactFirstName || !form.contactLastName || !form.contactEmail || !form.street || !form.zip || !form.city || createMutation.isPending}
                   className="w-full"
                   size="lg"
                 >
                   {createMutation.isPending ? "Wird angelegt..." : "Sponsor anlegen"}
                 </Button>
+                {(!form.name || !logoFile || !form.contactFirstName || !form.contactLastName || !form.contactEmail || !form.street || !form.zip || !form.city) && (
+                  <p className="text-xs text-red-500 text-center mt-1">Bitte alle Pflichtfelder (*) ausfüllen</p>
+                )}
               </div>
             </DialogContent>
             </Dialog>

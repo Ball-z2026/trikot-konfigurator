@@ -494,10 +494,10 @@ function OrgDetail({ orgId }: { orgId: number }) {
           style={{
             backgroundImage: `url(${storageUrl(defaultLogo.imageUrl)})`,
             backgroundRepeat: 'repeat',
-            backgroundSize: '280px 280px',
+            backgroundSize: '200px 200px',
             backgroundPosition: 'center center',
-            opacity: 0.04,
-            filter: 'grayscale(100%)',
+            opacity: 0.08,
+            filter: 'grayscale(50%)',
           }}
         />
       )}
