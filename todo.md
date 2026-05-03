@@ -1433,7 +1433,7 @@
 ## Neuladen-Funktion für Einrichtungsstatus
 - [x] Aktualisieren-Button in der Organisations-Liste implementiert (RefreshCw-Icon mit Lade-Animation)
 - [x] "Zuletzt aktualisiert"-Zeitstempel neben dem Aktualisieren-Button anzeigen
-- [ ] Zeitstempel nur aktualisieren wenn tatsächlich neue Daten vorhanden sind (Datenvergleich)
+- [x] Zeitstempel nur aktualisieren wenn tatsächlich neue Daten vorhanden sind (Datenvergleich)
 
 ## Bug: Sponsoren-Logo wird beim Anlegen nicht angezeigt
 - [x] Bug: Beim Sponsor anlegen beim Verein OHC wird das Sponsoren-Logo nicht angezeigt (storageUrl fehlte in SponsorManagement.tsx)
@@ -1465,3 +1465,8 @@
 - [x] Admin-Dashboard-Seite mit Übersicht aller Vereine, Benutzer und Produkte
 - [x] Backend: Statistik-Prozedur (Anzahl Vereine, Benutzer, Produkte, Sponsoren)
 - [x] Navigation: Admin-Dashboard von der Startseite erreichbar machen (/admin, Dashboard-Button im Header)
+
+## Admin-Account bereinigen
+- [x] Markus Assemacher (assemacher@icloud.com) als einzigen Admin setzen
+- [x] Alle anderen Benutzer gelöscht (41 Accounts)
+- [x] Alle Testdaten bereinigt (Organisationen, Sparten, Teams, Sponsoren, Produkte, Spieler etc.)
