@@ -8496,3 +8496,10 @@
 [2026-05-03T20:16:53.812Z] 4:16:53 PM [tsx] change in ./server/routers.ts Restarting...
 [2026-05-03T20:16:55.742Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-03T20:16:56.204Z] Server running on http://localhost:3000/
+[2026-05-03T20:19:20.444Z] Dev server process group stopped
+[2026-05-03T20:19:20.499Z] Dev server exited with code -15
+[2026-05-03T20:19:23.483Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-03T20:19:25.282Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T20:19:25.739Z] Server running on http://localhost:3000/
+[2026-05-03T20:20:03.688Z] 4:20:03 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
+[2026-05-03T20:20:25.281Z] 4:20:25 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx

@@ -11,6 +11,7 @@ interface PdfPreviewProps {
 /**
  * Rendert die erste Seite eines PDFs als Bild-Vorschau.
  * Fällt auf ein FileText-Icon zurück wenn das Rendering fehlschlägt.
+ * Kompatibel mit pdfjs-dist v5.x (canvas ist Pflicht-Parameter).
  */
 export function PdfPreview({ url, className = "", width = 200, height = 200 }: PdfPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -53,11 +54,9 @@ export function PdfPreview({ url, className = "", width = 200, height = 200 }: P
         canvas.width = scaledViewport.width;
         canvas.height = scaledViewport.height;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
+        // pdfjs-dist v5: canvas ist Pflicht-Parameter
         await page.render({
-          canvasContext: ctx,
+          canvas: canvas,
           viewport: scaledViewport,
         }).promise;
 

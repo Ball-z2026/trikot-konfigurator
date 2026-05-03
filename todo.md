@@ -1485,3 +1485,4 @@
 - [x] Frontend: Pflicht-Markierung für Sparte bei aktiven Mitgliedern entfernt
 - [x] Pflicht-Zuordnung zu Sparte für aktive Mitglieder wiederhergestellt (Backend + Frontend)
 - [x] Bug-Fix: foundedYear Validierung – leeres Feld sendet 0, Minimum-Check schlägt fehl bei Stammdaten-Eingabe
+- [x] Bug-Fix: PDF-Vorschau bei Sponsoren funktioniert nicht mehr (pdfjs-dist v5 API: canvas statt canvasContext)
