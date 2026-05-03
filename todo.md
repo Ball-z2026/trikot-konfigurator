@@ -1192,8 +1192,43 @@
 - [x] Im Konfigurator/Mockup-Galerie: "Zur Freigabe einreichen" Button pro Mockup (Send-Icon in Mockup-Karte)
 - [x] Freigabe-Status-Anzeige am Mockup (Pending/Approved/Rejected mit Badges) (MockupApprovalStatus-Subkomponente)
 - [x] Sponsor-Freigabe-Seite: Öffentliche Seite per Token wo Sponsor Mockup sehen und freigeben/ablehnen kann (SponsorReview.tsx)
-- [ ] Benachrichtigung an Sponsor-E-Mail wenn Freigabe angefragt wird
+- [x] Benachrichtigung an Owner wenn Freigabe angefragt wird (notifyOwner im submit-Endpunkt)
 
 ### Tests
 - [x] Vitest: Sponsor-Produkt-Zuweisungen CRUD (sponsorApproval.test.ts)
 - [x] Vitest: Mockup-Freigabe-Workflow (submit, getByToken, review) (sponsorApproval.test.ts - 9 Tests)
+## Koordinaten-System für Vereine
+
+### DB-Schema
+- [x] organizations-Tabelle: Adress-Felder (street, city, zip, country) hinzufügen
+- [x] organizations-Tabelle: Koordinaten-Felder (latitude, longitude) hinzufügen
+- [x] Migration ausführen (0028_skinny_the_hand.sql)
+
+### Backend
+- [x] Geocoding-Funktion: Adresse -> Koordinaten (Google Maps Proxy via makeRequest)
+- [x] tRPC: org.create/update – Adresse speichern und Koordinaten automatisch generieren
+- [x] tRPC: org.getById – Koordinaten sind Teil der Org-Daten
+
+### Frontend Verwaltung
+- [x] Vereins-Dashboard: Adress-Eingabefelder (Straße, PLZ, Ort, Land)
+- [x] Automatische Koordinaten-Generierung beim Speichern der Adresse
+- [x] Koordinaten-Anzeige (Breitengrad/Längengrad) als readonly-Felder
+
+### Produktdesigner
+- [x] Neuer Zone-Typ "Koordinaten" im Produktdesigner (purpose: coordinates)
+- [x] Koordinaten-Zone zeigt Breitengrad/Längengrad des Vereins auf dem Trikot (auto-fill aus orgData)
+
+### Bugs
+- [ ] BUG: Abteilungs-Tab zeigt nur Fußball statt alle 4 Abteilungen
+
+## Hashtag-Feld für Vereine
+
+### DB-Schema
+- [x] organizations-Tabelle: hashtag-Feld hinzufügen (z.B. #TSVMusterstadt)
+- [x] Migration ausführen (0029_cute_bill_hollister.sql)
+
+### Frontend Verwaltung
+- [x] Vereins-Dashboard: Hashtag-Eingabefeld mit Vorschau (#TSVMusterstadt)
+
+### Produktdesigner
+- [x] Neuer Zone-Typ "Hashtag" im Produktdesigner (zeigt Vereins-Hashtag auf dem Trikot, purpose: hashtag, auto-fill aus orgData)

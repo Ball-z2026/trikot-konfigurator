@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { generateImage } from "./_core/imageGeneration";
+import { makeRequest, type GeocodingResult } from "./_core/map";
 import { generatePhotoroomMockup, isPhotoroomConfigured } from "./photoroom";
 import { z } from "zod";
 import { TEXTIL_TEMPLATES } from "../shared/templates";
@@ -627,6 +628,11 @@ export const appRouter = router({
         type: z.enum(["verein", "firma"]).default("verein"),
         state: z.string().max(5).optional(),
         sport: z.string().max(50).optional(),
+        street: z.string().max(255).optional(),
+        zip: z.string().max(10).optional(),
+        city: z.string().max(255).optional(),
+        country: z.string().max(100).optional(),
+        hashtag: z.string().max(100).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const orgId = await createOrganization({
@@ -634,14 +640,32 @@ export const appRouter = router({
           type: input.type,
           state: input.state || null,
           sport: input.sport || null,
+          street: input.street || null,
+          zip: input.zip || null,
+          city: input.city || null,
+          country: input.country || "Deutschland",
+          hashtag: input.hashtag || null,
           ownerId: ctx.user.id,
         });
-        // Ersteller als Owner-Mitglied hinzuf\u00fcgen
+        // Ersteller als Owner-Mitglied hinzufügen
         await createMembership({
           userId: ctx.user.id,
           orgId,
           role: "owner",
         });
+        // Geocoding: Adresse -> Koordinaten
+        if (input.street && input.city) {
+          try {
+            const address = `${input.street}, ${input.zip || ""} ${input.city}, ${input.country || "Deutschland"}`;
+            const result = await makeRequest<GeocodingResult>("/maps/api/geocode/json", { address });
+            if (result.status === "OK" && result.results.length > 0) {
+              const loc = result.results[0].geometry.location;
+              await updateOrganization(orgId, { latitude: loc.lat, longitude: loc.lng });
+            }
+          } catch (e) {
+            console.warn("[Org] Geocoding fehlgeschlagen:", e);
+          }
+        }
         return { id: orgId };
       }),
 
@@ -653,11 +677,36 @@ export const appRouter = router({
         type: z.enum(["verein", "firma"]).optional(),
         state: z.string().max(5).optional(),
         sport: z.string().max(50).optional(),
+        street: z.string().max(255).optional(),
+        zip: z.string().max(10).optional(),
+        city: z.string().max(255).optional(),
+        country: z.string().max(100).optional(),
+        hashtag: z.string().max(100).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         await requireOrgOwner(ctx.user.id, input.id);
         const { id, ...data } = input;
         await updateOrganization(id, data);
+        // Geocoding: Adresse -> Koordinaten (wenn Adresse geändert)
+        if (input.street || input.city) {
+          try {
+            const org = await getOrganizationById(id);
+            const street = input.street || org?.street || "";
+            const zip = input.zip || org?.zip || "";
+            const city = input.city || org?.city || "";
+            const country = input.country || org?.country || "Deutschland";
+            if (street && city) {
+              const address = `${street}, ${zip} ${city}, ${country}`;
+              const result = await makeRequest<GeocodingResult>("/maps/api/geocode/json", { address });
+              if (result.status === "OK" && result.results.length > 0) {
+                const loc = result.results[0].geometry.location;
+                await updateOrganization(id, { latitude: loc.lat, longitude: loc.lng });
+              }
+            }
+          } catch (e) {
+            console.warn("[Org] Geocoding fehlgeschlagen:", e);
+          }
+        }
         return { success: true };
       }),
 
@@ -1997,6 +2046,16 @@ export const appRouter = router({
         });
         // Sponsor-E-Mail laden für Benachrichtigung
         const sponsor = await getSponsorTemplate(input.sponsorId);
+        const mockup = await getMockupById(input.mockupId);
+        // Owner benachrichtigen
+        try {
+          await notifyOwner({
+            title: `Mockup-Freigabe angefragt: ${sponsor?.name || "Sponsor"}`,
+            content: `Ein Mockup "${mockup?.title || "KI-Mockup"}" wurde zur Freigabe bei ${sponsor?.name || "Sponsor"} eingereicht.\n\nSponsor-Kontakt: ${sponsor?.contactEmail || "keine E-Mail hinterlegt"}\nFreigabe-Token: ${reviewToken}\n\nDer Freigabe-Link kann über das Trainer-Dashboard geteilt werden.`,
+          });
+        } catch (e) {
+          console.warn("[MockupApproval] Benachrichtigung fehlgeschlagen:", e);
+        }
         return { id: result.id, reviewToken, sponsorEmail: sponsor?.contactEmail || null };
       }),
 

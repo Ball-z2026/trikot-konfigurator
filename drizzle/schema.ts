@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, float, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, float, json, double } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -34,6 +34,16 @@ export const organizations = mysqlTable("organizations", {
   state: varchar("state", { length: 5 }),
   /** Hauptsportart der Organisation */
   sport: varchar("sport", { length: 50 }),
+  /** Adresse */
+  street: varchar("street", { length: 255 }),
+  zip: varchar("zip", { length: 10 }),
+  city: varchar("city", { length: 255 }),
+  country: varchar("country", { length: 100 }).default("Deutschland"),
+  /** Hashtag des Vereins (z.B. #TSVMusterstadt) */
+  hashtag: varchar("hashtag", { length: 100 }),
+  /** Koordinaten (automatisch aus Adresse generiert) */
+  latitude: double("latitude"),
+  longitude: double("longitude"),
   /** Ersteller (Hauptverantwortlicher) */
   ownerId: int("ownerId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -190,7 +200,7 @@ export const productZones = mysqlTable("product_zones", {
   /** Zone-Typ: image = nur Bild-Upload, text = nur Text, both = beides */
   type: mysqlEnum("type", ["image", "text", "both"]).default("image").notNull(),
   /** Zweck der Zone – bestimmt ob der Inhalt automatisch befüllt wird */
-  purpose: mysqlEnum("purpose", ["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "custom"]).default("logo").notNull(),
+  purpose: mysqlEnum("purpose", ["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "coordinates", "hashtag", "custom"]).default("logo").notNull(),
   /** Position X in % vom linken Rand */
   posX: float("posX").default(10).notNull(),
   /** Position Y in % vom oberen Rand */

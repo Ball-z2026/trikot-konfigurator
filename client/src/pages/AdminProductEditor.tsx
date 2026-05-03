@@ -41,6 +41,8 @@ import {
   Shield,
   Droplets,
   X,
+  MapPin,
+  AtSign,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { storageUrl } from "@/lib/utils";
@@ -63,7 +65,7 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "abbreviation" | "coordinates" | "hashtag" | "custom";
   posX: number;
   posY: number;
   width: number;
@@ -86,6 +88,9 @@ const PURPOSE_CONFIG: Record<string, { label: string; icon: typeof FileImage; de
   playerNumber: { label: "Nummer", icon: Hash, description: "Automatisch aus Mannschaftsliste", autoType: "text" as const },
   playerInitials: { label: "Kürzel", icon: Type, description: "Initialen des Spielers (z.B. MM für Max Müller)", autoType: "text" as const },
   clubName: { label: "Vereinsname", icon: Building2, description: "Fester Vereinsname für alle Trikots", autoType: "text" as const },
+  abbreviation: { label: "Kürzel", icon: Type, description: "Kürzel/Abkürzung (z.B. Vereinskürzel)", autoType: "text" as const },
+  coordinates: { label: "Koordinaten", icon: MapPin, description: "GPS-Koordinaten des Vereins (automatisch aus Adresse)", autoType: "text" as const },
+  hashtag: { label: "Hashtag", icon: AtSign, description: "Vereins-Hashtag (z.B. #TSVMusterstadt)", autoType: "text" as const },
   custom: { label: "Freitext", icon: PenTool, description: "Freie Texteingabe durch Kunde", autoType: "text" as const },
 };
 
@@ -587,6 +592,9 @@ export default function AdminProductEditor() {
                              zone.purpose === "playerNumber" ? "10" :
                              zone.purpose === "playerInitials" ? "MM" :
                              zone.purpose === "clubName" ? "FC Muster" :
+                             zone.purpose === "coordinates" ? "51.51°N 7.47°E" :
+                             zone.purpose === "hashtag" ? "#TSV" :
+                             zone.purpose === "abbreviation" ? "TSV" :
                              "Abc"}
                           </span>
                         ) : (
@@ -926,7 +934,7 @@ export default function AdminProductEditor() {
                                   <Select
                                     value={zone.purpose}
                                     onValueChange={(val: string) => {
-                                      const purpose = val as "custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName";
+                                      const purpose = val as "custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "abbreviation" | "coordinates" | "hashtag";
                                       const autoType = PURPOSE_CONFIG[val]?.autoType || zone.type;
                                       updateLocalZone(zone.id, { purpose, type: autoType });
                                       updateZoneMut.mutate({ id: zone.id, purpose, type: autoType });
@@ -1143,6 +1151,9 @@ export default function AdminProductEditor() {
                                              zone.purpose === "playerNumber" ? "10" :
                                              zone.purpose === "playerInitials" ? "MM" :
                                              zone.purpose === "clubName" ? "FC Muster" :
+                                             zone.purpose === "coordinates" ? "51.51°N 7.47°E" :
+                                             zone.purpose === "hashtag" ? "#TSV" :
+                                             zone.purpose === "abbreviation" ? "TSV" :
                                              "Vorschau"}
                                           </div>
                                         </div>

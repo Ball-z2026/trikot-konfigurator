@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -174,7 +174,6 @@ function SponsorPendingApprovals({ sponsorId }: { sponsorId: number }) {
   );
 }
 
-import React from "react";
 
 export default function SponsorManagement() {
   const { user } = useAuth();
@@ -206,7 +205,7 @@ export default function SponsorManagement() {
 
   // Lade Teams für Mannschaftssponsor-Auswahl (alle Teams des Trainers)
   const { data: teams } = trpc.team.mine.useQuery(
-    { orgId: org?.id ?? 0 },
+    undefined,
     { enabled: !!org && form.sponsorType === "mannschaftssponsor" }
   );
 

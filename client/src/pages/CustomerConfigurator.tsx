@@ -109,7 +109,7 @@ type ZoneData = {
   partId: number | null;
   side: "front" | "back";
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom" | "abbreviation";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom" | "abbreviation" | "coordinates" | "hashtag";
   posX: number;
   posY: number;
   width: number;
@@ -151,6 +151,8 @@ const PURPOSE_ICONS: Record<string, typeof FileImage> = {
   playerInitials: Type,
   abbreviation: Type,
   clubName: Shield,
+  coordinates: Hash,
+  hashtag: Hash,
   custom: PenTool,
 };
 
@@ -162,6 +164,8 @@ const PURPOSE_LABELS: Record<string, string> = {
   playerInitials: "Kürzel",
   abbreviation: "Kürzel (8x8cm)",
   clubName: "Vereinsname",
+  coordinates: "Koordinaten",
+  hashtag: "Hashtag",
   custom: "Freitext",
 };
 
@@ -759,7 +763,7 @@ export default function CustomerConfigurator() {
   const [addZoneDialogOpen, setAddZoneDialogOpen] = useState(false);
   const [newZoneLabel, setNewZoneLabel] = useState("");
   const [newZoneType, setNewZoneType] = useState<"text" | "image" | "both">("both");
-  const [newZonePurpose, setNewZonePurpose] = useState<"custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "abbreviation" | "clubName">("custom");
+  const [newZonePurpose, setNewZonePurpose] = useState<"custom" | "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "abbreviation" | "clubName" | "coordinates" | "hashtag">("custom");
 
   // Zweck-Optionen für das Auswahlfeld
   const zonePurposeOptions = [
@@ -771,6 +775,8 @@ export default function CustomerConfigurator() {
     { value: "playerInitials" as const, label: "Kürzel", defaultType: "text" as const },
     { value: "abbreviation" as const, label: "Kürzel (8x8cm)", defaultType: "image" as const },
     { value: "clubName" as const, label: "Vereinsname", defaultType: "text" as const },
+    { value: "coordinates" as const, label: "Koordinaten", defaultType: "text" as const },
+    { value: "hashtag" as const, label: "Hashtag", defaultType: "text" as const },
   ];
 
   const handleAddCustomZone = useCallback(() => {
@@ -784,6 +790,8 @@ export default function CustomerConfigurator() {
     else if (newZonePurpose === "playerNumber") { posX = 30; posY = 30; width = 40; height = 30; }
     else if (newZonePurpose === "abbreviation") { posX = 5; posY = 75; width = 15; height = 15; }
     else if (newZonePurpose === "logo") { posX = 25; posY = 40; width = 50; height = 20; }
+    else if (newZonePurpose === "coordinates") { posX = 10; posY = 85; width = 30; height = 8; }
+    else if (newZonePurpose === "hashtag") { posX = 60; posY = 85; width = 30; height = 8; }
     
     createZoneMut.mutate({
       productId,
@@ -1141,10 +1149,18 @@ export default function CustomerConfigurator() {
       if (purpose === "clubName" && clubName) {
         return { ...merged, text: clubName };
       }
+      if (purpose === "coordinates" && orgData?.latitude && orgData?.longitude) {
+        const lat = Number(orgData.latitude).toFixed(4);
+        const lng = Number(orgData.longitude).toFixed(4);
+        return { ...merged, text: `${lat}°N ${lng}°E` };
+      }
+      if (purpose === "hashtag" && orgData?.hashtag) {
+        return { ...merged, text: `#${orgData.hashtag.replace(/^#/, '')}` };
+      }
 
       return merged;
     },
-    [activePlayer, clubName, zoneContents, allZones]
+    [activePlayer, clubName, zoneContents, allZones, orgData?.latitude, orgData?.longitude, orgData?.hashtag]
   );
   // ─── Render Zone Text (volle Feldhöhe) ─────────────────────────────────────────────────────────
   const renderZoneText = (content: ZoneContent, _scale = 1) => (

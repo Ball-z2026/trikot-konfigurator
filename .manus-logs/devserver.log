@@ -6332,3 +6332,190 @@
 [2026-05-03T07:52:15.128Z] [Auth] Missing session cookie
 [2026-05-03T07:52:15.136Z] [Auth] Missing session cookie
 [2026-05-03T07:52:15.147Z] [Auth] Missing session cookie
+[2026-05-03T07:53:40.859Z] 3:53:40 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T07:53:42.447Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T07:53:42.814Z] Server running on http://localhost:3000/
+[2026-05-03T07:59:33.995Z] 3:59:33 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T07:59:35.635Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T07:59:36.043Z] Server running on http://localhost:3000/
+[2026-05-03T08:00:27.316Z] 4:00:27 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T08:00:28.818Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:00:29.194Z] Server running on http://localhost:3000/
+[2026-05-03T08:01:07.740Z] 4:01:07 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T08:01:09.430Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:01:09.866Z] Server running on http://localhost:3000/
+[2026-05-03T08:01:23.962Z] 4:01:23 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T08:01:25.598Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:01:25.984Z] Server running on http://localhost:3000/
+[2026-05-03T08:02:21.948Z] 4:02:21 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:02:30.336Z] 4:02:30 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:03:04.553Z] 4:03:04 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:03:04.690Z] 4:03:04 AM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx: Unexpected token, expected "," (1242:0)
+[2026-05-03T08:03:04.691Z] 
+[2026-05-03T08:03:04.692Z] 1240 |     </div>
+[2026-05-03T08:03:04.693Z] 1241 |   // ─── OrgStammdaten Komponente ──────────────────────────────────────────────────────────────────────
+[2026-05-03T08:03:04.693Z] > 1242 | function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwner: boolean }) {
+[2026-05-03T08:03:04.693Z] | ^
+[2026-05-03T08:03:04.694Z] 1243 |   const utils = trpc.useUtils();
+[2026-05-03T08:03:04.694Z] 1244 |   const [street, setStreet] = useState(org.street || "");
+[2026-05-03T08:03:04.694Z] 1245 |   const [zip, setZip] = useState(org.zip || "");
+[2026-05-03T08:03:04.695Z] Plugin: vite:react-babel
+[2026-05-03T08:03:04.696Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx:1242:0
+[2026-05-03T08:03:04.696Z] 1240 |      </div>
+[2026-05-03T08:03:04.697Z] 1241 |    // ─── OrgStammdaten Komponente ──────────────────────────────────────────────────────────────────────
+[2026-05-03T08:03:04.697Z] 1242 |  function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwner: boolean }) {
+[2026-05-03T08:03:04.698Z] |  ^
+[2026-05-03T08:03:04.698Z] 1243 |    const utils = trpc.useUtils();
+[2026-05-03T08:03:04.699Z] 1244 |    const [street, setStreet] = useState(org.street || "");
+[2026-05-03T08:03:04.699Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-03T08:03:04.700Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-03T08:03:04.701Z] at unexpected (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1544:16)
+[2026-05-03T08:03:04.701Z] at expect (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/util.ts:157:12)
+[2026-05-03T08:03:04.702Z] at parseParenAndDistinguishExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1801:14)
+[2026-05-03T08:03:04.703Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1170:21)
+[2026-05-03T08:03:04.703Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+[2026-05-03T08:03:04.704Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+[2026-05-03T08:03:04.705Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-03T08:03:04.706Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-03T08:03:04.706Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-03T08:03:04.707Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-03T08:03:04.707Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-03T08:03:04.707Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-03T08:03:04.708Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-03T08:03:04.709Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-03T08:03:04.710Z] at parseExpressionBase (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:226:23)
+[2026-05-03T08:03:04.710Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:39)
+[2026-05-03T08:03:04.711Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3192:16)
+[2026-05-03T08:03:04.711Z] at parseExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:17)
+[2026-05-03T08:03:04.711Z] at parseReturnStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1115:28)
+[2026-05-03T08:03:04.712Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:543:21)
+[2026-05-03T08:03:04.712Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-03T08:03:04.713Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-03T08:03:04.713Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-03T08:03:04.713Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-03T08:03:04.713Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-03T08:03:04.714Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-03T08:03:04.714Z] at parseFunctionBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2621:24)
+[2026-05-03T08:03:04.714Z] at parseFunctionBodyAndFinish (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2590:10)
+[2026-05-03T08:03:04.715Z] at parseFunctionBodyAndFinish (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2609:20)
+[2026-05-03T08:03:04.715Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1695:12)
+[2026-05-03T08:03:04.715Z] at withSmartMixTopicForbiddingContext (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3171:14)
+[2026-05-03T08:03:04.716Z] at parseFunction (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1693:10)
+[2026-05-03T08:03:04.716Z] at parseFunctionStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1080:17)
+[2026-05-03T08:03:04.716Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:525:21)
+[2026-05-03T08:03:04.717Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-03T08:03:04.717Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-03T08:03:04.718Z] at parseModuleItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:419:17)
+[2026-05-03T08:03:04.718Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1443:16)
+[2026-05-03T08:03:04.719Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-03T08:03:04.719Z] at parseProgram (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:229:10)
+[2026-05-03T08:03:04.719Z] at parseTopLevel (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:203:25)
+[2026-05-03T08:03:04.720Z] at parse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/index.ts:83:25)
+[2026-05-03T08:03:04.720Z] at parse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:4354:20)
+[2026-05-03T08:03:04.721Z] at parse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/index.ts:86:38)
+[2026-05-03T08:03:04.721Z] at parser (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/src/parser/index.ts:29:19)
+[2026-05-03T08:03:04.722Z] at parser.next (<anonymous>)
+[2026-05-03T08:03:04.722Z] at normalizeFile (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/src/transformation/normalize-file.ts:50:24)
+[2026-05-03T08:03:04.722Z] at normalizeFile.next (<anonymous>)
+[2026-05-03T08:03:04.844Z] 4:03:04 AM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx: Unexpected token, expected "," (1242:0)
+[2026-05-03T08:03:04.845Z] 
+[2026-05-03T08:03:04.845Z] 1240 |     </div>
+[2026-05-03T08:03:04.846Z] 1241 |   // ─── OrgStammdaten Komponente ──────────────────────────────────────────────────────────────────────
+[2026-05-03T08:03:04.846Z] > 1242 | function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwner: boolean }) {
+[2026-05-03T08:03:04.846Z] | ^
+[2026-05-03T08:03:04.846Z] 1243 |   const utils = trpc.useUtils();
+[2026-05-03T08:03:04.847Z] 1244 |   const [street, setStreet] = useState(org.street || "");
+[2026-05-03T08:03:04.847Z] 1245 |   const [zip, setZip] = useState(org.zip || "");
+[2026-05-03T08:03:04.847Z] Plugin: vite:react-babel
+[2026-05-03T08:03:04.848Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx:1242:0
+[2026-05-03T08:03:04.848Z] 1240 |      </div>
+[2026-05-03T08:03:04.848Z] 1241 |    // ─── OrgStammdaten Komponente ──────────────────────────────────────────────────────────────────────
+[2026-05-03T08:03:04.849Z] 1242 |  function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwner: boolean }) {
+[2026-05-03T08:03:04.851Z] |  ^
+[2026-05-03T08:03:04.852Z] 1243 |    const utils = trpc.useUtils();
+[2026-05-03T08:03:04.852Z] 1244 |    const [street, setStreet] = useState(org.street || "");
+[2026-05-03T08:03:14.680Z] 4:03:14 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:03:14.756Z] 4:03:14 AM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx: 'return' outside of function. (1376:14)
+[2026-05-03T08:03:14.757Z] 
+[2026-05-03T08:03:14.757Z] 1374 |   const orgId = params.id ? parseInt(params.id) : null;
+[2026-05-03T08:03:14.757Z] 1375 |
+[2026-05-03T08:03:14.758Z] > 1376 |   if (!orgId) return <OrgList />;
+[2026-05-03T08:03:14.758Z] |               ^
+[2026-05-03T08:03:14.758Z] 1377 |   return <OrgDetail orgId={orgId} />;
+[2026-05-03T08:03:14.758Z] 1378 | }
+[2026-05-03T08:03:14.759Z] 1379 |
+[2026-05-03T08:03:14.759Z] Plugin: vite:react-babel
+[2026-05-03T08:03:14.759Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx:1376:14
+[2026-05-03T08:03:14.760Z] 1374 |    const orgId = params.id ? parseInt(params.id) : null;
+[2026-05-03T08:03:14.760Z] 1375 |
+[2026-05-03T08:03:14.760Z] 1376 |    if (!orgId) return <OrgList />;
+[2026-05-03T08:03:14.761Z] |                ^
+[2026-05-03T08:03:14.761Z] 1377 |    return <OrgDetail orgId={orgId} />;
+[2026-05-03T08:03:14.761Z] 1378 |  }
+[2026-05-03T08:03:14.761Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-03T08:03:14.762Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-03T08:03:14.762Z] at parseReturnStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1103:12)
+[2026-05-03T08:03:14.763Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:543:21)
+[2026-05-03T08:03:14.763Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-03T08:03:14.763Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-03T08:03:14.764Z] at parseStatementOrSloppyAnnexBFunctionDeclaration (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:451:17)
+[2026-05-03T08:03:14.764Z] at parseIfStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1094:28)
+[2026-05-03T08:03:14.764Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:541:21)
+[2026-05-03T08:03:14.765Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-03T08:03:14.765Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-03T08:03:14.765Z] at parseModuleItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:419:17)
+[2026-05-03T08:03:14.765Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1443:16)
+[2026-05-03T08:03:14.766Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-03T08:03:14.766Z] at parseProgram (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:229:10)
+[2026-05-03T08:03:14.767Z] at parseTopLevel (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:203:25)
+[2026-05-03T08:03:14.767Z] at parse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/index.ts:83:25)
+[2026-05-03T08:03:14.767Z] at parse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:4354:20)
+[2026-05-03T08:03:14.768Z] at parse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/index.ts:86:38)
+[2026-05-03T08:03:14.769Z] at parser (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/src/parser/index.ts:29:19)
+[2026-05-03T08:03:14.769Z] at parser.next (<anonymous>)
+[2026-05-03T08:03:14.770Z] at normalizeFile (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/src/transformation/normalize-file.ts:50:24)
+[2026-05-03T08:03:14.771Z] at normalizeFile.next (<anonymous>)
+[2026-05-03T08:03:14.771Z] at run (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/src/transformation/index.ts:41:36)
+[2026-05-03T08:03:14.773Z] at run.next (<anonymous>)
+[2026-05-03T08:03:14.773Z] at transform (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/src/transform.ts:29:20)
+[2026-05-03T08:03:14.773Z] at transform.next (<anonymous>)
+[2026-05-03T08:03:14.774Z] at step (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:261:32)
+[2026-05-03T08:03:14.774Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:273:13
+[2026-05-03T08:03:14.774Z] at async.call.result.err.err (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:223:11)
+[2026-05-03T08:03:14.774Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:189:28
+[2026-05-03T08:03:14.775Z] at <anonymous> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/src/gensync-utils/async.ts:90:7)
+[2026-05-03T08:03:14.775Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:113:33
+[2026-05-03T08:03:14.775Z] at step (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:287:14)
+[2026-05-03T08:03:14.776Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:273:13
+[2026-05-03T08:03:14.776Z] at async.call.result.err.err (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:223:11)
+[2026-05-03T08:03:14.844Z] 4:03:14 AM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx: 'return' outside of function. (1376:14)
+[2026-05-03T08:03:14.845Z] 
+[2026-05-03T08:03:14.846Z] 1374 |   const orgId = params.id ? parseInt(params.id) : null;
+[2026-05-03T08:03:14.846Z] 1375 |
+[2026-05-03T08:03:14.846Z] > 1376 |   if (!orgId) return <OrgList />;
+[2026-05-03T08:03:14.847Z] |               ^
+[2026-05-03T08:03:14.847Z] 1377 |   return <OrgDetail orgId={orgId} />;
+[2026-05-03T08:03:14.847Z] 1378 | }
+[2026-05-03T08:03:14.848Z] 1379 |
+[2026-05-03T08:03:14.848Z] Plugin: vite:react-babel
+[2026-05-03T08:03:14.848Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/OrgDashboard.tsx:1376:14
+[2026-05-03T08:03:14.849Z] 1374 |    const orgId = params.id ? parseInt(params.id) : null;
+[2026-05-03T08:03:14.849Z] 1375 |
+[2026-05-03T08:03:14.849Z] 1376 |    if (!orgId) return <OrgList />;
+[2026-05-03T08:03:14.849Z] |                ^
+[2026-05-03T08:03:14.850Z] 1377 |    return <OrgDetail orgId={orgId} />;
+[2026-05-03T08:03:14.850Z] 1378 |  }
+[2026-05-03T08:03:53.635Z] 4:03:53 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T08:09:42.477Z] 4:09:42 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:09:53.140Z] 4:09:53 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T08:12:54.334Z] 4:12:54 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T08:12:56.090Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T08:12:56.514Z] Server running on http://localhost:3000/
+[2026-05-03T08:13:36.403Z] 4:13:36 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-03T08:13:53.272Z] 4:13:53 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-03T08:14:03.682Z] 4:14:03 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-03T08:14:13.913Z] 4:14:13 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-03T08:14:34.223Z] 4:14:34 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T08:14:59.448Z] 4:14:59 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T08:15:04.006Z] 4:15:04 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T08:15:15.960Z] 4:15:15 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css

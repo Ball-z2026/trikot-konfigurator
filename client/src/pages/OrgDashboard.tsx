@@ -13,7 +13,8 @@ import { trpc } from "@/lib/trpc";
 import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
-  ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2
+  ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
+  MapPin, Hash, Save
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -463,14 +464,20 @@ function OrgDetail({ orgId }: { orgId: number }) {
       </header>
 
       <div className="container py-6">
-        <Tabs defaultValue="logos">
-          <TabsList className="mb-6">
+        <Tabs defaultValue="stammdaten">
+          <TabsList className="mb-6 flex-wrap">
+            <TabsTrigger value="stammdaten" className="gap-2"><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>
             <TabsTrigger value="logos" className="gap-2"><Image className="w-4 h-4" />Logos</TabsTrigger>
             <TabsTrigger value="sponsors" className="gap-2"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>
             <TabsTrigger value="departments" className="gap-2"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>
             <TabsTrigger value="members" className="gap-2"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
             <TabsTrigger value="collections" className="gap-2"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>
           </TabsList>
+
+          {/* ─── Stammdaten Tab ─── */}
+          <TabsContent value="stammdaten">
+            <OrgStammdaten org={org} orgId={orgId} isOwner={isOwner} />
+          </TabsContent>
 
           {/* ─── Logos Tab ─── */}
           <TabsContent value="logos">
@@ -1234,10 +1241,139 @@ function OrgCollectionsSection({ orgId, isOwner }: { orgId: number; isOwner: boo
   );
 }
 
-// ─── Main Export ────────────────────────────────────────────────────────────────────
-export default function OrgDashboard() {const params = useParams<{ id?: string }>();
-  const orgId = params.id ? parseInt(params.id) : null;
+// ─── OrgStammdaten Komponente ──────────────────────────────────────────────────────────────────────
+function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwner: boolean }) {
+  const utils = trpc.useUtils();
+  const [street, setStreet] = useState(org.street || "");
+  const [zip, setZip] = useState(org.zip || "");
+  const [city, setCity] = useState(org.city || "");
+  const [country, setCountry] = useState(org.country || "Deutschland");
+  const [hashtag, setHashtag] = useState(org.hashtag || "");
+  const [saving, setSaving] = useState(false);
 
+  const updateOrg = trpc.org.update.useMutation({
+    onSuccess: () => {
+      utils.org.getById.invalidate({ id: orgId });
+      toast.success("Stammdaten gespeichert");
+      setSaving(false);
+    },
+    onError: (e) => { toast.error(e.message); setSaving(false); },
+  });
+
+  const handleSave = () => {
+    setSaving(true);
+    // Hashtag automatisch mit # präfixen wenn nötig
+    const cleanHashtag = hashtag.trim() ? (hashtag.trim().startsWith("#") ? hashtag.trim() : `#${hashtag.trim()}`) : undefined;
+    updateOrg.mutate({
+      id: orgId,
+      street: street || undefined,
+      zip: zip || undefined,
+      city: city || undefined,
+      country: country || undefined,
+      hashtag: cleanHashtag,
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Adresse */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" />Adresse & Koordinaten</CardTitle>
+          <CardDescription>Die Koordinaten werden automatisch aus der Adresse berechnet und können als Zone auf Produkten verwendet werden.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2 md:col-span-2">
+              <Label>Straße & Hausnummer</Label>
+              <Input value={street} onChange={(e) => setStreet(e.target.value)} placeholder="z.B. Sportplatzstraße 1" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label>PLZ</Label>
+              <Input value={zip} onChange={(e) => setZip(e.target.value)} placeholder="z.B. 44135" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label>Ort</Label>
+              <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="z.B. Dortmund" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label>Land</Label>
+              <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Deutschland" disabled={!isOwner} />
+            </div>
+          </div>
+
+          {/* Koordinaten-Anzeige */}
+          {(org.latitude && org.longitude) ? (
+            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Koordinaten (automatisch ermittelt)</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Breitengrad:</span>{" "}
+                  <span className="font-mono">{org.latitude.toFixed(6)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Längengrad:</span>{" "}
+                  <span className="font-mono">{org.longitude.toFixed(6)}</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Diese Koordinaten stehen als Zone-Typ im Produktdesigner zur Verfügung.</p>
+            </div>
+          ) : (
+            <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                <MapPin className="w-4 h-4 inline mr-1" />
+                Geben Sie eine Adresse ein und speichern Sie, um die Koordinaten automatisch zu berechnen.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Hashtag */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Hash className="w-5 h-5" />Vereins-Hashtag</CardTitle>
+          <CardDescription>Der Hashtag kann als Zone auf Produkten platziert werden (z.B. auf der Rückseite eines Trikots).</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl text-muted-foreground">#</span>
+            <Input
+              value={hashtag.replace(/^#/, "")}
+              onChange={(e) => setHashtag(e.target.value.replace(/^#/, ""))}
+              placeholder="z.B. TSVMusterstadt"
+              className="max-w-sm font-mono text-lg"
+              disabled={!isOwner}
+            />
+          </div>
+          {hashtag && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Vorschau: <span className="font-mono font-bold text-foreground">#{hashtag.replace(/^#/, "")}</span>
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Speichern-Button */}
+      {isOwner && (
+        <div className="flex justify-end">
+          <Button onClick={handleSave} disabled={saving} size="lg">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+            Stammdaten speichern
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Export ────────────────────────────────────────────────────────────────────────────────
+export default function OrgDashboard() {
+  const params = useParams<{ id?: string }>();
+  const orgId = params.id ? parseInt(params.id) : null;
   if (!orgId) return <OrgList />;
   return <OrgDetail orgId={orgId} />;
 }
