@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, FileText, ChevronDown, ChevronUp, Package, ShoppingBag, ClipboardCheck } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 
@@ -80,6 +80,102 @@ const EMPTY_FORM: SponsorForm = {
   billingCountry: "Deutschland",
 };
 
+/** Subkomponente: Produkt-Zuweisungen pro Sponsor */
+function SponsorProductAssignment({ sponsorId, orgId, publishedProducts, syncProductsMutation }: {
+  sponsorId: number;
+  orgId: number;
+  publishedProducts: any[];
+  syncProductsMutation: any;
+}) {
+  const { data: assignedIds, refetch } = trpc.sponsorTemplate.assignedProducts.useQuery({ sponsorId });
+  const [localIds, setLocalIds] = useState<number[]>([]);
+  const [dirty, setDirty] = useState(false);
+
+  // Synchronisiere lokale IDs mit Server-Daten
+  React.useEffect(() => {
+    if (assignedIds) {
+      setLocalIds(assignedIds);
+      setDirty(false);
+    }
+  }, [assignedIds]);
+
+  const toggleProduct = (productId: number) => {
+    setLocalIds(prev => {
+      const next = prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId];
+      setDirty(true);
+      return next;
+    });
+  };
+
+  const handleSave = async () => {
+    await syncProductsMutation.mutateAsync({ sponsorId, orgId, productIds: localIds });
+    refetch();
+    setDirty(false);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <Package className="w-3 h-3 text-muted-foreground" />
+        <span className="font-medium text-xs">Freizugebende Produkte</span>
+        {assignedIds && assignedIds.length > 0 && (
+          <Badge variant="secondary" className="text-[9px] ml-auto">{assignedIds.length} zugewiesen</Badge>
+        )}
+      </div>
+      {publishedProducts.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic ml-5">Keine veröffentlichten Produkte vorhanden</p>
+      ) : (
+        <div className="space-y-1.5 ml-5">
+          {publishedProducts.map((product: any) => (
+            <label key={product.id} className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox
+                checked={localIds.includes(product.id)}
+                onCheckedChange={() => toggleProduct(product.id)}
+              />
+              <span>{product.name}</span>
+              {product.category && <Badge variant="outline" className="text-[9px] px-1 py-0">{product.category}</Badge>}
+            </label>
+          ))}
+          {dirty && (
+            <Button size="sm" className="mt-2 h-7 text-xs" onClick={handleSave} disabled={syncProductsMutation.isPending}>
+              {syncProductsMutation.isPending ? "Speichern..." : "Zuweisungen speichern"}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Subkomponente: Offene Freigaben pro Sponsor */
+function SponsorPendingApprovals({ sponsorId }: { sponsorId: number }) {
+  const { data: pending } = trpc.mockupApproval.pendingBySponsor.useQuery({ sponsorId });
+
+  if (!pending || pending.length === 0) return null;
+
+  return (
+    <div className="mt-3">
+      <Separator className="mb-3" />
+      <div className="flex items-center gap-2 mb-2">
+        <ClipboardCheck className="w-3 h-3 text-amber-600" />
+        <span className="font-medium text-xs">Offene Freigaben</span>
+        <Badge variant="outline" className="text-[9px] ml-auto border-amber-300 text-amber-700">{pending.length} offen</Badge>
+      </div>
+      <div className="space-y-1 ml-5">
+        {pending.map((approval: any) => (
+          <div key={approval.id} className="flex items-center gap-2 text-xs">
+            <Badge className="bg-amber-100 text-amber-800 text-[9px]">Ausstehend</Badge>
+            <span>Mockup #{approval.mockupId}</span>
+            <span className="text-muted-foreground">({new Date(approval.createdAt).toLocaleDateString("de-DE")})</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+import React from "react";
+
 export default function SponsorManagement() {
   const { user } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -98,17 +194,27 @@ export default function SponsorManagement() {
     { enabled: !!org }
   );
 
+  // Lade alle veröffentlichten Produkte für Produkt-Zuweisung
+  const { data: allProducts } = trpc.product.list.useQuery();
+  const publishedProducts = allProducts?.filter((p: any) => p.published) ?? [];
+
   // Lade Abteilungen für Spartensponsor-Auswahl
-  const { data: departments } = trpc.department.list.useQuery(
+  const { data: departments } = trpc.department.listByOrg.useQuery(
     { orgId: org?.id ?? 0 },
     { enabled: !!org }
   );
 
-  // Lade Teams für Mannschaftssponsor-Auswahl
-  const { data: teams } = trpc.team.list.useQuery(
+  // Lade Teams für Mannschaftssponsor-Auswahl (alle Teams des Trainers)
+  const { data: teams } = trpc.team.mine.useQuery(
     { orgId: org?.id ?? 0 },
     { enabled: !!org && form.sponsorType === "mannschaftssponsor" }
   );
+
+  // Produkt-Zuweisungs-Mutation
+  const syncProductsMutation = trpc.sponsorTemplate.syncProducts.useMutation({
+    onSuccess: () => toast.success("Produkt-Zuweisungen gespeichert"),
+    onError: (err) => toast.error(err.message),
+  });
 
   const createMutation = trpc.sponsorTemplate.create.useMutation({
     onSuccess: () => {
@@ -595,6 +701,18 @@ export default function SponsorManagement() {
                       {!((sponsor as any).contactFirstName || (sponsor as any).contactEmail || (sponsor as any).street) && (
                         <p className="text-muted-foreground italic">Keine Kontaktdaten hinterlegt</p>
                       )}
+
+                      {/* ─── Produkt-Zuweisungen ─── */}
+                      <Separator className="my-3" />
+                      <SponsorProductAssignment
+                        sponsorId={sponsor.id}
+                        orgId={org.id}
+                        publishedProducts={publishedProducts}
+                        syncProductsMutation={syncProductsMutation}
+                      />
+
+                      {/* ─── Offene Freigaben ─── */}
+                      <SponsorPendingApprovals sponsorId={sponsor.id} />
                     </div>
                   )}
                 </CardContent>

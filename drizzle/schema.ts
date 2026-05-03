@@ -603,3 +603,58 @@ export const collectionAssignments = mysqlTable("collection_assignments", {
 
 export type CollectionAssignment = typeof collectionAssignments.$inferSelect;
 export type InsertCollectionAssignment = typeof collectionAssignments.$inferInsert;
+
+/**
+ * Sponsor-Produkt-Zuweisungen – Welche Produkte einem Sponsor zur Freigabe zugewiesen sind.
+ * Der Owner weist Sponsoren bestimmte Produkte zu, deren Mockups dann vom Sponsor
+ * freigegeben werden müssen bevor sie verwendet werden dürfen.
+ */
+export const sponsorProductAssignments = mysqlTable("sponsor_product_assignments", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Referenz auf den Sponsor */
+  sponsorId: int("sponsorId").notNull(),
+  /** Referenz auf das Produkt */
+  productId: int("productId").notNull(),
+  /** Wer hat die Zuweisung erstellt */
+  assignedByUserId: int("assignedByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SponsorProductAssignment = typeof sponsorProductAssignments.$inferSelect;
+export type InsertSponsorProductAssignment = typeof sponsorProductAssignments.$inferInsert;
+
+/**
+ * Mockup-Freigaben – Tracking ob ein generiertes Mockup vom jeweiligen Sponsor freigegeben wurde.
+ * 
+ * Workflow:
+ * 1. Trainer generiert Mockup und reicht es zur Freigabe ein → Status: pending
+ * 2. Sponsor erhält Link per E-Mail mit Review-Token
+ * 3. Sponsor sieht Mockup und gibt frei (approved) oder lehnt ab (rejected) mit Kommentar
+ * 4. Bei Ablehnung kann Trainer überarbeiten und erneut einreichen → neuer Eintrag mit revision+1
+ */
+export const mockupApprovals = mysqlTable("mockup_approvals", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Referenz auf das Mockup in der Galerie */
+  mockupId: int("mockupId").notNull(),
+  /** Referenz auf den Sponsor der freigeben muss */
+  sponsorId: int("sponsorId").notNull(),
+  /** Aktueller Status */
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  /** Einzigartiger Token für den Sponsor-Review-Link */
+  reviewToken: varchar("reviewToken", { length: 128 }).notNull(),
+  /** Name/E-Mail des Reviewers (wird beim Review gesetzt) */
+  reviewedBy: varchar("reviewedBy", { length: 255 }),
+  /** Kommentar des Sponsors bei Freigabe/Ablehnung */
+  reviewNote: text("reviewNote"),
+  /** Zeitpunkt der Freigabe/Ablehnung */
+  reviewedAt: timestamp("reviewedAt"),
+  /** Revisionsnummer (bei erneuter Einreichung nach Ablehnung) */
+  revision: int("revision").default(1).notNull(),
+  /** Wer hat die Freigabe angefragt (userId) */
+  submittedByUserId: int("submittedByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MockupApproval = typeof mockupApprovals.$inferSelect;
+export type InsertMockupApproval = typeof mockupApprovals.$inferInsert;

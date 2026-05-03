@@ -100,6 +100,7 @@ import {
   getOtherUserReadReceipt,
   createSponsorTemplate,
   listSponsorTemplates,
+  getMandatorySponsors,
   getSponsorTemplate,
   updateSponsorTemplate,
   deleteSponsorTemplate,
@@ -108,6 +109,7 @@ import {
   createMockupGalleryItem,
   listMockupsByTeam,
   getMockupByShareToken,
+  getMockupById,
   deleteMockupGalleryItem,
   createCollection,
   getCollection,
@@ -121,6 +123,19 @@ import {
   assignCollectionToDepartment,
   unassignCollectionFromDepartment,
   listAssignmentsForCollection,
+  assignSponsorToProduct,
+  unassignSponsorFromProduct,
+  listProductsBySponsor,
+  listSponsorsByProduct,
+  listAssignedProductIdsForSponsor,
+  syncSponsorProducts,
+  createMockupApproval,
+  getMockupApprovalByToken,
+  listMockupApprovalsByMockup,
+  listMockupApprovalsBySponsor,
+  listPendingApprovalsBySponsor,
+  reviewMockupApproval,
+  getApprovalStatusForMockup,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1795,6 +1810,13 @@ export const appRouter = router({
         return listSponsorTemplates(input.orgId);
       }),
 
+    /** Verpflichtende Sponsoren einer Organisation abrufen */
+    mandatory: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input }) => {
+        return getMandatorySponsors(input.orgId);
+      }),
+
     /** Einzelne Sponsor-Vorlage abrufen */
     get: protectedProcedure
       .input(z.object({ id: z.number() }))
@@ -1924,7 +1946,116 @@ export const appRouter = router({
         await deleteSponsorTemplate(input.id);
         return { success: true };
       }),
+
+    /** Zugewiesene Produkt-IDs eines Sponsors abrufen */
+    assignedProducts: protectedProcedure
+      .input(z.object({ sponsorId: z.number() }))
+      .query(async ({ input }) => {
+        return listAssignedProductIdsForSponsor(input.sponsorId);
+      }),
+
+    /** Produkte einem Sponsor zuweisen/synchronisieren (nur Owner) */
+    syncProducts: protectedProcedure
+      .input(z.object({
+        sponsorId: z.number(),
+        orgId: z.number(),
+        productIds: z.array(z.number()),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        if (!membership || membership.role !== "owner") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Produkt-Zuweisungen verwalten" });
+        }
+        await syncSponsorProducts(input.sponsorId, input.productIds, ctx.user.id);
+        return { success: true };
+      }),
+
+    /** Sponsoren eines Produkts abrufen (mit Freigabe-Info) */
+    sponsorsForProduct: protectedProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return listSponsorsByProduct(input.productId);
+      }),
    }),
+
+  /** Mockup-Freigabe */
+  mockupApproval: router({
+    /** Mockup zur Freigabe einreichen */
+    submit: protectedProcedure
+      .input(z.object({
+        mockupId: z.number(),
+        sponsorId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const reviewToken = nanoid(32);
+        const result = await createMockupApproval({
+          mockupId: input.mockupId,
+          sponsorId: input.sponsorId,
+          status: "pending",
+          reviewToken,
+          submittedByUserId: ctx.user.id,
+        });
+        // Sponsor-E-Mail laden für Benachrichtigung
+        const sponsor = await getSponsorTemplate(input.sponsorId);
+        return { id: result.id, reviewToken, sponsorEmail: sponsor?.contactEmail || null };
+      }),
+
+    /** Offene Freigaben eines Sponsors auflisten */
+    listBySponsor: protectedProcedure
+      .input(z.object({ sponsorId: z.number() }))
+      .query(async ({ input }) => {
+        return listMockupApprovalsBySponsor(input.sponsorId);
+      }),
+
+    /** Alle Freigaben eines Mockups auflisten */
+    listByMockup: protectedProcedure
+      .input(z.object({ mockupId: z.number() }))
+      .query(async ({ input }) => {
+        return listMockupApprovalsByMockup(input.mockupId);
+      }),
+
+    /** Offene Freigaben eines Sponsors */
+    pendingBySponsor: protectedProcedure
+      .input(z.object({ sponsorId: z.number() }))
+      .query(async ({ input }) => {
+        return listPendingApprovalsBySponsor(input.sponsorId);
+      }),
+
+    /** Freigabe-Status eines Mockups abrufen */
+    statusForMockup: protectedProcedure
+      .input(z.object({ mockupId: z.number() }))
+      .query(async ({ input }) => {
+        return getApprovalStatusForMockup(input.mockupId);
+      }),
+
+    /** Mockup per Review-Token laden (öffentlich für Sponsor) */
+    getByToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const approval = await getMockupApprovalByToken(input.token);
+        if (!approval) throw new TRPCError({ code: "NOT_FOUND", message: "Freigabe nicht gefunden" });
+        // Mockup-Daten laden
+        const mockup = await getMockupById(approval.mockupId);
+        const sponsor = await getSponsorTemplate(approval.sponsorId);
+        return { approval, mockup, sponsor };
+      }),
+
+    /** Freigabe erteilen oder ablehnen (öffentlich per Token) */
+    review: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        status: z.enum(["approved", "rejected"]),
+        reviewedBy: z.string().min(1).max(255),
+        reviewNote: z.string().max(1000).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const approval = await getMockupApprovalByToken(input.token);
+        if (!approval) throw new TRPCError({ code: "NOT_FOUND", message: "Freigabe nicht gefunden" });
+        if (approval.status !== "pending") throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Freigabe wurde bereits bearbeitet" });
+        await reviewMockupApproval(approval.id, input.status, input.reviewedBy, input.reviewNote);
+        return { success: true, status: input.status };
+      }),
+  }),
 
   /** Mockup-Galerie */
   mockupGallery: router({

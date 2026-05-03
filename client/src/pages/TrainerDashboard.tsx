@@ -60,6 +60,8 @@ import {
   FolderOpen,
   Library,
   Lock,
+  ClipboardCheck,
+  Send,
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -1610,6 +1612,21 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
     onError: () => toast.error("Löschen fehlgeschlagen"),
   });
 
+  // Sponsoren für Freigabe
+  const { data: sponsors } = trpc.sponsorTemplate.list.useQuery({ orgId });
+  const submitApproval = trpc.mockupApproval.submit.useMutation({
+    onSuccess: (data) => {
+      const reviewUrl = `${window.location.origin}/sponsor-review/${data.reviewToken}`;
+      navigator.clipboard.writeText(reviewUrl).catch(() => {});
+      toast.success(
+        `Freigabe-Link erstellt${data.sponsorEmail ? " f\u00fcr " + data.sponsorEmail : ""}! Link in Zwischenablage kopiert.`,
+        { duration: 6000 }
+      );
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const [approvalMockupId, setApprovalMockupId] = useState<number | null>(null);
+
   const [compareMode, setCompareMode] = useState(false);
   const [selectedForCompare, setSelectedForCompare] = useState<number[]>([]);
   const [showCompareDialog, setShowCompareDialog] = useState(false);
@@ -1859,14 +1876,68 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
+                      {sponsors && sponsors.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-amber-600 hover:text-amber-700"
+                          onClick={() => setApprovalMockupId(mockup.id)}
+                          title="Zur Freigabe einreichen"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </div>
+                  {/* Freigabe-Status */}
+                  <MockupApprovalStatus mockupId={mockup.id} />
                 </CardContent>
               )}
             </Card>
           ))}
         </div>
       )}
+
+      {/* Freigabe-Dialog */}
+      <Dialog open={approvalMockupId !== null} onOpenChange={(open) => !open && setApprovalMockupId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-amber-600" />
+              Zur Freigabe einreichen
+            </DialogTitle>
+            <DialogDescription>
+              Wähle den Sponsor, der dieses Mockup freigeben soll.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            {sponsors?.map((sponsor: any) => (
+              <Button
+                key={sponsor.id}
+                variant="outline"
+                className="w-full justify-start gap-3 h-auto py-3"
+                disabled={submitApproval.isPending}
+                onClick={async () => {
+                  if (approvalMockupId) {
+                    await submitApproval.mutateAsync({ mockupId: approvalMockupId, sponsorId: sponsor.id });
+                    setApprovalMockupId(null);
+                  }
+                }}
+              >
+                {sponsor.logoUrl && (
+                  <img src={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} alt="" className="w-8 h-8 object-contain rounded" />
+                )}
+                <div className="text-left">
+                  <p className="font-medium text-sm">{sponsor.name}</p>
+                  {(sponsor as any).contactEmail && (
+                    <p className="text-xs text-muted-foreground">{(sponsor as any).contactEmail}</p>
+                  )}
+                </div>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Compare Dialog */}
       <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
@@ -1916,9 +1987,40 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
   );
 }
 
-// ─── Trainer Comment Section ─────────────────────────────────────────────────────
-function TrainerCommentSection({ teamId, teamName }: { teamId: number; teamName: string }) {
-  const [showThread, setShowThread] = useState(false);
+// ─── Mockup Approval Status Badge ─────────────────────────────────────────────────────────────
+function MockupApprovalStatus({ mockupId }: { mockupId: number }) {
+  const { data: approvals } = trpc.mockupApproval.statusForMockup.useQuery({ mockupId });
+  
+  if (!approvals || approvals.length === 0) return null;
+
+  const statusColors: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-800 border-amber-300",
+    approved: "bg-green-100 text-green-800 border-green-300",
+    rejected: "bg-red-100 text-red-800 border-red-300",
+  };
+  const statusLabels: Record<string, string> = {
+    pending: "Ausstehend",
+    approved: "Freigegeben",
+    rejected: "Abgelehnt",
+  };
+
+  return (
+    <div className="mt-2 space-y-1">
+      {approvals.map((a: any) => (
+        <div key={a.id} className="flex items-center gap-1.5">
+          <Badge className={`text-[9px] px-1.5 py-0 ${statusColors[a.status] || ""}`}>
+            {statusLabels[a.status] || a.status}
+          </Badge>
+          {a.reviewedBy && <span className="text-[10px] text-muted-foreground">von {a.reviewedBy}</span>}
+          {a.reviewNote && <span className="text-[10px] text-muted-foreground italic">- {a.reviewNote}</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Trainer Comment Section ───────────────────────────────────────────────────────────────────────
+function TrainerCommentSection({ teamId, teamName }: { teamId: number; teamName: string }) { const [showThread, setShowThread] = useState(false);
   const teamIds = useMemo(() => [teamId], [teamId]);
   const { data: unreadCounts } = trpc.orderComment.getUnreadCounts.useQuery(
     { teamIds },

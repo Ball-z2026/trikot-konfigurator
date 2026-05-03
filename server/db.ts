@@ -37,6 +37,10 @@ import {
   InsertCollectionItem,
   collectionAssignments,
   InsertCollectionAssignment,
+  sponsorProductAssignments,
+  InsertSponsorProductAssignment,
+  mockupApprovals,
+  InsertMockupApproval,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1385,6 +1389,13 @@ export async function getMockupByShareToken(shareToken: string) {
   return result[0];
 }
 
+export async function getMockupById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(mockupGallery).where(eq(mockupGallery.id, id)).limit(1);
+  return result[0];
+}
+
 export async function deleteMockupGalleryItem(id: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -1517,4 +1528,146 @@ export async function listAssignmentsForDepartment(departmentId: number) {
   if (!db) return [];
   return db.select().from(collectionAssignments)
     .where(eq(collectionAssignments.departmentId, departmentId));
+}
+
+
+// ─── Sponsor-Produkt-Zuweisungen Helpers ──────────────────────────────────
+
+export async function assignSponsorToProduct(data: InsertSponsorProductAssignment) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Prüfe ob Zuweisung bereits existiert
+  const existing = await db.select().from(sponsorProductAssignments)
+    .where(and(
+      eq(sponsorProductAssignments.sponsorId, data.sponsorId),
+      eq(sponsorProductAssignments.productId, data.productId)
+    )).limit(1);
+  if (existing.length > 0) return existing[0];
+  const result = await db.insert(sponsorProductAssignments).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function unassignSponsorFromProduct(sponsorId: number, productId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(sponsorProductAssignments).where(and(
+    eq(sponsorProductAssignments.sponsorId, sponsorId),
+    eq(sponsorProductAssignments.productId, productId)
+  ));
+}
+
+export async function listProductsBySponsor(sponsorId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sponsorProductAssignments)
+    .where(eq(sponsorProductAssignments.sponsorId, sponsorId));
+}
+
+export async function listSponsorsByProduct(productId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sponsorProductAssignments)
+    .where(eq(sponsorProductAssignments.productId, productId));
+}
+
+export async function listAssignedProductIdsForSponsor(sponsorId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select({ productId: sponsorProductAssignments.productId })
+    .from(sponsorProductAssignments)
+    .where(eq(sponsorProductAssignments.sponsorId, sponsorId));
+  return rows.map(r => r.productId);
+}
+
+export async function syncSponsorProducts(sponsorId: number, productIds: number[], assignedByUserId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Bestehende Zuweisungen laden
+  const existing = await db.select().from(sponsorProductAssignments)
+    .where(eq(sponsorProductAssignments.sponsorId, sponsorId));
+  const existingIds = existing.map(e => e.productId);
+  // Neue Zuweisungen hinzufügen
+  const toAdd = productIds.filter(id => !existingIds.includes(id));
+  // Alte Zuweisungen entfernen
+  const toRemove = existingIds.filter(id => !productIds.includes(id));
+  for (const productId of toAdd) {
+    await db.insert(sponsorProductAssignments).values({ sponsorId, productId, assignedByUserId });
+  }
+  for (const productId of toRemove) {
+    await db.delete(sponsorProductAssignments).where(and(
+      eq(sponsorProductAssignments.sponsorId, sponsorId),
+      eq(sponsorProductAssignments.productId, productId)
+    ));
+  }
+}
+
+// ─── Mockup-Freigabe Helpers ──────────────────────────────────────────────
+
+export async function createMockupApproval(data: InsertMockupApproval) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(mockupApprovals).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getMockupApprovalByToken(reviewToken: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(mockupApprovals)
+    .where(eq(mockupApprovals.reviewToken, reviewToken)).limit(1);
+  return result[0];
+}
+
+export async function listMockupApprovalsByMockup(mockupId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(mockupApprovals)
+    .where(eq(mockupApprovals.mockupId, mockupId))
+    .orderBy(desc(mockupApprovals.createdAt));
+}
+
+export async function listMockupApprovalsBySponsor(sponsorId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(mockupApprovals)
+    .where(eq(mockupApprovals.sponsorId, sponsorId))
+    .orderBy(desc(mockupApprovals.createdAt));
+}
+
+export async function listPendingApprovalsBySponsor(sponsorId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(mockupApprovals)
+    .where(and(
+      eq(mockupApprovals.sponsorId, sponsorId),
+      eq(mockupApprovals.status, "pending")
+    ))
+    .orderBy(desc(mockupApprovals.createdAt));
+}
+
+export async function reviewMockupApproval(id: number, status: "approved" | "rejected", reviewedBy: string, reviewNote?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(mockupApprovals).set({
+    status,
+    reviewedBy,
+    reviewNote: reviewNote ?? null,
+    reviewedAt: new Date(),
+  }).where(eq(mockupApprovals.id, id));
+}
+
+export async function getApprovalStatusForMockup(mockupId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({
+    id: mockupApprovals.id,
+    sponsorId: mockupApprovals.sponsorId,
+    status: mockupApprovals.status,
+    reviewedBy: mockupApprovals.reviewedBy,
+    reviewNote: mockupApprovals.reviewNote,
+    reviewedAt: mockupApprovals.reviewedAt,
+    revision: mockupApprovals.revision,
+  }).from(mockupApprovals)
+    .where(eq(mockupApprovals.mockupId, mockupId))
+    .orderBy(desc(mockupApprovals.revision));
 }

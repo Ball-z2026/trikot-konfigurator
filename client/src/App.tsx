@@ -21,6 +21,7 @@ import PaymentConfirm from "./pages/PaymentConfirm";
 import MockupShare from "./pages/MockupShare";
 import ProductSelect from "./pages/ProductSelect";
 import SponsorManagement from "./pages/SponsorManagement";
+import SponsorReview from "./pages/SponsorReview";
 
 function Router() {
   return (
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/konfigurator" component={ProductSelect} />
       <Route path="/konfigurator/:id" component={CustomerConfigurator} />
       <Route path="/mockup/:token" component={MockupShare} />
+      <Route path="/sponsor-review/:token" component={SponsorReview} />
 
       {/* Zahlung */}
       <Route path="/payment/confirm/:token" component={PaymentConfirm} />

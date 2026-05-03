@@ -190,6 +190,13 @@
       "when": 1777792716269,
       "tag": "0026_bitter_exodus",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1777794050222,
+      "tag": "0027_fine_gunslinger",
+      "breakpoints": true
     }
   ]
 }

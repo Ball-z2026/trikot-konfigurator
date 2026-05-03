@@ -367,6 +367,12 @@ export default function CustomerConfigurator() {
     { enabled: !!userOrgId }
   );
 
+  // Verpflichtende Sponsoren laden
+  const { data: mandatorySponsors } = trpc.sponsorTemplate.mandatory.useQuery(
+    { orgId: userOrgId! },
+    { enabled: !!userOrgId }
+  );
+
   // Sportart ermitteln: Primär aus dem Produkt-Template, Fallback auf orgData.sport
   const effectiveSport: SportartCode | null = useMemo(() => {
     // 1. Sportart aus dem Produkt-Template (am genauesten, da templateId sportartspezifisch ist)
@@ -2597,6 +2603,37 @@ export default function CustomerConfigurator() {
                     <span>✅</span>
                     <span>Alle Verbandsvorgaben eingehalten ({effectiveSport ? effectiveSport.charAt(0).toUpperCase() + effectiveSport.slice(1) : 'Sportart'}{orgStateName ? `, ${orgStateName}` : ''})</span>
                   </div>
+                )}
+
+                {/* Hinweis: Verpflichtende Sponsoren */}
+                {mandatorySponsors && mandatorySponsors.length > 0 && (
+                  <Card className="border-blue-300 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-950/30">
+                    <CardContent className="pt-3 pb-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Verpflichtende Sponsoren</span>
+                        <Badge variant="outline" className="ml-auto text-[10px] border-blue-400 text-blue-700">
+                          {mandatorySponsors.length} Sponsor{mandatorySponsors.length > 1 ? 'en' : ''}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1 ml-6">
+                        {mandatorySponsors.map((s: any) => (
+                          <div key={s.id} className="text-xs flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                            {s.logoUrl && (
+                              <img src={storageUrl(s.logoUrl)} alt={s.name} className="w-5 h-5 object-contain" />
+                            )}
+                            <span className="font-medium">{s.name}</span>
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0">
+                              {s.obligation === 'alle_produkte' ? 'Alle Produkte' : 'Nur Trikot'}
+                            </Badge>
+                            {s.sponsorType === 'spartensponsor' && <Badge variant="outline" className="text-[9px] px-1 py-0">Sparte</Badge>}
+                            {s.sponsorType === 'mannschaftssponsor' && <Badge variant="outline" className="text-[9px] px-1 py-0">Mannschaft</Badge>}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-blue-600/70 mt-2 ml-6">Diese Sponsoren m\u00fcssen auf dem Produkt platziert werden. Bitte in eine Sponsor-Zone einsetzen.</p>
+                    </CardContent>
+                  </Card>
                 )}
 
                 {/* Club Name Input (if any zone uses clubName) */}

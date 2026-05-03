@@ -1126,42 +1126,74 @@
 
 ## Sublimation raus + DTF-Trikots mit neuen Vorlagen
 - [x] Sublimation-Trikots (Fußball, Handball, Volleyball, Basketball) auf unpublished gesetzt (690029, 690030, 690031, 690033, 90050)
-- [ ] Fertige Trikotvorlagen für DTF suchen (keine Schnittmuster, sondern fertige Trikots)
-- [ ] DTF-Trikot-Templates mit neuen Vorlagen-Bildern aktualisieren
-- [ ] mix-blend-mode Änderungen rückgängig machen (nicht mehr nötig mit neuen Bildern)
-- [ ] Testen und Checkpoint speichern
+- [x] Fertige Trikotvorlagen für DTF suchen (keine Schnittmuster, sondern fertige Trikots)
+- [x] DTF-Trikot-Templates mit neuen Vorlagen-Bildern aktualisieren
+- [x] mix-blend-mode Änderungen rückgängig machen (nicht mehr nötig mit neuen Bildern)
+- [x] Testen und Checkpoint speichern
 
 ## Zonen cm-Angabe exakt umsetzen
-- [ ] cm-Angabe der Zonen exakt auf dem Produkt darstellen (proportional korrekt zur Trikotgröße)
-- [ ] Button "Jetzt anwenden" der die cm-Größe nimmt und die Zone korrekt skaliert/positioniert auf dem Produktbild
+- [x] cm-Angabe der Zonen exakt auf dem Produkt darstellen (proportional korrekt zur Trikotgröße)
+- [x] Button "Jetzt anwenden" der die cm-Größe nimmt und die Zone korrekt skaliert/positioniert auf dem Produktbild
 
 ## Umstrukturierung: 3 Module
-- [ ] App.tsx: Routes in 3 Module aufteilen (Verwaltung, Designer, Konfigurator)
-- [ ] Home.tsx: 3 Modul-Kacheln statt Produktliste
-- [ ] Produktdesigner: Für alle Rollen zugänglich (nicht nur Admin)
-- [ ] Zonen erstellen: Für alle eingeloggten User erlaubt
-- [ ] Jedes Modul bekommt eigene Sub-Navigation mit Zurück-Button
+- [x] App.tsx: Routes in 3 Module aufteilen (Verwaltung, Designer, Konfigurator)
+- [x] Home.tsx: 3 Modul-Kacheln statt Produktliste
+- [x] Produktdesigner: Für alle Rollen zugänglich (nicht nur Admin)
+- [x] Zonen erstellen: Für alle eingeloggten User erlaubt
+- [x] Jedes Modul bekommt eigene Sub-Navigation mit Zurück-Button
 
 ## Sponsoren-Verwaltung
-- [ ] DB-Schema: sponsors Tabelle (id, name, logoUrl, type, obligation, orgId, deptId, teamId)
-- [ ] Backend: CRUD-Prozeduren für Sponsoren
-- [ ] Frontend: Sponsoren-Verwaltungsseite unter /verwaltung/sponsoren
-- [ ] Auswahlfeld Sponsor-Typ (Hauptsponsor, Spartensponsor, Mannschaftssponsor)
-- [ ] Auswahlfeld Verpflichtung bei Haupt- und Spartensponsor (alle Produkte, nur Trikot, nicht verpflichtend)
-- [ ] Hinweis bei Produkterstellung wenn verpflichtende Sponsoren existieren
+- [x] DB-Schema: sponsors Tabelle (id, name, logoUrl, type, obligation, orgId, deptId, teamId)
+- [x] Backend: CRUD-Prozeduren für Sponsoren
+- [x] Frontend: Sponsoren-Verwaltungsseite unter /verwaltung/sponsoren
+- [x] Auswahlfeld Sponsor-Typ (Hauptsponsor, Spartensponsor, Mannschaftssponsor)
+- [x] Auswahlfeld Verpflichtung bei Haupt- und Spartensponsor (alle Produkte, nur Trikot, nicht verpflichtend)
+- [x] Hinweis bei Produkterstellung wenn verpflichtende Sponsoren existieren (Backend: sponsorTemplate.mandatory Endpoint, Frontend: Verpflichtende-Sponsoren-Karte im Konfigurator Zonen-Tab)
 
 ## Sponsor-Datenblatt
-- [ ] DB-Schema: sponsorTemplates um Kontaktdaten erweitern (Kontaktperson, E-Mail, Telefon, Adresse, USt-IdNr)
-- [ ] Backend: create/update Prozeduren um neue Felder erweitern
-- [ ] Frontend: Formular mit vollständigem Datenblatt beim Anlegen eines Sponsors
+- [x] DB-Schema: sponsorTemplates um Kontaktdaten erweitern (Kontaktperson, E-Mail, Telefon, Adresse, USt-IdNr)
+- [x] Backend: create/update Prozeduren um neue Felder erweitern
+- [x] Frontend: Formular mit vollständigem Datenblatt beim Anlegen eines Sponsors
 
 ## Regel: Sponsoren nur über Verwaltung
-- [ ] Sponsoren werden NUR in /verwaltung/sponsoren angelegt und bearbeitet
-- [ ] Im Konfigurator erscheinen Sponsoren nur als Auswahl (kein Anlegen/Bearbeiten)
-- [ ] Konfigurator: Sponsor-Zonen zeigen Dropdown mit verfügbaren Sponsoren der Organisation
+- [x] Sponsoren werden NUR in /verwaltung/sponsoren angelegt und bearbeitet
+- [x] Im Konfigurator erscheinen Sponsoren nur als Auswahl (kein Anlegen/Bearbeiten)
+- [x] Konfigurator: Sponsor-Zonen zeigen Dropdown mit verfügbaren Sponsoren der Organisation (bereits implementiert als Sponsor-Vorlagen-Buttons mit Klick + Drag-and-Drop)
 
 ## Logo-Upload Verbesserungen
-- [ ] PDF als Logo-Format akzeptieren (Vektordatei)
-- [ ] Datenprüfung: Auflösung prüfen (ideal 300 DPI), Warnung bei unter 300 DPI
-- [ ] Dateigröße und Format-Validierung
-- [ ] Überschreiben: Neues Logo ersetzt altes
+- [x] PDF als Logo-Format akzeptieren (Vektordatei)
+- [x] Datenprüfung: Auflösung prüfen (ideal 300 DPI), Warnung bei unter 300 DPI
+- [x] Dateigröße und Format-Validierung
+- [x] Überschreiben: Neues Logo ersetzt altes
+
+## Sponsor-Freigabe-System
+
+### DB-Schema
+- [x] sponsor_product_assignments: Tabelle für Sponsor-Produkt-Zuweisungen (sponsorId, productId, assignedByUserId, createdAt)
+- [x] mockup_approvals: Tabelle für Mockup-Freigaben (mockupId, sponsorId, status [pending/approved/rejected], reviewedByEmail, reviewNote, reviewedAt, createdAt)
+- [x] sponsor_templates um contactEmail erweitern (bereits vorhanden)
+- [x] Migration ausführen (0027_fine_gunslinger.sql)
+
+### Backend
+- [x] tRPC: sponsorTemplate.syncProducts – Produkte einem Sponsor zuweisen/synchronisieren (Owner-only)
+- [x] tRPC: sponsorTemplate.assignedProducts – Zugewiesene Produkt-IDs abrufen
+- [x] tRPC: sponsorTemplate.sponsorsForProduct – Sponsoren pro Produkt
+- [x] tRPC: mockupApproval.submit – Mockup zur Freigabe einreichen
+- [x] tRPC: mockupApproval.listBySponsor/listByMockup/pendingBySponsor – Freigaben auflisten
+- [x] tRPC: mockupApproval.getByToken – Freigabe per Token laden (öffentlich)
+- [x] tRPC: mockupApproval.review – Freigabe erteilen oder ablehnen (per Token)
+- [x] tRPC: mockupApproval.statusForMockup – Freigabe-Status eines Mockups abrufen
+
+### Frontend: Sponsor-Verwaltung
+- [x] Produkt-Zuweisung im Sponsor-Detail (Checkboxen für veröffentlichte Produkte)
+- [x] Zugewiesene Produkte als Badges/Liste beim Sponsor anzeigen
+
+### Frontend: Mockup-Freigabe-Workflow
+- [x] Im Konfigurator/Mockup-Galerie: "Zur Freigabe einreichen" Button pro Mockup (Send-Icon in Mockup-Karte)
+- [x] Freigabe-Status-Anzeige am Mockup (Pending/Approved/Rejected mit Badges) (MockupApprovalStatus-Subkomponente)
+- [x] Sponsor-Freigabe-Seite: Öffentliche Seite per Token wo Sponsor Mockup sehen und freigeben/ablehnen kann (SponsorReview.tsx)
+- [ ] Benachrichtigung an Sponsor-E-Mail wenn Freigabe angefragt wird
+
+### Tests
+- [x] Vitest: Sponsor-Produkt-Zuweisungen CRUD (sponsorApproval.test.ts)
+- [x] Vitest: Mockup-Freigabe-Workflow (submit, getByToken, review) (sponsorApproval.test.ts - 9 Tests)
