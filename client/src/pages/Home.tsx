@@ -190,7 +190,7 @@ export default function Home() {
                   className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
                   onClick={() => setLocation(`/konfigurator/${product.id}`)}
                 >
-                  <div className="aspect-[4/3] bg-[#e0e2e6] relative overflow-hidden">
+                  <div className="aspect-[4/3] bg-[#b8bcc2] relative overflow-hidden">
                     {(() => {
                       // Versuche ein Vorschaubild zu finden: frontImageUrl > Template-previewUrl > generisches Icon
                       const imageUrl = product.frontImageUrl

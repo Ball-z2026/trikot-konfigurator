@@ -25,6 +25,10 @@ export interface TemplatePart {
   label: string;
   imageUrl: string;
   sortOrder: number;
+  /** Reale Breite des Parts in cm (Größe L, flach liegend) - für exakte cm-Umrechnung */
+  realWidthCm: number;
+  /** Reale Höhe des Parts in cm (Größe L, flach liegend) - für exakte cm-Umrechnung */
+  realHeightCm: number;
   zones: TemplateZone[];
 }
 
@@ -90,6 +94,8 @@ const VORDERTEIL: TemplatePart = {
   label: "Vorderteil",
   imageUrl: "/manus-storage/trikot_vorderteil_62bbbce9.png",
   sortOrder: 1,
+  realWidthCm: 49,
+  realHeightCm: 68,
   zones: [
     {
       label: "Vereinswappen",
@@ -147,6 +153,8 @@ const RUECKTEIL: TemplatePart = {
   label: "Rückteil",
   imageUrl: "/manus-storage/trikot_rueckteil_5ffeb08a.png",
   sortOrder: 2,
+  realWidthCm: 49,
+  realHeightCm: 68,
   zones: [
     {
       label: "Vereinsname",
@@ -204,6 +212,8 @@ const AERMEL_LINKS: TemplatePart = {
   label: "Ärmel Links",
   imageUrl: "/manus-storage/trikot_aermel_1_1bcab551.png",
   sortOrder: 3,
+  realWidthCm: 28.5,
+  realHeightCm: 24,
   zones: [
     {
       label: "Ärmel Logo Links",
@@ -225,6 +235,8 @@ const AERMEL_RECHTS: TemplatePart = {
   label: "Ärmel Rechts",
   imageUrl: "/manus-storage/trikot_aermel_2_a499c4d3.png",
   sortOrder: 4,
+  realWidthCm: 28.5,
+  realHeightCm: 24,
   zones: [
     {
       label: "Ärmel Logo Rechts",
@@ -246,6 +258,8 @@ const KRAGEN: TemplatePart = {
   label: "Kragen",
   imageUrl: "/manus-storage/trikot_kragen_0bd5b194.png",
   sortOrder: 5,
+  realWidthCm: 40,
+  realHeightCm: 8,
   zones: [
     {
       label: "Kragen Text",
@@ -265,6 +279,8 @@ const BUENDCHEN_LINKS: TemplatePart = {
   label: "Bündchen Links",
   imageUrl: "/manus-storage/trikot_buendchen_1_0e0583dd.png",
   sortOrder: 6,
+  realWidthCm: 12,
+  realHeightCm: 8,
   zones: [],
 };
 
@@ -273,6 +289,8 @@ const BUENDCHEN_RECHTS: TemplatePart = {
   label: "Bündchen Rechts",
   imageUrl: "/manus-storage/trikot_buendchen_2_5cdec8b0.png",
   sortOrder: 7,
+  realWidthCm: 12,
+  realHeightCm: 8,
   zones: [],
 };
 
@@ -303,12 +321,17 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     id: "fussball_dtf",
     name: "Fußballtrikot – DTF",
     description:
-      "DTF-Fußballtrikot (Direct-to-Film): Bedruckung auf Vorderteil, Rückteil und Ärmel. Kragen und Bündchen sind nicht konfigurierbar.",
+      "DTF-Fußballtrikot (Direct-to-Film): Bedruckung auf Vorderteil und Rückteil.",
     category: "Trikot",
     sport: "fussball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/fussballtrikot_4ce9a56b.png",
-    parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
+    previewUrl: "/manus-storage/fussball_front_8452f3c3.png",
+    parts: [
+      { ...VORDERTEIL, imageUrl: "/manus-storage/fussball_front_8452f3c3.png" },
+      { ...RUECKTEIL, imageUrl: "/manus-storage/fussball_back_d24ca9df.png" },
+      { ...AERMEL_LINKS, imageUrl: "/manus-storage/fussball_aermel_links_832ef2a4.png" },
+      { ...AERMEL_RECHTS, imageUrl: "/manus-storage/fussball_aermel_rechts_3bdb550b.png" },
+    ],
   },
   // ===== Handball =====
   {
@@ -334,12 +357,17 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     id: "handball_dtf",
     name: "Handballtrikot – DTF",
     description:
-      "DTF-Handballtrikot: Bedruckung auf Vorderteil, Rückteil und Ärmel.",
+      "DTF-Handballtrikot: Bedruckung auf Vorderteil und Rückteil.",
     category: "Trikot",
     sport: "handball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/handballtrikot_9b890907.png",
-    parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
+    previewUrl: "/manus-storage/handball_front_ee897f3c.png",
+    parts: [
+      { ...VORDERTEIL, imageUrl: "/manus-storage/handball_front_ee897f3c.png" },
+      { ...RUECKTEIL, imageUrl: "/manus-storage/handball_back_3d1d47cb.png" },
+      { ...AERMEL_LINKS, imageUrl: "/manus-storage/handball_aermel_links_b61658a7.png" },
+      { ...AERMEL_RECHTS, imageUrl: "/manus-storage/handball_aermel_rechts_44c4a141.png" },
+    ],
   },
   // ===== Volleyball =====
   {
@@ -365,12 +393,17 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     id: "volleyball_dtf",
     name: "Volleyballtrikot – DTF",
     description:
-      "DTF-Volleyballtrikot: Bedruckung auf Vorderteil, Rückteil und Ärmel.",
+      "DTF-Volleyballtrikot: Bedruckung auf Vorderteil und Rückteil.",
     category: "Trikot",
     sport: "volleyball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/volleyballtrikot_e57cb4f2.png",
-    parts: [VORDERTEIL, RUECKTEIL, AERMEL_LINKS, AERMEL_RECHTS],
+    previewUrl: "/manus-storage/volleyball_front_4aa3a7dd.png",
+    parts: [
+      { ...VORDERTEIL, imageUrl: "/manus-storage/volleyball_front_4aa3a7dd.png" },
+      { ...RUECKTEIL, imageUrl: "/manus-storage/volleyball_back_d241fc6b.png" },
+      { ...AERMEL_LINKS, imageUrl: "/manus-storage/volleyball_aermel_links_e55abf17.png" },
+      { ...AERMEL_RECHTS, imageUrl: "/manus-storage/volleyball_aermel_rechts_57e9a5db.png" },
+    ],
   },
   // ===== Basketball =====
   {
@@ -392,8 +425,11 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
     category: "Trikot",
     sport: "basketball",
     printMethod: "dtf",
-    previewUrl: "/manus-storage/basketballtrikot_a83cd60a.png",
-    parts: [VORDERTEIL, RUECKTEIL],
+    previewUrl: "/manus-storage/basketball_front_81321f1e.png",
+    parts: [
+      { ...VORDERTEIL, imageUrl: "/manus-storage/basketball_front_81321f1e.png" },
+      { ...RUECKTEIL, imageUrl: "/manus-storage/basketball_back_a2067eb9.png" },
+    ],
   },
   // ===== Trikot mit SVG-Silhouetten (DTF) =====
   // Gleiche Zonen-Vorgaben wie die bisherigen Trikots, aber mit SVG-Darstellung.
@@ -1032,6 +1068,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Vorderseite",
         imageUrl: "/manus-storage/trainingshose_front_67bb15f1.png",
         sortOrder: 1,
+        realWidthCm: 32,
+        realHeightCm: 100,
         zones: [
           {
             label: "Vereinswappen",
@@ -1052,6 +1090,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Rückseite",
         imageUrl: "/manus-storage/trainingshose_back_e09d8296.png",
         sortOrder: 2,
+        realWidthCm: 32,
+        realHeightCm: 100,
         zones: [],
       },
     ],
@@ -1072,6 +1112,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Vorderseite",
         imageUrl: "/manus-storage/aufwaermshirt_front_460fc9f7.png",
         sortOrder: 1,
+        realWidthCm: 52,
+        realHeightCm: 70,
         zones: [
           {
             label: "Vereinswappen",
@@ -1092,6 +1134,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Rückseite",
         imageUrl: "/manus-storage/aufwaermshirt_back_1669174b.png",
         sortOrder: 2,
+        realWidthCm: 52,
+        realHeightCm: 70,
         zones: [],
       },
     ],
@@ -1112,6 +1156,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Vorderseite",
         imageUrl: "/manus-storage/zipjacke_front_4ece2783.png",
         sortOrder: 1,
+        realWidthCm: 56,
+        realHeightCm: 70,
         zones: [
           {
             label: "Vereinswappen",
@@ -1132,6 +1178,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Rückseite",
         imageUrl: "/manus-storage/zipjacke_back_1abd7d90.png",
         sortOrder: 2,
+        realWidthCm: 56,
+        realHeightCm: 70,
         zones: [],
       },
     ],
@@ -1152,6 +1200,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Vorderseite",
         imageUrl: "/manus-storage/halfzipper_front_60a4f99e.png",
         sortOrder: 1,
+        realWidthCm: 54,
+        realHeightCm: 70,
         zones: [
           {
             label: "Vereinswappen",
@@ -1172,6 +1222,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Rückseite",
         imageUrl: "/manus-storage/halfzipper_back_40fe9c68.png",
         sortOrder: 2,
+        realWidthCm: 54,
+        realHeightCm: 70,
         zones: [],
       },
     ],
@@ -1192,6 +1244,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Vorderseite",
         imageUrl: "/manus-storage/warmejacke_front_de4c6399.png",
         sortOrder: 1,
+        realWidthCm: 58,
+        realHeightCm: 75,
         zones: [
           {
             label: "Vereinswappen",
@@ -1212,6 +1266,8 @@ export const TEXTIL_TEMPLATES: TextilTemplate[] = [
         label: "Rückseite",
         imageUrl: "/manus-storage/warmejacke_back_b1c0bba2.png",
         sortOrder: 2,
+        realWidthCm: 58,
+        realHeightCm: 75,
         zones: [],
       },
     ],

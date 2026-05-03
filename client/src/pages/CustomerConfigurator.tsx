@@ -72,6 +72,28 @@ const FONT_OPTIONS = [
   { value: "Saira Condensed", label: "Saira Condensed" },
 ];
 
+// ─── Helfer: Reale cm-Maße eines Parts aus dem Template auslesen ─────────────
+function getPartRealDimensions(templateId: string | null | undefined, partKey: string): { widthCm: number; heightCm: number } | null {
+  if (!templateId) return null;
+  const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === templateId);
+  if (!tmpl) return null;
+  const part = tmpl.parts.find((p) => p.key === partKey);
+  if (!part || !part.realWidthCm || !part.realHeightCm) return null;
+  return { widthCm: part.realWidthCm, heightCm: part.realHeightCm };
+}
+
+/** Berechne Zone-Prozent aus cm-Angabe und realer Part-Größe */
+function cmToPercent(zoneCm: number, partRealCm: number): number {
+  return (zoneCm / partRealCm) * 100;
+}
+
+/** DPI für Druckdateien */
+const PRINT_DPI = 300;
+/** Berechne Pixel aus cm für Druckdatei-Export */
+function cmToPixels(cm: number): number {
+  return Math.round(cm * PRINT_DPI / 2.54);
+}
+
 type PartData = {
   id: number;
   key: string;
@@ -1244,7 +1266,7 @@ export default function CustomerConfigurator() {
       const dataUrl = await toPng(canvasRef.current, {
         quality: 1,
         pixelRatio: 2,
-        backgroundColor: "#e8eaed",
+        backgroundColor: "#b8bcc2",
         cacheBust: true,
         includeQueryParams: true,
       });
@@ -1311,7 +1333,7 @@ export default function CustomerConfigurator() {
               const dataUrl = await toPng(canvasRef.current, {
                 quality: 1,
                 pixelRatio: 2,
-                backgroundColor: "#e8eaed",
+                backgroundColor: "#b8bcc2",
                 cacheBust: true,
                 includeQueryParams: true,
               });
@@ -1694,6 +1716,7 @@ export default function CustomerConfigurator() {
                                   alt={part.label}
                                   className="w-full h-full object-contain relative"
                                   crossOrigin="anonymous"
+                                  style={{ mixBlendMode: hasTransparentImages ? undefined : "multiply" as const }}
                                   
                                 />
                                 {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply */}
@@ -1901,7 +1924,7 @@ export default function CustomerConfigurator() {
             {/* Overview Mode */}
             {hasParts && viewMode === "overview" && (
               <Card className="overflow-hidden">
-                <div ref={overviewRef} className="bg-[#e8eaed] p-3 sm:p-4">
+                <div ref={overviewRef} className="bg-[#b8bcc2] p-3 sm:p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                     {sortedParts.map((part) => {
                       const partZones = allZones.filter((z) => z.partId === part.id);
@@ -1909,7 +1932,7 @@ export default function CustomerConfigurator() {
                         <div
                           key={part.id}
                           className="relative rounded-lg border overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
-                          style={{ backgroundColor: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? getPartColor(part.id) : "#ffffff" }}
+                          style={{ backgroundColor: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? getPartColor(part.id) : "#b8bcc2" }}
                           onClick={() => {
                             setActivePartId(part.id);
                             setViewMode("parts");
@@ -1924,6 +1947,7 @@ export default function CustomerConfigurator() {
                                   className="w-full h-auto block p-1 relative"
                                   draggable={false}
                                   crossOrigin="anonymous"
+                                  style={{ mixBlendMode: hasTransparentImages ? undefined : "multiply" as const }}
                                   
                                 />
                                 {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
@@ -1980,7 +2004,7 @@ export default function CustomerConfigurator() {
             {/* KI-Mockup */}
             {hasParts && viewMode === "ai-mockup" && (
               <Card className="overflow-hidden">
-                <div className="bg-[#e8eaed] p-4 sm:p-6">
+                <div className="bg-[#b8bcc2] p-4 sm:p-6">
                   {/* Vorderseite / Rückseite Tabs */}
                   <div className="flex gap-2 mb-4 justify-center">
                     <Button
@@ -2037,7 +2061,7 @@ export default function CustomerConfigurator() {
             {/* KI-Mockup für freeZoneMode-Produkte (Hoodie, Jacke, etc.) */}
             {!hasParts && viewMode === "ai-mockup" && (
               <Card className="overflow-hidden">
-                <div className="bg-[#e8eaed] p-4 sm:p-6">
+                <div className="bg-[#b8bcc2] p-4 sm:p-6">
                   {/* Vorderseite / Rückseite Tabs */}
                   <div className="flex gap-2 mb-4 justify-center">
                     <Button
@@ -2099,7 +2123,7 @@ export default function CustomerConfigurator() {
                    className="relative w-full mx-auto select-none"
                    style={{
                      ...((isFreeZoneMode && (draggingZone !== null || resizingZone !== null)) ? { touchAction: "none" } : {}),
-                     backgroundColor: "#e8eaed",
+                     backgroundColor: "#b8bcc2",
                    }}
                   onClick={() => setSelectedZoneId(null)}
                   onDragOver={(e) => {
@@ -2148,6 +2172,7 @@ export default function CustomerConfigurator() {
                         className="w-full h-auto block pointer-events-none drop-shadow-md relative"
                         draggable={false}
                         crossOrigin="anonymous"
+                        style={{ mixBlendMode: hasTransparentImages ? undefined : "multiply" as const }}
                         
                       />
                       {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
@@ -2766,82 +2791,79 @@ export default function CustomerConfigurator() {
 
                           {/* Dimensions in cm - editierbar bei Nicht-Trikots im freeZoneMode */}
                           {isFreeZoneMode && productData?.category !== 'Trikot' ? (
-                            <div className="flex items-center gap-1.5 mt-1">
-                              <Ruler className="w-3 h-3 text-muted-foreground shrink-0" />
-                              <span className="text-[10px] text-muted-foreground shrink-0">Größe:</span>
-                              <input
-                                type="number"
-                                step="0.5"
-                                min="1"
-                                max="100"
-                                placeholder="B"
-                                className="w-12 h-5 text-[10px] text-center border rounded bg-background px-1"
-                                value={zone.widthCm ?? ""}
-                                onChange={(e) => {
-                                  const val = e.target.value ? parseFloat(e.target.value) : null;
-                                  setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, widthCm: val } : z));
-                                }}
-                                onBlur={(e) => {
-                                  const val = e.target.value ? parseFloat(e.target.value) : null;
-                                  // Berechne Zone-Breite basierend auf cm-Seitenverhältnis
-                                  const hCm = zone.heightCm;
-                                  if (val && hCm && canvasRef.current) {
-                                    const rect = canvasRef.current.getBoundingClientRect();
-                                    const canvasAspect = rect.width / rect.height;
-                                    const cmAspect = val / hCm;
-                                    const newWidth = zone.height * cmAspect / canvasAspect;
-                                    setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, width: Math.min(newWidth, 95) } : z));
-                                    // Speichere widthCm + neue width
+                            <div className="flex flex-col gap-1 mt-1">
+                              <div className="flex items-center gap-1.5">
+                                <Ruler className="w-3 h-3 text-muted-foreground shrink-0" />
+                                <span className="text-[10px] text-muted-foreground shrink-0">Größe:</span>
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  min="1"
+                                  max="100"
+                                  placeholder="B"
+                                  className="w-12 h-5 text-[10px] text-center border rounded bg-background px-1"
+                                  value={zone.widthCm ?? ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value ? parseFloat(e.target.value) : null;
+                                    setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, widthCm: val } : z));
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <span className="text-[10px] text-muted-foreground">×</span>
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  min="1"
+                                  max="100"
+                                  placeholder="H"
+                                  className="w-12 h-5 text-[10px] text-center border rounded bg-background px-1"
+                                  value={zone.heightCm ?? ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value ? parseFloat(e.target.value) : null;
+                                    setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, heightCm: val } : z));
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <span className="text-[10px] text-muted-foreground">cm</span>
+                                {zone.rotation ? <span className="text-[10px] text-muted-foreground ml-1">{zone.rotation}°</span> : null}
+                              </div>
+                              {/* Button: Jetzt anwenden - berechnet exakte Prozent-Größe aus cm */}
+                              {zone.widthCm && zone.heightCm && (
+                                <button
+                                  className="text-[9px] px-2 py-0.5 bg-primary text-primary-foreground rounded hover:bg-primary/90 self-start"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const partKey = activePart?.key || (activeSide === 'front' ? 'vorderteil' : 'rueckteil');
+                                    const dims = getPartRealDimensions(productData?.templateId, partKey);
+                                    if (!dims) {
+                                      toast.error('Keine Referenzmaße für dieses Teil hinterlegt');
+                                      return;
+                                    }
+                                    const wCm = zone.widthCm!;
+                                    const hCm = zone.heightCm!;
+                                    // Exakte Umrechnung: cm → Prozent des Parts
+                                    const newWidth = Math.min(cmToPercent(wCm, dims.widthCm), 95);
+                                    const newHeight = Math.min(cmToPercent(hCm, dims.heightCm), 95);
+                                    setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, width: newWidth, height: newHeight } : z));
+                                    // Speichere die neue Größe
                                     bulkUpdatePositions.mutate({
                                       productId,
-                                      zones: [{ id: zone.id, posX: zone.posX, posY: zone.posY, width: Math.min(newWidth, 95), height: zone.height, rotation: zone.rotation || 0 }],
+                                      zones: [{ id: zone.id, posX: zone.posX, posY: zone.posY, width: newWidth, height: newHeight, rotation: zone.rotation || 0 }],
                                     });
-                                  }
-                                  freeUpdateZoneMut.mutate({ id: zone.id, productId, widthCm: val });
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <span className="text-[10px] text-muted-foreground">×</span>
-                              <input
-                                type="number"
-                                step="0.5"
-                                min="1"
-                                max="100"
-                                placeholder="H"
-                                className="w-12 h-5 text-[10px] text-center border rounded bg-background px-1"
-                                value={zone.heightCm ?? ""}
-                                onChange={(e) => {
-                                  const val = e.target.value ? parseFloat(e.target.value) : null;
-                                  setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, heightCm: val } : z));
-                                }}
-                                onBlur={(e) => {
-                                  const val = e.target.value ? parseFloat(e.target.value) : null;
-                                  // Berechne Zone-Breite basierend auf cm-Seitenverhältnis (Höhe ist ausschlaggebend)
-                                  const wCm = zone.widthCm;
-                                  if (val && wCm && canvasRef.current) {
-                                    const rect = canvasRef.current.getBoundingClientRect();
-                                    const canvasAspect = rect.width / rect.height;
-                                    const cmAspect = wCm / val;
-                                    const newWidth = zone.height * cmAspect / canvasAspect;
-                                    setLocalZones(prev => prev.map(z => z.id === zone.id ? { ...z, width: Math.min(newWidth, 95) } : z));
-                                    // Speichere heightCm + neue width
-                                    bulkUpdatePositions.mutate({
-                                      productId,
-                                      zones: [{ id: zone.id, posX: zone.posX, posY: zone.posY, width: Math.min(newWidth, 95), height: zone.height, rotation: zone.rotation || 0 }],
-                                    });
-                                  }
-                                  freeUpdateZoneMut.mutate({ id: zone.id, productId, heightCm: val });
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <span className="text-[10px] text-muted-foreground">cm</span>
-                              {zone.rotation ? <span className="text-[10px] text-muted-foreground ml-1">{zone.rotation}°</span> : null}
+                                    freeUpdateZoneMut.mutate({ id: zone.id, productId, widthCm: wCm, heightCm: hCm });
+                                    toast.success(`Zone auf ${wCm}×${hCm} cm gesetzt (Druck: ${cmToPixels(wCm)}×${cmToPixels(hCm)} px @ 300 DPI)`);
+                                  }}
+                                >
+                                  Jetzt anwenden
+                                </button>
+                              )}
                             </div>
                           ) : (zone.widthCm || zone.heightCm) ? (
                             <p className="text-[10px] text-muted-foreground">
                               Druckfläche: {zone.widthCm ? `${zone.widthCm} cm` : "–"} ×{" "}
                               {zone.heightCm ? `${zone.heightCm} cm` : "–"}
                               {zone.rotation ? ` · ${zone.rotation}°` : ""}
+                              {zone.widthCm && zone.heightCm ? ` (${cmToPixels(zone.widthCm)}×${cmToPixels(zone.heightCm)} px)` : ""}
                             </p>
                           ) : null}
 

@@ -1123,3 +1123,14 @@
 - [x] --muted von oklch(0.96) auf oklch(0.91) geändert
 - [x] Home-Seite Produktvorschau von bg-muted/50 auf bg-[#e0e2e6] geändert
 - [x] SVG-Trikots (4 Stück) auf published=0 gesetzt (waren bereits aussortiert)
+
+## Sublimation raus + DTF-Trikots mit neuen Vorlagen
+- [x] Sublimation-Trikots (Fußball, Handball, Volleyball, Basketball) auf unpublished gesetzt (690029, 690030, 690031, 690033, 90050)
+- [ ] Fertige Trikotvorlagen für DTF suchen (keine Schnittmuster, sondern fertige Trikots)
+- [ ] DTF-Trikot-Templates mit neuen Vorlagen-Bildern aktualisieren
+- [ ] mix-blend-mode Änderungen rückgängig machen (nicht mehr nötig mit neuen Bildern)
+- [ ] Testen und Checkpoint speichern
+
+## Zonen cm-Angabe exakt umsetzen
+- [ ] cm-Angabe der Zonen exakt auf dem Produkt darstellen (proportional korrekt zur Trikotgröße)
+- [ ] Button "Jetzt anwenden" der die cm-Größe nimmt und die Zone korrekt skaliert/positioniert auf dem Produktbild
