@@ -650,6 +650,8 @@ export const appRouter = router({
         hashtag: z.string().max(100).optional(),
         primaryColor: z.string().max(7).optional(),
         secondaryColor: z.string().max(7).optional(),
+        primaryColorCmyk: z.string().max(50).optional(),
+        secondaryColorCmyk: z.string().max(50).optional(),
         jerseyName: z.string().max(255).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
@@ -676,6 +678,8 @@ export const appRouter = router({
           hashtag: input.hashtag || null,
           primaryColor: input.primaryColor || null,
           secondaryColor: input.secondaryColor || null,
+          primaryColorCmyk: input.primaryColorCmyk || null,
+          secondaryColorCmyk: input.secondaryColorCmyk || null,
           jerseyName: input.jerseyName || null,
           ownerId: ctx.user.id,
         });
@@ -727,6 +731,8 @@ export const appRouter = router({
         hashtag: z.string().max(100).optional(),
         primaryColor: z.string().max(7).optional(),
         secondaryColor: z.string().max(7).optional(),
+        primaryColorCmyk: z.string().max(50).optional(),
+        secondaryColorCmyk: z.string().max(50).optional(),
         jerseyName: z.string().max(255).optional(),
         onboardingComplete: z.boolean().optional(),
       }))

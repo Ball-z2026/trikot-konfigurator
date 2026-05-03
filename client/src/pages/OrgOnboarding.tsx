@@ -30,6 +30,9 @@ export default function OrgOnboarding({ orgId, orgName, onComplete }: OrgOnboard
   // Step 1: Vereinsfarben
   const [primaryColor, setPrimaryColor] = useState("#003399");
   const [secondaryColor, setSecondaryColor] = useState("#ffffff");
+  // CMYK-Werte (C, M, Y, K jeweils 0-100)
+  const [primaryCmyk, setPrimaryCmyk] = useState({ c: 100, m: 67, y: 0, k: 40 });
+  const [secondaryCmyk, setSecondaryCmyk] = useState({ c: 0, m: 0, y: 0, k: 0 });
 
   // Step 2: Logo-Upload
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -96,12 +99,37 @@ export default function OrgOnboarding({ orgId, orgName, onComplete }: OrgOnboard
     reader.readAsDataURL(logoFile);
   }, [logoFile, orgId, uploadLogo]);
 
+  // HEX zu CMYK Konvertierung
+  const hexToCmyk = (hex: string) => {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const k = 1 - Math.max(r, g, b);
+    if (k === 1) return { c: 0, m: 0, y: 0, k: 100 };
+    const c = Math.round(((1 - r - k) / (1 - k)) * 100);
+    const m = Math.round(((1 - g - k) / (1 - k)) * 100);
+    const y = Math.round(((1 - b - k) / (1 - k)) * 100);
+    return { c, m, y, k: Math.round(k * 100) };
+  };
+
+  // Automatisch CMYK berechnen wenn HEX sich ändert
+  const handlePrimaryColorChange = (hex: string) => {
+    setPrimaryColor(hex);
+    setPrimaryCmyk(hexToCmyk(hex));
+  };
+  const handleSecondaryColorChange = (hex: string) => {
+    setSecondaryColor(hex);
+    setSecondaryCmyk(hexToCmyk(hex));
+  };
+
   const handleFinish = () => {
     setSaving(true);
     updateOrg.mutate({
       id: orgId,
       primaryColor,
       secondaryColor,
+      primaryColorCmyk: JSON.stringify(primaryCmyk),
+      secondaryColorCmyk: JSON.stringify(secondaryCmyk),
       jerseyName: jerseyName.trim() || orgName,
       onboardingComplete: true,
     });
@@ -173,16 +201,38 @@ export default function OrgOnboarding({ orgId, orgName, onComplete }: OrgOnboard
                       <input
                         type="color"
                         value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        onChange={(e) => handlePrimaryColorChange(e.target.value)}
                         className="w-16 h-16 rounded-lg border-2 border-border cursor-pointer"
                       />
                       <div>
+                        <Label className="text-xs text-muted-foreground mb-1">HEX</Label>
                         <Input
                           value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
+                          onChange={(e) => handlePrimaryColorChange(e.target.value)}
                           className="font-mono w-28"
                           maxLength={7}
                         />
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground">CMYK (für Druck)</Label>
+                      <div className="grid grid-cols-4 gap-2 mt-1">
+                        <div>
+                          <Label className="text-[10px]">C</Label>
+                          <Input type="number" min={0} max={100} value={primaryCmyk.c} onChange={(e) => setPrimaryCmyk(p => ({...p, c: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">M</Label>
+                          <Input type="number" min={0} max={100} value={primaryCmyk.m} onChange={(e) => setPrimaryCmyk(p => ({...p, m: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Y</Label>
+                          <Input type="number" min={0} max={100} value={primaryCmyk.y} onChange={(e) => setPrimaryCmyk(p => ({...p, y: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">K</Label>
+                          <Input type="number" min={0} max={100} value={primaryCmyk.k} onChange={(e) => setPrimaryCmyk(p => ({...p, k: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -193,16 +243,38 @@ export default function OrgOnboarding({ orgId, orgName, onComplete }: OrgOnboard
                       <input
                         type="color"
                         value={secondaryColor}
-                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        onChange={(e) => handleSecondaryColorChange(e.target.value)}
                         className="w-16 h-16 rounded-lg border-2 border-border cursor-pointer"
                       />
                       <div>
+                        <Label className="text-xs text-muted-foreground mb-1">HEX</Label>
                         <Input
                           value={secondaryColor}
-                          onChange={(e) => setSecondaryColor(e.target.value)}
+                          onChange={(e) => handleSecondaryColorChange(e.target.value)}
                           className="font-mono w-28"
                           maxLength={7}
                         />
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground">CMYK (für Druck)</Label>
+                      <div className="grid grid-cols-4 gap-2 mt-1">
+                        <div>
+                          <Label className="text-[10px]">C</Label>
+                          <Input type="number" min={0} max={100} value={secondaryCmyk.c} onChange={(e) => setSecondaryCmyk(p => ({...p, c: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">M</Label>
+                          <Input type="number" min={0} max={100} value={secondaryCmyk.m} onChange={(e) => setSecondaryCmyk(p => ({...p, m: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">Y</Label>
+                          <Input type="number" min={0} max={100} value={secondaryCmyk.y} onChange={(e) => setSecondaryCmyk(p => ({...p, y: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-[10px]">K</Label>
+                          <Input type="number" min={0} max={100} value={secondaryCmyk.k} onChange={(e) => setSecondaryCmyk(p => ({...p, k: +e.target.value}))} className="h-8 text-xs" />
+                        </div>
                       </div>
                     </div>
                   </div>

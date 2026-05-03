@@ -318,14 +318,34 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   // ─── Sponsor Templates ───
   const [showAddSponsor, setShowAddSponsor] = useState(false);
-  const [sponsorName, setSponsorName] = useState("");
-  const [sponsorCategory, setSponsorCategory] = useState("");
+  const [sponsorForm, setSponsorForm] = useState({
+    name: "", sponsorType: "hauptsponsor" as "hauptsponsor" | "spartensponsor" | "mannschaftssponsor",
+    obligation: "nicht_verpflichtend" as "alle_produkte" | "nur_trikot" | "nicht_verpflichtend",
+    departmentId: undefined as number | undefined, teamId: undefined as number | undefined,
+    contactFirstName: "", contactLastName: "", contactEmail: "", contactPhone: "",
+    street: "", zip: "", city: "", country: "Deutschland",
+    vatId: "", billingDifferent: false, billingStreet: "", billingZip: "", billingCity: "", billingCountry: "Deutschland",
+    sponsoringAmount: "",
+  });
   const [sponsorFile, setSponsorFile] = useState<File | null>(null);
   const [sponsorPreview, setSponsorPreview] = useState<string | null>(null);
   const sponsorFileRef = useRef<HTMLInputElement>(null);
 
+  const resetSponsorForm = useCallback(() => {
+    setSponsorForm({
+      name: "", sponsorType: "hauptsponsor", obligation: "nicht_verpflichtend",
+      departmentId: undefined, teamId: undefined,
+      contactFirstName: "", contactLastName: "", contactEmail: "", contactPhone: "",
+      street: "", zip: "", city: "", country: "Deutschland",
+      vatId: "", billingDifferent: false, billingStreet: "", billingZip: "", billingCity: "", billingCountry: "Deutschland",
+      sponsoringAmount: "",
+    });
+    setSponsorFile(null);
+    setSponsorPreview(null);
+  }, []);
+
   const createSponsor = trpc.sponsorTemplate.create.useMutation({
-    onSuccess: () => { utils.sponsorTemplate.list.invalidate({ orgId }); setShowAddSponsor(false); setSponsorName(""); setSponsorCategory(""); setSponsorFile(null); setSponsorPreview(null); toast.success("Sponsor-Vorlage erstellt"); },
+    onSuccess: () => { utils.sponsorTemplate.list.invalidate({ orgId }); setShowAddSponsor(false); resetSponsorForm(); toast.success("Sponsor-Vorlage erstellt"); },
     onError: (e) => toast.error(e.message),
   });
   const deleteSponsorTpl = trpc.sponsorTemplate.delete.useMutation({
@@ -338,13 +358,30 @@ function OrgDetail({ orgId }: { orgId: number }) {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast.error("Datei zu groß (max. 5 MB)"); return; }
     setSponsorFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setSponsorPreview(reader.result as string);
-    reader.readAsDataURL(file);
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (isPdf) {
+      setSponsorPreview(null);
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => setSponsorPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   }, []);
 
   const handleUploadSponsor = useCallback(async () => {
-    if (!sponsorFile || !sponsorName.trim()) return;
+    if (!sponsorFile || !sponsorForm.name.trim()) return;
+    // Pflichtfelder prüfen
+    const missing: string[] = [];
+    if (!sponsorForm.contactFirstName) missing.push("Vorname");
+    if (!sponsorForm.contactLastName) missing.push("Nachname");
+    if (!sponsorForm.contactEmail) missing.push("E-Mail");
+    if (!sponsorForm.street) missing.push("Straße");
+    if (!sponsorForm.zip) missing.push("PLZ");
+    if (!sponsorForm.city) missing.push("Ort");
+    if (missing.length > 0) {
+      toast.error(`Bitte alle Pflichtfelder ausfüllen: ${missing.join(", ")}`);
+      return;
+    }
     // Überdrucken- und Transparenz-Prüfung
     try {
       const { checkUploadFile } = await import("@/hooks/useUploadChecks");
@@ -369,14 +406,32 @@ function OrgDetail({ orgId }: { orgId: number }) {
       const base64 = (reader.result as string).split(",")[1];
       createSponsor.mutate({
         orgId,
-        name: sponsorName,
+        name: sponsorForm.name,
         logoBase64: base64,
         mimeType: sponsorFile.type,
-        category: sponsorCategory || undefined,
+        sponsorType: sponsorForm.sponsorType,
+        obligation: sponsorForm.obligation,
+        departmentId: sponsorForm.sponsorType === "spartensponsor" ? sponsorForm.departmentId : undefined,
+        teamId: sponsorForm.sponsorType === "mannschaftssponsor" ? sponsorForm.teamId : undefined,
+        contactFirstName: sponsorForm.contactFirstName || undefined,
+        contactLastName: sponsorForm.contactLastName || undefined,
+        contactEmail: sponsorForm.contactEmail || undefined,
+        contactPhone: sponsorForm.contactPhone || undefined,
+        street: sponsorForm.street || undefined,
+        zip: sponsorForm.zip || undefined,
+        city: sponsorForm.city || undefined,
+        country: sponsorForm.country || undefined,
+        vatId: sponsorForm.vatId || undefined,
+        billingDifferent: sponsorForm.billingDifferent,
+        billingStreet: sponsorForm.billingDifferent ? (sponsorForm.billingStreet || undefined) : undefined,
+        billingZip: sponsorForm.billingDifferent ? (sponsorForm.billingZip || undefined) : undefined,
+        billingCity: sponsorForm.billingDifferent ? (sponsorForm.billingCity || undefined) : undefined,
+        billingCountry: sponsorForm.billingDifferent ? (sponsorForm.billingCountry || undefined) : undefined,
+        sponsoringAmount: sponsorForm.sponsoringAmount ? parseFloat(sponsorForm.sponsoringAmount) : undefined,
       });
     };
     reader.readAsDataURL(sponsorFile);
-  }, [sponsorFile, sponsorName, sponsorCategory, orgId, createSponsor]);
+  }, [sponsorFile, sponsorForm, orgId, createSponsor]);
 
   // ─── Logo Upload ───
   const [showUploadLogo, setShowUploadLogo] = useState(false);
@@ -760,72 +815,118 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                 <p className="text-sm text-muted-foreground">Hinterlegen Sie häufig verwendete Sponsoren-Logos, die Trainer per Klick einfügen können.</p>
               </div>
               {isOwner && (
-                <Dialog open={showAddSponsor} onOpenChange={setShowAddSponsor}>
+                <Dialog open={showAddSponsor} onOpenChange={(open) => { setShowAddSponsor(open); if (!open) resetSponsorForm(); }}>
                   <DialogTrigger asChild>
                     <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><Plus className="w-4 h-4 mr-2" />Sponsor hinzufügen</Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>Sponsor-Vorlage erstellen</DialogTitle>
-                      <DialogDescription>Laden Sie ein Sponsor-Logo hoch, das Trainer in Sponsor-Zonen verwenden können.</DialogDescription>
+                      <DialogTitle>Neuen Sponsor anlegen</DialogTitle>
+                      <DialogDescription>Alle mit * markierten Felder sind Pflichtfelder für die Rechnungsstellung.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label>Sponsor-Name</Label>
-                        <Input
-                          value={sponsorName}
-                          onChange={(e) => setSponsorName(e.target.value)}
-                          placeholder="z.B. Stadtwerke Musterstadt"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Kategorie (optional)</Label>
-                        <Select value={sponsorCategory} onValueChange={setSponsorCategory}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Kategorie wählen..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="hauptsponsor">Hauptsponsor</SelectItem>
-                            <SelectItem value="co-sponsor">Co-Sponsor</SelectItem>
-                            <SelectItem value="ausruester">Ausrüster</SelectItem>
-                            <SelectItem value="sonstige">Sonstige</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Logo-Datei</Label>
-                        <input
-                          ref={sponsorFileRef}
-                          type="file"
-accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
-                           onChange={handleSponsorFileChange}
-                          className="hidden"
-                        />
-                        <div
-                          className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
-                          onClick={() => sponsorFileRef.current?.click()}
-                        >
-                          {sponsorPreview ? (
-                            <img src={sponsorPreview} alt="Vorschau" className="max-h-32 mx-auto" />
-                          ) : (
+                    <div className="space-y-6 mt-4">
+                      {/* Grunddaten */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Grunddaten</h3>
+                        <div className="space-y-3">
+                          <div>
+                            <Label>Firmenname / Sponsor-Name <span className="text-red-500">*</span></Label>
+                            <Input value={sponsorForm.name} onChange={(e) => setSponsorForm(p => ({...p, name: e.target.value}))} placeholder="z.B. Stadtwerke Musterstadt" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">Klicken zum Auswählen (PDF bevorzugt, max. 5 MB)</p>
+                              <Label>Sponsor-Typ</Label>
+                              <Select value={sponsorForm.sponsorType} onValueChange={(v: any) => setSponsorForm(p => ({...p, sponsorType: v}))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="hauptsponsor">Hauptsponsor</SelectItem>
+                                  <SelectItem value="spartensponsor">Spartensponsor</SelectItem>
+                                  <SelectItem value="mannschaftssponsor">Mannschaftssponsor</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
+                            <div>
+                              <Label>Verpflichtung</Label>
+                              <Select value={sponsorForm.obligation} onValueChange={(v: any) => setSponsorForm(p => ({...p, obligation: v}))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="alle_produkte">Alle Produkte</SelectItem>
+                                  <SelectItem value="nur_trikot">Nur Trikots</SelectItem>
+                                  <SelectItem value="nicht_verpflichtend">Nicht verpflichtend</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Logo-Upload */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Logo-Datei <span className="text-red-500">*</span></h3>
+                        <input ref={sponsorFileRef} type="file" accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleSponsorFileChange} className="hidden" />
+                        <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => sponsorFileRef.current?.click()}>
+                          {sponsorPreview ? (
+                            <img src={sponsorPreview} alt="Vorschau" className="max-h-32 mx-auto object-contain" />
+                          ) : sponsorFile ? (
+                            <div><FileText className="w-8 h-8 text-muted-foreground mx-auto mb-2" /><p className="text-sm text-muted-foreground">{sponsorFile.name}</p></div>
+                          ) : (
+                            <div><Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" /><p className="text-sm text-muted-foreground">Klicken zum Auswählen (PDF bevorzugt, max. 5 MB)</p></div>
                           )}
                         </div>
                       </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowAddSponsor(false)}>Abbrechen</Button>
+                      {/* Kontaktperson */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Kontaktperson</h3>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div><Label>Vorname <span className="text-red-500">*</span></Label><Input value={sponsorForm.contactFirstName} onChange={(e) => setSponsorForm(p => ({...p, contactFirstName: e.target.value}))} placeholder="Max" /></div>
+                            <div><Label>Nachname <span className="text-red-500">*</span></Label><Input value={sponsorForm.contactLastName} onChange={(e) => setSponsorForm(p => ({...p, contactLastName: e.target.value}))} placeholder="Mustermann" /></div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div><Label>E-Mail <span className="text-red-500">*</span></Label><Input type="email" value={sponsorForm.contactEmail} onChange={(e) => setSponsorForm(p => ({...p, contactEmail: e.target.value}))} placeholder="max@firma.de" /></div>
+                            <div><Label>Telefon</Label><Input value={sponsorForm.contactPhone} onChange={(e) => setSponsorForm(p => ({...p, contactPhone: e.target.value}))} placeholder="+49 123 456789" /></div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Firmenadresse */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Firmenadresse</h3>
+                        <div className="space-y-3">
+                          <div><Label>Straße & Hausnummer <span className="text-red-500">*</span></Label><Input value={sponsorForm.street} onChange={(e) => setSponsorForm(p => ({...p, street: e.target.value}))} placeholder="Musterstraße 1" /></div>
+                          <div className="grid grid-cols-3 gap-3">
+                            <div><Label>PLZ <span className="text-red-500">*</span></Label><Input value={sponsorForm.zip} onChange={(e) => setSponsorForm(p => ({...p, zip: e.target.value}))} placeholder="12345" /></div>
+                            <div className="col-span-2"><Label>Ort <span className="text-red-500">*</span></Label><Input value={sponsorForm.city} onChange={(e) => setSponsorForm(p => ({...p, city: e.target.value}))} placeholder="Musterstadt" /></div>
+                          </div>
+                          <div><Label>Land</Label><Input value={sponsorForm.country} onChange={(e) => setSponsorForm(p => ({...p, country: e.target.value}))} /></div>
+                        </div>
+                      </div>
+                      {/* Rechnungsdaten */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Rechnungsdaten</h3>
+                        <div><Label>USt-IdNr.</Label><Input value={sponsorForm.vatId} onChange={(e) => setSponsorForm(p => ({...p, vatId: e.target.value}))} placeholder="DE123456789" /></div>
+                      </div>
+                      {/* Sponsoring-Summe (nur Owner) */}
+                      {isOwner && (
+                        <div className="border-t pt-4">
+                          <Label className="flex items-center gap-1 mb-2 font-semibold">Sponsoring-Summe (intern, nur für Sie sichtbar)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input type="number" min="0" step="0.01" value={sponsorForm.sponsoringAmount || ""} onChange={(e) => setSponsorForm(p => ({...p, sponsoringAmount: e.target.value}))} placeholder="z.B. 5000" className="max-w-[200px]" />
+                            <span className="text-sm text-muted-foreground">EUR / Saison</span>
+                          </div>
+                        </div>
+                      )}
+                      {/* Erstellen-Button */}
                       <Button
                         onClick={handleUploadSponsor}
-                        disabled={!sponsorName.trim() || !sponsorFile || createSponsor.isPending}
+                        disabled={!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city || createSponsor.isPending}
+                        className="w-full" size="lg"
                       >
                         {createSponsor.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        Erstellen
+                        {createSponsor.isPending ? "Wird angelegt..." : "Sponsor anlegen"}
                       </Button>
-                    </DialogFooter>
+                      {(!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city) && (
+                        <p className="text-xs text-red-500 text-center">Bitte alle Pflichtfelder (*) ausfüllen</p>
+                      )}
+                    </div>
                   </DialogContent>
                 </Dialog>
               )}
@@ -1408,6 +1509,8 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
   // Vereinsfarben & Trikotname
   const [primaryColor, setPrimaryColor] = useState(org.primaryColor || "");
   const [secondaryColor, setSecondaryColor] = useState(org.secondaryColor || "");
+  const [primaryColorCmyk, setPrimaryColorCmyk] = useState(org.primaryColorCmyk || "");
+  const [secondaryColorCmyk, setSecondaryColorCmyk] = useState(org.secondaryColorCmyk || "");
   const [jerseyName, setJerseyName] = useState(org.jerseyName || "");
   // Hashtag
   const [hashtag, setHashtag] = useState(org.hashtag || "");
@@ -1445,6 +1548,8 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       hashtag: cleanHashtag,
       primaryColor: primaryColor || undefined,
       secondaryColor: secondaryColor || undefined,
+      primaryColorCmyk: primaryColorCmyk || undefined,
+      secondaryColorCmyk: secondaryColorCmyk || undefined,
       jerseyName: jerseyName || undefined,
     });
   };
@@ -1476,6 +1581,17 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
             <div className="space-y-2">
               <Label>Vereinsname auf dem Trikot</Label>
               <Input value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} placeholder="z.B. TSV Musterstadt" disabled={!isOwner} />
+            </div>
+          </div>
+          {/* CMYK-Werte */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Primärfarbe CMYK (für Druck)</Label>
+              <Input value={primaryColorCmyk} onChange={(e) => setPrimaryColorCmyk(e.target.value)} placeholder="z.B. C100 M80 Y0 K10" disabled={!isOwner} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Sekundärfarbe CMYK (für Druck)</Label>
+              <Input value={secondaryColorCmyk} onChange={(e) => setSecondaryColorCmyk(e.target.value)} placeholder="z.B. C0 M0 Y0 K0" disabled={!isOwner} />
             </div>
           </div>
           {primaryColor && secondaryColor && (

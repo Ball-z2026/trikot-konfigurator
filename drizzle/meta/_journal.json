@@ -246,6 +246,13 @@
       "when": 1777805682240,
       "tag": "0034_cheerful_siren",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "5",
+      "when": 1777807749230,
+      "tag": "0035_parched_dreadnoughts",
+      "breakpoints": true
     }
   ]
 }

@@ -7035,3 +7035,17 @@
 [2026-05-03T11:19:22.102Z] [Auth] Missing session cookie
 [2026-05-03T11:19:22.105Z] [Auth] Missing session cookie
 [2026-05-03T11:19:22.109Z] [Auth] Missing session cookie
+[2026-05-03T11:28:59.416Z] 7:28:59 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T11:29:01.020Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T11:29:01.431Z] Server running on http://localhost:3000/
+[2026-05-03T11:29:47.993Z] 7:29:47 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T11:29:49.489Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T11:29:49.857Z] Server running on http://localhost:3000/
+[2026-05-03T11:29:55.276Z] 7:29:55 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T11:29:57.032Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T11:29:57.462Z] Server running on http://localhost:3000/
+[2026-05-03T11:30:46.043Z] 7:30:46 AM [vite] (client) hmr update /src/index.css, /src/pages/OrgOnboarding.tsx
+[2026-05-03T11:35:56.672Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-03T11:40:04.595Z] 7:40:04 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T11:43:18.435Z] 7:43:18 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T11:43:27.389Z] 7:43:27 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css

@@ -1339,3 +1339,32 @@
 - [x] Kategorie-Dropdown zeigt alte Optionen → Lokaler Code hat bereits korrekte Optionen, deployed Version war veraltet
 - [x] Pflichtfelder-Validierung wird nicht erzwungen → Button disabled + Hinweistext wenn Pflichtfelder fehlen
 - [x] Sponsor-Logo wird in der Übersicht nicht angezeigt → Code korrekt, deployed Version war veraltet
+
+## Mitglieder-Verwaltung und Excel-Import
+- [ ] DB: Mitglieder-Tabelle erweitern um Status (aktiv/passiv), Sparte-Zuordnung, Mannschaft-Zuordnung
+- [ ] Backend: Mitglieder CRUD (anlegen, bearbeiten, löschen, auflisten)
+- [ ] Backend: Excel-Import-Endpunkt für Mitglieder (Name, Status, Sparte, Mannschaft)
+- [ ] Backend: Excel-Import-Endpunkt für Mannschaften
+- [ ] Frontend: Mitglieder-Tab mit Tabelle (aktiv/passiv Filter, Sparte, Mannschaft)
+- [ ] Frontend: Mitglied anlegen/bearbeiten Dialog
+- [ ] Frontend: Excel-Upload für Mitglieder mit Vorschau und Zuordnung
+- [ ] Frontend: Excel-Upload für Mannschaften mit Vorschau
+- [ ] Aktive Mitglieder: Pflicht-Zuordnung zu Sparte und Mannschaft
+- [ ] Passive Mitglieder: Nur Basisdaten (kein Sparte/Mannschaft-Zwang)
+
+## Vereinsfarben: CMYK-Werte ergänzen
+- [x] DB: CMYK-Felder für Primär- und Sekundärfarbe (C, M, Y, K jeweils 0-100)
+- [x] Backend: org.create/update um CMYK-Felder erweitern
+- [x] Frontend: CMYK-Eingabe im Onboarding (Schritt 1) und Stammdaten
+- [ ] Automatische HEX→CMYK Konvertierung als Vorschlag (manuell überschreibbar)
+
+## Sponsor-Dialog Bug-Fix (OrgDashboard)
+- [x] Sponsor-Dialog im OrgDashboard erweitert mit allen Pflichtfeldern (Kontaktperson, Firmenadresse, Rechnungsdaten)
+- [x] Logo-Upload mit DPI-Prüfung und Überdrucken-Check
+- [x] Sponsoring-Summe (nur Owner sichtbar)
+- [x] Pflichtfeld-Validierung vor dem Erstellen
+- [x] Sponsor-Typ, Verpflichtung, Abteilung/Mannschaft-Zuordnung
+
+## CMYK-Felder in Stammdaten (OrgDashboard)
+- [x] CMYK-Eingabefelder für Primär- und Sekundärfarbe in den Stammdaten
+- [x] State-Variablen und handleSave um CMYK-Felder erweitert
