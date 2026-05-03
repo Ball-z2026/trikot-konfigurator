@@ -50,12 +50,11 @@ import { useState, useRef, useCallback, useEffect, useMemo, Suspense, lazy } fro
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { AlertTriangle, Info, FileText } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
 import { storageUrl } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
-import { PdfPreview } from "@/components/PdfPreview";
 
 const AiMockupView = lazy(() => import("@/components/AiMockupView"));
 
@@ -2637,11 +2636,7 @@ export default function CustomerConfigurator() {
                         {mandatorySponsors.map((s: any) => (
                           <div key={s.id} className="text-xs flex items-center gap-2 text-blue-700 dark:text-blue-400">
                             {s.logoUrl && (
-                              (s.logoMimeType === 'application/pdf' || s.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                                <PdfPreview url={storageUrl(s.logoUrl)} width={20} height={20} />
-                              ) : (
-                                <img src={storageUrl(s.logoUrl)} alt={s.name} className="w-5 h-5 object-contain" />
-                              )
+                              <img src={storageUrl(s.logoUrl)} alt={s.name} className="w-5 h-5 object-contain" />
                             )}
                             <span className="font-medium">{s.name}</span>
                             <Badge variant="secondary" className="text-[9px] px-1 py-0">
@@ -3300,16 +3295,12 @@ export default function CustomerConfigurator() {
                                   >
                                     <GripVertical className="absolute top-0.5 right-0.5 w-3 h-3 text-muted-foreground/40 group-hover:text-muted-foreground/70" />
                                     {tpl.logoUrl ? (
-                                      (tpl.logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                                        <PdfPreview url={storageUrl(tpl.logoUrl)} width={40} height={40} />
-                                      ) : (
-                                        <img
-                                          src={storageUrl(tpl.logoUrl)}
-                                          alt={tpl.name}
-                                          className="w-10 h-10 object-contain rounded"
-                                          draggable={false}
-                                        />
-                                      )
+                                      <img
+                                        src={storageUrl(tpl.logoUrl)}
+                                        alt={tpl.name}
+                                        className="w-10 h-10 object-contain rounded"
+                                        draggable={false}
+                                      />
                                     ) : (
                                       <div className="w-10 h-10 flex items-center justify-center text-[8px] text-center leading-tight font-medium">
                                         {tpl.name.length > 12 ? tpl.name.substring(0, 12) + "..." : tpl.name}

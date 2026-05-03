@@ -159,27 +159,6 @@ export function registerLocalAuthRoutes(app: Express) {
         return;
       }
 
-      // 2FA-Check: Wenn TOTP aktiviert, Session noch nicht setzen
-      if (user.totpEnabled) {
-        // Erstelle ein temporäres 2FA-Pending-Token (kurzlebig, 5 Minuten)
-        const twoFactorToken = await sdk.createSessionToken(user.openId, {
-          name: user.name || "",
-          expiresInMs: 5 * 60 * 1000, // 5 Minuten
-        });
-        res.json({
-          success: true,
-          requiresTwoFactor: true,
-          twoFactorToken,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          },
-        });
-        return;
-      }
-
       // Update last sign-in
       await db.upsertUser({
         openId: user.openId,
@@ -209,89 +188,6 @@ export function registerLocalAuthRoutes(app: Express) {
     } catch (error) {
       console.error("[LocalAuth] Login failed:", error);
       res.status(500).json({ error: "Anmeldung fehlgeschlagen" });
-    }
-  });
-
-  /**
-   * POST /api/auth/verify-2fa
-   * Body: { twoFactorToken: string, code: string, isBackupCode?: boolean }
-   * 
-   * Verifies the 2FA code after successful password authentication.
-   * On success, sets the full session cookie.
-   */
-  app.post("/api/auth/verify-2fa", async (req: Request, res: Response) => {
-    try {
-      const { twoFactorToken, code, isBackupCode } = req.body;
-
-      if (!twoFactorToken || !code) {
-        res.status(400).json({ error: "Token und Code sind erforderlich" });
-        return;
-      }
-
-      // Verify the temporary 2FA token to get the user
-      const tokenPayload = await sdk.verifySession(twoFactorToken);
-      if (!tokenPayload) {
-        res.status(401).json({ error: "2FA-Sitzung abgelaufen. Bitte melden Sie sich erneut an." });
-        return;
-      }
-
-      const user = await db.getUserByOpenId(tokenPayload.openId);
-      if (!user || !user.totpEnabled || !user.totpSecret) {
-        res.status(401).json({ error: "2FA nicht konfiguriert" });
-        return;
-      }
-
-      let verified = false;
-
-      if (isBackupCode) {
-        // Verify backup code
-        const hashedCodes: string[] = user.backupCodes ? JSON.parse(user.backupCodes) : [];
-        const { verifyBackupCode } = await import("./twoFactor");
-        const matchIndex = await verifyBackupCode(code, hashedCodes);
-        if (matchIndex >= 0) {
-          verified = true;
-          // Remove used backup code
-          hashedCodes.splice(matchIndex, 1);
-          await db.updateUserBackupCodes(user.id, JSON.stringify(hashedCodes));
-        }
-      } else {
-        // Verify TOTP code
-        const { verifyTotpToken } = await import("./twoFactor");
-        verified = verifyTotpToken(code, user.totpSecret);
-      }
-
-      if (!verified) {
-        res.status(401).json({ error: isBackupCode ? "Ungültiger Backup-Code" : "Ungültiger Authentifizierungscode" });
-        return;
-      }
-
-      // 2FA erfolgreich - vollständige Session erstellen
-      await db.upsertUser({
-        openId: user.openId,
-        lastSignedIn: new Date(),
-      });
-
-      const sessionToken = await sdk.createSessionToken(user.openId, {
-        name: user.name || "",
-        expiresInMs: ONE_YEAR_MS,
-      });
-
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
-      res.json({
-        success: true,
-        mustChangePassword: user.mustChangePassword,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
-      });
-    } catch (error) {
-      console.error("[LocalAuth] 2FA verification failed:", error);
-      res.status(500).json({ error: "2FA-Verifizierung fehlgeschlagen" });
     }
   });
 

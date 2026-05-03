@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shirt, Building2, Palette, ArrowRight, LogIn, LogOut, Menu, Users, Shield } from "lucide-react";
+import { Shirt, Building2, Palette, ArrowRight, LogIn, LogOut, Menu, Users } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
@@ -83,14 +83,6 @@ export default function Home() {
           <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10">
             Verwalte Vereine und Mannschaften, gestalte Produkte und konfiguriere Textilien.
           </p>
-          {!isAuthenticated && !loading && (
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="gap-2">
-                <Shield className="w-5 h-5" />
-                Admin
-              </Button>
-            </Link>
-          )}
         </div>
       </section>
 

@@ -48,18 +48,14 @@ import {
   Lock,
   Shirt,
   CheckCircle2,
-  HandCoins,
-  FileText,
 } from "lucide-react";
 import { useState, useRef, useCallback, useMemo } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OrderCommentThread } from "./OrderCommentThread";
 import { storageUrl } from "@/lib/utils";
-import { PdfPreview } from "@/components/PdfPreview";
 
 /** Vordefinierte Google-Fonts-Auswahl */
 const PRESET_FONTS = [
@@ -152,28 +148,22 @@ export default function DeptDashboard() {
     );
   }
 
-  // Keine Spartenleiter-Mitgliedschaft: Zum Vereins-Onboarding weiterleiten
+  // Keine Spartenleiter-Mitgliedschaft
   if (!deptLeadMembership) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
-            <Building2 className="w-12 h-12 text-primary mx-auto mb-2" />
-            <CardTitle>Willkommen beim Textil-Konfigurator</CardTitle>
+            <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+            <CardTitle>Kein Spartenleiter-Zugang</CardTitle>
             <CardDescription>
-              Sie sind noch keinem Verein zugeordnet. Erstellen Sie einen neuen Verein oder lassen Sie sich von einem Vereinsverantwortlichen einladen.
+              Sie sind keiner Abteilung als Spartenleiter zugeordnet.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <Link href="/verwaltung/org">
-              <Button className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                Verein anlegen
-              </Button>
-            </Link>
+          <CardContent>
             <Link href="/">
               <Button variant="outline" className="w-full">
-                Zurück zur Startseite
+                Zur Startseite
               </Button>
             </Link>
           </CardContent>
@@ -254,12 +244,11 @@ export default function DeptDashboard() {
           </Card>
         </div>
 
-         {/* Logo-Verwaltung */}
+        {/* Logo-Verwaltung */}
         <LogoSection orgId={orgId} logos={logos} />
+
         <Separator />
-        {/* Sponsoren-Verwaltung */}
-        <DeptSponsorSection orgId={orgId} deptId={deptId} />
-        <Separator />
+
         {/* Schriftarten-Verwaltung */}
         <FontSection orgId={orgId} deptId={deptId} fonts={fonts} />
 
@@ -545,364 +534,7 @@ function LogoSection({
   );
 }
 
-// ─── Dept Sponsor Section ──────────────────────────────────────────────────────────────────────
-function DeptSponsorSection({ orgId, deptId }: { orgId: number; deptId: number }) {
-  const utils = trpc.useUtils();
-  const { data: sponsors, isLoading } = trpc.sponsorTemplate.list.useQuery({ orgId });
-  const { data: teams } = trpc.team.listByOrg.useQuery({ orgId });
-  const [showDialog, setShowDialog] = useState(false);
-  const [sponsorForm, setSponsorForm] = useState({
-    name: "",
-    sponsorType: "spartensponsor" as "spartensponsor" | "mannschaftssponsor",
-    obligation: "nicht_verpflichtend" as "alle_produkte" | "nur_trikot" | "nicht_verpflichtend",
-    departmentId: deptId,
-    teamId: undefined as number | undefined,
-    contactFirstName: "",
-    contactLastName: "",
-    contactEmail: "",
-    contactPhone: "",
-    street: "",
-    zip: "",
-    city: "",
-    country: "Deutschland",
-    vatId: "",
-  });
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const createSponsor = trpc.sponsorTemplate.create.useMutation({
-    onSuccess: () => {
-      utils.sponsorTemplate.list.invalidate({ orgId });
-      setShowDialog(false);
-      resetForm();
-      toast.success("Sponsor erfolgreich angelegt");
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const resetForm = () => {
-    setSponsorForm({
-      name: "",
-      sponsorType: "spartensponsor",
-      obligation: "nicht_verpflichtend",
-      departmentId: deptId,
-      teamId: undefined,
-      contactFirstName: "",
-      contactLastName: "",
-      contactEmail: "",
-      contactPhone: "",
-      street: "",
-      zip: "",
-      city: "",
-      country: "Deutschland",
-      vatId: "",
-    });
-    setLogoFile(null);
-    setLogoPreview(null);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setLogoFile(file);
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = () => setLogoPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    } else {
-      setLogoPreview(null);
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!logoFile || !sponsorForm.name.trim()) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const base64 = dataUrl.split(",")[1] || dataUrl;
-      createSponsor.mutate({
-        orgId,
-        name: sponsorForm.name,
-        logoBase64: base64,
-        mimeType: logoFile.type,
-        sponsorType: sponsorForm.sponsorType,
-        obligation: sponsorForm.obligation,
-        departmentId: sponsorForm.departmentId,
-        teamId: sponsorForm.teamId,
-        contactFirstName: sponsorForm.contactFirstName || undefined,
-        contactLastName: sponsorForm.contactLastName || undefined,
-        contactEmail: sponsorForm.contactEmail || undefined,
-        contactPhone: sponsorForm.contactPhone || undefined,
-        street: sponsorForm.street || undefined,
-        zip: sponsorForm.zip || undefined,
-        city: sponsorForm.city || undefined,
-        country: sponsorForm.country || undefined,
-        vatId: sponsorForm.vatId || undefined,
-      });
-    };
-    reader.readAsDataURL(logoFile);
-  };
-
-  // Filter: Nur Sponsoren dieser Sparte anzeigen
-  const deptSponsors = sponsors?.filter(s =>
-    s.sponsorType === "hauptsponsor" ||
-    (s.sponsorType === "spartensponsor" && s.departmentId === deptId) ||
-    (s.sponsorType === "mannschaftssponsor" && s.departmentId === deptId)
-  ) || [];
-
-  const deptTeams = teams?.filter(t => t.departmentId === deptId) || [];
-
-  const canCreate = sponsorForm.name.trim() && logoFile &&
-    sponsorForm.contactFirstName.trim() && sponsorForm.contactLastName.trim() &&
-    sponsorForm.contactEmail.trim() &&
-    (sponsorForm.sponsorType !== "mannschaftssponsor" || sponsorForm.teamId);
-
-  return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <HandCoins className="w-5 h-5 text-green-600" />
-            Sponsoren
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Verwalten Sie die Sponsoren Ihrer Sparte.
-          </p>
-        </div>
-        <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Sponsor hinzufügen
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Neuen Sponsor anlegen</DialogTitle>
-              <DialogDescription>Erfassen Sie die Daten des neuen Sponsors.</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {/* Sponsorname */}
-              <div className="space-y-2">
-                <Label>Sponsorname *</Label>
-                <Input
-                  value={sponsorForm.name}
-                  onChange={(e) => setSponsorForm(p => ({ ...p, name: e.target.value }))}
-                  placeholder="z.B. Stadtwerke München"
-                />
-              </div>
-              {/* Sponsor-Typ */}
-              <div className="space-y-2">
-                <Label>Sponsor-Typ</Label>
-                <Select
-                  value={sponsorForm.sponsorType}
-                  onValueChange={(v) => setSponsorForm(p => ({ ...p, sponsorType: v as any }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="spartensponsor">Spartensponsor</SelectItem>
-                    <SelectItem value="mannschaftssponsor">Mannschaftssponsor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {/* Mannschaft (bei Mannschaftssponsor) */}
-              {sponsorForm.sponsorType === "mannschaftssponsor" && (
-                <div className="space-y-2">
-                  <Label>Mannschaft *</Label>
-                  <Select
-                    value={sponsorForm.teamId?.toString() || ""}
-                    onValueChange={(v) => setSponsorForm(p => ({ ...p, teamId: parseInt(v) }))}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Mannschaft wählen" /></SelectTrigger>
-                    <SelectContent>
-                      {deptTeams.map(t => (
-                        <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              {/* Verpflichtung */}
-              <div className="space-y-2">
-                <Label>Verpflichtung</Label>
-                <Select
-                  value={sponsorForm.obligation}
-                  onValueChange={(v) => setSponsorForm(p => ({ ...p, obligation: v as any }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="nicht_verpflichtend">Nicht verpflichtend</SelectItem>
-                    <SelectItem value="nur_trikot">Nur Trikot</SelectItem>
-                    <SelectItem value="alle_produkte">Alle Produkte</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {/* Kontaktperson */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Kontaktperson *</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Vorname</Label>
-                    <Input
-                      value={sponsorForm.contactFirstName}
-                      onChange={(e) => setSponsorForm(p => ({ ...p, contactFirstName: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Nachname</Label>
-                    <Input
-                      value={sponsorForm.contactLastName}
-                      onChange={(e) => setSponsorForm(p => ({ ...p, contactLastName: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">E-Mail</Label>
-                    <Input
-                      type="email"
-                      value={sponsorForm.contactEmail}
-                      onChange={(e) => setSponsorForm(p => ({ ...p, contactEmail: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Telefon</Label>
-                    <Input
-                      value={sponsorForm.contactPhone}
-                      onChange={(e) => setSponsorForm(p => ({ ...p, contactPhone: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
-              {/* Firmenadresse */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Firmenadresse</h4>
-                <div className="space-y-2">
-                  <Input
-                    value={sponsorForm.street}
-                    onChange={(e) => setSponsorForm(p => ({ ...p, street: e.target.value }))}
-                    placeholder="Straße + Hausnr."
-                  />
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      value={sponsorForm.zip}
-                      onChange={(e) => setSponsorForm(p => ({ ...p, zip: e.target.value }))}
-                      placeholder="PLZ"
-                    />
-                    <Input
-                      className="col-span-2"
-                      value={sponsorForm.city}
-                      onChange={(e) => setSponsorForm(p => ({ ...p, city: e.target.value }))}
-                      placeholder="Ort"
-                    />
-                  </div>
-                </div>
-              </div>
-              {/* USt-IdNr */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Rechnungsdaten</h4>
-                <div className="space-y-1">
-                  <Label className="text-xs">USt-IdNr.</Label>
-                  <Input
-                    value={sponsorForm.vatId}
-                    onChange={(e) => setSponsorForm(p => ({ ...p, vatId: e.target.value }))}
-                    placeholder="DE123456789"
-                  />
-                </div>
-              </div>
-              {/* Logo-Upload */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Sponsor-Logo *</h4>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/svg+xml,image/webp,application/pdf"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <div
-                  className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {logoPreview ? (
-                    <img src={logoPreview} alt="Vorschau" className="max-h-24 mx-auto" />
-                  ) : logoFile ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <FileText className="w-8 h-8 text-red-500" />
-                      <span className="text-sm">{logoFile.name}</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">PNG, JPG, SVG, PDF (max. 10 MB)</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => { setShowDialog(false); resetForm(); }}>Abbrechen</Button>
-              <Button
-                onClick={handleCreate}
-                disabled={!canCreate || createSponsor.isPending}
-              >
-                {createSponsor.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Sponsor erstellen
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Sponsor-Liste */}
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin" />
-        </div>
-      ) : deptSponsors.length === 0 ? (
-        <div className="text-center py-8 bg-muted/30 rounded-xl border border-dashed">
-          <HandCoins className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">Noch keine Sponsoren angelegt</p>
-          <Button className="mt-4" size="sm" onClick={() => setShowDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Ersten Sponsor anlegen
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {deptSponsors.map((sponsor) => (
-            <Card key={sponsor.id} className="overflow-hidden">
-              <div className="aspect-video bg-muted/30 flex items-center justify-center p-4">
-                {sponsor.logoMimeType?.includes("pdf") || sponsor.logoUrl?.endsWith(".pdf") ? (
-                  <PdfPreview url={storageUrl(sponsor.logoUrl)} className="max-h-full max-w-full" />
-                ) : (
-                  <img src={storageUrl(sponsor.logoUrl)} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
-                )}
-              </div>
-              <CardContent className="pt-3">
-                <p className="font-medium text-sm">{sponsor.name}</p>
-                <div className="flex gap-1 mt-1">
-                  <Badge variant="outline" className="text-xs">
-                    {sponsor.sponsorType === "hauptsponsor" ? "Hauptsponsor" :
-                     sponsor.sponsorType === "spartensponsor" ? "Spartensponsor" : "Mannschaftssponsor"}
-                  </Badge>
-                  {sponsor.obligation !== "nicht_verpflichtend" && (
-                    <Badge className="text-xs">
-                      {sponsor.obligation === "alle_produkte" ? "Alle Produkte" : "Nur Trikot"}
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Font Section ───────────────────────────────────────────────────────────────────────────────
+// ─── Font Section ─────────────────────────────────────────────────────────────
 function FontSection({
   orgId,
   deptId,

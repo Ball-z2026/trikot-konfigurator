@@ -14,14 +14,12 @@ import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
   ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
-  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette
+  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
-import OrgOnboarding from "./OrgOnboarding";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
-import { PdfPreview } from "@/components/PdfPreview";
 
 // ─── Org List (when no org selected) ─────────────────────────────────────────
 function OrgList() {
@@ -178,71 +176,29 @@ function OrgList() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {orgs.map((org: any) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {orgs.map((org) => (
               <Card
                 key={org.id}
-                className="group cursor-pointer hover:shadow-xl transition-all overflow-hidden relative"
+                className="group cursor-pointer hover:shadow-lg transition-all"
                 onClick={() => setLocation(`/org/${org.id}`)}
               >
-                {/* Vereinsfarben-Gradient oben */}
-                <div
-                  className="h-24 relative"
-                  style={{
-                    background: org.primaryColor
-                      ? `linear-gradient(135deg, ${org.primaryColor} 0%, ${org.primaryColor}cc 60%, ${org.secondaryColor || org.primaryColor}60 100%)`
-                      : 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.7) 100%)',
-                  }}
-                >
-                  {/* Wasserzeichen-Logo in der Karte */}
-                  {org.defaultLogoUrl && (
-                    <div className="absolute inset-0 flex items-center justify-end pr-4 overflow-hidden">
-                      <img
-                        src={storageUrl(org.defaultLogoUrl)}
-                        alt=""
-                        className="w-16 h-16 object-contain opacity-20"
-                        style={{ filter: 'brightness(10)' }}
-                      />
-                    </div>
-                  )}
-                  {/* Logo-Badge */}
-                  <div className="absolute -bottom-5 left-4">
-                    {org.defaultLogoUrl ? (
-                      <div className="w-12 h-12 rounded-xl bg-white p-1 shadow-md flex items-center justify-center ring-2 ring-white">
-                        <img src={storageUrl(org.defaultLogoUrl)} alt="Logo" className="w-full h-full object-contain" />
-                      </div>
-                    ) : (
-                      <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md ring-2 ring-white"
-                        style={{ backgroundColor: org.primaryColor ? `${org.primaryColor}` : 'hsl(var(--primary))' }}
-                      >
-                        <Building2 className="w-6 h-6 text-white" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <CardHeader className="pt-8 pb-4">
+                <CardHeader>
                   <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-base font-bold">{org.jerseyName || org.name}</CardTitle>
-                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        <Badge
-                          className="text-[10px]"
-                          style={org.primaryColor ? { backgroundColor: `${org.primaryColor}15`, color: org.primaryColor, border: `1px solid ${org.primaryColor}30` } : undefined}
-                        >
-                          {org.type === "verein" ? "Verein" : "Firma"}
-                        </Badge>
-                        {org.sport && <Badge variant="outline" className="text-[10px]">
-                          {{fussball:"Fu\u00dfball",handball:"Handball",volleyball:"Volleyball",basketball:"Basketball"}[org.sport as string] || org.sport}
-                        </Badge>}
-                        {!org.onboardingComplete && (
-                          <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300 bg-amber-50">
-                            Einrichtung ausstehend
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Building2 className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">{org.name}</CardTitle>
+                        <CardDescription>
+                          <Badge variant="secondary" className="text-xs mt-1">
+                            {org.type === "verein" ? "Verein" : "Firma"}
                           </Badge>
-                        )}
+                        </CardDescription>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" style={{ color: org.primaryColor || undefined }} />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                 </CardHeader>
               </Card>
@@ -265,7 +221,6 @@ function OrgDetail({ orgId }: { orgId: number }) {
   const { data: members } = trpc.membership.listByOrg.useQuery({ orgId });
   const { data: logos } = trpc.orgLogo.list.useQuery({ orgId });
   const { data: sponsorTemplates } = trpc.sponsorTemplate.list.useQuery({ orgId });
-  const { data: allTeams } = trpc.team.listByOrg.useQuery({ orgId });
 
   const isOwner = org?.userRole === "owner";
   const isDeptLead = org?.userRole === "department_lead";
@@ -320,34 +275,14 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   // ─── Sponsor Templates ───
   const [showAddSponsor, setShowAddSponsor] = useState(false);
-  const [sponsorForm, setSponsorForm] = useState({
-    name: "", sponsorType: "hauptsponsor" as "hauptsponsor" | "spartensponsor" | "mannschaftssponsor",
-    obligation: "nicht_verpflichtend" as "alle_produkte" | "nur_trikot" | "nicht_verpflichtend",
-    departmentId: undefined as number | undefined, teamId: undefined as number | undefined,
-    contactFirstName: "", contactLastName: "", contactEmail: "", contactPhone: "",
-    street: "", zip: "", city: "", country: "Deutschland",
-    vatId: "", billingDifferent: false, billingStreet: "", billingZip: "", billingCity: "", billingCountry: "Deutschland",
-    sponsoringAmount: "",
-  });
+  const [sponsorName, setSponsorName] = useState("");
+  const [sponsorCategory, setSponsorCategory] = useState("");
   const [sponsorFile, setSponsorFile] = useState<File | null>(null);
   const [sponsorPreview, setSponsorPreview] = useState<string | null>(null);
   const sponsorFileRef = useRef<HTMLInputElement>(null);
 
-  const resetSponsorForm = useCallback(() => {
-    setSponsorForm({
-      name: "", sponsorType: "hauptsponsor", obligation: "nicht_verpflichtend",
-      departmentId: undefined, teamId: undefined,
-      contactFirstName: "", contactLastName: "", contactEmail: "", contactPhone: "",
-      street: "", zip: "", city: "", country: "Deutschland",
-      vatId: "", billingDifferent: false, billingStreet: "", billingZip: "", billingCity: "", billingCountry: "Deutschland",
-      sponsoringAmount: "",
-    });
-    setSponsorFile(null);
-    setSponsorPreview(null);
-  }, []);
-
   const createSponsor = trpc.sponsorTemplate.create.useMutation({
-    onSuccess: () => { utils.sponsorTemplate.list.invalidate({ orgId }); setShowAddSponsor(false); resetSponsorForm(); toast.success("Sponsor-Vorlage erstellt"); },
+    onSuccess: () => { utils.sponsorTemplate.list.invalidate({ orgId }); setShowAddSponsor(false); setSponsorName(""); setSponsorCategory(""); setSponsorFile(null); setSponsorPreview(null); toast.success("Sponsor-Vorlage erstellt"); },
     onError: (e) => toast.error(e.message),
   });
   const deleteSponsorTpl = trpc.sponsorTemplate.delete.useMutation({
@@ -360,30 +295,13 @@ function OrgDetail({ orgId }: { orgId: number }) {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast.error("Datei zu groß (max. 5 MB)"); return; }
     setSponsorFile(file);
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    if (isPdf) {
-      setSponsorPreview(null);
-    } else {
-      const reader = new FileReader();
-      reader.onload = () => setSponsorPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
+    const reader = new FileReader();
+    reader.onload = () => setSponsorPreview(reader.result as string);
+    reader.readAsDataURL(file);
   }, []);
 
   const handleUploadSponsor = useCallback(async () => {
-    if (!sponsorFile || !sponsorForm.name.trim()) return;
-    // Pflichtfelder prüfen
-    const missing: string[] = [];
-    if (!sponsorForm.contactFirstName) missing.push("Vorname");
-    if (!sponsorForm.contactLastName) missing.push("Nachname");
-    if (!sponsorForm.contactEmail) missing.push("E-Mail");
-    if (!sponsorForm.street) missing.push("Straße");
-    if (!sponsorForm.zip) missing.push("PLZ");
-    if (!sponsorForm.city) missing.push("Ort");
-    if (missing.length > 0) {
-      toast.error(`Bitte alle Pflichtfelder ausfüllen: ${missing.join(", ")}`);
-      return;
-    }
+    if (!sponsorFile || !sponsorName.trim()) return;
     // Überdrucken- und Transparenz-Prüfung
     try {
       const { checkUploadFile } = await import("@/hooks/useUploadChecks");
@@ -408,32 +326,14 @@ function OrgDetail({ orgId }: { orgId: number }) {
       const base64 = (reader.result as string).split(",")[1];
       createSponsor.mutate({
         orgId,
-        name: sponsorForm.name,
+        name: sponsorName,
         logoBase64: base64,
         mimeType: sponsorFile.type,
-        sponsorType: sponsorForm.sponsorType,
-        obligation: sponsorForm.obligation,
-        departmentId: sponsorForm.sponsorType === "spartensponsor" ? sponsorForm.departmentId : undefined,
-        teamId: sponsorForm.sponsorType === "mannschaftssponsor" ? sponsorForm.teamId : undefined,
-        contactFirstName: sponsorForm.contactFirstName || undefined,
-        contactLastName: sponsorForm.contactLastName || undefined,
-        contactEmail: sponsorForm.contactEmail || undefined,
-        contactPhone: sponsorForm.contactPhone || undefined,
-        street: sponsorForm.street || undefined,
-        zip: sponsorForm.zip || undefined,
-        city: sponsorForm.city || undefined,
-        country: sponsorForm.country || undefined,
-        vatId: sponsorForm.vatId || undefined,
-        billingDifferent: sponsorForm.billingDifferent,
-        billingStreet: sponsorForm.billingDifferent ? (sponsorForm.billingStreet || undefined) : undefined,
-        billingZip: sponsorForm.billingDifferent ? (sponsorForm.billingZip || undefined) : undefined,
-        billingCity: sponsorForm.billingDifferent ? (sponsorForm.billingCity || undefined) : undefined,
-        billingCountry: sponsorForm.billingDifferent ? (sponsorForm.billingCountry || undefined) : undefined,
-        sponsoringAmount: sponsorForm.sponsoringAmount ? parseFloat(sponsorForm.sponsoringAmount) : undefined,
+        category: sponsorCategory || undefined,
       });
     };
     reader.readAsDataURL(sponsorFile);
-  }, [sponsorFile, sponsorForm, orgId, createSponsor]);
+  }, [sponsorFile, sponsorName, sponsorCategory, orgId, createSponsor]);
 
   // ─── Logo Upload ───
   const [showUploadLogo, setShowUploadLogo] = useState(false);
@@ -517,19 +417,6 @@ function OrgDetail({ orgId }: { orgId: number }) {
     );
   }
 
-  // Onboarding-Check: Wenn nicht abgeschlossen, zeige Onboarding-Wizard für alle Rollen
-  if (!org.onboardingComplete) {
-    return (
-      <OrgOnboarding
-        orgId={orgId}
-        orgName={org.name}
-        onComplete={() => {
-          utils.org.getById.invalidate({ id: orgId });
-        }}
-      />
-    );
-  }
-
   const roleLabel = (role: string) => {
     switch (role) {
       case "owner": return "Hauptverantwortlicher";
@@ -539,137 +426,58 @@ function OrgDetail({ orgId }: { orgId: number }) {
     }
   };
 
-  // Vereinslogo aus der Logo-Liste holen (Default-Logo)
-  const defaultLogo = logos?.find((l: any) => l.isDefault) || logos?.[0];
-
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Wasserzeichen-Logo als Hintergrund über die komplette Seite */}
-      {defaultLogo && (
-        <div
-          className="fixed inset-0 z-0 pointer-events-none"
-          style={{
-            backgroundImage: `url(${storageUrl(defaultLogo.imageUrl)})`,
-            backgroundRepeat: 'repeat',
-            backgroundSize: '200px 200px',
-            backgroundPosition: 'center center',
-            opacity: 0.08,
-            filter: 'grayscale(50%)',
-          }}
-        />
-      )}
-
-      {/* Header - eingefärbt in Vereinsfarben */}
-      <header
-        className="border-b sticky top-0 z-30 shadow-md"
-        style={{
-          background: org.primaryColor
-            ? `linear-gradient(135deg, ${org.primaryColor} 0%, ${org.primaryColor}dd 60%, ${org.secondaryColor || org.primaryColor}40 100%)`
-            : undefined,
-          borderColor: org.secondaryColor || undefined,
-        }}
-      >
-        <div className="container flex items-center justify-between h-20 sm:h-24">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card sticky top-0 z-30">
+        <div className="container flex items-center justify-between h-14 sm:h-16">
+          <div className="flex items-center gap-3">
             <Link href="/org">
-              <Button variant="ghost" size="icon" className={org.primaryColor ? "text-white hover:bg-white/20" : ""}><ArrowLeft className="w-5 h-5" /></Button>
+              <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
             </Link>
-            <div className="flex items-center gap-4">
-              {defaultLogo ? (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white/95 p-1.5 shadow-md flex items-center justify-center">
-                  <img src={storageUrl(defaultLogo.imageUrl)} alt="Logo" className="w-full h-full object-contain" />
-                </div>
-              ) : (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center" style={{ backgroundColor: org.secondaryColor || 'rgba(255,255,255,0.15)' }}>
-                  <Building2 className="w-8 h-8" style={{ color: org.primaryColor ? '#fff' : undefined }} />
-                </div>
-              )}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary" />
+              </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight" style={{ color: org.primaryColor ? '#fff' : undefined }}>{org.jerseyName || org.name}</h1>
-                <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                  <Badge
-                    className="text-xs border-0"
-                    style={org.primaryColor ? {
-                      backgroundColor: 'rgba(255,255,255,0.2)',
-                      color: '#fff',
-                    } : undefined}
-                  >
+                <h1 className="text-lg font-bold">{org.name}</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="secondary" className="text-xs">
                     {org.type === "verein" ? "Verein" : "Firma"}
                   </Badge>
-                  {org.state && <Badge
-                    variant="outline"
-                    className="text-xs"
-                    style={org.primaryColor ? {
-                      borderColor: 'rgba(255,255,255,0.35)',
-                      color: '#fff',
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                    } : undefined}
-                  >
+                  {org.state && <Badge variant="outline" className="text-xs">
                     {{bw:"BaWü",by:"Bayern",be:"Berlin",bb:"Brandenburg",hb:"Bremen",hh:"Hamburg",he:"Hessen",mv:"MV",ni:"Niedersachsen",nw:"NRW",rp:"RLP",sl:"Saarland",sn:"Sachsen",st:"Sachsen-Anhalt",sh:"SH",th:"Thüringen"}[org.state] || org.state}
                   </Badge>}
-                  {org.sport && <Badge
-                    variant="outline"
-                    className="text-xs"
-                    style={org.primaryColor ? {
-                      borderColor: 'rgba(255,255,255,0.35)',
-                      color: '#fff',
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                    } : undefined}
-                  >
+                  {org.sport && <Badge variant="outline" className="text-xs">
                     {{fussball:"Fußball",handball:"Handball",volleyball:"Volleyball",basketball:"Basketball"}[org.sport] || org.sport}
                   </Badge>}
-                  {isOwner && <Badge
-                    className="text-xs"
-                    style={org.primaryColor ? {
-                      backgroundColor: org.secondaryColor || 'rgba(255,255,255,0.25)',
-                      color: org.primaryColor,
-                    } : undefined}
-                  >Hauptverantwortlicher</Badge>}
+                  {isOwner && <Badge className="text-xs">Hauptverantwortlicher</Badge>}
                 </div>
               </div>
             </div>
           </div>
           <Link href="/">
-            <Button
-              size="sm"
-              className={org.primaryColor ? "shadow-sm font-semibold" : ""}
-              style={org.primaryColor ? {
-                backgroundColor: org.secondaryColor || '#fff',
-                color: org.primaryColor,
-                border: 'none',
-              } : undefined}
-            >
+            <Button variant="outline" size="sm">
               <Shirt className="w-4 h-4 mr-2" />Konfigurator
             </Button>
           </Link>
         </div>
       </header>
 
-      {/* Farbiger Akzentstreifen unter dem Header */}
-      {org.primaryColor && org.secondaryColor && (
-        <div className="h-1" style={{ background: `linear-gradient(90deg, ${org.primaryColor} 0%, ${org.secondaryColor} 50%, ${org.primaryColor} 100%)` }} />
-      )}
-
-      <div className="container py-6 relative z-10">
+      <div className="container py-6">
         <Tabs defaultValue={isOwner ? "stammdaten" : isDeptLead ? "departments" : "members"}>
-          <TabsList
-            className="mb-6 flex-wrap bg-muted/50 p-1 rounded-xl"
-            style={org.primaryColor ? {
-              '--tab-active-bg': org.primaryColor,
-              '--tab-active-text': '#fff',
-            } as React.CSSProperties : undefined}
-          >
+          <TabsList className="mb-6 flex-wrap">
             {/* Owner sieht alle Tabs */}
-            {isOwner && <TabsTrigger value="stammdaten" className="gap-2 data-[state=active]:shadow-sm" style={org.primaryColor ? { '--tw-shadow-color': org.primaryColor } as React.CSSProperties : undefined}><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>}
-            {isOwner && <TabsTrigger value="logos" className="gap-2 data-[state=active]:shadow-sm"><Image className="w-4 h-4" />Logos</TabsTrigger>}
+            {isOwner && <TabsTrigger value="stammdaten" className="gap-2"><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>}
+            {isOwner && <TabsTrigger value="logos" className="gap-2"><Image className="w-4 h-4" />Logos</TabsTrigger>}
             {/* Owner + SL sehen Sponsoren */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="sponsors" className="gap-2 data-[state=active]:shadow-sm"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="sponsors" className="gap-2"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>}
             {/* Owner + SL sehen Abteilungen */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="departments" className="gap-2 data-[state=active]:shadow-sm"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="departments" className="gap-2"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>}
             {/* Alle sehen Mitglieder (gefiltert nach Rolle im Backend) */}
-            <TabsTrigger value="members" className="gap-2 data-[state=active]:shadow-sm"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
+            <TabsTrigger value="members" className="gap-2"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
             {/* Owner + SL sehen Kollektionen */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2 data-[state=active]:shadow-sm"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
           </TabsList>
 
           {/* ─── Stammdaten Tab ─── */}
@@ -687,7 +495,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
               {canManageLogos && (
                 <Dialog open={showUploadLogo} onOpenChange={setShowUploadLogo}>
                   <DialogTrigger asChild>
-                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><Upload className="w-4 h-4 mr-2" />Logo hochladen</Button>
+                    <Button size="sm"><Upload className="w-4 h-4 mr-2" />Logo hochladen</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -817,170 +625,72 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                 <p className="text-sm text-muted-foreground">Hinterlegen Sie häufig verwendete Sponsoren-Logos, die Trainer per Klick einfügen können.</p>
               </div>
               {isOwner && (
-                <Dialog open={showAddSponsor} onOpenChange={(open) => { setShowAddSponsor(open); if (!open) resetSponsorForm(); }}>
+                <Dialog open={showAddSponsor} onOpenChange={setShowAddSponsor}>
                   <DialogTrigger asChild>
-                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><Plus className="w-4 h-4 mr-2" />Sponsor hinzufügen</Button>
+                    <Button size="sm"><Plus className="w-4 h-4 mr-2" />Sponsor hinzufügen</Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Neuen Sponsor anlegen</DialogTitle>
-                      <DialogDescription>Alle mit * markierten Felder sind Pflichtfelder für die Rechnungsstellung.</DialogDescription>
+                      <DialogTitle>Sponsor-Vorlage erstellen</DialogTitle>
+                      <DialogDescription>Laden Sie ein Sponsor-Logo hoch, das Trainer in Sponsor-Zonen verwenden können.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-6 mt-4">
-                      {/* Grunddaten */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Grunddaten</h3>
-                        <div className="space-y-3">
-                          <div>
-                            <Label>Firmenname / Sponsor-Name <span className="text-red-500">*</span></Label>
-                            <Input value={sponsorForm.name} onChange={(e) => setSponsorForm(p => ({...p, name: e.target.value}))} placeholder="z.B. Stadtwerke Musterstadt" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <Label>Sponsor-Typ</Label>
-                              <Select value={sponsorForm.sponsorType} onValueChange={(v: any) => setSponsorForm(p => ({...p, sponsorType: v}))}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="hauptsponsor">Hauptsponsor</SelectItem>
-                                  <SelectItem value="spartensponsor">Spartensponsor</SelectItem>
-                                  <SelectItem value="mannschaftssponsor">Mannschaftssponsor</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label>Verpflichtung</Label>
-                              <Select value={sponsorForm.obligation} onValueChange={(v: any) => setSponsorForm(p => ({...p, obligation: v}))}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="alle_produkte">Alle Produkte</SelectItem>
-                                  <SelectItem value="nur_trikot">Nur Trikots</SelectItem>
-                                  <SelectItem value="nicht_verpflichtend">Nicht verpflichtend</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          {/* Sparten-Auswahl bei Spartensponsor */}
-                          {sponsorForm.sponsorType === "spartensponsor" && (
-                            <div>
-                              <Label>Sparte / Abteilung <span className="text-red-500">*</span></Label>
-                              <Select value={sponsorForm.departmentId?.toString() || ""} onValueChange={(v) => setSponsorForm(p => ({...p, departmentId: Number(v), teamId: undefined}))}>
-                                <SelectTrigger><SelectValue placeholder="Sparte auswählen..." /></SelectTrigger>
-                                <SelectContent>
-                                  {departments?.map((dept) => (
-                                    <SelectItem key={dept.id} value={dept.id.toString()}>{dept.name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              {(!departments || departments.length === 0) && (
-                                <p className="text-xs text-muted-foreground mt-1">Keine Abteilungen vorhanden. Bitte legen Sie zuerst eine Abteilung an.</p>
-                              )}
-                            </div>
-                          )}
-                          {/* Mannschafts-Auswahl bei Mannschaftssponsor */}
-                          {sponsorForm.sponsorType === "mannschaftssponsor" && (
-                            <div className="space-y-3">
-                              <div>
-                                <Label>Sparte / Abteilung</Label>
-                                <Select value={sponsorForm.departmentId?.toString() || ""} onValueChange={(v) => setSponsorForm(p => ({...p, departmentId: Number(v), teamId: undefined}))}>
-                                  <SelectTrigger><SelectValue placeholder="Sparte auswählen (optional)..." /></SelectTrigger>
-                                  <SelectContent>
-                                    {departments?.map((dept) => (
-                                      <SelectItem key={dept.id} value={dept.id.toString()}>{dept.name}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div>
-                                <Label>Mannschaft <span className="text-red-500">*</span></Label>
-                                <Select value={sponsorForm.teamId?.toString() || ""} onValueChange={(v) => setSponsorForm(p => ({...p, teamId: Number(v)}))}>
-                                  <SelectTrigger><SelectValue placeholder="Mannschaft auswählen..." /></SelectTrigger>
-                                  <SelectContent>
-                                    {(sponsorForm.departmentId
-                                      ? allTeams?.filter(t => t.departmentId === sponsorForm.departmentId)
-                                      : allTeams
-                                    )?.map((team) => (
-                                      <SelectItem key={team.id} value={team.id.toString()}>
-                                        {team.name}{team.league ? ` (${team.league})` : ""}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                {(!allTeams || allTeams.length === 0) && (
-                                  <p className="text-xs text-muted-foreground mt-1">Keine Mannschaften vorhanden. Bitte legen Sie zuerst eine Mannschaft an.</p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Sponsor-Name</Label>
+                        <Input
+                          value={sponsorName}
+                          onChange={(e) => setSponsorName(e.target.value)}
+                          placeholder="z.B. Stadtwerke Musterstadt"
+                        />
                       </div>
-                      {/* Logo-Upload */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Logo-Datei <span className="text-red-500">*</span></h3>
-                        <input ref={sponsorFileRef} type="file" accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleSponsorFileChange} className="hidden" />
-                        <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => sponsorFileRef.current?.click()}>
+                      <div className="space-y-2">
+                        <Label>Kategorie (optional)</Label>
+                        <Select value={sponsorCategory} onValueChange={setSponsorCategory}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Kategorie wählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="hauptsponsor">Hauptsponsor</SelectItem>
+                            <SelectItem value="co-sponsor">Co-Sponsor</SelectItem>
+                            <SelectItem value="ausruester">Ausrüster</SelectItem>
+                            <SelectItem value="sonstige">Sonstige</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Logo-Datei</Label>
+                        <input
+                          ref={sponsorFileRef}
+                          type="file"
+accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
+                           onChange={handleSponsorFileChange}
+                          className="hidden"
+                        />
+                        <div
+                          className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                          onClick={() => sponsorFileRef.current?.click()}
+                        >
                           {sponsorPreview ? (
-                            <img src={sponsorPreview} alt="Vorschau" className="max-h-32 mx-auto object-contain" />
-                          ) : sponsorFile ? (
-                            <div><FileText className="w-8 h-8 text-muted-foreground mx-auto mb-2" /><p className="text-sm text-muted-foreground">{sponsorFile.name}</p></div>
+                            <img src={sponsorPreview} alt="Vorschau" className="max-h-32 mx-auto" />
                           ) : (
-                            <div><Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" /><p className="text-sm text-muted-foreground">Klicken zum Auswählen (PDF bevorzugt, max. 5 MB)</p></div>
+                            <div>
+                              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">Klicken zum Auswählen (PDF bevorzugt, max. 5 MB)</p>
+                            </div>
                           )}
                         </div>
                       </div>
-                      {/* Kontaktperson */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Kontaktperson</h3>
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div><Label>Vorname <span className="text-red-500">*</span></Label><Input value={sponsorForm.contactFirstName} onChange={(e) => setSponsorForm(p => ({...p, contactFirstName: e.target.value}))} placeholder="Max" /></div>
-                            <div><Label>Nachname <span className="text-red-500">*</span></Label><Input value={sponsorForm.contactLastName} onChange={(e) => setSponsorForm(p => ({...p, contactLastName: e.target.value}))} placeholder="Mustermann" /></div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div><Label>E-Mail <span className="text-red-500">*</span></Label><Input type="email" value={sponsorForm.contactEmail} onChange={(e) => setSponsorForm(p => ({...p, contactEmail: e.target.value}))} placeholder="max@firma.de" /></div>
-                            <div><Label>Telefon</Label><Input value={sponsorForm.contactPhone} onChange={(e) => setSponsorForm(p => ({...p, contactPhone: e.target.value}))} placeholder="+49 123 456789" /></div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Firmenadresse */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Firmenadresse</h3>
-                        <div className="space-y-3">
-                          <div><Label>Straße & Hausnummer <span className="text-red-500">*</span></Label><Input value={sponsorForm.street} onChange={(e) => setSponsorForm(p => ({...p, street: e.target.value}))} placeholder="Musterstraße 1" /></div>
-                          <div className="grid grid-cols-3 gap-3">
-                            <div><Label>PLZ <span className="text-red-500">*</span></Label><Input value={sponsorForm.zip} onChange={(e) => setSponsorForm(p => ({...p, zip: e.target.value}))} placeholder="12345" /></div>
-                            <div className="col-span-2"><Label>Ort <span className="text-red-500">*</span></Label><Input value={sponsorForm.city} onChange={(e) => setSponsorForm(p => ({...p, city: e.target.value}))} placeholder="Musterstadt" /></div>
-                          </div>
-                          <div><Label>Land</Label><Input value={sponsorForm.country} onChange={(e) => setSponsorForm(p => ({...p, country: e.target.value}))} /></div>
-                        </div>
-                      </div>
-                      {/* Rechnungsdaten */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Rechnungsdaten</h3>
-                        <div><Label>USt-IdNr.</Label><Input value={sponsorForm.vatId} onChange={(e) => setSponsorForm(p => ({...p, vatId: e.target.value}))} placeholder="DE123456789" /></div>
-                      </div>
-                      {/* Sponsoring-Summe (nur Owner) */}
-                      {isOwner && (
-                        <div className="border-t pt-4">
-                          <Label className="flex items-center gap-1 mb-2 font-semibold">Sponsoring-Summe (intern, nur für Sie sichtbar)</Label>
-                          <div className="flex items-center gap-2">
-                            <Input type="number" min="0" step="0.01" value={sponsorForm.sponsoringAmount || ""} onChange={(e) => setSponsorForm(p => ({...p, sponsoringAmount: e.target.value}))} placeholder="z.B. 5000" className="max-w-[200px]" />
-                            <span className="text-sm text-muted-foreground">EUR / Saison</span>
-                          </div>
-                        </div>
-                      )}
-                      {/* Erstellen-Button */}
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowAddSponsor(false)}>Abbrechen</Button>
                       <Button
                         onClick={handleUploadSponsor}
-                        disabled={!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city || (sponsorForm.sponsorType === "spartensponsor" && !sponsorForm.departmentId) || (sponsorForm.sponsorType === "mannschaftssponsor" && !sponsorForm.teamId) || createSponsor.isPending}
-                        className="w-full" size="lg"
+                        disabled={!sponsorName.trim() || !sponsorFile || createSponsor.isPending}
                       >
                         {createSponsor.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        {createSponsor.isPending ? "Wird angelegt..." : "Sponsor anlegen"}
+                        Erstellen
                       </Button>
-                      {(!sponsorForm.name.trim() || !sponsorFile || !sponsorForm.contactFirstName || !sponsorForm.contactLastName || !sponsorForm.contactEmail || !sponsorForm.street || !sponsorForm.zip || !sponsorForm.city || (sponsorForm.sponsorType === "spartensponsor" && !sponsorForm.departmentId) || (sponsorForm.sponsorType === "mannschaftssponsor" && !sponsorForm.teamId)) && (
-                        <p className="text-xs text-red-500 text-center">Bitte alle Pflichtfelder (*) ausfüllen</p>
-                      )}
-                    </div>
+                    </DialogFooter>
                   </DialogContent>
                 </Dialog>
               )}
@@ -1002,11 +712,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                 {sponsorTemplates.map((tpl) => (
                   <Card key={tpl.id} className="overflow-hidden">
                     <div className="aspect-video bg-muted/30 flex items-center justify-center p-4 relative">
-                      {(tpl.logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                        <PdfPreview url={storageUrl(tpl.logoUrl)} width={200} height={140} />
-                      ) : (
-                        <img src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
-                      )}
+                      <img src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
                       {tpl.category && (
                         <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
                           {{hauptsponsor:"Hauptsponsor","co-sponsor":"Co-Sponsor",ausruester:"Ausrüster",sonstige:"Sonstige"}[tpl.category] || tpl.category}
@@ -1044,7 +750,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
               {isOwner && (
                 <Dialog open={showAddDept} onOpenChange={setShowAddDept}>
                   <DialogTrigger asChild>
-                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><Plus className="w-4 h-4 mr-2" />Neue Abteilung</Button>
+                    <Button size="sm"><Plus className="w-4 h-4 mr-2" />Neue Abteilung</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -1149,7 +855,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
               {isOwner && (
                 <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
                   <DialogTrigger asChild>
-                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><UserPlus className="w-4 h-4 mr-2" />Spartenleiter einladen</Button>
+                    <Button size="sm"><UserPlus className="w-4 h-4 mr-2" />Spartenleiter einladen</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -1322,7 +1028,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Kollektionen Tab ─── */}
           <TabsContent value="collections">
-            <OrgCollectionsSection orgId={orgId} isOwner={isOwner} org={org} />
+            <OrgCollectionsSection orgId={orgId} isOwner={isOwner} />
           </TabsContent>
         </Tabs>
       </div>
@@ -1331,7 +1037,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 }
 
 // ─── Kollektionen-Verwaltung (Owner) ──────────────────────────────────────────────────────
-function OrgCollectionsSection({ orgId, isOwner, org }: { orgId: number; isOwner: boolean; org: any }) {
+function OrgCollectionsSection({ orgId, isOwner }: { orgId: number; isOwner: boolean }) {
   const utils = trpc.useUtils();
   const { data: collections, isLoading } = trpc.collection.list.useQuery(
     { orgId },
@@ -1390,7 +1096,7 @@ function OrgCollectionsSection({ orgId, isOwner, org }: { orgId: number; isOwner
         {isOwner && (
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
-              <Button size="sm" style={org?.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}>
+              <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 Vereinskollektion
               </Button>
@@ -1564,12 +1270,6 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
   // Rechtliches
   const [registerNumber, setRegisterNumber] = useState(org.registerNumber || "");
   const [taxId, setTaxId] = useState(org.taxId || "");
-  // Vereinsfarben & Trikotname
-  const [primaryColor, setPrimaryColor] = useState(org.primaryColor || "");
-  const [secondaryColor, setSecondaryColor] = useState(org.secondaryColor || "");
-  const [primaryColorCmyk, setPrimaryColorCmyk] = useState(org.primaryColorCmyk || "");
-  const [secondaryColorCmyk, setSecondaryColorCmyk] = useState(org.secondaryColorCmyk || "");
-  const [jerseyName, setJerseyName] = useState(org.jerseyName || "");
   // Hashtag
   const [hashtag, setHashtag] = useState(org.hashtag || "");
   const [saving, setSaving] = useState(false);
@@ -1604,67 +1304,15 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       registerNumber: registerNumber || undefined,
       taxId: taxId || undefined,
       hashtag: cleanHashtag,
-      primaryColor: primaryColor || undefined,
-      secondaryColor: secondaryColor || undefined,
-      primaryColorCmyk: primaryColorCmyk || undefined,
-      secondaryColorCmyk: secondaryColorCmyk || undefined,
-      jerseyName: jerseyName || undefined,
     });
   };
 
   return (
     <div className="space-y-6">
-      {/* Vereinsfarben & Trikotname */}
-      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Palette className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Vereinsfarben & Trikotname</CardTitle>
-          <CardDescription>Primär- und Sekundärfarbe sowie der Name auf dem Trikot.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Primärfarbe</Label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={primaryColor || "#003399"} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" disabled={!isOwner} />
-                <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono w-28" maxLength={7} disabled={!isOwner} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Sekundärfarbe</Label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={secondaryColor || "#ffffff"} onChange={(e) => setSecondaryColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" disabled={!isOwner} />
-                <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono w-28" maxLength={7} disabled={!isOwner} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Vereinsname auf dem Trikot</Label>
-              <Input value={jerseyName} onChange={(e) => setJerseyName(e.target.value)} placeholder="z.B. TSV Musterstadt" disabled={!isOwner} />
-            </div>
-          </div>
-          {/* CMYK-Werte */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Primärfarbe CMYK (für Druck)</Label>
-              <Input value={primaryColorCmyk} onChange={(e) => setPrimaryColorCmyk(e.target.value)} placeholder="z.B. C100 M80 Y0 K10" disabled={!isOwner} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Sekundärfarbe CMYK (für Druck)</Label>
-              <Input value={secondaryColorCmyk} onChange={(e) => setSecondaryColorCmyk(e.target.value)} placeholder="z.B. C0 M0 Y0 K0" disabled={!isOwner} />
-            </div>
-          </div>
-          {primaryColor && secondaryColor && (
-            <div className="mt-2 p-4 rounded-lg" style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 60%, ${secondaryColor} 100%)` }}>
-              <p className="text-white font-bold drop-shadow-md">{jerseyName || org.name}</p>
-              <p className="text-white/70 text-xs">Vereinsfarben-Vorschau</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Vereinsdaten */}
-      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Landmark className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Vereinsdaten</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Landmark className="w-5 h-5" />Vereinsdaten</CardTitle>
           <CardDescription>Offizielle Bezeichnung und Grunddaten des Vereins.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1687,9 +1335,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Ansprechpartner */}
-      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><User className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Ansprechpartner</CardTitle>
+          <CardTitle className="flex items-center gap-2"><User className="w-5 h-5" />Ansprechpartner</CardTitle>
           <CardDescription>Hauptansprechpartner des Vereins für Rückfragen.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1711,9 +1359,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Kontaktdaten */}
-      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Phone className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Kontaktdaten</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Phone className="w-5 h-5" />Kontaktdaten</CardTitle>
           <CardDescription>Erreichbarkeit des Vereins.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1739,9 +1387,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Adresse & Koordinaten */}
-      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Adresse & Koordinaten</CardTitle>
+          <CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" />Adresse & Koordinaten</CardTitle>
           <CardDescription>Die Koordinaten werden automatisch aus der Adresse berechnet und können als Zone auf Produkten verwendet werden.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1793,9 +1441,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Rechtliches */}
-      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Rechtliches</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" />Rechtliches</CardTitle>
           <CardDescription>Vereinsregister und steuerliche Angaben.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1813,9 +1461,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Hashtag */}
-      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Hash className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Vereins-Hashtag</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Hash className="w-5 h-5" />Vereins-Hashtag</CardTitle>
           <CardDescription>Der Hashtag kann als Zone auf Produkten platziert werden (z.B. auf der Rückseite eines Trikots).</CardDescription>
         </CardHeader>
         <CardContent>
@@ -1840,16 +1488,7 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       {/* Speichern-Button */}
       {isOwner && (
         <div className="flex justify-end">
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            size="lg"
-            className="shadow-md font-semibold"
-            style={org.primaryColor ? {
-              backgroundColor: org.primaryColor,
-              color: '#fff',
-            } : undefined}
-          >
+          <Button onClick={handleSave} disabled={saving} size="lg">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
             Stammdaten speichern
           </Button>

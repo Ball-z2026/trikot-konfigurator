@@ -14,12 +14,6 @@ export const users = mysqlTable("users", {
   /** Muss das Passwort bei der nächsten Anmeldung geändert werden? */
   mustChangePassword: boolean("mustChangePassword").default(false).notNull(),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  /** 2FA: Verschlüsseltes TOTP-Secret (Base32-kodiert) */
-  totpSecret: varchar("totpSecret", { length: 512 }),
-  /** 2FA: Ist TOTP aktiviert? */
-  totpEnabled: boolean("totpEnabled").default(false).notNull(),
-  /** 2FA: Backup-Codes (JSON-Array, bcrypt-gehasht) */
-  backupCodes: text("backupCodes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -65,16 +59,6 @@ export const organizations = mysqlTable("organizations", {
   /** Koordinaten (automatisch aus Adresse generiert) */
   latitude: double("latitude"),
   longitude: double("longitude"),
-  /** Vereinsfarben (HEX) */
-  primaryColor: varchar("primaryColor", { length: 7 }),
-  secondaryColor: varchar("secondaryColor", { length: 7 }),
-  /** Vereinsfarben (CMYK: C,M,Y,K jeweils 0-100, als JSON-String gespeichert) */
-  primaryColorCmyk: varchar("primaryColorCmyk", { length: 50 }),
-  secondaryColorCmyk: varchar("secondaryColorCmyk", { length: 50 }),
-  /** Vereinsname auf dem Trikot (kann vom offiziellen Namen abweichen) */
-  jerseyName: varchar("jerseyName", { length: 255 }),
-  /** Onboarding abgeschlossen (alle Pflichtfelder ausgefüllt + Logo hochgeladen) */
-  onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
   /** Ersteller (Hauptverantwortlicher) */
   ownerId: int("ownerId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -485,10 +469,6 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
   logoUrl: text("logoUrl").notNull(),
   /** Storage-Key für S3 */
   storageKey: text("storageKey"),
-  /** MIME-Type des Logos (z.B. image/png, application/pdf) */
-  logoMimeType: varchar("logoMimeType", { length: 100 }),
-  /** Thumbnail-URL für PDF-Logos (PNG-Vorschau) */
-  logoThumbnailUrl: text("logoThumbnailUrl"),
   /** Optionaler Kategorie-Tag (z.B. "Hauptsponsor", "Co-Sponsor", "Ausrüster") */
   category: varchar("category", { length: 100 }),
   /**
@@ -540,15 +520,6 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
   billingCity: varchar("billingCity", { length: 100 }),
   /** Rechnungsadresse: Land */
   billingCountry: varchar("billingCountry", { length: 100 }),
-  // ─── Sponsoring ───
-  /** Sponsoring-Summe (in Cent, nur für Owner sichtbar) */
-  sponsoringAmount: int("sponsoringAmount"),
-  /** Währung */
-  sponsoringCurrency: varchar("sponsoringCurrency", { length: 3 }).default("EUR"),
-  /** Vertragslaufzeit: Start */
-  contractStart: timestamp("contractStart"),
-  /** Vertragslaufzeit: Ende */
-  contractEnd: timestamp("contractEnd"),
   // ─── Meta ───
   /** Sortierreihenfolge */
   sortOrder: int("sortOrder").default(0).notNull(),
@@ -560,36 +531,6 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
 
 export type SponsorTemplate = typeof sponsorTemplates.$inferSelect;
 export type InsertSponsorTemplate = typeof sponsorTemplates.$inferInsert;
-
-/**
- * Sponsor-Einladungen – Token-basierte Einladungen an Sponsoren,
- * damit diese ihre Daten selbst ausfüllen können.
- */
-export const sponsorInvitations = mysqlTable("sponsor_invitations", {
-  id: int("id").autoincrement().primaryKey(),
-  /** Zugehörige Organisation */
-  orgId: int("orgId").notNull(),
-  /** Zugehöriger Sponsor (wird nach Erstellung verknüpft) */
-  sponsorTemplateId: int("sponsorTemplateId"),
-  /** Einladungs-Token (eindeutig, für URL) */
-  token: varchar("token", { length: 64 }).notNull().unique(),
-  /** E-Mail des eingeladenen Sponsors */
-  sponsorEmail: varchar("sponsorEmail", { length: 255 }).notNull(),
-  /** Name des Sponsors (zur Anzeige) */
-  sponsorName: varchar("sponsorName", { length: 255 }),
-  /** Status: pending, completed, expired */
-  status: mysqlEnum("status", ["pending", "completed", "expired"]).default("pending").notNull(),
-  /** Eingeladen von (userId) */
-  invitedBy: int("invitedBy").notNull(),
-  /** Ablaufdatum */
-  expiresAt: timestamp("expiresAt").notNull(),
-  /** Ausgefüllt am */
-  completedAt: timestamp("completedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type SponsorInvitation = typeof sponsorInvitations.$inferSelect;
-export type InsertSponsorInvitation = typeof sponsorInvitations.$inferInsert;
 
 /**
  * Mockup Gallery – Gespeicherte KI-generierte Mockups pro Team.

@@ -4,10 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
-import { CheckCircle2, XCircle, Loader2, ClipboardCheck, AlertTriangle, FileText } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ClipboardCheck, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "wouter";
-import { PdfPreview } from "@/components/PdfPreview";
 
 function storageUrl(url: string | null | undefined): string {
   if (!url) return "";
@@ -113,17 +112,11 @@ export default function SponsorReview() {
           <CardContent>
             <div className="flex items-center gap-4">
               {data.sponsor.logoUrl && (
-                (data.sponsor.logoMimeType === 'application/pdf' || data.sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                  <div className="w-16 h-16 flex items-center justify-center rounded border p-1">
-                    <PdfPreview url={storageUrl(data.sponsor.logoUrl)} width={56} height={56} />
-                  </div>
-                ) : (
-                  <img
-                    src={storageUrl(data.sponsor.logoUrl)}
-                    alt={data.sponsor.name}
-                    className="w-16 h-16 object-contain rounded border p-1"
-                  />
-                )
+                <img
+                  src={storageUrl(data.sponsor.logoUrl)}
+                  alt={data.sponsor.name}
+                  className="w-16 h-16 object-contain rounded border p-1"
+                />
               )}
               <div>
                 <p className="font-semibold text-lg">{data.sponsor.name}</p>
