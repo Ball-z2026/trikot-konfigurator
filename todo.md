@@ -1388,3 +1388,15 @@
 - [x] SponsorManagement hatte die Felder bereits implementiert
 - [x] Validierung: Sparte ist Pflicht bei Spartensponsor, Mannschaft ist Pflicht bei Mannschaftssponsor
 - [x] Backend: team.listByOrg Prozedur und listTeamsByOrg DB-Funktion hinzugefügt
+
+## Bug: PDF-Sponsor-Logos nicht sichtbar
+- [x] PdfPreview-Komponente erstellt (rendert erste PDF-Seite als Canvas mit pdfjs-dist)
+- [x] PdfPreview in OrgDashboard Sponsor-Liste eingebaut
+- [x] PdfPreview in SponsorManagement Sponsor-Liste eingebaut
+- [x] PdfPreview in CustomerConfigurator (mandatorySponsors + Template-Auswahl) eingebaut
+- [x] PdfPreview in SponsorReview eingebaut
+- [x] Fallback auf FileText-Icon bei Rendering-Fehler
+
+## Admin-Button auf Startseite
+- [x] Admin-Button auf Startseite hinzufügen, sichtbar wenn niemand angemeldet ist
+- [x] Button führt zur Login-Seite, nach Anmeldung wird man rollenbasiert ins Backend weitergeleitet

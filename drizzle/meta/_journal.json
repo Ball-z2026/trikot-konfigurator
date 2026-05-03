@@ -260,6 +260,13 @@
       "when": 1777811096538,
       "tag": "0036_majestic_fat_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1777812306694,
+      "tag": "0037_omniscient_sentry",
+      "breakpoints": true
     }
   ]
 }

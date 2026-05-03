@@ -21,6 +21,7 @@ import { Link, useLocation, useParams } from "wouter";
 import OrgOnboarding from "./OrgOnboarding";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
+import PdfPreview from "@/components/PdfPreview";
 
 // ─── Org List (when no org selected) ─────────────────────────────────────────
 function OrgList() {
@@ -1002,10 +1003,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                   <Card key={tpl.id} className="overflow-hidden">
                     <div className="aspect-video bg-muted/30 flex items-center justify-center p-4 relative">
                       {(tpl.logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                          <FileText className="w-12 h-12" />
-                          <span className="text-xs">PDF-Logo</span>
-                        </div>
+                        <PdfPreview url={storageUrl(tpl.logoUrl)} width={200} height={140} />
                       ) : (
                         <img src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
                       )}

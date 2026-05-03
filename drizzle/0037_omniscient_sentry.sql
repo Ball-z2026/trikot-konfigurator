@@ -1,0 +1,1 @@
+ALTER TABLE `sponsor_templates` ADD `logoThumbnailUrl` text;

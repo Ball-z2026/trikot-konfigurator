@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, FileText, ChevronDown, ChevronUp, Package, ShoppingBag, ClipboardCheck, Copy, Send } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import PdfPreview from "@/components/PdfPreview";
 
 type SponsorType = "hauptsponsor" | "spartensponsor" | "mannschaftssponsor";
 type Obligation = "alle_produkte" | "nur_trikot" | "nicht_verpflichtend";
@@ -698,7 +699,7 @@ export default function SponsorManagement() {
                     {/* Logo */}
                     <div className="w-14 h-14 bg-white border rounded flex items-center justify-center flex-shrink-0">
                       {(sponsor.logoMimeType === 'application/pdf' || sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                        <FileText className="w-10 h-10 text-muted-foreground" />
+                        <PdfPreview url={sponsor.logoUrl} width={48} height={48} />
                       ) : (
                         <img src={sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
                       )}

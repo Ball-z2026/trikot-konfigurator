@@ -7076,3 +7076,22 @@
 [2026-05-03T12:38:16.127Z] 8:38:16 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
 [2026-05-03T12:38:29.301Z] 8:38:29 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
 [2026-05-03T12:38:53.910Z] 8:38:53 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T12:44:59.186Z] 8:44:59 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T12:45:00.713Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T12:45:01.098Z] Server running on http://localhost:3000/
+[2026-05-03T12:48:51.000Z] 8:48:50 AM [vite] (client) hmr update /src/pages/Home.tsx, /src/index.css
+[2026-05-03T12:50:13.553Z] 8:50:13 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T12:50:25.323Z] 8:50:25 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T12:50:26.645Z] 8:50:26 AM [vite] (client) ✨ new dependencies optimized: pdfjs-dist
+[2026-05-03T12:50:26.646Z] 8:50:26 AM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-05-03T12:50:54.493Z] 8:50:54 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T12:51:01.271Z] 8:51:01 AM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T12:51:22.114Z] 8:51:22 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T12:51:29.020Z] 8:51:29 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T12:51:36.561Z] 8:51:36 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-03T12:51:54.175Z] 8:51:54 AM [vite] (client) hmr update /src/pages/SponsorReview.tsx, /src/index.css
+[2026-05-03T12:52:14.584Z] Dev server process group stopped
+[2026-05-03T12:52:14.664Z] Dev server exited with code -15
+[2026-05-03T12:52:17.627Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-03T12:52:19.516Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T12:52:20.009Z] Server running on http://localhost:3000/

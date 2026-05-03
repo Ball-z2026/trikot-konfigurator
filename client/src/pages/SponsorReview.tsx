@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { CheckCircle2, XCircle, Loader2, ClipboardCheck, AlertTriangle, FileText } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "wouter";
+import PdfPreview from "@/components/PdfPreview";
 
 function storageUrl(url: string | null | undefined): string {
   if (!url) return "";
@@ -114,7 +115,7 @@ export default function SponsorReview() {
               {data.sponsor.logoUrl && (
                 (data.sponsor.logoMimeType === 'application/pdf' || data.sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
                   <div className="w-16 h-16 flex items-center justify-center rounded border p-1">
-                    <FileText className="w-10 h-10 text-muted-foreground" />
+                    <PdfPreview url={storageUrl(data.sponsor.logoUrl)} width={56} height={56} />
                   </div>
                 ) : (
                   <img

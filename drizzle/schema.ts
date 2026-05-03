@@ -481,6 +481,8 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
   storageKey: text("storageKey"),
   /** MIME-Type des Logos (z.B. image/png, application/pdf) */
   logoMimeType: varchar("logoMimeType", { length: 100 }),
+  /** Thumbnail-URL für PDF-Logos (PNG-Vorschau) */
+  logoThumbnailUrl: text("logoThumbnailUrl"),
   /** Optionaler Kategorie-Tag (z.B. "Hauptsponsor", "Co-Sponsor", "Ausrüster") */
   category: varchar("category", { length: 100 }),
   /**
