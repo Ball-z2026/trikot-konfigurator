@@ -948,7 +948,14 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                 {sponsorTemplates.map((tpl) => (
                   <Card key={tpl.id} className="overflow-hidden">
                     <div className="aspect-video bg-muted/30 flex items-center justify-center p-4 relative">
-                      <img src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
+                      {(tpl.logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                          <FileText className="w-12 h-12" />
+                          <span className="text-xs">PDF-Logo</span>
+                        </div>
+                      ) : (
+                        <img src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
+                      )}
                       {tpl.category && (
                         <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
                           {{hauptsponsor:"Hauptsponsor","co-sponsor":"Co-Sponsor",ausruester:"Ausrüster",sonstige:"Sonstige"}[tpl.category] || tpl.category}

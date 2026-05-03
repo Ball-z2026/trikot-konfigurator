@@ -253,6 +253,13 @@
       "when": 1777807749230,
       "tag": "0035_parched_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1777811096538,
+      "tag": "0036_majestic_fat_cobra",
+      "breakpoints": true
     }
   ]
 }

@@ -1368,3 +1368,15 @@
 ## CMYK-Felder in Stammdaten (OrgDashboard)
 - [x] CMYK-Eingabefelder für Primär- und Sekundärfarbe in den Stammdaten
 - [x] State-Variablen und handleSave um CMYK-Felder erweitert
+
+## Owner-Notification nach Sponsor-Erfassung
+- [x] notifyOwner() nach sponsorTemplate.create aufrufen
+- [x] Notification-Inhalt: Sponsorname, Kontaktperson, E-Mail, Sponsor-Typ, Vereinsname, Adresse, USt-IdNr., erfasst von
+
+## Bug: FC Max Sponsor-Hinzufügen funktioniert nicht
+- [x] Bug reproduzieren und analysieren auf deployed Version
+- [x] Bug gefunden: PDF-Logos wurden als .jpg gespeichert und konnten nicht als <img> angezeigt werden
+- [x] Backend: PDF-Dateien werden jetzt korrekt als .pdf gespeichert
+- [x] DB: logoMimeType Feld hinzugefügt
+- [x] Bestehende PDF-Logos in DB mit korrektem mimeType aktualisiert
+- [x] PDF-Logo-Fallback (FileText-Icon) in OrgDashboard, SponsorManagement, CustomerConfigurator und SponsorReview

@@ -479,6 +479,8 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
   logoUrl: text("logoUrl").notNull(),
   /** Storage-Key für S3 */
   storageKey: text("storageKey"),
+  /** MIME-Type des Logos (z.B. image/png, application/pdf) */
+  logoMimeType: varchar("logoMimeType", { length: 100 }),
   /** Optionaler Kategorie-Tag (z.B. "Hauptsponsor", "Co-Sponsor", "Ausrüster") */
   category: varchar("category", { length: 100 }),
   /**

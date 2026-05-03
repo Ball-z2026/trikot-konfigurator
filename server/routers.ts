@@ -1127,7 +1127,7 @@ export const appRouter = router({
         // Decode base64 and upload to S3
         const buffer = Buffer.from(input.imageBase64, "base64");
         const key = `org-logos/${input.orgId}/${input.name.replace(/\s+/g, "-").toLowerCase()}`;
-        const ext = input.mimeType === "image/png" ? ".png" : input.mimeType === "image/svg+xml" ? ".svg" : ".jpg";
+        const ext = input.mimeType === "image/png" ? ".png" : input.mimeType === "image/svg+xml" ? ".svg" : input.mimeType === "application/pdf" ? ".pdf" : ".jpg";
         const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
         
         const logoId = await createOrgLogo({
@@ -2020,7 +2020,7 @@ export const appRouter = router({
         // Owner darf alles
         // Upload Logo zu S3
         const buffer = Buffer.from(input.logoBase64, "base64");
-        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : ".jpg";
+        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : input.mimeType.includes("pdf") ? ".pdf" : ".jpg";
         const key = `org-${input.orgId}/sponsor-templates/${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}`;
         const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
         // In DB speichern
@@ -2029,6 +2029,7 @@ export const appRouter = router({
           name: input.name,
           logoUrl: url,
           storageKey,
+          logoMimeType: input.mimeType,
           category: input.category || null,
           sponsorType: input.sponsorType,
           obligation: input.obligation,
@@ -2053,6 +2054,29 @@ export const appRouter = router({
           contractEnd: input.contractEnd ? new Date(input.contractEnd) : null,
           createdBy: ctx.user.id,
         });
+        // Owner über neuen Sponsor benachrichtigen
+        try {
+          const org = await getOrganizationById(input.orgId);
+          const sponsorTypeLabel = input.sponsorType === "hauptsponsor" ? "Hauptsponsor" : input.sponsorType === "spartensponsor" ? "Spartensponsor" : "Mannschaftssponsor";
+          const kontakt = [input.contactFirstName, input.contactLastName].filter(Boolean).join(" ");
+          const adresse = [input.street, input.zip, input.city].filter(Boolean).join(", ");
+          await notifyOwner({
+            title: `Neuer Sponsor erfasst: ${input.name}`,
+            content: [
+              `Ein neuer Sponsor wurde f\u00fcr "${org?.name || "Verein"}" erfasst.`,
+              ``,
+              `Sponsor: ${input.name}`,
+              `Typ: ${sponsorTypeLabel}`,
+              kontakt ? `Kontaktperson: ${kontakt}` : null,
+              input.contactEmail ? `E-Mail: ${input.contactEmail}` : null,
+              input.contactPhone ? `Telefon: ${input.contactPhone}` : null,
+              adresse ? `Adresse: ${adresse}` : null,
+              input.vatId ? `USt-IdNr.: ${input.vatId}` : null,
+              ``,
+              `Erfasst von: ${ctx.user.name || ctx.user.email || "Unbekannt"}`,
+            ].filter(Boolean).join("\n"),
+          });
+        } catch (e) { /* Notification ist optional */ }
         return { id, logoUrl: url };
       }),
 
@@ -2750,7 +2774,7 @@ export const appRouter = router({
         }
         // Logo zu S3 hochladen
         const buffer = Buffer.from(input.logoBase64, "base64");
-        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : ".jpg";
+        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : input.mimeType.includes("pdf") ? ".pdf" : ".jpg";
         const key = `org-${invitation.orgId}/sponsor-templates/${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}`;
         const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
         // Sponsor-Template erstellen
@@ -2759,6 +2783,7 @@ export const appRouter = router({
           name: input.name,
           logoUrl: url,
           storageKey,
+          logoMimeType: input.mimeType,
           sponsorType: "mannschaftssponsor",
           obligation: "nicht_verpflichtend",
           contactFirstName: input.contactFirstName,

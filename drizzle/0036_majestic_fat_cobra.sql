@@ -1,0 +1,1 @@
+ALTER TABLE `sponsor_templates` ADD `logoMimeType` varchar(100);

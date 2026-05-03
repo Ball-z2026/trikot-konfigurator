@@ -697,7 +697,11 @@ export default function SponsorManagement() {
                   >
                     {/* Logo */}
                     <div className="w-14 h-14 bg-white border rounded flex items-center justify-center flex-shrink-0">
-                      <img src={sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
+                      {(sponsor.logoMimeType === 'application/pdf' || sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
+                        <FileText className="w-10 h-10 text-muted-foreground" />
+                      ) : (
+                        <img src={sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
+                      )}
                     </div>
 
                     {/* Info */}
