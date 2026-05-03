@@ -1455,11 +1455,11 @@
 - [x] Crop-Editor in SponsorManagement einbauen
 
 ## Ausstatter-Funktion für Vereine
-- [ ] DB: Neue Tabelle org_supplier (Ausstatter) mit Marke, Bindungsbereich, Vertragslaufzeit
-- [ ] Backend: Ausstatter-CRUD-Prozeduren (setzen, abrufen, aktualisieren)
-- [ ] Frontend: Ausstatter-Auswahl im Vereins-Dashboard (Sportmarken + Ball-z)
-- [ ] Frontend: Bindungsbereich-Auswahl (ganzer Verein / nur Sparten / nur Trikots / alle Artikel)
-- [ ] Frontend: Vertragslaufzeit (Start- und Enddatum)
+- [x] DB: Ausstatter-Felder in organizations Tabelle (supplierBrand, supplierScope, supplierContractStart, supplierContractEnd)
+- [x] Backend: Ausstatter-Felder in org.update Prozedur integriert
+- [x] Frontend: Ausstatter-Auswahl im Vereins-Dashboard (Sportmarken + Ball-z)
+- [x] Frontend: Bindungsbereich-Auswahl (ganzer Verein / nur Sparten / nur Trikots / alle Artikel)
+- [x] Frontend: Vertragslaufzeit (Start- und Enddatum)
 
 ## Übergreifendes Admin-Dashboard
 - [x] Admin-Dashboard-Seite mit Übersicht aller Vereine, Benutzer und Produkte

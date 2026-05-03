@@ -750,6 +750,10 @@ export const appRouter = router({
         secondaryColorCmyk: z.string().max(50).optional(),
         jerseyName: z.string().max(255).optional(),
         onboardingComplete: z.boolean().optional(),
+        supplierBrand: z.string().max(100).optional().nullable(),
+        supplierScope: z.enum(["ganzer_verein", "nur_sparten", "nur_trikots", "alle_artikel"]).optional().nullable(),
+        supplierContractStart: z.string().optional().nullable(),
+        supplierContractEnd: z.string().optional().nullable(),
       }))
       .mutation(async ({ input, ctx }) => {
         // Onboarding-Abschluss darf jeder Org-Mitglied (Farben, Logo, jerseyName, onboardingComplete)
@@ -763,7 +767,14 @@ export const appRouter = router({
           // Volle Bearbeitung nur für Owner
           await requireOrgOwner(ctx.user.id, input.id);
         }
-        const { id, ...data } = input;
+        const { id, supplierContractStart, supplierContractEnd, ...rest } = input;
+        const data: Record<string, any> = { ...rest };
+        if (supplierContractStart !== undefined) {
+          data.supplierContractStart = supplierContractStart ? new Date(supplierContractStart) : null;
+        }
+        if (supplierContractEnd !== undefined) {
+          data.supplierContractEnd = supplierContractEnd ? new Date(supplierContractEnd) : null;
+        }
         await updateOrganization(id, data);
         // Geocoding: Adresse -> Koordinaten (wenn Adresse geändert)
         if (input.street || input.city) {

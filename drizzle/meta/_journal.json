@@ -288,6 +288,13 @@
       "when": 1777820682537,
       "tag": "0040_thankful_owl",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "5",
+      "when": 1777825268249,
+      "tag": "0041_thin_mikhail_rasputin",
+      "breakpoints": true
     }
   ]
 }

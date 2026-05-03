@@ -14,7 +14,8 @@ import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
   ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
-  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette, RefreshCw, Crop
+  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette, RefreshCw, Crop,
+  ShieldCheck, CalendarDays
 } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -709,6 +710,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
             <TabsTrigger value="members" className="gap-2 data-[state=active]:shadow-sm"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
             {/* Owner + SL sehen Kollektionen */}
             {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2 data-[state=active]:shadow-sm"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
+            {isOwner && <TabsTrigger value="supplier" className="gap-2 data-[state=active]:shadow-sm"><ShieldCheck className="w-4 h-4" />Ausstatter</TabsTrigger>}
           </TabsList>
 
           {/* ─── Stammdaten Tab ─── */}
@@ -1400,6 +1402,11 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
           <TabsContent value="collections">
             <OrgCollectionsSection orgId={orgId} isOwner={isOwner} org={org} />
           </TabsContent>
+
+          {/* ─── Ausstatter Tab ─── */}
+          <TabsContent value="supplier">
+            <SupplierSection org={org} orgId={orgId} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -1937,9 +1944,272 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
     </div>
   );
 }
+// ─── Ausstatter-Verwaltung ───────────────────────────────────────────────────────────────────────────────────
+const SPORT_BRANDS = [
+  "Nike", "Adidas", "Puma", "Under Armour", "New Balance", "Hummel",
+  "Erima", "Jako", "Uhlsport", "Kempa", "Mizuno", "Asics",
+  "Macron", "Joma", "Kappa", "Lotto", "Diadora", "Umbro",
+  "Craft", "Stanno", "Patrick", "Masita", "Derbystar", "Select",
+  "Spalding", "Molten", "Mikasa", "Wilson",
+  "Ball-z"
+];
 
-// ─── Main Export ────────────────────────────────────────────────────────────────────────────────
-export default function OrgDashboard() {
+const SUPPLIER_SCOPES = [
+  { value: "ganzer_verein", label: "Ganzer Verein (bindend für alle)" },
+  { value: "nur_sparten", label: "Nur für Sparten" },
+  { value: "nur_trikots", label: "Nur für Trikots" },
+  { value: "alle_artikel", label: "Für alle Artikel" },
+];
+
+function SupplierSection({ org, orgId }: { org: any; orgId: number }) {
+  const utils = trpc.useUtils();
+  const [brand, setBrand] = useState(org.supplierBrand || "");
+  const [scope, setScope] = useState(org.supplierScope || "");
+  const [contractStart, setContractStart] = useState(
+    org.supplierContractStart ? new Date(org.supplierContractStart).toISOString().split("T")[0] : ""
+  );
+  const [contractEnd, setContractEnd] = useState(
+    org.supplierContractEnd ? new Date(org.supplierContractEnd).toISOString().split("T")[0] : ""
+  );
+  const [editing, setEditing] = useState(false);
+
+  const updateMutation = trpc.org.update.useMutation({
+    onSuccess: () => {
+      toast.success("Ausstatter gespeichert");
+      utils.org.getById.invalidate({ id: orgId });
+      setEditing(false);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const removeMutation = trpc.org.update.useMutation({
+    onSuccess: () => {
+      toast.success("Ausstatter entfernt");
+      utils.org.getById.invalidate({ id: orgId });
+      setBrand("");
+      setScope("");
+      setContractStart("");
+      setContractEnd("");
+      setEditing(false);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const handleSave = () => {
+    updateMutation.mutate({
+      id: orgId,
+      supplierBrand: brand || null,
+      supplierScope: (scope as any) || null,
+      supplierContractStart: contractStart || null,
+      supplierContractEnd: contractEnd || null,
+    });
+  };
+
+  const handleRemove = () => {
+    removeMutation.mutate({
+      id: orgId,
+      supplierBrand: null,
+      supplierScope: null,
+      supplierContractStart: null,
+      supplierContractEnd: null,
+    });
+  };
+
+  const hasSupplier = !!org.supplierBrand;
+  const isContractActive = org.supplierContractEnd
+    ? new Date(org.supplierContractEnd) > new Date()
+    : !!org.supplierBrand;
+  const daysRemaining = org.supplierContractEnd
+    ? Math.ceil((new Date(org.supplierContractEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  return (
+    <div className="space-y-6">
+      {/* Aktueller Ausstatter */}
+      {hasSupplier && !editing ? (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">{org.supplierBrand}</CardTitle>
+                  <CardDescription>
+                    {SUPPLIER_SCOPES.find(s => s.value === org.supplierScope)?.label || "Kein Bindungsbereich"}
+                  </CardDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {isContractActive ? (
+                  <Badge className="bg-green-100 text-green-800 border-green-200">Aktiv</Badge>
+                ) : (
+                  <Badge variant="destructive">Abgelaufen</Badge>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Vertragsbeginn</p>
+                <p className="font-medium flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                  {org.supplierContractStart
+                    ? new Date(org.supplierContractStart).toLocaleDateString("de-DE")
+                    : "Nicht festgelegt"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Vertragsende</p>
+                <p className="font-medium flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                  {org.supplierContractEnd
+                    ? new Date(org.supplierContractEnd).toLocaleDateString("de-DE")
+                    : "Unbefristet"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Verbleibend</p>
+                <p className="font-medium">
+                  {daysRemaining !== null
+                    ? daysRemaining > 0
+                      ? `${daysRemaining} Tage`
+                      : "Abgelaufen"
+                    : "Unbefristet"}
+                </p>
+              </div>
+            </div>
+            <Separator className="my-4" />
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                <Pencil className="w-4 h-4 mr-2" />Bearbeiten
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleRemove} disabled={removeMutation.isPending}>
+                {removeMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Ausstatter entfernen
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Ausstatter bearbeiten / neu anlegen */
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5" />
+              {hasSupplier ? "Ausstatter bearbeiten" : "Ausstatter festlegen"}
+            </CardTitle>
+            <CardDescription>
+              Wählen Sie den offiziellen Ausstatter für Ihren Verein und legen Sie den Bindungsbereich fest.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Markenauswahl */}
+            <div className="space-y-2">
+              <Label className="font-medium">Marke</Label>
+              <Select value={brand} onValueChange={setBrand}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Ausstatter wählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPORT_BRANDS.map((b) => (
+                    <SelectItem key={b} value={b}>
+                      <span className={b === "Ball-z" ? "font-bold text-primary" : ""}>{b}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {brand === "Ball-z" && (
+                <p className="text-sm text-primary font-medium mt-1">
+                  ✨ Ball-z – Unsere Eigenmarke für höchste Qualität
+                </p>
+              )}
+            </div>
+
+            {/* Bindungsbereich */}
+            <div className="space-y-2">
+              <Label className="font-medium">Bindungsbereich</Label>
+              <Select value={scope} onValueChange={setScope}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Bindungsbereich wählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPLIER_SCOPES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {scope === "ganzer_verein" && "Der Ausstatter ist für den gesamten Verein bindend. Alle Sparten und Artikel müssen von diesem Ausstatter bezogen werden."}
+                {scope === "nur_sparten" && "Der Ausstatter ist nur für die Sparten/Abteilungen bindend. Einzelne Artikel können von anderen Herstellern stammen."}
+                {scope === "nur_trikots" && "Der Ausstatter ist nur für Trikots bindend. Andere Artikel (Hoodies, Jacken etc.) können frei gewählt werden."}
+                {scope === "alle_artikel" && "Der Ausstatter gilt für alle Artikel des Vereins (Trikots, Hoodies, Jacken, T-Shirts etc.)."}
+              </p>
+            </div>
+
+            {/* Vertragslaufzeit */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="font-medium">Vertragsbeginn</Label>
+                <Input
+                  type="date"
+                  value={contractStart}
+                  onChange={(e) => setContractStart(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-medium">Vertragsende</Label>
+                <Input
+                  type="date"
+                  value={contractEnd}
+                  onChange={(e) => setContractEnd(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">Leer lassen für unbefristeten Vertrag</p>
+              </div>
+            </div>
+
+            {/* Aktionen */}
+            <div className="flex gap-2 pt-2">
+              <Button onClick={handleSave} disabled={!brand || updateMutation.isPending}>
+                {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                Speichern
+              </Button>
+              {editing && (
+                <Button variant="outline" onClick={() => {
+                  setEditing(false);
+                  setBrand(org.supplierBrand || "");
+                  setScope(org.supplierScope || "");
+                  setContractStart(org.supplierContractStart ? new Date(org.supplierContractStart).toISOString().split("T")[0] : "");
+                  setContractEnd(org.supplierContractEnd ? new Date(org.supplierContractEnd).toISOString().split("T")[0] : "");
+                }}>
+                  Abbrechen
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Info-Box */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="pt-6">
+          <div className="flex gap-3">
+            <ShieldCheck className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+            <div className="text-sm text-blue-800 space-y-1">
+              <p className="font-medium">Was bedeutet der Ausstatter-Vertrag?</p>
+              <p>Der Ausstatter-Vertrag legt fest, von welcher Marke die Textilien des Vereins bezogen werden müssen. Je nach Bindungsbereich gilt dies für den gesamten Verein, einzelne Sparten oder nur bestimmte Artikeltypen.</p>
+              <p>Im Konfigurator werden nur Produkte des festgelegten Ausstatter angezeigt, wenn ein Vertrag aktiv ist.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Main Export ───────────────────────────────────────────────────────────────────────────────────xport default function OrgDashboard() {
   const params = useParams<{ id?: string }>();
   const orgId = params.id ? parseInt(params.id) : null;
   if (!orgId) return <OrgList />;

@@ -75,6 +75,14 @@ export const organizations = mysqlTable("organizations", {
   jerseyName: varchar("jerseyName", { length: 255 }),
   /** Onboarding abgeschlossen (alle Pflichtfelder ausgefüllt + Logo hochgeladen) */
   onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
+  /** Ausstatter / Supplier */
+  supplierBrand: varchar("supplierBrand", { length: 100 }),
+  /** Bindungsbereich: ganzer_verein, nur_sparten, nur_trikots, alle_artikel */
+  supplierScope: mysqlEnum("supplierScope", ["ganzer_verein", "nur_sparten", "nur_trikots", "alle_artikel"]),
+  /** Vertragslaufzeit Start */
+  supplierContractStart: timestamp("supplierContractStart"),
+  /** Vertragslaufzeit Ende */
+  supplierContractEnd: timestamp("supplierContractEnd"),
   /** Ersteller (Hauptverantwortlicher) */
   ownerId: int("ownerId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
