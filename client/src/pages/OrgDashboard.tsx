@@ -14,7 +14,7 @@ import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
   ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
-  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette
+  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette, RefreshCw
 } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -27,7 +27,7 @@ import { PdfPreview } from "@/components/PdfPreview";
 function OrgList() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
-  const { data: orgs, isLoading } = trpc.org.list.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: orgs, isLoading, refetch: refetchOrgs, isFetching } = trpc.org.list.useQuery(undefined, { enabled: isAuthenticated });
   const utils = trpc.useUtils();
 
   const [showCreate, setShowCreate] = useState(false);
@@ -87,10 +87,20 @@ function OrgList() {
               <p className="text-xs text-muted-foreground hidden sm:block">Vereine und Firmen verwalten</p>
             </div>
           </div>
-          <Dialog open={showCreate} onOpenChange={setShowCreate}>
-            <DialogTrigger asChild>
-              <Button size="sm"><Plus className="w-4 h-4 mr-2" />Neue Organisation</Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => refetchOrgs()}
+              disabled={isFetching}
+              title="Status aktualisieren"
+            >
+              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+            </Button>
+            <Dialog open={showCreate} onOpenChange={setShowCreate}>
+              <DialogTrigger asChild>
+                <Button size="sm"><Plus className="w-4 h-4 mr-2" />Neue Organisation</Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Organisation erstellen</DialogTitle>
@@ -164,6 +174,7 @@ function OrgList() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </header>
 

@@ -7931,3 +7931,8 @@
 [2026-05-03T14:01:49.418Z] [Auth] Missing session cookie
 [2026-05-03T14:02:09.627Z] 10:02:09 AM [vite] (client) ✨ new dependencies optimized: input-otp
 [2026-05-03T14:02:09.628Z] 10:02:09 AM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-05-03T15:04:46.154Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-03T15:04:48.054Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T15:04:48.617Z] Server running on http://localhost:3000/
+[2026-05-03T15:07:06.366Z] 11:07:06 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T15:07:22.672Z] 11:07:22 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css

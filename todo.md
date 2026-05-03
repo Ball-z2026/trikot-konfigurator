@@ -1429,3 +1429,6 @@
 - [x] Fix: org.update erlaubt Onboarding-Felder für alle Org-Mitglieder
 - [x] Fix: orgLogo.upload erlaubt Logo-Upload während Onboarding für alle Mitglieder
 - [x] Fix: Register.tsx leitet alle Rollen zum Org-Dashboard (Onboarding-Wizard)
+
+## Neuladen-Funktion für Einrichtungsstatus
+- [x] Aktualisieren-Button in der Organisations-Liste implementiert (RefreshCw-Icon mit Lade-Animation)
