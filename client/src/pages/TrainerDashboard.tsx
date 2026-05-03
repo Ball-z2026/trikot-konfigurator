@@ -71,6 +71,7 @@ import { OrderCommentThread } from "./OrderCommentThread";
 import { useMemo } from "react";
 import { KONFEKTIONSGROESSEN, getSpielklassen, TEAM_KATEGORIEN, type SportartCode } from "@shared/jerseyRules";
 import { storageUrl } from "@/lib/utils";
+import { SponsorLogoImage } from "@/components/SponsorLogoImage";
 
 // ─── Logo Section für selbstregistrierte Trainer ─────────────────────────────
 function TrainerLogoSection({ orgId }: { orgId: number }) {
@@ -527,7 +528,7 @@ function TrainerSponsorSection({ orgId, deptId }: { orgId: number; deptId: numbe
             <Card key={sponsor.id} className="overflow-hidden">
               <div className="aspect-video bg-muted/30 flex items-center justify-center p-4">
                 {sponsor.logoUrl ? (
-                  <img src={storageUrl(sponsor.logoUrl)} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
+                  <SponsorLogoImage src={storageUrl(sponsor.logoUrl)} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
                 ) : (
                   <HandCoins className="w-12 h-12 text-muted-foreground" />
                 )}
@@ -2160,7 +2161,7 @@ function MockupGallerySection({ teamId, teamName, orgId }: { teamId: number; tea
                 }}
               >
                 {sponsor.logoUrl && (
-                  <img src={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} alt="" className="w-8 h-8 object-contain rounded" />
+                  <SponsorLogoImage src={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} alt={sponsor.name} className="w-8 h-8 object-contain rounded" />
                 )}
                 <div className="text-left">
                   <p className="font-medium text-sm">{sponsor.name}</p>

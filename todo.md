@@ -1443,3 +1443,6 @@
 
 ## Bug: Vereinskollektion öffnet nicht den Produktdesigner
 - [x] Bug: Nach Erstellen einer Vereinskollektion wird der Produktdesigner automatisch geöffnet
+
+## Visuelle Ladeanzeige für Sponsorenlogos
+- [x] Ladeanzeige (Skeleton/Spinner) während Sponsorenlogos geladen werden (SponsorLogoImage-Komponente in OrgDashboard, SponsorManagement, TrainerDashboard, DeptDashboard, SponsorReview)

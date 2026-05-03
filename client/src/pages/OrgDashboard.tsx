@@ -22,6 +22,7 @@ import OrgOnboarding from "./OrgOnboarding";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
 import { PdfPreview } from "@/components/PdfPreview";
+import { SponsorLogoImage } from "@/components/SponsorLogoImage";
 
 // ─── Org List (when no org selected) ─────────────────────────────────────────
 function OrgList() {
@@ -1031,7 +1032,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                       {(tpl.logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
                         <PdfPreview url={storageUrl(tpl.logoUrl)} width={200} height={140} />
                       ) : (
-                        <img src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
+                        <SponsorLogoImage src={storageUrl(tpl.logoUrl)} alt={tpl.name} className="max-w-full max-h-full object-contain" />
                       )}
                       {tpl.category && (
                         <Badge variant="secondary" className="absolute top-2 right-2 text-xs">

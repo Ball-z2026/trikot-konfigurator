@@ -60,6 +60,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { OrderCommentThread } from "./OrderCommentThread";
 import { storageUrl } from "@/lib/utils";
 import { PdfPreview } from "@/components/PdfPreview";
+import { SponsorLogoImage } from "@/components/SponsorLogoImage";
 
 /** Vordefinierte Google-Fonts-Auswahl */
 const PRESET_FONTS = [
@@ -877,7 +878,7 @@ function DeptSponsorSection({ orgId, deptId }: { orgId: number; deptId: number }
                 {sponsor.logoMimeType?.includes("pdf") || sponsor.logoUrl?.endsWith(".pdf") ? (
                   <PdfPreview url={storageUrl(sponsor.logoUrl)} className="max-h-full max-w-full" />
                 ) : (
-                  <img src={storageUrl(sponsor.logoUrl)} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
+                  <SponsorLogoImage src={storageUrl(sponsor.logoUrl)} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
                 )}
               </div>
               <CardContent className="pt-3">

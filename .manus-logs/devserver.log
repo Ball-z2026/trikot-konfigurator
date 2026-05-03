@@ -7940,3 +7940,9 @@
 [2026-05-03T15:59:59.908Z] 11:59:59 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
 [2026-05-03T16:01:53.037Z] 12:01:53 PM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
 [2026-05-03T16:04:06.097Z] 12:04:06 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T16:06:54.075Z] 12:06:54 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T16:07:00.327Z] 12:07:00 PM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T16:07:23.144Z] 12:07:23 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-03T16:07:32.173Z] 12:07:32 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-03T16:07:51.876Z] 12:07:51 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
+[2026-05-03T16:08:10.709Z] 12:08:10 PM [vite] (client) hmr update /src/pages/SponsorReview.tsx, /src/index.css

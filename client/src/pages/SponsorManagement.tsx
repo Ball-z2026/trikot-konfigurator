@@ -15,6 +15,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { PdfPreview } from "@/components/PdfPreview";
 import { storageUrl } from "@/lib/utils";
+import { SponsorLogoImage } from "@/components/SponsorLogoImage";
 
 type SponsorType = "hauptsponsor" | "spartensponsor" | "mannschaftssponsor";
 type Obligation = "alle_produkte" | "nur_trikot" | "nicht_verpflichtend";
@@ -702,7 +703,7 @@ export default function SponsorManagement() {
                       {(sponsor.logoMimeType === 'application/pdf' || sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
                         <PdfPreview url={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} width={48} height={48} />
                       ) : (
-                        <img src={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
+                        <SponsorLogoImage src={storageUrl(sponsor.logoUrl) || sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
                       )}
                     </div>
 

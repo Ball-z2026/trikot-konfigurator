@@ -8,6 +8,7 @@ import { CheckCircle2, XCircle, Loader2, ClipboardCheck, AlertTriangle, FileText
 import { useState } from "react";
 import { useParams } from "wouter";
 import { PdfPreview } from "@/components/PdfPreview";
+import { SponsorLogoImage } from "@/components/SponsorLogoImage";
 
 function storageUrl(url: string | null | undefined): string {
   if (!url) return "";
@@ -118,11 +119,9 @@ export default function SponsorReview() {
                     <PdfPreview url={storageUrl(data.sponsor.logoUrl)} width={56} height={56} />
                   </div>
                 ) : (
-                  <img
-                    src={storageUrl(data.sponsor.logoUrl)}
-                    alt={data.sponsor.name}
-                    className="w-16 h-16 object-contain rounded border p-1"
-                  />
+                  <div className="w-16 h-16 rounded border p-1">
+                    <SponsorLogoImage src={storageUrl(data.sponsor.logoUrl)} alt={data.sponsor.name} className="w-full h-full object-contain" />
+                  </div>
                 )
               )}
               <div>
