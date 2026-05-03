@@ -8585,3 +8585,20 @@
 [2026-05-03T20:56:26.409Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-03T20:56:26.413Z] [Auth] Missing session cookie
 [2026-05-03T20:56:26.419Z] [Auth] Missing session cookie
+[2026-05-03T21:03:37.442Z] 5:03:37 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T21:03:39.069Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T21:03:39.689Z] Server running on http://localhost:3000/
+[2026-05-03T21:05:24.454Z] 5:05:24 PM [vite] (client) hmr update /src/pages/ProductSelect.tsx, /src/index.css
+[2026-05-03T21:05:52.111Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.115Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.509Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.550Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.559Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.564Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.572Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.578Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.584Z] [Auth] Missing session cookie
+[2026-05-03T21:05:52.591Z] [Auth] Missing session cookie
+[2026-05-03T21:05:59.735Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-03T21:05:59.738Z] [Auth] Missing session cookie
+[2026-05-03T21:05:59.742Z] [Auth] Missing session cookie

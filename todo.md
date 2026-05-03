@@ -1507,3 +1507,11 @@
 - [x] Zugang für alle Vereinsmitglieder (Upload-Route geöffnet)
 - [x] Routing anpassen: /designer/products leitet auf neuen Konfigurator um
 - [x] Home-Seite: Alten Produktdesigner-Link durch Konfigurator ersetzt
+
+## KI-Bild-Analyse für Positionsübernahme
+- [x] Backend: LLM-Vision-Endpunkt – Bild analysieren, Positionen von Name/Nummer/Logo/Teamname erkennen
+- [x] Backend: Erkannte Positionen als Zonen-Konfiguration (x, y, width, height, purpose) zurückgeben
+- [x] Frontend: Upload-UI im Konfigurator mit "Bild analysieren"-Button (KI-Positionserkennung)
+- [x] Frontend: Vorschau der erkannten Zonen auf dem hochgeladenen Bild (Drag & Resize)
+- [x] Frontend: Vorlage speichern mit erkannten Positionen
+- [x] Integration: Erkannte Zonen als Vorlage speicherbar (TemplateUpload-Komponente mit KI + manuellem Modus)

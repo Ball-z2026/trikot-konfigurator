@@ -1053,6 +1053,103 @@ export const appRouter = router({
         await deleteDesignTemplate(input.id);
         return { success: true };
       }),
+
+    /** KI-Bild-Analyse: Positionen von Name, Nummer, Logo etc. erkennen */
+    analyzeImage: protectedProcedure
+      .input(z.object({
+        imageUrl: z.string(),
+        sport: z.enum(["fussball", "handball", "volleyball", "basketball"]).optional(),
+        category: z.enum(["Trikot", "Bekleidung"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+
+        const systemPrompt = `Du bist ein Experte für Sportbekleidung und Textildesign. Analysiere das hochgeladene Bild eines Trikots oder Sportbekleidungsstücks.
+
+Erkenne alle sichtbaren Elemente und ihre Positionen auf dem Kleidungsstück. Gib für jedes erkannte Element die Position als Prozentwerte (0-100) relativ zum gesamten Bild zurück.
+
+Mögliche Elemente:
+- playerName: Spielername (meist oben auf dem Rücken)
+- playerNumber: Rücken-/Frontnummer
+- clubName: Vereins-/Teamname
+- logo: Vereinswappen/Logo (meist auf der Herzseite)
+- sponsor: Sponsoren-Logo
+- abbreviation: Kürzel
+- custom: Sonstige Elemente
+
+Gib die Ergebnisse als JSON-Array zurück. Jedes Element hat:
+- name: Beschreibender Name (z.B. "Spielername Rücken", "Rückennnummer", "Vereinswappen")
+- purpose: Einer der oben genannten Typen
+- x: X-Position in Prozent (linke Kante der Zone)
+- y: Y-Position in Prozent (obere Kante der Zone)
+- width: Breite in Prozent
+- height: Höhe in Prozent
+- side: "front" oder "back" (Vorder- oder Rückseite, falls erkennbar)
+
+Wichtig: Schätze die Positionen so genau wie möglich basierend auf dem Bild.`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: { url: input.imageUrl, detail: "high" },
+                },
+                {
+                  type: "text",
+                  text: `Analysiere dieses ${input.category || "Sportbekleidungs"}-Bild${input.sport ? " (Sportart: " + input.sport + ")" : ""}. Erkenne alle Elemente (Name, Nummer, Logo, Sponsor etc.) und gib ihre Positionen als JSON-Array zurück.`,
+                },
+              ],
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "zone_positions",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  zones: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string", description: "Beschreibender Name der Zone" },
+                        purpose: { type: "string", enum: ["playerName", "playerNumber", "clubName", "logo", "sponsor", "abbreviation", "custom"], description: "Zonentyp" },
+                        x: { type: "number", description: "X-Position in Prozent (0-100)" },
+                        y: { type: "number", description: "Y-Position in Prozent (0-100)" },
+                        width: { type: "number", description: "Breite in Prozent (0-100)" },
+                        height: { type: "number", description: "Höhe in Prozent (0-100)" },
+                        side: { type: "string", enum: ["front", "back"], description: "Vorder- oder Rückseite" },
+                      },
+                      required: ["name", "purpose", "x", "y", "width", "height", "side"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["zones"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== "string") {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Analyse fehlgeschlagen" });
+        }
+
+        try {
+          const parsed = JSON.parse(content);
+          return { zones: parsed.zones || [] };
+        } catch {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Antwort konnte nicht verarbeitet werden" });
+        }
+      }),
   }),
 
   // ─── Memberships (Mitgliedschaften) ───────────────────────────────────────

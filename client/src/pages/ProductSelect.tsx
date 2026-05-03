@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Shirt, ArrowRight, ArrowLeft, Loader2, Filter, Users, Trophy, Package } from "lucide-react";
+import { Shirt, ArrowRight, ArrowLeft, Loader2, Filter, Users, Trophy, Package, Upload, Sparkles } from "lucide-react";
+import { TemplateUpload } from "@/components/TemplateUpload";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TEXTIL_TEMPLATES, SPORT_TYPES, type SportType } from "@shared/templates";
 import { storageUrl } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
@@ -19,6 +21,7 @@ export default function ProductSelect() {
   const [selectedSport, setSelectedSport] = useState<SportType | "alle" | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"alle" | "Trikot" | "Bekleidung">("alle");
+  const [showTemplateUpload, setShowTemplateUpload] = useState(false);
 
   // ─── Daten laden ───
   const { data: products, isLoading: productsLoading } = trpc.product.list.useQuery();
@@ -257,6 +260,15 @@ export default function ProductSelect() {
                 <p className="text-sm text-muted-foreground">
                   {filteredProducts.length} Produkt{filteredProducts.length !== 1 ? "e" : ""} gefunden
                 </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowTemplateUpload(true)}
+                  className="gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Bild analysieren & Vorlage erstellen
+                </Button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {filteredProducts.map((product) => {
@@ -332,6 +344,28 @@ export default function ProductSelect() {
           )}
         </div>
       </section>
+
+      {/* Template-Upload Dialog mit KI-Analyse */}
+      <Dialog open={showTemplateUpload} onOpenChange={setShowTemplateUpload}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-purple-600" />
+              Bild analysieren & Vorlage erstellen
+            </DialogTitle>
+          </DialogHeader>
+          <TemplateUpload
+            orgId={userOrgIds[0] || 0}
+            sport={selectedSport && selectedSport !== "alle" ? selectedSport : undefined}
+            category={selectedCategory !== "alle" ? selectedCategory : undefined}
+            teamId={selectedTeamId || undefined}
+            onSaved={() => {
+              setShowTemplateUpload(false);
+            }}
+            onCancel={() => setShowTemplateUpload(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
