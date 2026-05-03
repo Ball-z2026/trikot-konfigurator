@@ -7884,3 +7884,4 @@
 [2026-05-03T13:15:03.381Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:273:13
 [2026-05-03T13:15:03.382Z] at async.call.result.err.err (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:223:11)
 [2026-05-03T13:15:23.672Z] 9:15:23 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
+[2026-05-03T13:29:29.444Z] 9:29:29 AM [vite] (client) hmr update /src/pages/Login.tsx, /src/index.css

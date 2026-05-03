@@ -1408,3 +1408,6 @@
 - [x] DeptDashboard: Sponsor-Anlage-Sektion (Spartensponsor + Mannschaftssponsor)
 - [x] TrainerDashboard: Sponsor-Anlage-Sektion (nur Mannschaftssponsor)
 - [x] Gleiche Logik wie OrgDashboard: Kontaktdaten, Logo-Upload, Pflichtfelder
+
+## Google-Authentifizierung auf Login-Seite
+- [x] Google/OAuth-Login-Button auf Login-Seite hinzugefügt ("Mit Google anmelden" mit Google-Logo, Divider zwischen E-Mail-Login und OAuth)
