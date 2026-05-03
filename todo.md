@@ -1321,3 +1321,16 @@
 - [x] Badges (Verein, NRW, Fußball) in Vereinsfarben
 - [x] Übersicht/Stammdaten-Sektionen mit Vereinsfarben-Akzenten
 - [x] Org-Liste: Karten mit Logo und Vereinsfarben-Styling
+
+## Design-Fix: Logo und Wasserzeichen
+- [ ] Vereinslogo groß/prominent im Header anzeigen (nicht nur als kleines Icon)
+- [ ] Wasserzeichen als durchgehender Hintergrund auf ALLEN Vereinsseiten (alle Tabs)
+
+## Sponsor-Datenmatrix: Pflichtfelder für Rechnungsstellung
+- [x] DB: sponsorTemplates um Rechnungsfelder erweitern (Ansprechpartner, E-Mail, Adresse, Steuernr)
+- [x] Backend: Router für Sponsor-CRUD um neue Felder erweitern
+- [x] Frontend: Sponsor-Formular mit Pflichtfeldern und Validierung
+- [x] Optional: E-Mail an Sponsor mit Link zum Selbstausfüllen seiner Daten (InviteSponsorDialog + SponsorForm.tsx)
+- [x] Sponsor-Daten in der Verwaltung sichtbar anzeigen
+- [x] Sponsoring-Summe nur für Owner sichtbar (im Formular + Detailansicht)
+- [x] Sponsor kann Logo selbst hochladen (öffentliches Formular /sponsor-form/:token)

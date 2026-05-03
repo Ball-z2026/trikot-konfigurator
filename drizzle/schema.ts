@@ -527,6 +527,15 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
   billingCity: varchar("billingCity", { length: 100 }),
   /** Rechnungsadresse: Land */
   billingCountry: varchar("billingCountry", { length: 100 }),
+  // ─── Sponsoring ───
+  /** Sponsoring-Summe (in Cent, nur für Owner sichtbar) */
+  sponsoringAmount: int("sponsoringAmount"),
+  /** Währung */
+  sponsoringCurrency: varchar("sponsoringCurrency", { length: 3 }).default("EUR"),
+  /** Vertragslaufzeit: Start */
+  contractStart: timestamp("contractStart"),
+  /** Vertragslaufzeit: Ende */
+  contractEnd: timestamp("contractEnd"),
   // ─── Meta ───
   /** Sortierreihenfolge */
   sortOrder: int("sortOrder").default(0).notNull(),
@@ -538,6 +547,36 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
 
 export type SponsorTemplate = typeof sponsorTemplates.$inferSelect;
 export type InsertSponsorTemplate = typeof sponsorTemplates.$inferInsert;
+
+/**
+ * Sponsor-Einladungen – Token-basierte Einladungen an Sponsoren,
+ * damit diese ihre Daten selbst ausfüllen können.
+ */
+export const sponsorInvitations = mysqlTable("sponsor_invitations", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Zugehörige Organisation */
+  orgId: int("orgId").notNull(),
+  /** Zugehöriger Sponsor (wird nach Erstellung verknüpft) */
+  sponsorTemplateId: int("sponsorTemplateId"),
+  /** Einladungs-Token (eindeutig, für URL) */
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  /** E-Mail des eingeladenen Sponsors */
+  sponsorEmail: varchar("sponsorEmail", { length: 255 }).notNull(),
+  /** Name des Sponsors (zur Anzeige) */
+  sponsorName: varchar("sponsorName", { length: 255 }),
+  /** Status: pending, completed, expired */
+  status: mysqlEnum("status", ["pending", "completed", "expired"]).default("pending").notNull(),
+  /** Eingeladen von (userId) */
+  invitedBy: int("invitedBy").notNull(),
+  /** Ablaufdatum */
+  expiresAt: timestamp("expiresAt").notNull(),
+  /** Ausgefüllt am */
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SponsorInvitation = typeof sponsorInvitations.$inferSelect;
+export type InsertSponsorInvitation = typeof sponsorInvitations.$inferInsert;
 
 /**
  * Mockup Gallery – Gespeicherte KI-generierte Mockups pro Team.

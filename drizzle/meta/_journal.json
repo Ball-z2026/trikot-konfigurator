@@ -232,6 +232,20 @@
       "when": 1777801732340,
       "tag": "0032_boring_living_tribunal",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1777805603856,
+      "tag": "0033_brainy_meltdown",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1777805682240,
+      "tag": "0034_cheerful_siren",
+      "breakpoints": true
     }
   ]
 }

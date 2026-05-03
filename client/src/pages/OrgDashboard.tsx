@@ -487,16 +487,19 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Wasserzeichen-Logo im Hintergrund */}
+      {/* Wasserzeichen-Logo als Hintergrund über die komplette Seite */}
       {defaultLogo && (
-        <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
-          <img
-            src={storageUrl(defaultLogo.imageUrl)}
-            alt=""
-            className="w-[500px] h-[500px] object-contain opacity-[0.04]"
-            style={{ filter: 'grayscale(100%)' }}
-          />
-        </div>
+        <div
+          className="fixed inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${storageUrl(defaultLogo.imageUrl)})`,
+            backgroundRepeat: 'repeat',
+            backgroundSize: '280px 280px',
+            backgroundPosition: 'center center',
+            opacity: 0.04,
+            filter: 'grayscale(100%)',
+          }}
+        />
       )}
 
       {/* Header - eingefärbt in Vereinsfarben */}
@@ -509,19 +512,19 @@ function OrgDetail({ orgId }: { orgId: number }) {
           borderColor: org.secondaryColor || undefined,
         }}
       >
-        <div className="container flex items-center justify-between h-16 sm:h-20">
+        <div className="container flex items-center justify-between h-20 sm:h-24">
           <div className="flex items-center gap-4">
             <Link href="/org">
               <Button variant="ghost" size="icon" className={org.primaryColor ? "text-white hover:bg-white/20" : ""}><ArrowLeft className="w-5 h-5" /></Button>
             </Link>
             <div className="flex items-center gap-4">
               {defaultLogo ? (
-                <div className="w-12 h-12 rounded-xl bg-white/95 p-1 shadow-sm flex items-center justify-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white/95 p-1.5 shadow-md flex items-center justify-center">
                   <img src={storageUrl(defaultLogo.imageUrl)} alt="Logo" className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: org.secondaryColor || 'rgba(255,255,255,0.15)' }}>
-                  <Building2 className="w-6 h-6" style={{ color: org.primaryColor ? '#fff' : undefined }} />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center" style={{ backgroundColor: org.secondaryColor || 'rgba(255,255,255,0.15)' }}>
+                  <Building2 className="w-8 h-8" style={{ color: org.primaryColor ? '#fff' : undefined }} />
                 </div>
               )}
               <div>

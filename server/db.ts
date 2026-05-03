@@ -41,6 +41,8 @@ import {
   InsertSponsorProductAssignment,
   mockupApprovals,
   InsertMockupApproval,
+  sponsorInvitations,
+  InsertSponsorInvitation,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1671,4 +1673,39 @@ export async function getApprovalStatusForMockup(mockupId: number) {
   }).from(mockupApprovals)
     .where(eq(mockupApprovals.mockupId, mockupId))
     .orderBy(desc(mockupApprovals.revision));
+}
+
+
+// ─── Sponsor-Einladungen ───────────────────────────────────────────────────────
+
+export async function createSponsorInvitation(data: InsertSponsorInvitation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(sponsorInvitations).values(data).$returningId();
+  return result.id;
+}
+
+export async function getSponsorInvitationByToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(sponsorInvitations).where(eq(sponsorInvitations.token, token)).limit(1);
+  return rows[0] || null;
+}
+
+export async function listSponsorInvitations(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sponsorInvitations)
+    .where(eq(sponsorInvitations.orgId, orgId))
+    .orderBy(desc(sponsorInvitations.createdAt));
+}
+
+export async function completeSponsorInvitation(token: string, sponsorTemplateId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(sponsorInvitations).set({
+    status: "completed",
+    sponsorTemplateId,
+    completedAt: new Date(),
+  }).where(eq(sponsorInvitations.token, token));
 }

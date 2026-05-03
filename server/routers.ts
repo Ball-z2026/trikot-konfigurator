@@ -137,6 +137,10 @@ import {
   listPendingApprovalsBySponsor,
   reviewMockupApproval,
   getApprovalStatusForMockup,
+  createSponsorInvitation,
+  getSponsorInvitationByToken,
+  listSponsorInvitations,
+  completeSponsorInvitation,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1978,6 +1982,10 @@ export const appRouter = router({
         billingZip: z.string().max(10).optional(),
         billingCity: z.string().max(100).optional(),
         billingCountry: z.string().max(100).optional(),
+        // Sponsoring (nur Owner)
+        sponsoringAmount: z.number().optional(),
+        contractStart: z.string().optional(),
+        contractEnd: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         // Rollenbasierte Berechtigung prüfen
@@ -2033,7 +2041,10 @@ export const appRouter = router({
           billingStreet: input.billingStreet || null,
           billingZip: input.billingZip || null,
           billingCity: input.billingCity || null,
-          billingCountry: input.billingCountry || null,
+           billingCountry: input.billingCountry || null,
+          sponsoringAmount: (membership.role === "owner" && input.sponsoringAmount) ? input.sponsoringAmount : null,
+          contractStart: input.contractStart ? new Date(input.contractStart) : null,
+          contractEnd: input.contractEnd ? new Date(input.contractEnd) : null,
           createdBy: ctx.user.id,
         });
         return { id, logoUrl: url };
@@ -2068,14 +2079,22 @@ export const appRouter = router({
         billingZip: z.string().max(10).nullable().optional(),
         billingCity: z.string().max(100).nullable().optional(),
         billingCountry: z.string().max(100).nullable().optional(),
+        // Sponsoring (nur Owner)
+        sponsoringAmount: z.number().nullable().optional(),
+        contractStart: z.string().nullable().optional(),
+        contractEnd: z.string().nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
         if (!membership || membership.role !== "owner") {
           throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Sponsor-Vorlagen bearbeiten" });
         }
-        const { id, orgId, ...data } = input;
-        await updateSponsorTemplate(id, data);
+        const { id, orgId, contractStart, contractEnd, ...data } = input;
+        await updateSponsorTemplate(id, {
+          ...data,
+          contractStart: contractStart ? new Date(contractStart) : contractStart === null ? null : undefined,
+          contractEnd: contractEnd ? new Date(contractEnd) : contractEnd === null ? null : undefined,
+        });
         return { success: true };
       }),
 
@@ -2633,6 +2652,129 @@ export const appRouter = router({
         const rules = getJerseyRules(input.sportart as SportartCode, input.level);
         const warnings = validateZonesAgainstRules(input.zones as ZoneForValidation[], rules);
         return { rules, warnings };
+      }),
+  }),
+
+  /** Sponsor-Einladungen */
+  sponsorInvitation: router({
+    /** Einladung erstellen und optional E-Mail senden */
+    create: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        sponsorEmail: z.string().email(),
+        sponsorName: z.string().optional(),
+        sendEmail: z.boolean().default(true),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Trainer k\u00f6nnen keine Sponsor-Einladungen erstellen" });
+        }
+        const org = await getOrganizationById(input.orgId);
+        const token = nanoid(32);
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 Tage
+        const id = await createSponsorInvitation({
+          orgId: input.orgId,
+          token,
+          sponsorEmail: input.sponsorEmail,
+          sponsorName: input.sponsorName || null,
+          invitedBy: ctx.user.id,
+          expiresAt,
+        });
+        // E-Mail senden via notifyOwner (als Workaround)
+        if (input.sendEmail) {
+          await notifyOwner({
+            title: `Sponsor-Einladung an ${input.sponsorEmail}`,
+            content: `Verein: ${org?.name || "Unbekannt"}\nSponsor: ${input.sponsorName || input.sponsorEmail}\nLink: ${process.env.VITE_APP_URL || ""}/sponsor-form/${token}\n\nBitte leiten Sie diesen Link an den Sponsor weiter.`,
+          });
+        }
+        return { id, token, expiresAt };
+      }),
+
+    /** Alle Einladungen einer Organisation auflisten */
+    list: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        await requireOrgMember(ctx.user.id, input.orgId);
+        return listSponsorInvitations(input.orgId);
+      }),
+
+    /** Einladung per Token abrufen (öffentlich - für Sponsor-Formular) */
+    getByToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const invitation = await getSponsorInvitationByToken(input.token);
+        if (!invitation) throw new TRPCError({ code: "NOT_FOUND", message: "Einladung nicht gefunden" });
+        if (invitation.status === "expired" || invitation.expiresAt < new Date()) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung ist abgelaufen" });
+        }
+        if (invitation.status === "completed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung wurde bereits ausgef\u00fcllt" });
+        }
+        // Org-Daten f\u00fcr Anzeige laden
+        const org = await getOrganizationById(invitation.orgId);
+        return { ...invitation, orgName: org?.name || "Unbekannt" };
+      }),
+
+    /** Sponsor-Formular ausf\u00fcllen (\u00f6ffentlich - Sponsor f\u00fcllt seine Daten aus) */
+    complete: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        name: z.string().min(1),
+        logoBase64: z.string(),
+        mimeType: z.string(),
+        contactFirstName: z.string().min(1),
+        contactLastName: z.string().min(1),
+        contactEmail: z.string().email(),
+        contactPhone: z.string().optional(),
+        street: z.string().min(1),
+        zip: z.string().min(1),
+        city: z.string().min(1),
+        country: z.string().default("Deutschland"),
+        vatId: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const invitation = await getSponsorInvitationByToken(input.token);
+        if (!invitation) throw new TRPCError({ code: "NOT_FOUND", message: "Einladung nicht gefunden" });
+        if (invitation.status !== "pending") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung wurde bereits bearbeitet" });
+        }
+        if (invitation.expiresAt < new Date()) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung ist abgelaufen" });
+        }
+        // Logo zu S3 hochladen
+        const buffer = Buffer.from(input.logoBase64, "base64");
+        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : ".jpg";
+        const key = `org-${invitation.orgId}/sponsor-templates/${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}`;
+        const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
+        // Sponsor-Template erstellen
+        const sponsorId = await createSponsorTemplate({
+          orgId: invitation.orgId,
+          name: input.name,
+          logoUrl: url,
+          storageKey,
+          sponsorType: "mannschaftssponsor",
+          obligation: "nicht_verpflichtend",
+          contactFirstName: input.contactFirstName,
+          contactLastName: input.contactLastName,
+          contactEmail: input.contactEmail,
+          contactPhone: input.contactPhone || null,
+          street: input.street,
+          zip: input.zip,
+          city: input.city,
+          country: input.country,
+          vatId: input.vatId || null,
+          billingDifferent: false,
+          createdBy: invitation.invitedBy,
+        });
+        // Einladung als abgeschlossen markieren
+        await completeSponsorInvitation(input.token, sponsorId);
+        // Owner benachrichtigen
+        await notifyOwner({
+          title: "Sponsor hat Daten ausgef\u00fcllt",
+          content: `Der Sponsor "${input.name}" hat seine Daten \u00fcber den Einladungslink ausgef\u00fcllt. Die Daten sind jetzt in der Verwaltung sichtbar.`,
+        });
+        return { success: true };
       }),
   }),
 });
