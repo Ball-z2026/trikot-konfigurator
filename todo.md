@@ -1134,3 +1134,10 @@
 ## Zonen cm-Angabe exakt umsetzen
 - [ ] cm-Angabe der Zonen exakt auf dem Produkt darstellen (proportional korrekt zur Trikotgröße)
 - [ ] Button "Jetzt anwenden" der die cm-Größe nimmt und die Zone korrekt skaliert/positioniert auf dem Produktbild
+
+## Umstrukturierung: 3 Module
+- [ ] App.tsx: Routes in 3 Module aufteilen (Verwaltung, Designer, Konfigurator)
+- [ ] Home.tsx: 3 Modul-Kacheln statt Produktliste
+- [ ] Produktdesigner: Für alle Rollen zugänglich (nicht nur Admin)
+- [ ] Zonen erstellen: Für alle eingeloggten User erlaubt
+- [ ] Jedes Modul bekommt eigene Sub-Navigation mit Zurück-Button
