@@ -2209,7 +2209,8 @@ function SupplierSection({ org, orgId }: { org: any; orgId: number }) {
   );
 }
 
-// ─── Main Export ───────────────────────────────────────────────────────────────────────────────────xport default function OrgDashboard() {
+// ─── Main Export ───────────────────────────────────────────────────────────────────────────────────
+export default function OrgDashboard() {
   const params = useParams<{ id?: string }>();
   const orgId = params.id ? parseInt(params.id) : null;
   if (!orgId) return <OrgList />;
