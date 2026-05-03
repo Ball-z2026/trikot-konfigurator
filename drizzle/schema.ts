@@ -14,6 +14,12 @@ export const users = mysqlTable("users", {
   /** Muss das Passwort bei der nächsten Anmeldung geändert werden? */
   mustChangePassword: boolean("mustChangePassword").default(false).notNull(),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  /** 2FA: Verschlüsseltes TOTP-Secret (Base32-kodiert) */
+  totpSecret: varchar("totpSecret", { length: 512 }),
+  /** 2FA: Ist TOTP aktiviert? */
+  totpEnabled: boolean("totpEnabled").default(false).notNull(),
+  /** 2FA: Backup-Codes (JSON-Array, bcrypt-gehasht) */
+  backupCodes: text("backupCodes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

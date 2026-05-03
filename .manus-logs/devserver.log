@@ -7885,3 +7885,49 @@
 [2026-05-03T13:15:03.382Z] at async.call.result.err.err (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/gensync@1.0.0-beta.2/node_modules/gensync/index.js:223:11)
 [2026-05-03T13:15:23.672Z] 9:15:23 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
 [2026-05-03T13:29:29.444Z] 9:29:29 AM [vite] (client) hmr update /src/pages/Login.tsx, /src/index.css
+[2026-05-03T13:51:46.949Z] 9:51:46 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T13:52:41.759Z] 9:52:41 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T13:52:43.537Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:52:43.940Z] Server running on http://localhost:3000/
+[2026-05-03T13:52:55.897Z] 9:52:55 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T13:52:57.595Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:52:58.135Z] Server running on http://localhost:3000/
+[2026-05-03T13:53:30.016Z] 9:53:30 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-03T13:53:31.550Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:53:31.945Z] Server running on http://localhost:3000/
+[2026-05-03T13:54:00.032Z] Dev server process group stopped
+[2026-05-03T13:54:00.097Z] Dev server exited with code -15
+[2026-05-03T13:54:03.046Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-03T13:54:04.839Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:54:05.256Z] 9:54:05 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+[2026-05-03T13:54:05.284Z] Server running on http://localhost:3000/
+[2026-05-03T13:56:08.220Z] 9:56:08 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T13:56:09.918Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:56:10.313Z] Server running on http://localhost:3000/
+[2026-05-03T13:57:09.277Z] 9:57:09 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T13:57:10.844Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:57:11.256Z] Server running on http://localhost:3000/
+[2026-05-03T13:57:17.807Z] 9:57:17 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T13:57:19.366Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:57:19.808Z] Server running on http://localhost:3000/
+[2026-05-03T13:57:42.180Z] 9:57:42 AM [tsx] change in ./server/localAuth.ts Restarting...
+[2026-05-03T13:57:43.626Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:57:44.037Z] Server running on http://localhost:3000/
+[2026-05-03T13:58:03.111Z] 9:58:03 AM [tsx] change in ./server/localAuth.ts Restarting...
+[2026-05-03T13:58:04.535Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T13:58:04.954Z] Server running on http://localhost:3000/
+[2026-05-03T14:01:41.788Z] [Auth] Missing session cookie
+[2026-05-03T14:01:41.794Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.246Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.304Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.313Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.320Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.328Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.335Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.346Z] [Auth] Missing session cookie
+[2026-05-03T14:01:42.353Z] [Auth] Missing session cookie
+[2026-05-03T14:01:49.406Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-03T14:01:49.411Z] [Auth] Missing session cookie
+[2026-05-03T14:01:49.418Z] [Auth] Missing session cookie
+[2026-05-03T14:02:09.627Z] 10:02:09 AM [vite] (client) ✨ new dependencies optimized: input-otp
+[2026-05-03T14:02:09.628Z] 10:02:09 AM [vite] (client) ✨ optimized dependencies changed. reloading

@@ -67,13 +67,11 @@ export default function Register() {
       }
 
       toast.success("Registrierung erfolgreich!");
-      // Redirect based on role
-      if (selectedRole === "verein") {
+      // Alle Rollen zum Org-Dashboard leiten - Onboarding-Wizard wird dort automatisch angezeigt
+      if (data.orgId) {
+        navigate(`/org/${data.orgId}`);
+      } else {
         navigate("/org");
-      } else if (selectedRole === "sparte") {
-        navigate(data.deptId ? "/dept-dashboard" : "/org");
-      } else if (selectedRole === "trainer") {
-        navigate(data.orgId && data.deptId ? `/trainer/${data.orgId}/${data.deptId}` : "/");
       }
     } catch (error) {
       toast.error("Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.");

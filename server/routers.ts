@@ -142,12 +142,24 @@ import {
   getSponsorInvitationByToken,
   listSponsorInvitations,
   completeSponsorInvitation,
+  getUserById,
+  setUserTotpSecret,
+  enableUserTotp,
+  disableUserTotp,
+  updateUserBackupCodes,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "./_core/notification";
+import {
+  generateTotpSecret,
+  generateQrCodeDataUrl,
+  verifyTotpToken,
+  generateBackupCodes,
+  verifyBackupCode,
+} from "./twoFactor";
 
 // Shared zone schema for reuse
 const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "custom"]);
@@ -738,7 +750,17 @@ export const appRouter = router({
         onboardingComplete: z.boolean().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwner(ctx.user.id, input.id);
+        // Onboarding-Abschluss darf jeder Org-Mitglied (Farben, Logo, jerseyName, onboardingComplete)
+        const onboardingOnlyFields = ["primaryColor", "secondaryColor", "primaryColorCmyk", "secondaryColorCmyk", "jerseyName", "onboardingComplete"];
+        const inputKeys = Object.keys(input).filter(k => k !== "id" && input[k as keyof typeof input] !== undefined);
+        const isOnboardingOnly = inputKeys.every(k => onboardingOnlyFields.includes(k));
+        if (isOnboardingOnly) {
+          // Jedes Org-Mitglied darf Onboarding abschließen
+          await requireOrgMember(ctx.user.id, input.id);
+        } else {
+          // Volle Bearbeitung nur für Owner
+          await requireOrgOwner(ctx.user.id, input.id);
+        }
         const { id, ...data } = input;
         await updateOrganization(id, data);
         // Geocoding: Adresse -> Koordinaten (wenn Adresse geändert)
@@ -1114,7 +1136,7 @@ export const appRouter = router({
         return getDefaultOrgLogo(input.orgId);
       }),
 
-    /** Logo hochladen (Owner oder Spartenleiter) */
+    /** Logo hochladen (Owner, Spartenleiter, oder Trainer beim Onboarding) */
     upload: protectedProcedure
       .input(z.object({
         orgId: z.number(),
@@ -1124,7 +1146,13 @@ export const appRouter = router({
         isDefault: z.boolean().default(false),
       }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwnerOrDeptLead(ctx.user.id, input.orgId);
+        // Prüfe ob Onboarding noch nicht abgeschlossen ist - dann darf jedes Mitglied Logo hochladen
+        const org = await getOrganizationById(input.orgId);
+        if (org && !org.onboardingComplete) {
+          await requireOrgMember(ctx.user.id, input.orgId);
+        } else {
+          await requireOrgOwnerOrDeptLead(ctx.user.id, input.orgId);
+        }
         // Decode base64 and upload to S3
         const buffer = Buffer.from(input.imageBase64, "base64");
         const key = `org-logos/${input.orgId}/${input.name.replace(/\s+/g, "-").toLowerCase()}`;
@@ -2815,6 +2843,95 @@ export const appRouter = router({
           content: `Der Sponsor "${input.name}" hat seine Daten \u00fcber den Einladungslink ausgef\u00fcllt. Die Daten sind jetzt in der Verwaltung sichtbar.`,
         });
         return { success: true };
+      }),
+  }),
+
+  // ─── Two-Factor Authentication (2FA) ─────────────────────────────────────────────────────────
+  twoFactor: router({
+    /** Prüfe ob 2FA für den aktuellen Benutzer aktiviert ist */
+    status: protectedProcedure.query(async ({ ctx }) => {
+      const user = await getUserById(ctx.user.id);
+      return {
+        enabled: user?.totpEnabled ?? false,
+        hasSecret: !!user?.totpSecret,
+      };
+    }),
+
+    /** Starte 2FA-Setup: Generiere Secret und QR-Code */
+    setup: protectedProcedure.mutation(async ({ ctx }) => {
+      const user = await getUserById(ctx.user.id);
+      if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer nicht gefunden" });
+      if (user.totpEnabled) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist bereits aktiviert" });
+
+      const email = user.email || user.name || `user-${user.id}`;
+      const { secret, otpauthUrl } = generateTotpSecret(email);
+      const qrCodeDataUrl = await generateQrCodeDataUrl(otpauthUrl);
+
+      // Secret in DB speichern (noch nicht aktiviert)
+      await setUserTotpSecret(ctx.user.id, secret);
+
+      return {
+        secret,
+        qrCodeDataUrl,
+        otpauthUrl,
+      };
+    }),
+
+    /** Bestätige 2FA-Setup mit einem gültigen TOTP-Code */
+    confirmSetup: protectedProcedure
+      .input(z.object({ token: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await getUserById(ctx.user.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+        if (user.totpEnabled) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist bereits aktiviert" });
+        if (!user.totpSecret) throw new TRPCError({ code: "BAD_REQUEST", message: "Kein 2FA-Setup gestartet" });
+
+        const isValid = verifyTotpToken(input.token, user.totpSecret);
+        if (!isValid) throw new TRPCError({ code: "BAD_REQUEST", message: "Ungültiger Code. Bitte versuchen Sie es erneut." });
+
+        // Backup-Codes generieren
+        const { plaintext, hashed } = await generateBackupCodes();
+
+        // 2FA aktivieren und Backup-Codes speichern
+        await enableUserTotp(ctx.user.id, JSON.stringify(hashed));
+
+        return {
+          success: true,
+          backupCodes: plaintext,
+        };
+      }),
+
+    /** 2FA deaktivieren (erfordert gültigen TOTP-Code) */
+    disable: protectedProcedure
+      .input(z.object({ token: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await getUserById(ctx.user.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!user.totpEnabled) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist nicht aktiviert" });
+        if (!user.totpSecret) throw new TRPCError({ code: "BAD_REQUEST" });
+
+        const isValid = verifyTotpToken(input.token, user.totpSecret);
+        if (!isValid) throw new TRPCError({ code: "BAD_REQUEST", message: "Ungültiger Code" });
+
+        await disableUserTotp(ctx.user.id);
+        return { success: true };
+      }),
+
+    /** Neue Backup-Codes generieren (erfordert gültigen TOTP-Code) */
+    regenerateBackupCodes: protectedProcedure
+      .input(z.object({ token: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await getUserById(ctx.user.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!user.totpEnabled || !user.totpSecret) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist nicht aktiviert" });
+
+        const isValid = verifyTotpToken(input.token, user.totpSecret);
+        if (!isValid) throw new TRPCError({ code: "BAD_REQUEST", message: "Ungültiger Code" });
+
+        const { plaintext, hashed } = await generateBackupCodes();
+        await updateUserBackupCodes(ctx.user.id, JSON.stringify(hashed));
+
+        return { backupCodes: plaintext };
       }),
   }),
 });

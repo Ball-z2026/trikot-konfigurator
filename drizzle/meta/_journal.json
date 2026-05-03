@@ -267,6 +267,13 @@
       "when": 1777812306694,
       "tag": "0037_omniscient_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1777816416212,
+      "tag": "0038_eminent_thundra",
+      "breakpoints": true
     }
   ]
 }

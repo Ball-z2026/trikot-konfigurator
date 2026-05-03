@@ -517,8 +517,8 @@ function OrgDetail({ orgId }: { orgId: number }) {
     );
   }
 
-  // Onboarding-Check: Wenn nicht abgeschlossen und User ist Owner, zeige Onboarding-Wizard
-  if (!org.onboardingComplete && org.userRole === "owner") {
+  // Onboarding-Check: Wenn nicht abgeschlossen, zeige Onboarding-Wizard für alle Rollen
+  if (!org.onboardingComplete) {
     return (
       <OrgOnboarding
         orgId={orgId}

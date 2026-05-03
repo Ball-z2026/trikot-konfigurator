@@ -1411,3 +1411,21 @@
 
 ## Google-Authentifizierung auf Login-Seite
 - [x] Google/OAuth-Login-Button auf Login-Seite hinzugefügt ("Mit Google anmelden" mit Google-Logo, Divider zwischen E-Mail-Login und OAuth)
+
+## Zwei-Faktor-Authentifizierung (2FA) für Admin-Konten
+- [x] DB: 2FA-Felder in users Tabelle (totpSecret, totpEnabled, backupCodes)
+- [x] Backend: TOTP-Setup-Endpunkt (Secret generieren, QR-Code-URL)
+- [x] Backend: TOTP-Verifizierung-Endpunkt
+- [x] Backend: Backup-Codes generieren und verifizieren
+- [x] Backend: Login-Flow anpassen (2FA-Abfrage nach Passwort)
+- [x] Frontend: 2FA-Setup-Seite mit QR-Code im Admin-Profil
+- [x] Frontend: 2FA-Code-Eingabe nach Login
+- [x] Frontend: Backup-Codes anzeigen bei Ersteinrichtung
+- [x] Tests für 2FA-Logik (18 Tests, alle bestanden)
+
+## Bug: Onboarding "Einrichtung ausstehend" kann nicht abgeschlossen werden
+- [x] Bug: Klick auf Organisation mit "Einrichtung ausstehend" führt nicht zum Onboarding-Wizard oder Wizard kann nicht abgeschlossen werden
+- [x] Fix: OrgDashboard zeigt Onboarding-Wizard für alle Rollen (nicht nur Owner)
+- [x] Fix: org.update erlaubt Onboarding-Felder für alle Org-Mitglieder
+- [x] Fix: orgLogo.upload erlaubt Logo-Upload während Onboarding für alle Mitglieder
+- [x] Fix: Register.tsx leitet alle Rollen zum Org-Dashboard (Onboarding-Wizard)

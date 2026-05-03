@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Shirt, Mail, Lock, Eye, EyeOff, ArrowLeft, Chrome } from "lucide-react";
+import { Shirt, Mail, Lock, Eye, EyeOff, ArrowLeft, ShieldCheck } from "lucide-react";
 import { getLoginUrl } from "@/const";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export default function Login() {
   const [, navigate] = useLocation();
@@ -18,6 +19,40 @@ export default function Login() {
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // 2FA state
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [twoFactorToken, setTwoFactorToken] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [isBackupCode, setIsBackupCode] = useState(false);
+  const [backupCodeInput, setBackupCodeInput] = useState("");
+  const [verifying2FA, setVerifying2FA] = useState(false);
+
+  const redirectAfterLogin = async () => {
+    try {
+      const meRes = await fetch("/api/trpc/membership.mine", { credentials: "include" });
+      const meData = await meRes.json();
+      const memberships = meData?.result?.data?.json || meData?.result?.data;
+      if (Array.isArray(memberships) && memberships.length > 0) {
+        const first = memberships[0];
+        if (first.role === "trainer") {
+          window.location.href = `/verwaltung/trainer/${first.orgId}/${first.departmentId}`;
+          return;
+        }
+        if (first.role === "department_lead") {
+          window.location.href = `/verwaltung/org/${first.orgId}`;
+          return;
+        }
+        if (first.role === "owner") {
+          window.location.href = `/verwaltung/org/${first.orgId}`;
+          return;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    window.location.href = "/verwaltung/org";
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +77,14 @@ export default function Login() {
         return;
       }
 
+      // 2FA erforderlich
+      if (data.requiresTwoFactor) {
+        setRequiresTwoFactor(true);
+        setTwoFactorToken(data.twoFactorToken);
+        toast.info("Bitte geben Sie Ihren 2FA-Code ein");
+        return;
+      }
+
       if (data.mustChangePassword) {
         setMustChangePassword(true);
         toast.info("Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung");
@@ -49,36 +92,57 @@ export default function Login() {
       }
 
       toast.success("Erfolgreich angemeldet");
-      // Intelligente Weiterleitung basierend auf Rolle
-      // Lade Mitgliedschaften um die richtige Seite zu bestimmen
-      try {
-        const meRes = await fetch("/api/trpc/membership.mine", { credentials: "include" });
-        const meData = await meRes.json();
-        const memberships = meData?.result?.data?.json || meData?.result?.data;
-        if (Array.isArray(memberships) && memberships.length > 0) {
-          const first = memberships[0];
-          if (first.role === "trainer") {
-            window.location.href = `/verwaltung/trainer/${first.orgId}/${first.departmentId}`;
-            return;
-          }
-          if (first.role === "department_lead") {
-            window.location.href = `/verwaltung/org/${first.orgId}`;
-            return;
-          }
-          if (first.role === "owner") {
-            window.location.href = `/verwaltung/org/${first.orgId}`;
-            return;
-          }
-        }
-      } catch {
-        // Fallback
-      }
-      // Keine Mitgliedschaft: Zum Vereins-Onboarding (Organisation erstellen)
-      window.location.href = "/verwaltung/org";
+      await redirectAfterLogin();
     } catch (error) {
       toast.error("Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerify2FA = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const code = isBackupCode ? backupCodeInput.trim() : twoFactorCode;
+    if (!code) {
+      toast.error(isBackupCode ? "Bitte Backup-Code eingeben" : "Bitte 6-stelligen Code eingeben");
+      return;
+    }
+
+    setVerifying2FA(true);
+    try {
+      const res = await fetch("/api/auth/verify-2fa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ twoFactorToken, code, isBackupCode }),
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Verifizierung fehlgeschlagen");
+        if (data.error?.includes("abgelaufen")) {
+          // Token abgelaufen, zurück zum Login
+          setRequiresTwoFactor(false);
+          setTwoFactorToken("");
+          setTwoFactorCode("");
+        }
+        return;
+      }
+
+      if (data.mustChangePassword) {
+        setMustChangePassword(true);
+        setRequiresTwoFactor(false);
+        toast.info("Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung");
+        return;
+      }
+
+      toast.success("Erfolgreich angemeldet");
+      await redirectAfterLogin();
+    } catch (error) {
+      toast.error("Verifizierung fehlgeschlagen");
+    } finally {
+      setVerifying2FA(false);
     }
   };
 
@@ -110,37 +174,140 @@ export default function Login() {
       }
 
       toast.success("Passwort erfolgreich geändert");
-      // Intelligente Weiterleitung nach Passwort-Änderung
-      try {
-        const meRes = await fetch("/api/trpc/membership.mine", { credentials: "include" });
-        const meData = await meRes.json();
-        const memberships = meData?.result?.data?.json || meData?.result?.data;
-        if (Array.isArray(memberships) && memberships.length > 0) {
-          const first = memberships[0];
-          if (first.role === "trainer") {
-            window.location.href = `/verwaltung/trainer/${first.orgId}/${first.departmentId}`;
-            return;
-          }
-          if (first.role === "department_lead") {
-            window.location.href = `/verwaltung/org/${first.orgId}`;
-            return;
-          }
-          if (first.role === "owner") {
-            window.location.href = `/verwaltung/org/${first.orgId}`;
-            return;
-          }
-        }
-      } catch {
-        // Fallback
-      }
-      // Keine Mitgliedschaft: Zum Vereins-Onboarding
-      window.location.href = "/verwaltung/org";
+      await redirectAfterLogin();
     } catch (error) {
       toast.error("Passwort-Änderung fehlgeschlagen");
     } finally {
       setChangingPassword(false);
     }
   };
+
+  // 2FA verification form
+  if (requiresTwoFactor) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+              <ShieldCheck className="h-7 w-7" />
+            </div>
+            <CardTitle className="text-2xl">Zwei-Faktor-Authentifizierung</CardTitle>
+            <CardDescription>
+              {isBackupCode
+                ? "Geben Sie einen Ihrer Backup-Codes ein."
+                : "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleVerify2FA} className="space-y-6">
+              {isBackupCode ? (
+                <div className="space-y-2">
+                  <Label htmlFor="backupCode">Backup-Code</Label>
+                  <Input
+                    id="backupCode"
+                    value={backupCodeInput}
+                    onChange={(e) => setBackupCodeInput(e.target.value)}
+                    placeholder="XXXX-XXXX"
+                    className="text-center text-lg font-mono tracking-widest"
+                    autoFocus
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center space-y-2">
+                  <Label>Authentifizierungscode</Label>
+                  <InputOTP
+                    maxLength={6}
+                    value={twoFactorCode}
+                    onChange={(value) => {
+                      setTwoFactorCode(value);
+                      // Auto-submit bei 6 Zeichen
+                      if (value.length === 6) {
+                        setTimeout(() => {
+                          const code = value;
+                          setVerifying2FA(true);
+                          fetch("/api/auth/verify-2fa", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ twoFactorToken, code, isBackupCode: false }),
+                            credentials: "include",
+                          })
+                            .then((res) => res.json())
+                            .then(async (data) => {
+                              if (data.success) {
+                                if (data.mustChangePassword) {
+                                  setMustChangePassword(true);
+                                  setRequiresTwoFactor(false);
+                                  toast.info("Bitte ändern Sie Ihr Passwort");
+                                } else {
+                                  toast.success("Erfolgreich angemeldet");
+                                  await redirectAfterLogin();
+                                }
+                              } else {
+                                toast.error(data.error || "Ungültiger Code");
+                                setTwoFactorCode("");
+                              }
+                            })
+                            .catch(() => {
+                              toast.error("Verifizierung fehlgeschlagen");
+                              setTwoFactorCode("");
+                            })
+                            .finally(() => setVerifying2FA(false));
+                        }, 100);
+                      }
+                    }}
+                    autoFocus
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              )}
+
+              <Button type="submit" className="w-full" disabled={verifying2FA}>
+                {verifying2FA ? "Wird verifiziert..." : "Verifizieren"}
+              </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsBackupCode(!isBackupCode);
+                    setTwoFactorCode("");
+                    setBackupCodeInput("");
+                  }}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {isBackupCode ? "Authenticator-App verwenden" : "Backup-Code verwenden"}
+                </button>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={() => {
+                  setRequiresTwoFactor(false);
+                  setTwoFactorToken("");
+                  setTwoFactorCode("");
+                  setBackupCodeInput("");
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Zurück zum Login
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Password change form (shown after first login)
   if (mustChangePassword) {

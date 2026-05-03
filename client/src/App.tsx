@@ -23,6 +23,7 @@ import ProductSelect from "./pages/ProductSelect";
 import SponsorManagement from "./pages/SponsorManagement";
 import SponsorReview from "./pages/SponsorReview";
 import SponsorForm from "./pages/SponsorForm";
+import TwoFactorSetup from "./pages/TwoFactorSetup";
 
 function Router() {
   return (
@@ -56,6 +57,9 @@ function Router() {
       <Route path="/mockup/:token" component={MockupShare} />
       <Route path="/sponsor-review/:token" component={SponsorReview} />
       <Route path="/sponsor-form/:token" component={SponsorForm} />
+
+      {/* Sicherheit */}
+      <Route path="/verwaltung/sicherheit/2fa" component={TwoFactorSetup} />
 
       {/* Zahlung */}
       <Route path="/payment/confirm/:token" component={PaymentConfirm} />

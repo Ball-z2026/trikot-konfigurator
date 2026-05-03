@@ -1715,3 +1715,37 @@ export async function completeSponsorInvitation(token: string, sponsorTemplateId
     completedAt: new Date(),
   }).where(eq(sponsorInvitations.token, token));
 }
+
+
+// ─── 2FA (Two-Factor Authentication) Helpers ────────────────────────────────
+
+export async function setUserTotpSecret(userId: number, totpSecret: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ totpSecret }).where(eq(users.id, userId));
+}
+
+export async function enableUserTotp(userId: number, backupCodes: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ totpEnabled: true, backupCodes }).where(eq(users.id, userId));
+}
+
+export async function disableUserTotp(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ totpEnabled: false, totpSecret: null, backupCodes: null }).where(eq(users.id, userId));
+}
+
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateUserBackupCodes(userId: number, backupCodes: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ backupCodes }).where(eq(users.id, userId));
+}
