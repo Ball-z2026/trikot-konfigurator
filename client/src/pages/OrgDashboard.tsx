@@ -1698,7 +1698,7 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
     updateOrg.mutate({
       id: orgId,
       officialName: officialName || undefined,
-      foundedYear: foundedYear ? parseInt(foundedYear) : undefined,
+      foundedYear: foundedYear && parseInt(foundedYear) >= 1800 ? parseInt(foundedYear) : undefined,
       contactFirstName: contactFirstName || undefined,
       contactLastName: contactLastName || undefined,
       contactRole: contactRole || undefined,
