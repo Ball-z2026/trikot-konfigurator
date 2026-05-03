@@ -1141,3 +1141,27 @@
 - [ ] Produktdesigner: Für alle Rollen zugänglich (nicht nur Admin)
 - [ ] Zonen erstellen: Für alle eingeloggten User erlaubt
 - [ ] Jedes Modul bekommt eigene Sub-Navigation mit Zurück-Button
+
+## Sponsoren-Verwaltung
+- [ ] DB-Schema: sponsors Tabelle (id, name, logoUrl, type, obligation, orgId, deptId, teamId)
+- [ ] Backend: CRUD-Prozeduren für Sponsoren
+- [ ] Frontend: Sponsoren-Verwaltungsseite unter /verwaltung/sponsoren
+- [ ] Auswahlfeld Sponsor-Typ (Hauptsponsor, Spartensponsor, Mannschaftssponsor)
+- [ ] Auswahlfeld Verpflichtung bei Haupt- und Spartensponsor (alle Produkte, nur Trikot, nicht verpflichtend)
+- [ ] Hinweis bei Produkterstellung wenn verpflichtende Sponsoren existieren
+
+## Sponsor-Datenblatt
+- [ ] DB-Schema: sponsorTemplates um Kontaktdaten erweitern (Kontaktperson, E-Mail, Telefon, Adresse, USt-IdNr)
+- [ ] Backend: create/update Prozeduren um neue Felder erweitern
+- [ ] Frontend: Formular mit vollständigem Datenblatt beim Anlegen eines Sponsors
+
+## Regel: Sponsoren nur über Verwaltung
+- [ ] Sponsoren werden NUR in /verwaltung/sponsoren angelegt und bearbeitet
+- [ ] Im Konfigurator erscheinen Sponsoren nur als Auswahl (kein Anlegen/Bearbeiten)
+- [ ] Konfigurator: Sponsor-Zonen zeigen Dropdown mit verfügbaren Sponsoren der Organisation
+
+## Logo-Upload Verbesserungen
+- [ ] PDF als Logo-Format akzeptieren (Vektordatei)
+- [ ] Datenprüfung: Auflösung prüfen (ideal 300 DPI), Warnung bei unter 300 DPI
+- [ ] Dateigröße und Format-Validierung
+- [ ] Überschreiben: Neues Logo ersetzt altes

@@ -446,6 +446,56 @@ export const sponsorTemplates = mysqlTable("sponsor_templates", {
   storageKey: text("storageKey"),
   /** Optionaler Kategorie-Tag (z.B. "Hauptsponsor", "Co-Sponsor", "Ausrüster") */
   category: varchar("category", { length: 100 }),
+  /**
+   * Sponsor-Typ:
+   * - hauptsponsor: Gilt für den gesamten Verein
+   * - spartensponsor: Gilt für eine bestimmte Sparte
+   * - mannschaftssponsor: Gilt für eine bestimmte Mannschaft
+   */
+  sponsorType: mysqlEnum("sponsorType", ["hauptsponsor", "spartensponsor", "mannschaftssponsor"]).default("hauptsponsor").notNull(),
+  /**
+   * Verpflichtung (nur bei hauptsponsor und spartensponsor relevant):
+   * - alle_produkte: Muss auf jedem Produkt erscheinen
+   * - nur_trikot: Muss nur auf Trikots erscheinen
+   * - nicht_verpflichtend: Optional
+   */
+  obligation: mysqlEnum("obligation", ["alle_produkte", "nur_trikot", "nicht_verpflichtend"]).default("nicht_verpflichtend").notNull(),
+  /** Abteilung (nur bei spartensponsor) */
+  departmentId: int("departmentId"),
+  /** Mannschaft (nur bei mannschaftssponsor) */
+  teamId: int("teamId"),
+  // ─── Kontaktdaten ───
+  /** Kontaktperson: Vorname */
+  contactFirstName: varchar("contactFirstName", { length: 100 }),
+  /** Kontaktperson: Nachname */
+  contactLastName: varchar("contactLastName", { length: 100 }),
+  /** E-Mail der Kontaktperson */
+  contactEmail: varchar("contactEmail", { length: 255 }),
+  /** Telefon der Kontaktperson */
+  contactPhone: varchar("contactPhone", { length: 50 }),
+  // ─── Firmenadresse ───
+  /** Straße und Hausnummer */
+  street: varchar("street", { length: 255 }),
+  /** Postleitzahl */
+  zip: varchar("zip", { length: 10 }),
+  /** Ort */
+  city: varchar("city", { length: 100 }),
+  /** Land (Standard: Deutschland) */
+  country: varchar("country", { length: 100 }).default("Deutschland"),
+  // ─── Rechnungsdaten ───
+  /** USt-IdNr. */
+  vatId: varchar("vatId", { length: 50 }),
+  /** Rechnungsadresse abweichend? */
+  billingDifferent: boolean("billingDifferent").default(false),
+  /** Rechnungsadresse: Straße */
+  billingStreet: varchar("billingStreet", { length: 255 }),
+  /** Rechnungsadresse: PLZ */
+  billingZip: varchar("billingZip", { length: 10 }),
+  /** Rechnungsadresse: Ort */
+  billingCity: varchar("billingCity", { length: 100 }),
+  /** Rechnungsadresse: Land */
+  billingCountry: varchar("billingCountry", { length: 100 }),
+  // ─── Meta ───
   /** Sortierreihenfolge */
   sortOrder: int("sortOrder").default(0).notNull(),
   /** Erstellt von (userId) */

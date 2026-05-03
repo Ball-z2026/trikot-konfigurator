@@ -1,4 +1,4 @@
-import { eq, and, asc, desc, not, inArray, gt, sql } from "drizzle-orm";
+import { eq, and, asc, desc, not, ne, inArray, gt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -1349,6 +1349,18 @@ export async function deleteSponsorTemplate(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(sponsorTemplates).where(eq(sponsorTemplates.id, id));
+}
+
+/** Verpflichtende Sponsoren einer Organisation abrufen (alle_produkte oder nur_trikot) */
+export async function getMandatorySponsors(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sponsorTemplates)
+    .where(and(
+      eq(sponsorTemplates.orgId, orgId),
+      ne(sponsorTemplates.obligation, "nicht_verpflichtend")
+    ))
+    .orderBy(asc(sponsorTemplates.sortOrder));
 }
 
 

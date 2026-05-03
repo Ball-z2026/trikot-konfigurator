@@ -1810,6 +1810,27 @@ export const appRouter = router({
         logoBase64: z.string(),
         mimeType: z.string(),
         category: z.string().max(100).optional(),
+        sponsorType: z.enum(["hauptsponsor", "spartensponsor", "mannschaftssponsor"]).default("hauptsponsor"),
+        obligation: z.enum(["alle_produkte", "nur_trikot", "nicht_verpflichtend"]).default("nicht_verpflichtend"),
+        departmentId: z.number().optional(),
+        teamId: z.number().optional(),
+        // Kontaktdaten
+        contactFirstName: z.string().max(100).optional(),
+        contactLastName: z.string().max(100).optional(),
+        contactEmail: z.string().email().optional(),
+        contactPhone: z.string().max(50).optional(),
+        // Firmenadresse
+        street: z.string().max(255).optional(),
+        zip: z.string().max(10).optional(),
+        city: z.string().max(100).optional(),
+        country: z.string().max(100).optional(),
+        // Rechnungsdaten
+        vatId: z.string().max(50).optional(),
+        billingDifferent: z.boolean().optional(),
+        billingStreet: z.string().max(255).optional(),
+        billingZip: z.string().max(10).optional(),
+        billingCity: z.string().max(100).optional(),
+        billingCountry: z.string().max(100).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         // Prüfe ob User Owner der Org ist
@@ -1829,6 +1850,24 @@ export const appRouter = router({
           logoUrl: url,
           storageKey,
           category: input.category || null,
+          sponsorType: input.sponsorType,
+          obligation: input.obligation,
+          departmentId: input.departmentId || null,
+          teamId: input.teamId || null,
+          contactFirstName: input.contactFirstName || null,
+          contactLastName: input.contactLastName || null,
+          contactEmail: input.contactEmail || null,
+          contactPhone: input.contactPhone || null,
+          street: input.street || null,
+          zip: input.zip || null,
+          city: input.city || null,
+          country: input.country || "Deutschland",
+          vatId: input.vatId || null,
+          billingDifferent: input.billingDifferent || false,
+          billingStreet: input.billingStreet || null,
+          billingZip: input.billingZip || null,
+          billingCity: input.billingCity || null,
+          billingCountry: input.billingCountry || null,
           createdBy: ctx.user.id,
         });
         return { id, logoUrl: url };
@@ -1842,6 +1881,27 @@ export const appRouter = router({
         name: z.string().min(1).max(255).optional(),
         category: z.string().max(100).optional(),
         sortOrder: z.number().optional(),
+        sponsorType: z.enum(["hauptsponsor", "spartensponsor", "mannschaftssponsor"]).optional(),
+        obligation: z.enum(["alle_produkte", "nur_trikot", "nicht_verpflichtend"]).optional(),
+        departmentId: z.number().nullable().optional(),
+        teamId: z.number().nullable().optional(),
+        // Kontaktdaten
+        contactFirstName: z.string().max(100).nullable().optional(),
+        contactLastName: z.string().max(100).nullable().optional(),
+        contactEmail: z.string().email().nullable().optional(),
+        contactPhone: z.string().max(50).nullable().optional(),
+        // Firmenadresse
+        street: z.string().max(255).nullable().optional(),
+        zip: z.string().max(10).nullable().optional(),
+        city: z.string().max(100).nullable().optional(),
+        country: z.string().max(100).nullable().optional(),
+        // Rechnungsdaten
+        vatId: z.string().max(50).nullable().optional(),
+        billingDifferent: z.boolean().nullable().optional(),
+        billingStreet: z.string().max(255).nullable().optional(),
+        billingZip: z.string().max(10).nullable().optional(),
+        billingCity: z.string().max(100).nullable().optional(),
+        billingCountry: z.string().max(100).nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);

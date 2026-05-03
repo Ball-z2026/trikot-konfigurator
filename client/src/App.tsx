@@ -20,6 +20,7 @@ import DeptDashboard from "./pages/DeptDashboard";
 import PaymentConfirm from "./pages/PaymentConfirm";
 import MockupShare from "./pages/MockupShare";
 import ProductSelect from "./pages/ProductSelect";
+import SponsorManagement from "./pages/SponsorManagement";
 
 function Router() {
   return (
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/verwaltung/trainer/:id/:deptId" component={TrainerDashboard} />
       <Route path="/verwaltung/trainer/:id/:deptId/team/:teamId" component={TrainerDashboard} />
       <Route path="/verwaltung/admin/users" component={AdminUsers} />
+      <Route path="/verwaltung/sponsoren" component={SponsorManagement} />
 
       {/* ─── Modul 2: Produktdesigner ─── */}
       <Route path="/designer/products" component={AdminProducts} />

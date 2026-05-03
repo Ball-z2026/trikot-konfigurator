@@ -176,6 +176,20 @@
       "when": 1777745854457,
       "tag": "0024_natural_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1777792463643,
+      "tag": "0025_wealthy_doctor_octopus",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1777792716269,
+      "tag": "0026_bitter_exodus",
+      "breakpoints": true
     }
   ]
 }
