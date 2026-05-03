@@ -1349,7 +1349,7 @@
 - [ ] Frontend: Mitglied anlegen/bearbeiten Dialog
 - [x] Frontend: Excel-Upload für Mitglieder mit Vorschau und Zuordnung
 - [ ] Frontend: Excel-Upload für Mannschaften mit Vorschau
-- [x] Aktive Mitglieder: Zuordnung zu Sparte und Mannschaft ist optional (nicht Pflicht)
+- [x] Aktive Mitglieder: Pflicht-Zuordnung zu Sparte (Mannschaft optional)
 - [x] Passive Mitglieder: Nur Basisdaten (kein Sparte/Mannschaft-Zwang)
 
 ## Vereinsfarben: CMYK-Werte ergänzen
@@ -1483,3 +1483,4 @@
 - [x] Backend: Pflicht-Zuordnung zu Sparte für aktive Mitglieder entfernt (optional)
 - [x] Backend: Pflicht-Zuordnung zu Trainer für aktive Mitglieder entfernt (optional)
 - [x] Frontend: Pflicht-Markierung für Sparte bei aktiven Mitgliedern entfernt
+- [x] Pflicht-Zuordnung zu Sparte für aktive Mitglieder wiederhergestellt (Backend + Frontend)

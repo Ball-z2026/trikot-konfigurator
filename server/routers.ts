@@ -3085,7 +3085,10 @@ export const appRouter = router({
             }
           }
         }
-        // Sparte/Mannschaft-Zuordnung ist optional
+        // Aktive Mitglieder müssen einer Sparte zugeordnet werden
+        if (input.status === "aktiv" && !input.departmentId) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Aktive Mitglieder müssen einer Sparte zugeordnet werden" });
+        }
         const id = await createOrgMember({
           orgId: input.orgId,
           firstName: input.firstName,
@@ -3134,7 +3137,13 @@ export const appRouter = router({
         if (data.memberNumber !== undefined) updateData.memberNumber = data.memberNumber || null;
         if (data.birthDate !== undefined) updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
         if (data.notes !== undefined) updateData.notes = data.notes || null;
-        // Sparte/Mannschaft-Zuordnung ist optional
+        // Aktive Mitglieder müssen einer Sparte zugeordnet werden
+        const effectiveStatus = data.status !== undefined ? data.status : undefined;
+        const effectiveDeptId = data.departmentId !== undefined ? data.departmentId : undefined;
+        // Wenn Status auf aktiv gesetzt wird und keine Sparte angegeben
+        if (effectiveStatus === "aktiv" && effectiveDeptId !== undefined && !effectiveDeptId) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Aktive Mitglieder müssen einer Sparte zugeordnet werden" });
+        }
         await updateOrgMember(id, updateData);
         return { success: true };
       }),

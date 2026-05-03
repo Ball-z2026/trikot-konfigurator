@@ -249,7 +249,7 @@ export default function MemberManagement({
         </div>
         {!filterDepartmentId && (
           <div className="space-y-1.5">
-            <Label>Sparte</Label>
+            <Label>Sparte {form.status === "aktiv" && <span className="text-destructive">*</span>}</Label>
             <Select
               value={form.departmentId?.toString() || "none"}
               onValueChange={v => {
