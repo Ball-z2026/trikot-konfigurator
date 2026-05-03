@@ -394,7 +394,8 @@ export async function listOrganizationsByUser(userId: number) {
     const org = await getOrganizationById(orgId);
     if (org) {
       const membership = userMemberships.find((m) => m.orgId === orgId);
-      orgs.push({ ...org, userRole: membership?.role });
+      const defaultLogo = await getDefaultOrgLogo(orgId);
+      orgs.push({ ...org, userRole: membership?.role, defaultLogoUrl: defaultLogo?.imageUrl || null });
     }
   }
   return orgs;

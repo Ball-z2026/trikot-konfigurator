@@ -1311,3 +1311,13 @@
 ### Datenisolation
 - [x] Neue Benutzer sehen keine fremden Vereinsdaten (via Memberships gefiltert)
 - [x] Ohne Mitgliedschaft: Nur "Verein erstellen" angeboten
+
+## Design-Aufwertung: Vereins-Branding im Dashboard
+
+- [x] Vereinslogo als Wasserzeichen im Hintergrund der gesamten Seite
+- [x] Tabs in Vereinsfarben stylen (aktiver Tab, Hover-Effekte)
+- [x] Buttons in Vereinsfarben (Primär-Buttons, Konfigurator-Button)
+- [x] Karten-Rahmen und Sektions-Akzente in Vereinsfarben
+- [x] Badges (Verein, NRW, Fußball) in Vereinsfarben
+- [x] Übersicht/Stammdaten-Sektionen mit Vereinsfarben-Akzenten
+- [x] Org-Liste: Karten mit Logo und Vereinsfarben-Styling

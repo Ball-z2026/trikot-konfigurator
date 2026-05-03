@@ -6582,3 +6582,25 @@
 [2026-05-03T09:53:24.227Z] [Auth] Missing session cookie
 [2026-05-03T09:53:24.255Z] [Auth] Missing session cookie
 [2026-05-03T09:53:24.260Z] [Auth] Missing session cookie
+[2026-05-03T10:20:51.947Z] 6:20:51 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:21:13.241Z] 6:21:13 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:21:35.586Z] 6:21:35 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:21:50.099Z] 6:21:50 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:22:04.455Z] 6:22:04 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:22:13.628Z] 6:22:13 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:22:32.438Z] 6:22:32 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:22:41.269Z] 6:22:41 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:22:58.488Z] 6:22:58 AM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T10:23:25.849Z] 6:23:25 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T10:23:27.361Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T10:23:28.291Z] Server running on http://localhost:3000/
+[2026-05-03T10:29:57.372Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.391Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.398Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.404Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.412Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.421Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.427Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.441Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.449Z] [Auth] Missing session cookie
+[2026-05-03T10:29:57.455Z] [Auth] Missing session cookie

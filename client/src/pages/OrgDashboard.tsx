@@ -177,41 +177,71 @@ function OrgList() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {orgs.map((org: any) => (
               <Card
                 key={org.id}
-                className="group cursor-pointer hover:shadow-lg transition-all overflow-hidden"
+                className="group cursor-pointer hover:shadow-xl transition-all overflow-hidden relative"
                 onClick={() => setLocation(`/org/${org.id}`)}
               >
-                {/* Vereinsfarben-Akzent oben */}
-                {org.primaryColor && (
-                  <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${org.primaryColor} 0%, ${org.secondaryColor || org.primaryColor} 100%)` }} />
-                )}
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center"
-                        style={{ backgroundColor: org.primaryColor ? `${org.primaryColor}20` : undefined }}
-                      >
-                        <Building2 className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />
+                {/* Vereinsfarben-Gradient oben */}
+                <div
+                  className="h-24 relative"
+                  style={{
+                    background: org.primaryColor
+                      ? `linear-gradient(135deg, ${org.primaryColor} 0%, ${org.primaryColor}cc 60%, ${org.secondaryColor || org.primaryColor}60 100%)`
+                      : 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.7) 100%)',
+                  }}
+                >
+                  {/* Wasserzeichen-Logo in der Karte */}
+                  {org.defaultLogoUrl && (
+                    <div className="absolute inset-0 flex items-center justify-end pr-4 overflow-hidden">
+                      <img
+                        src={storageUrl(org.defaultLogoUrl)}
+                        alt=""
+                        className="w-16 h-16 object-contain opacity-20"
+                        style={{ filter: 'brightness(10)' }}
+                      />
+                    </div>
+                  )}
+                  {/* Logo-Badge */}
+                  <div className="absolute -bottom-5 left-4">
+                    {org.defaultLogoUrl ? (
+                      <div className="w-12 h-12 rounded-xl bg-white p-1 shadow-md flex items-center justify-center ring-2 ring-white">
+                        <img src={storageUrl(org.defaultLogoUrl)} alt="Logo" className="w-full h-full object-contain" />
                       </div>
-                      <div>
-                        <CardTitle className="text-base">{org.jerseyName || org.name}</CardTitle>
-                        <CardDescription>
-                          <Badge variant="secondary" className="text-xs mt-1">
-                            {org.type === "verein" ? "Verein" : "Firma"}
+                    ) : (
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md ring-2 ring-white"
+                        style={{ backgroundColor: org.primaryColor ? `${org.primaryColor}` : 'hsl(var(--primary))' }}
+                      >
+                        <Building2 className="w-6 h-6 text-white" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <CardHeader className="pt-8 pb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base font-bold">{org.jerseyName || org.name}</CardTitle>
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <Badge
+                          className="text-[10px]"
+                          style={org.primaryColor ? { backgroundColor: `${org.primaryColor}15`, color: org.primaryColor, border: `1px solid ${org.primaryColor}30` } : undefined}
+                        >
+                          {org.type === "verein" ? "Verein" : "Firma"}
+                        </Badge>
+                        {org.sport && <Badge variant="outline" className="text-[10px]">
+                          {{fussball:"Fu\u00dfball",handball:"Handball",volleyball:"Volleyball",basketball:"Basketball"}[org.sport as string] || org.sport}
+                        </Badge>}
+                        {!org.onboardingComplete && (
+                          <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300 bg-amber-50">
+                            Einrichtung ausstehend
                           </Badge>
-                          {!org.onboardingComplete && (
-                            <Badge variant="outline" className="text-xs mt-1 ml-1 text-amber-600 border-amber-300">
-                              Einrichtung ausstehend
-                            </Badge>
-                          )}
-                        </CardDescription>
+                        )}
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" style={{ color: org.primaryColor || undefined }} />
                   </div>
                 </CardHeader>
               </Card>
@@ -456,67 +486,130 @@ function OrgDetail({ orgId }: { orgId: number }) {
   const defaultLogo = logos?.find((l: any) => l.isDefault) || logos?.[0];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Wasserzeichen-Logo im Hintergrund */}
+      {defaultLogo && (
+        <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
+          <img
+            src={storageUrl(defaultLogo.imageUrl)}
+            alt=""
+            className="w-[500px] h-[500px] object-contain opacity-[0.04]"
+            style={{ filter: 'grayscale(100%)' }}
+          />
+        </div>
+      )}
+
       {/* Header - eingefärbt in Vereinsfarben */}
       <header
-        className="border-b sticky top-0 z-30"
+        className="border-b sticky top-0 z-30 shadow-md"
         style={{
-          backgroundColor: org.primaryColor || undefined,
+          background: org.primaryColor
+            ? `linear-gradient(135deg, ${org.primaryColor} 0%, ${org.primaryColor}dd 60%, ${org.secondaryColor || org.primaryColor}40 100%)`
+            : undefined,
           borderColor: org.secondaryColor || undefined,
         }}
       >
-        <div className="container flex items-center justify-between h-14 sm:h-16">
-          <div className="flex items-center gap-3">
+        <div className="container flex items-center justify-between h-16 sm:h-20">
+          <div className="flex items-center gap-4">
             <Link href="/org">
               <Button variant="ghost" size="icon" className={org.primaryColor ? "text-white hover:bg-white/20" : ""}><ArrowLeft className="w-5 h-5" /></Button>
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {defaultLogo ? (
-                <img src={storageUrl(defaultLogo.imageUrl)} alt="Logo" className="w-10 h-10 rounded-lg object-contain bg-white/90 p-0.5" />
+                <div className="w-12 h-12 rounded-xl bg-white/95 p-1 shadow-sm flex items-center justify-center">
+                  <img src={storageUrl(defaultLogo.imageUrl)} alt="Logo" className="w-full h-full object-contain" />
+                </div>
               ) : (
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: org.secondaryColor || 'rgba(0,0,0,0.1)' }}>
-                  <Building2 className="w-5 h-5" style={{ color: org.primaryColor ? '#fff' : undefined }} />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: org.secondaryColor || 'rgba(255,255,255,0.15)' }}>
+                  <Building2 className="w-6 h-6" style={{ color: org.primaryColor ? '#fff' : undefined }} />
                 </div>
               )}
               <div>
-                <h1 className="text-lg font-bold" style={{ color: org.primaryColor ? '#fff' : undefined }}>{org.jerseyName || org.name}</h1>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="secondary" className="text-xs">
+                <h1 className="text-xl font-bold tracking-tight" style={{ color: org.primaryColor ? '#fff' : undefined }}>{org.jerseyName || org.name}</h1>
+                <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                  <Badge
+                    className="text-xs border-0"
+                    style={org.primaryColor ? {
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      color: '#fff',
+                    } : undefined}
+                  >
                     {org.type === "verein" ? "Verein" : "Firma"}
                   </Badge>
-                  {org.state && <Badge variant="outline" className="text-xs">
+                  {org.state && <Badge
+                    variant="outline"
+                    className="text-xs"
+                    style={org.primaryColor ? {
+                      borderColor: 'rgba(255,255,255,0.35)',
+                      color: '#fff',
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                    } : undefined}
+                  >
                     {{bw:"BaWü",by:"Bayern",be:"Berlin",bb:"Brandenburg",hb:"Bremen",hh:"Hamburg",he:"Hessen",mv:"MV",ni:"Niedersachsen",nw:"NRW",rp:"RLP",sl:"Saarland",sn:"Sachsen",st:"Sachsen-Anhalt",sh:"SH",th:"Thüringen"}[org.state] || org.state}
                   </Badge>}
-                  {org.sport && <Badge variant="outline" className="text-xs">
+                  {org.sport && <Badge
+                    variant="outline"
+                    className="text-xs"
+                    style={org.primaryColor ? {
+                      borderColor: 'rgba(255,255,255,0.35)',
+                      color: '#fff',
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                    } : undefined}
+                  >
                     {{fussball:"Fußball",handball:"Handball",volleyball:"Volleyball",basketball:"Basketball"}[org.sport] || org.sport}
                   </Badge>}
-                  {isOwner && <Badge className="text-xs">Hauptverantwortlicher</Badge>}
+                  {isOwner && <Badge
+                    className="text-xs"
+                    style={org.primaryColor ? {
+                      backgroundColor: org.secondaryColor || 'rgba(255,255,255,0.25)',
+                      color: org.primaryColor,
+                    } : undefined}
+                  >Hauptverantwortlicher</Badge>}
                 </div>
               </div>
             </div>
           </div>
           <Link href="/">
-            <Button variant="outline" size="sm" className={org.primaryColor ? "border-white/40 text-white hover:bg-white/20" : ""}>
+            <Button
+              size="sm"
+              className={org.primaryColor ? "shadow-sm font-semibold" : ""}
+              style={org.primaryColor ? {
+                backgroundColor: org.secondaryColor || '#fff',
+                color: org.primaryColor,
+                border: 'none',
+              } : undefined}
+            >
               <Shirt className="w-4 h-4 mr-2" />Konfigurator
             </Button>
           </Link>
         </div>
       </header>
 
-      <div className="container py-6">
+      {/* Farbiger Akzentstreifen unter dem Header */}
+      {org.primaryColor && org.secondaryColor && (
+        <div className="h-1" style={{ background: `linear-gradient(90deg, ${org.primaryColor} 0%, ${org.secondaryColor} 50%, ${org.primaryColor} 100%)` }} />
+      )}
+
+      <div className="container py-6 relative z-10">
         <Tabs defaultValue={isOwner ? "stammdaten" : isDeptLead ? "departments" : "members"}>
-          <TabsList className="mb-6 flex-wrap">
+          <TabsList
+            className="mb-6 flex-wrap bg-muted/50 p-1 rounded-xl"
+            style={org.primaryColor ? {
+              '--tab-active-bg': org.primaryColor,
+              '--tab-active-text': '#fff',
+            } as React.CSSProperties : undefined}
+          >
             {/* Owner sieht alle Tabs */}
-            {isOwner && <TabsTrigger value="stammdaten" className="gap-2"><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>}
-            {isOwner && <TabsTrigger value="logos" className="gap-2"><Image className="w-4 h-4" />Logos</TabsTrigger>}
+            {isOwner && <TabsTrigger value="stammdaten" className="gap-2 data-[state=active]:shadow-sm" style={org.primaryColor ? { '--tw-shadow-color': org.primaryColor } as React.CSSProperties : undefined}><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>}
+            {isOwner && <TabsTrigger value="logos" className="gap-2 data-[state=active]:shadow-sm"><Image className="w-4 h-4" />Logos</TabsTrigger>}
             {/* Owner + SL sehen Sponsoren */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="sponsors" className="gap-2"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="sponsors" className="gap-2 data-[state=active]:shadow-sm"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>}
             {/* Owner + SL sehen Abteilungen */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="departments" className="gap-2"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="departments" className="gap-2 data-[state=active]:shadow-sm"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>}
             {/* Alle sehen Mitglieder (gefiltert nach Rolle im Backend) */}
-            <TabsTrigger value="members" className="gap-2"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
+            <TabsTrigger value="members" className="gap-2 data-[state=active]:shadow-sm"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
             {/* Owner + SL sehen Kollektionen */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2 data-[state=active]:shadow-sm"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
           </TabsList>
 
           {/* ─── Stammdaten Tab ─── */}
@@ -534,7 +627,7 @@ function OrgDetail({ orgId }: { orgId: number }) {
               {canManageLogos && (
                 <Dialog open={showUploadLogo} onOpenChange={setShowUploadLogo}>
                   <DialogTrigger asChild>
-                    <Button size="sm"><Upload className="w-4 h-4 mr-2" />Logo hochladen</Button>
+                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><Upload className="w-4 h-4 mr-2" />Logo hochladen</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -666,7 +759,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
               {isOwner && (
                 <Dialog open={showAddSponsor} onOpenChange={setShowAddSponsor}>
                   <DialogTrigger asChild>
-                    <Button size="sm"><Plus className="w-4 h-4 mr-2" />Sponsor hinzufügen</Button>
+                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><Plus className="w-4 h-4 mr-2" />Sponsor hinzufügen</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -789,7 +882,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
               {isOwner && (
                 <Dialog open={showAddDept} onOpenChange={setShowAddDept}>
                   <DialogTrigger asChild>
-                    <Button size="sm"><Plus className="w-4 h-4 mr-2" />Neue Abteilung</Button>
+                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><Plus className="w-4 h-4 mr-2" />Neue Abteilung</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -894,7 +987,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
               {isOwner && (
                 <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
                   <DialogTrigger asChild>
-                    <Button size="sm"><UserPlus className="w-4 h-4 mr-2" />Spartenleiter einladen</Button>
+                    <Button size="sm" style={org.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}><UserPlus className="w-4 h-4 mr-2" />Spartenleiter einladen</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -1067,7 +1160,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Kollektionen Tab ─── */}
           <TabsContent value="collections">
-            <OrgCollectionsSection orgId={orgId} isOwner={isOwner} />
+            <OrgCollectionsSection orgId={orgId} isOwner={isOwner} org={org} />
           </TabsContent>
         </Tabs>
       </div>
@@ -1076,7 +1169,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 }
 
 // ─── Kollektionen-Verwaltung (Owner) ──────────────────────────────────────────────────────
-function OrgCollectionsSection({ orgId, isOwner }: { orgId: number; isOwner: boolean }) {
+function OrgCollectionsSection({ orgId, isOwner, org }: { orgId: number; isOwner: boolean; org: any }) {
   const utils = trpc.useUtils();
   const { data: collections, isLoading } = trpc.collection.list.useQuery(
     { orgId },
@@ -1135,7 +1228,7 @@ function OrgCollectionsSection({ orgId, isOwner }: { orgId: number; isOwner: boo
         {isOwner && (
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" style={org?.primaryColor ? { backgroundColor: org.primaryColor, color: '#fff' } : undefined}>
                 <Plus className="w-4 h-4 mr-2" />
                 Vereinskollektion
               </Button>
@@ -1356,9 +1449,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
   return (
     <div className="space-y-6">
       {/* Vereinsfarben & Trikotname */}
-      <Card>
+      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Palette className="w-5 h-5" />Vereinsfarben & Trikotname</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Palette className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Vereinsfarben & Trikotname</CardTitle>
           <CardDescription>Primär- und Sekundärfarbe sowie der Name auf dem Trikot.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1392,9 +1485,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Vereinsdaten */}
-      <Card>
+      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Landmark className="w-5 h-5" />Vereinsdaten</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Landmark className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Vereinsdaten</CardTitle>
           <CardDescription>Offizielle Bezeichnung und Grunddaten des Vereins.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1417,9 +1510,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Ansprechpartner */}
-      <Card>
+      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><User className="w-5 h-5" />Ansprechpartner</CardTitle>
+          <CardTitle className="flex items-center gap-2"><User className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Ansprechpartner</CardTitle>
           <CardDescription>Hauptansprechpartner des Vereins für Rückfragen.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1441,9 +1534,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Kontaktdaten */}
-      <Card>
+      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Phone className="w-5 h-5" />Kontaktdaten</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Phone className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Kontaktdaten</CardTitle>
           <CardDescription>Erreichbarkeit des Vereins.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1469,9 +1562,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Adresse & Koordinaten */}
-      <Card>
+      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" />Adresse & Koordinaten</CardTitle>
+          <CardTitle className="flex items-center gap-2"><MapPin className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Adresse & Koordinaten</CardTitle>
           <CardDescription>Die Koordinaten werden automatisch aus der Adresse berechnet und können als Zone auf Produkten verwendet werden.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1523,9 +1616,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Rechtliches */}
-      <Card>
+      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" />Rechtliches</CardTitle>
+          <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Rechtliches</CardTitle>
           <CardDescription>Vereinsregister und steuerliche Angaben.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1543,9 +1636,9 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       </Card>
 
       {/* Hashtag */}
-      <Card>
+      <Card className="overflow-hidden" style={org.primaryColor ? { borderLeft: `4px solid ${org.primaryColor}` } : undefined}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Hash className="w-5 h-5" />Vereins-Hashtag</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Hash className="w-5 h-5" style={{ color: org.primaryColor || undefined }} />Vereins-Hashtag</CardTitle>
           <CardDescription>Der Hashtag kann als Zone auf Produkten platziert werden (z.B. auf der Rückseite eines Trikots).</CardDescription>
         </CardHeader>
         <CardContent>
@@ -1570,7 +1663,16 @@ function OrgStammdaten({ org, orgId, isOwner }: { org: any; orgId: number; isOwn
       {/* Speichern-Button */}
       {isOwner && (
         <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving} size="lg">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            size="lg"
+            className="shadow-md font-semibold"
+            style={org.primaryColor ? {
+              backgroundColor: org.primaryColor,
+              color: '#fff',
+            } : undefined}
+          >
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
             Stammdaten speichern
           </Button>
