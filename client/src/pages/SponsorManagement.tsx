@@ -10,12 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, FileText, ChevronDown, ChevronUp, Package, ShoppingBag, ClipboardCheck, Copy, Send } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, FileText, ChevronDown, ChevronUp, Package, ShoppingBag, ClipboardCheck, Copy, Send, Crop } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { PdfPreview } from "@/components/PdfPreview";
 import { storageUrl } from "@/lib/utils";
 import { SponsorLogoImage } from "@/components/SponsorLogoImage";
+import { LogoCropEditor } from "@/components/LogoCropEditor";
 
 type SponsorType = "hauptsponsor" | "spartensponsor" | "mannschaftssponsor";
 type Obligation = "alle_produkte" | "nur_trikot" | "nicht_verpflichtend";
@@ -258,6 +259,17 @@ export default function SponsorManagement() {
       refetch();
     },
     onError: (err) => toast.error(err.message),
+  });
+
+  // Logo-Crop-Editor State
+  const [cropSponsor, setCropSponsor] = useState<{ id: number; name: string; logoUrl: string } | null>(null);
+  const updateLogoMut = trpc.sponsorTemplate.updateLogo.useMutation({
+    onSuccess: () => {
+      refetch();
+      setCropSponsor(null);
+      toast.success("Logo zugeschnitten und gespeichert");
+    },
+    onError: (e) => toast.error(e.message),
   });
 
   function resetForm() {
@@ -722,8 +734,21 @@ export default function SponsorManagement() {
                       </div>
                     </div>
 
-                    {/* Aufklappen / Löschen */}
-                    <div className="flex items-center gap-2">
+                    {/* Aufklappen / Zuschneiden / Löschen */}
+                    <div className="flex items-center gap-1">
+                      {sponsor.logoUrl && !(sponsor.logoMimeType === 'application/pdf' || sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Logo zuschneiden"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCropSponsor({ id: sponsor.id, name: sponsor.name, logoUrl: storageUrl(sponsor.logoUrl) || sponsor.logoUrl });
+                          }}
+                        >
+                          <Crop className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      )}
                       {expandedId === sponsor.id ? (
                         <ChevronUp className="w-4 h-4 text-muted-foreground" />
                       ) : (
@@ -805,6 +830,30 @@ export default function SponsorManagement() {
               </Card>
             ))}
           </div>
+        )}
+
+        {/* Logo-Crop-Editor */}
+        {cropSponsor && org && (
+          <LogoCropEditor
+            open={!!cropSponsor}
+            onOpenChange={(open) => { if (!open) setCropSponsor(null); }}
+            imageUrl={cropSponsor.logoUrl}
+            sponsorName={cropSponsor.name}
+            isSaving={updateLogoMut.isPending}
+            onSave={async (blob) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = (reader.result as string).split(",")[1];
+                updateLogoMut.mutate({
+                  id: cropSponsor.id,
+                  orgId: org.id,
+                  logoBase64: base64,
+                  mimeType: "image/png",
+                });
+              };
+              reader.readAsDataURL(blob);
+            }}
+          />
         )}
       </div>
     </div>

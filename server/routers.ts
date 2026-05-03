@@ -147,6 +147,8 @@ import {
   enableUserTotp,
   disableUserTotp,
   updateUserBackupCodes,
+  listAllOrganizations,
+  getAdminDashboardStats,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
@@ -1829,6 +1831,24 @@ export const appRouter = router({
       }),
   }),
 
+  // ─── Admin Dashboard ───────────────────────────────────────────────────────────────────────────────
+  adminDashboard: router({
+    /** Statistiken für das Admin-Dashboard */
+    stats: adminProcedure.query(async () => {
+      return getAdminDashboardStats();
+    }),
+
+    /** Alle Organisationen auflisten */
+    allOrgs: adminProcedure.query(async () => {
+      return listAllOrganizations();
+    }),
+
+    /** Alle Produkte auflisten */
+    allProducts: adminProcedure.query(async () => {
+      return listProducts(false);
+    }),
+  }),
+
   savedDesign: router({
     /** Design speichern */
     save: protectedProcedure
@@ -2163,6 +2183,29 @@ export const appRouter = router({
           contractEnd: contractEnd ? new Date(contractEnd) : contractEnd === null ? null : undefined,
         });
         return { success: true };
+      }),
+
+    /** Zugeschnittenes Logo speichern */
+    updateLogo: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        orgId: z.number(),
+        logoBase64: z.string(),
+        mimeType: z.string().default("image/png"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        // Owner, Spartenleiter und Trainer dürfen Logos zuschneiden
+        const buffer = Buffer.from(input.logoBase64, "base64");
+        const ext = input.mimeType.includes("png") ? ".png" : ".jpg";
+        const key = `org-${input.orgId}/sponsor-templates/${Date.now()}-cropped`;
+        const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
+        await updateSponsorTemplate(input.id, {
+          logoUrl: url,
+          storageKey,
+          logoMimeType: input.mimeType,
+        });
+        return { logoUrl: url };
       }),
 
     /** Sponsor-Vorlage löschen (nur Owner) */

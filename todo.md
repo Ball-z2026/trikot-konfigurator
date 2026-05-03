@@ -1446,3 +1446,22 @@
 
 ## Visuelle Ladeanzeige für Sponsorenlogos
 - [x] Ladeanzeige (Skeleton/Spinner) während Sponsorenlogos geladen werden (SponsorLogoImage-Komponente in OrgDashboard, SponsorManagement, TrainerDashboard, DeptDashboard, SponsorReview)
+
+## Sponsorenlogo Zuschneiden/Anpassen in Vorschau
+- [x] Crop-Bibliothek (react-image-crop) installieren
+- [x] LogoCropEditor-Komponente erstellen (Dialog mit Crop-Tool, Zoom, Rotation)
+- [x] Backend: Zugeschnittenes Logo als neues Bild speichern (Canvas → Blob → S3)
+- [x] Crop-Editor in OrgDashboard Sponsor-Karten einbauen
+- [x] Crop-Editor in SponsorManagement einbauen
+
+## Ausstatter-Funktion für Vereine
+- [ ] DB: Neue Tabelle org_supplier (Ausstatter) mit Marke, Bindungsbereich, Vertragslaufzeit
+- [ ] Backend: Ausstatter-CRUD-Prozeduren (setzen, abrufen, aktualisieren)
+- [ ] Frontend: Ausstatter-Auswahl im Vereins-Dashboard (Sportmarken + Ball-z)
+- [ ] Frontend: Bindungsbereich-Auswahl (ganzer Verein / nur Sparten / nur Trikots / alle Artikel)
+- [ ] Frontend: Vertragslaufzeit (Start- und Enddatum)
+
+## Übergreifendes Admin-Dashboard
+- [x] Admin-Dashboard-Seite mit Übersicht aller Vereine, Benutzer und Produkte
+- [x] Backend: Statistik-Prozedur (Anzahl Vereine, Benutzer, Produkte, Sponsoren)
+- [x] Navigation: Admin-Dashboard von der Startseite erreichbar machen (/admin, Dashboard-Button im Header)

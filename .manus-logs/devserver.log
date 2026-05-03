@@ -7946,3 +7946,30 @@
 [2026-05-03T16:07:32.173Z] 12:07:32 PM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/index.css
 [2026-05-03T16:07:51.876Z] 12:07:51 PM [vite] (client) hmr update /src/pages/DeptDashboard.tsx, /src/index.css
 [2026-05-03T16:08:10.709Z] 12:08:10 PM [vite] (client) hmr update /src/pages/SponsorReview.tsx, /src/index.css
+[2026-05-03T16:09:37.934Z] Dev server process group stopped
+[2026-05-03T16:09:37.997Z] Dev server exited with code -15
+[2026-05-03T16:09:40.969Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-03T16:09:42.729Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T16:09:43.164Z] 12:09:43 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+[2026-05-03T16:09:43.191Z] Server running on http://localhost:3000/
+[2026-05-03T16:10:57.536Z] 12:10:57 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T16:10:59.308Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T16:10:59.769Z] Server running on http://localhost:3000/
+[2026-05-03T16:11:28.270Z] 12:11:28 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T16:11:47.698Z] 12:11:47 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T16:12:01.721Z] 12:12:01 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
+[2026-05-03T16:12:03.018Z] 12:12:03 PM [vite] (client) ✨ new dependencies optimized: react-image-crop
+[2026-05-03T16:12:03.019Z] 12:12:03 PM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-05-03T16:12:44.577Z] 12:12:44 PM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T16:13:04.349Z] 12:13:04 PM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T16:13:14.695Z] 12:13:14 PM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T16:13:31.443Z] 12:13:31 PM [vite] (client) hmr update /src/pages/SponsorManagement.tsx, /src/index.css
+[2026-05-03T16:17:21.610Z] 12:17:21 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-03T16:17:23.285Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T16:17:23.751Z] Server running on http://localhost:3000/
+[2026-05-03T16:17:39.026Z] 12:17:39 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T16:17:40.676Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T16:17:41.201Z] Server running on http://localhost:3000/
+[2026-05-03T16:17:59.970Z] 12:17:59 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-03T16:18:01.689Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-03T16:18:02.174Z] Server running on http://localhost:3000/

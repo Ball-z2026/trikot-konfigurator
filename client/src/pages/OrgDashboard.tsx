@@ -14,7 +14,7 @@ import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
   ArrowLeft, Upload, Shield, UserPlus, Pencil, Shirt, LogIn,
   ChevronRight, Loader2, Megaphone, Library, FolderOpen, Lock, CheckCircle2,
-  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette, RefreshCw
+  MapPin, Hash, Save, Phone, Mail, Globe, FileText, Calendar, User, Landmark, Palette, RefreshCw, Crop
 } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
 import { PdfPreview } from "@/components/PdfPreview";
 import { SponsorLogoImage } from "@/components/SponsorLogoImage";
+import { LogoCropEditor } from "@/components/LogoCropEditor";
 
 // ─── Org List (when no org selected) ─────────────────────────────────────────
 function OrgList() {
@@ -379,6 +380,17 @@ function OrgDetail({ orgId }: { orgId: number }) {
   });
   const deleteSponsorTpl = trpc.sponsorTemplate.delete.useMutation({
     onSuccess: () => { utils.sponsorTemplate.list.invalidate({ orgId }); toast.success("Sponsor-Vorlage gelöscht"); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  // Logo-Crop-Editor State
+  const [cropSponsor, setCropSponsor] = useState<{ id: number; name: string; logoUrl: string } | null>(null);
+  const updateLogoMut = trpc.sponsorTemplate.updateLogo.useMutation({
+    onSuccess: () => {
+      utils.sponsorTemplate.list.invalidate({ orgId });
+      setCropSponsor(null);
+      toast.success("Logo zugeschnitten und gespeichert");
+    },
     onError: (e) => toast.error(e.message),
   });
 
@@ -1043,21 +1055,58 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
                     <CardContent className="pt-3">
                       <div className="flex items-center justify-between">
                         <p className="font-medium text-sm">{tpl.name}</p>
-                        {isOwner && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => { if (confirm("Sponsor-Vorlage wirklich löschen?")) deleteSponsorTpl.mutate({ id: tpl.id, orgId }); }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
+                        <div className="flex items-center gap-1">
+                          {tpl.logoUrl && !(tpl.logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              title="Logo zuschneiden"
+                              onClick={() => setCropSponsor({ id: tpl.id, name: tpl.name, logoUrl: storageUrl(tpl.logoUrl) })}
+                            >
+                              <Crop className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {isOwner && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => { if (confirm("Sponsor-Vorlage wirklich löschen?")) deleteSponsorTpl.mutate({ id: tpl.id, orgId }); }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
+            )}
+
+            {/* Logo-Crop-Editor */}
+            {cropSponsor && (
+              <LogoCropEditor
+                open={!!cropSponsor}
+                onOpenChange={(open) => { if (!open) setCropSponsor(null); }}
+                imageUrl={cropSponsor.logoUrl}
+                sponsorName={cropSponsor.name}
+                isSaving={updateLogoMut.isPending}
+                onSave={async (blob) => {
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    const base64 = (reader.result as string).split(",")[1];
+                    updateLogoMut.mutate({
+                      id: cropSponsor.id,
+                      orgId,
+                      logoBase64: base64,
+                      mimeType: "image/png",
+                    });
+                  };
+                  reader.readAsDataURL(blob);
+                }}
+              />
             )}
           </TabsContent>
 

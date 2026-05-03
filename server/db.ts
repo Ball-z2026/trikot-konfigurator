@@ -1749,3 +1749,32 @@ export async function updateUserBackupCodes(userId: number, backupCodes: string)
   if (!db) throw new Error("Database not available");
   await db.update(users).set({ backupCodes }).where(eq(users.id, userId));
 }
+
+
+// ─── Admin Dashboard Statistics ─────────────────────────────────────────────
+
+export async function listAllOrganizations() {
+  return db.select().from(organizations);
+}
+
+export async function getAdminDashboardStats() {
+  const [userCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
+  const [orgCount] = await db.select({ count: sql<number>`count(*)` }).from(organizations);
+  const [productCount] = await db.select({ count: sql<number>`count(*)` }).from(products);
+  const [sponsorCount] = await db.select({ count: sql<number>`count(*)` }).from(sponsorTemplates);
+  const [teamCount] = await db.select({ count: sql<number>`count(*)` }).from(teams);
+  const [collectionCount] = await db.select({ count: sql<number>`count(*)` }).from(collections);
+  const [deptCount] = await db.select({ count: sql<number>`count(*)` }).from(departments);
+  const [membershipCount] = await db.select({ count: sql<number>`count(*)` }).from(memberships);
+
+  return {
+    users: Number(userCount.count),
+    organizations: Number(orgCount.count),
+    products: Number(productCount.count),
+    sponsors: Number(sponsorCount.count),
+    teams: Number(teamCount.count),
+    collections: Number(collectionCount.count),
+    departments: Number(deptCount.count),
+    memberships: Number(membershipCount.count),
+  };
+}

@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shirt, Building2, Palette, ArrowRight, LogIn, LogOut, Menu, Users, Shield } from "lucide-react";
+import { Shirt, Building2, Palette, ArrowRight, LogIn, LogOut, Menu, Users, Shield, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
@@ -29,6 +29,14 @@ export default function Home() {
           <div className="hidden sm:flex items-center gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
+                {user?.role === "admin" && (
+                  <Link href="/admin">
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
                 <span className="text-sm text-muted-foreground truncate max-w-[150px]">
                   {user?.name || user?.email || "Angemeldet"}
                 </span>
@@ -59,6 +67,13 @@ export default function Home() {
             {isAuthenticated ? (
               <>
                 <p className="text-sm text-muted-foreground px-1">{user?.name || user?.email || "Angemeldet"}</p>
+                {user?.role === "admin" && (
+                  <Link href="/admin">
+                    <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => setMobileMenuOpen(false)}>
+                      <LayoutDashboard className="w-4 h-4" />Admin-Dashboard
+                    </Button>
+                  </Link>
+                )}
                 <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => { logout(); setMobileMenuOpen(false); }}>
                   <LogOut className="w-4 h-4 mr-2" />Abmelden
                 </Button>

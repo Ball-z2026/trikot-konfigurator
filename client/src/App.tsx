@@ -24,6 +24,7 @@ import SponsorManagement from "./pages/SponsorManagement";
 import SponsorReview from "./pages/SponsorReview";
 import SponsorForm from "./pages/SponsorForm";
 import TwoFactorSetup from "./pages/TwoFactorSetup";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function Router() {
   return (
@@ -36,6 +37,10 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
+
+      {/* Admin-Dashboard */}
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
 
       {/* ─── Modul 1: Verwaltung ─── */}
       <Route path="/verwaltung/org" component={OrgDashboard} />
