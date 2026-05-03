@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, FileText, ChevronDown, ChevronUp, Package, ShoppingBag, ClipboardCheck } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload, Building2, User, Mail, Phone, MapPin, FileText, ChevronDown, ChevronUp, Package, ShoppingBag, ClipboardCheck, Copy, Send } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import { PdfPreview } from "@/components/PdfPreview";
 
 type SponsorType = "hauptsponsor" | "spartensponsor" | "mannschaftssponsor";
 type Obligation = "alle_produkte" | "nur_trikot" | "nicht_verpflichtend";
@@ -58,6 +59,8 @@ interface SponsorForm {
   billingZip: string;
   billingCity: string;
   billingCountry: string;
+  // Sponsoring-Summe (nur Owner)
+  sponsoringAmount: string;
 }
 
 const EMPTY_FORM: SponsorForm = {
@@ -78,6 +81,7 @@ const EMPTY_FORM: SponsorForm = {
   billingZip: "",
   billingCity: "",
   billingCountry: "Deutschland",
+  sponsoringAmount: "",
 };
 
 /** Subkomponente: Produkt-Zuweisungen pro Sponsor */
@@ -178,6 +182,7 @@ function SponsorPendingApprovals({ sponsorId }: { sponsorId: number }) {
 export default function SponsorManagement() {
   const { user } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [form, setForm] = useState<SponsorForm>({ ...EMPTY_FORM });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -290,8 +295,16 @@ export default function SponsorManagement() {
       toast.error("Bitte mindestens Name und Logo angeben");
       return;
     }
-    if (!form.contactEmail && !form.contactPhone) {
-      toast.error("Bitte mindestens E-Mail oder Telefon der Kontaktperson angeben");
+    // Pflichtfelder für Rechnungsstellung prüfen
+    const missingFields: string[] = [];
+    if (!form.contactFirstName) missingFields.push("Vorname Kontaktperson");
+    if (!form.contactLastName) missingFields.push("Nachname Kontaktperson");
+    if (!form.contactEmail) missingFields.push("E-Mail Kontaktperson");
+    if (!form.street) missingFields.push("Straße & Hausnummer");
+    if (!form.zip) missingFields.push("PLZ");
+    if (!form.city) missingFields.push("Ort");
+    if (missingFields.length > 0) {
+      toast.error(`Bitte alle Pflichtfelder ausfüllen: ${missingFields.join(", ")}`);
       return;
     }
 
@@ -344,6 +357,7 @@ export default function SponsorManagement() {
         billingZip: form.billingDifferent ? (form.billingZip || undefined) : undefined,
         billingCity: form.billingDifferent ? (form.billingCity || undefined) : undefined,
         billingCountry: form.billingDifferent ? (form.billingCountry || undefined) : undefined,
+        sponsoringAmount: form.sponsoringAmount ? parseFloat(form.sponsoringAmount) : undefined,
       });
     };
     reader.readAsDataURL(logoFile);
@@ -378,14 +392,20 @@ export default function SponsorManagement() {
             <h1 className="text-2xl font-bold">Sponsoren-Verwaltung</h1>
           </div>
 
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-            {canCreateSponsor && (
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" /> Neuer Sponsor
-                </Button>
-              </DialogTrigger>
+          <div className="flex gap-2">
+            {canCreateSponsor && !isTrainer && (
+              <Button variant="outline" onClick={() => setInviteDialogOpen(true)}>
+                <Mail className="w-4 h-4 mr-2" /> Sponsor einladen
+              </Button>
             )}
+            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+              {canCreateSponsor && (
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" /> Neuer Sponsor
+                  </Button>
+                </DialogTrigger>
+              )}
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Neuen Sponsor anlegen</DialogTitle>
@@ -481,18 +501,18 @@ export default function SponsorManagement() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Vorname</Label>
-                        <Input value={form.contactFirstName} onChange={(e) => updateForm("contactFirstName", e.target.value)} placeholder="Max" />
+                        <Label>Vorname <span className="text-red-500">*</span></Label>
+                        <Input value={form.contactFirstName} onChange={(e) => updateForm("contactFirstName", e.target.value)} placeholder="Max" required />
                       </div>
                       <div>
-                        <Label>Nachname</Label>
-                        <Input value={form.contactLastName} onChange={(e) => updateForm("contactLastName", e.target.value)} placeholder="Mustermann" />
+                        <Label>Nachname <span className="text-red-500">*</span></Label>
+                        <Input value={form.contactLastName} onChange={(e) => updateForm("contactLastName", e.target.value)} placeholder="Mustermann" required />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label className="flex items-center gap-1"><Mail className="w-3 h-3" /> E-Mail *</Label>
-                        <Input type="email" value={form.contactEmail} onChange={(e) => updateForm("contactEmail", e.target.value)} placeholder="max@firma.de" />
+                        <Label className="flex items-center gap-1"><Mail className="w-3 h-3" /> E-Mail <span className="text-red-500">*</span></Label>
+                        <Input type="email" value={form.contactEmail} onChange={(e) => updateForm("contactEmail", e.target.value)} placeholder="max@firma.de" required />
                       </div>
                       <div>
                         <Label className="flex items-center gap-1"><Phone className="w-3 h-3" /> Telefon</Label>
@@ -511,17 +531,17 @@ export default function SponsorManagement() {
                   </h3>
                   <div className="space-y-3">
                     <div>
-                      <Label>Straße und Hausnummer</Label>
-                      <Input value={form.street} onChange={(e) => updateForm("street", e.target.value)} placeholder="Musterstraße 1" />
+                      <Label>Straße und Hausnummer <span className="text-red-500">*</span></Label>
+                      <Input value={form.street} onChange={(e) => updateForm("street", e.target.value)} placeholder="Musterstraße 1" required />
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <Label>PLZ</Label>
-                        <Input value={form.zip} onChange={(e) => updateForm("zip", e.target.value)} placeholder="12345" />
+                        <Label>PLZ <span className="text-red-500">*</span></Label>
+                        <Input value={form.zip} onChange={(e) => updateForm("zip", e.target.value)} placeholder="12345" required />
                       </div>
                       <div className="col-span-2">
-                        <Label>Ort</Label>
-                        <Input value={form.city} onChange={(e) => updateForm("city", e.target.value)} placeholder="Musterstadt" />
+                        <Label>Ort <span className="text-red-500">*</span></Label>
+                        <Input value={form.city} onChange={(e) => updateForm("city", e.target.value)} placeholder="Musterstadt" required />
                       </div>
                     </div>
                     <div>
@@ -621,20 +641,44 @@ export default function SponsorManagement() {
                   )}
                 </div>
 
+                {/* ─── Sponsoring-Summe (nur Owner) ─── */}
+                {isOwner && (
+                  <div className="border-t pt-4">
+                    <Label className="flex items-center gap-1 mb-2 font-semibold">💰 Sponsoring-Summe (intern, nur für Sie sichtbar)</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.sponsoringAmount || ""}
+                        onChange={(e) => setForm({ ...form, sponsoringAmount: e.target.value })}
+                        placeholder="z.B. 5000"
+                        className="max-w-[200px]"
+                      />
+                      <span className="text-sm text-muted-foreground">€ / Saison</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* ─── Erstellen-Button ─── */}
                 <Button
                   onClick={handleCreate}
-                  disabled={!form.name || !logoFile || createMutation.isPending}
+                  disabled={!form.name || !logoFile || !form.contactFirstName || !form.contactLastName || !form.contactEmail || !form.street || !form.zip || !form.city || createMutation.isPending}
                   className="w-full"
                   size="lg"
                 >
                   {createMutation.isPending ? "Wird angelegt..." : "Sponsor anlegen"}
                 </Button>
+                {(!form.name || !logoFile || !form.contactFirstName || !form.contactLastName || !form.contactEmail || !form.street || !form.zip || !form.city) && (
+                  <p className="text-xs text-red-500 text-center mt-1">Bitte alle Pflichtfelder (*) ausfüllen</p>
+                )}
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
-
+        {/* Einladungs-Dialog */}
+        <InviteSponsorDialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} orgId={org?.id} />
         {/* Sponsoren-Liste */}
         {!sponsors || sponsors.length === 0 ? (
           <Card>
@@ -654,7 +698,11 @@ export default function SponsorManagement() {
                   >
                     {/* Logo */}
                     <div className="w-14 h-14 bg-white border rounded flex items-center justify-center flex-shrink-0">
-                      <img src={sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
+                      {(sponsor.logoMimeType === 'application/pdf' || sponsor.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
+                        <PdfPreview url={sponsor.logoUrl} width={48} height={48} />
+                      ) : (
+                        <img src={sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain" />
+                      )}
                     </div>
 
                     {/* Info */}
@@ -731,6 +779,13 @@ export default function SponsorManagement() {
                         <p className="text-muted-foreground italic">Keine Kontaktdaten hinterlegt</p>
                       )}
 
+                      {/* ─── Sponsoring-Summe (nur Owner) ─── */}
+                      {isOwner && (sponsor as any).sponsoringAmount && (
+                        <div className="flex items-center gap-2 mt-2 p-2 bg-green-50 rounded border border-green-200">
+                          <span className="text-green-700 font-medium">💰 {Number((sponsor as any).sponsoringAmount).toLocaleString("de-DE", { minimumFractionDigits: 2 })} € / Saison</span>
+                        </div>
+                      )}
+
                       {/* ─── Produkt-Zuweisungen ─── */}
                       <Separator className="my-3" />
                       <SponsorProductAssignment
@@ -751,5 +806,100 @@ export default function SponsorManagement() {
         )}
       </div>
     </div>
+  );
+}
+
+/** Dialog zum Einladen eines Sponsors per Link/E-Mail */
+function InviteSponsorDialog({ open, onOpenChange, orgId }: { open: boolean; onOpenChange: (v: boolean) => void; orgId?: number }) {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+
+  const createInvitation = trpc.sponsorInvitation.create.useMutation({
+    onSuccess: (data) => {
+      const link = `${window.location.origin}/sponsor-form/${data.token}`;
+      setGeneratedLink(link);
+      toast.success("Einladung erstellt! Link wurde generiert.");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Fehler beim Erstellen der Einladung");
+    },
+  });
+
+  function handleSend(sendEmail: boolean) {
+    if (!orgId) return;
+    if (!email) {
+      toast.error("Bitte geben Sie eine E-Mail-Adresse ein");
+      return;
+    }
+    createInvitation.mutate({
+      orgId,
+      sponsorEmail: email,
+      sponsorName: name || undefined,
+      sendEmail,
+    });
+  }
+
+  function handleCopyLink() {
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      toast.success("Link in die Zwischenablage kopiert!");
+    }
+  }
+
+  function handleClose() {
+    setEmail("");
+    setName("");
+    setGeneratedLink(null);
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Sponsor einladen</DialogTitle>
+        </DialogHeader>
+        {!generatedLink ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Senden Sie dem Sponsor einen Link, über den er seine Daten (Logo, Kontakt, Adresse) selbst einträgt.
+            </p>
+            <div>
+              <Label>Firmenname (optional)</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Muster GmbH" />
+            </div>
+            <div>
+              <Label>E-Mail des Sponsors <span className="text-red-500">*</span></Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sponsor@firma.de" />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => handleSend(true)} disabled={createInvitation.isPending} className="flex-1">
+                <Send className="w-4 h-4 mr-2" /> E-Mail senden
+              </Button>
+              <Button variant="outline" onClick={() => handleSend(false)} disabled={createInvitation.isPending} className="flex-1">
+                <Copy className="w-4 h-4 mr-2" /> Nur Link erstellen
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-sm font-medium text-green-800 mb-2">Einladungslink erstellt!</p>
+              <div className="flex gap-2">
+                <Input value={generatedLink} readOnly className="text-xs" />
+                <Button size="sm" variant="outline" onClick={handleCopyLink}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-green-600 mt-2">Gültig für 30 Tage. Der Sponsor kann über diesen Link seine Daten selbst eintragen.</p>
+            </div>
+            <Button variant="outline" onClick={handleClose} className="w-full">
+              Schließen
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

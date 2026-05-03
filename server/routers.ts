@@ -60,6 +60,7 @@ import {
   createTeam,
   getTeamById,
   listTeamsByDepartment,
+  listTeamsByOrg,
   listTeamsByTrainer,
   listTeamsByTrainerAndOrg,
   updateTeam,
@@ -137,12 +138,28 @@ import {
   listPendingApprovalsBySponsor,
   reviewMockupApproval,
   getApprovalStatusForMockup,
+  createSponsorInvitation,
+  getSponsorInvitationByToken,
+  listSponsorInvitations,
+  completeSponsorInvitation,
+  getUserById,
+  setUserTotpSecret,
+  enableUserTotp,
+  disableUserTotp,
+  updateUserBackupCodes,
 } from "./db";
 import { storagePut } from "./storage";
 import { createLocalUser, generatePassword } from "./localUserHelpers";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "./_core/notification";
+import {
+  generateTotpSecret,
+  generateQrCodeDataUrl,
+  verifyTotpToken,
+  generateBackupCodes,
+  verifyBackupCode,
+} from "./twoFactor";
 
 // Shared zone schema for reuse
 const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "custom"]);
@@ -644,6 +661,11 @@ export const appRouter = router({
         taxId: z.string().max(50).optional(),
         foundedYear: z.number().int().min(1800).max(2100).optional(),
         hashtag: z.string().max(100).optional(),
+        primaryColor: z.string().max(7).optional(),
+        secondaryColor: z.string().max(7).optional(),
+        primaryColorCmyk: z.string().max(50).optional(),
+        secondaryColorCmyk: z.string().max(50).optional(),
+        jerseyName: z.string().max(255).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const orgId = await createOrganization({
@@ -667,6 +689,11 @@ export const appRouter = router({
           taxId: input.taxId || null,
           foundedYear: input.foundedYear || null,
           hashtag: input.hashtag || null,
+          primaryColor: input.primaryColor || null,
+          secondaryColor: input.secondaryColor || null,
+          primaryColorCmyk: input.primaryColorCmyk || null,
+          secondaryColorCmyk: input.secondaryColorCmyk || null,
+          jerseyName: input.jerseyName || null,
           ownerId: ctx.user.id,
         });
         // Ersteller als Owner-Mitglied hinzufügen
@@ -715,9 +742,25 @@ export const appRouter = router({
         taxId: z.string().max(50).optional(),
         foundedYear: z.number().int().min(1800).max(2100).optional(),
         hashtag: z.string().max(100).optional(),
+        primaryColor: z.string().max(7).optional(),
+        secondaryColor: z.string().max(7).optional(),
+        primaryColorCmyk: z.string().max(50).optional(),
+        secondaryColorCmyk: z.string().max(50).optional(),
+        jerseyName: z.string().max(255).optional(),
+        onboardingComplete: z.boolean().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwner(ctx.user.id, input.id);
+        // Onboarding-Abschluss darf jeder Org-Mitglied (Farben, Logo, jerseyName, onboardingComplete)
+        const onboardingOnlyFields = ["primaryColor", "secondaryColor", "primaryColorCmyk", "secondaryColorCmyk", "jerseyName", "onboardingComplete"];
+        const inputKeys = Object.keys(input).filter(k => k !== "id" && input[k as keyof typeof input] !== undefined);
+        const isOnboardingOnly = inputKeys.every(k => onboardingOnlyFields.includes(k));
+        if (isOnboardingOnly) {
+          // Jedes Org-Mitglied darf Onboarding abschließen
+          await requireOrgMember(ctx.user.id, input.id);
+        } else {
+          // Volle Bearbeitung nur für Owner
+          await requireOrgOwner(ctx.user.id, input.id);
+        }
         const { id, ...data } = input;
         await updateOrganization(id, data);
         // Geocoding: Adresse -> Koordinaten (wenn Adresse geändert)
@@ -1093,7 +1136,7 @@ export const appRouter = router({
         return getDefaultOrgLogo(input.orgId);
       }),
 
-    /** Logo hochladen (Owner oder Spartenleiter) */
+    /** Logo hochladen (Owner, Spartenleiter, oder Trainer beim Onboarding) */
     upload: protectedProcedure
       .input(z.object({
         orgId: z.number(),
@@ -1103,11 +1146,17 @@ export const appRouter = router({
         isDefault: z.boolean().default(false),
       }))
       .mutation(async ({ input, ctx }) => {
-        await requireOrgOwnerOrDeptLead(ctx.user.id, input.orgId);
+        // Prüfe ob Onboarding noch nicht abgeschlossen ist - dann darf jedes Mitglied Logo hochladen
+        const org = await getOrganizationById(input.orgId);
+        if (org && !org.onboardingComplete) {
+          await requireOrgMember(ctx.user.id, input.orgId);
+        } else {
+          await requireOrgOwnerOrDeptLead(ctx.user.id, input.orgId);
+        }
         // Decode base64 and upload to S3
         const buffer = Buffer.from(input.imageBase64, "base64");
         const key = `org-logos/${input.orgId}/${input.name.replace(/\s+/g, "-").toLowerCase()}`;
-        const ext = input.mimeType === "image/png" ? ".png" : input.mimeType === "image/svg+xml" ? ".svg" : ".jpg";
+        const ext = input.mimeType === "image/png" ? ".png" : input.mimeType === "image/svg+xml" ? ".svg" : input.mimeType === "application/pdf" ? ".pdf" : ".jpg";
         const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
         
         const logoId = await createOrgLogo({
@@ -1282,6 +1331,14 @@ export const appRouter = router({
           return allTeams.filter(t => t.trainerId === ctx.user.id);
         }
         return listTeamsByDepartment(input.departmentId);
+      }),
+
+    /** Alle Mannschaften einer Organisation */
+    listByOrg: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        await requireOrgMember(ctx.user.id, input.orgId);
+        return listTeamsByOrg(input.orgId);
       }),
 
     /** Alle Mannschaften des aktuellen Trainers */
@@ -1968,6 +2025,10 @@ export const appRouter = router({
         billingZip: z.string().max(10).optional(),
         billingCity: z.string().max(100).optional(),
         billingCountry: z.string().max(100).optional(),
+        // Sponsoring (nur Owner)
+        sponsoringAmount: z.number().optional(),
+        contractStart: z.string().optional(),
+        contractEnd: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         // Rollenbasierte Berechtigung prüfen
@@ -1996,7 +2057,7 @@ export const appRouter = router({
         // Owner darf alles
         // Upload Logo zu S3
         const buffer = Buffer.from(input.logoBase64, "base64");
-        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : ".jpg";
+        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : input.mimeType.includes("pdf") ? ".pdf" : ".jpg";
         const key = `org-${input.orgId}/sponsor-templates/${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}`;
         const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
         // In DB speichern
@@ -2005,6 +2066,7 @@ export const appRouter = router({
           name: input.name,
           logoUrl: url,
           storageKey,
+          logoMimeType: input.mimeType,
           category: input.category || null,
           sponsorType: input.sponsorType,
           obligation: input.obligation,
@@ -2023,9 +2085,35 @@ export const appRouter = router({
           billingStreet: input.billingStreet || null,
           billingZip: input.billingZip || null,
           billingCity: input.billingCity || null,
-          billingCountry: input.billingCountry || null,
+           billingCountry: input.billingCountry || null,
+          sponsoringAmount: (membership.role === "owner" && input.sponsoringAmount) ? input.sponsoringAmount : null,
+          contractStart: input.contractStart ? new Date(input.contractStart) : null,
+          contractEnd: input.contractEnd ? new Date(input.contractEnd) : null,
           createdBy: ctx.user.id,
         });
+        // Owner über neuen Sponsor benachrichtigen
+        try {
+          const org = await getOrganizationById(input.orgId);
+          const sponsorTypeLabel = input.sponsorType === "hauptsponsor" ? "Hauptsponsor" : input.sponsorType === "spartensponsor" ? "Spartensponsor" : "Mannschaftssponsor";
+          const kontakt = [input.contactFirstName, input.contactLastName].filter(Boolean).join(" ");
+          const adresse = [input.street, input.zip, input.city].filter(Boolean).join(", ");
+          await notifyOwner({
+            title: `Neuer Sponsor erfasst: ${input.name}`,
+            content: [
+              `Ein neuer Sponsor wurde f\u00fcr "${org?.name || "Verein"}" erfasst.`,
+              ``,
+              `Sponsor: ${input.name}`,
+              `Typ: ${sponsorTypeLabel}`,
+              kontakt ? `Kontaktperson: ${kontakt}` : null,
+              input.contactEmail ? `E-Mail: ${input.contactEmail}` : null,
+              input.contactPhone ? `Telefon: ${input.contactPhone}` : null,
+              adresse ? `Adresse: ${adresse}` : null,
+              input.vatId ? `USt-IdNr.: ${input.vatId}` : null,
+              ``,
+              `Erfasst von: ${ctx.user.name || ctx.user.email || "Unbekannt"}`,
+            ].filter(Boolean).join("\n"),
+          });
+        } catch (e) { /* Notification ist optional */ }
         return { id, logoUrl: url };
       }),
 
@@ -2058,14 +2146,22 @@ export const appRouter = router({
         billingZip: z.string().max(10).nullable().optional(),
         billingCity: z.string().max(100).nullable().optional(),
         billingCountry: z.string().max(100).nullable().optional(),
+        // Sponsoring (nur Owner)
+        sponsoringAmount: z.number().nullable().optional(),
+        contractStart: z.string().nullable().optional(),
+        contractEnd: z.string().nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
         if (!membership || membership.role !== "owner") {
           throw new TRPCError({ code: "FORBIDDEN", message: "Nur der Vereinsverantwortliche kann Sponsor-Vorlagen bearbeiten" });
         }
-        const { id, orgId, ...data } = input;
-        await updateSponsorTemplate(id, data);
+        const { id, orgId, contractStart, contractEnd, ...data } = input;
+        await updateSponsorTemplate(id, {
+          ...data,
+          contractStart: contractStart ? new Date(contractStart) : contractStart === null ? null : undefined,
+          contractEnd: contractEnd ? new Date(contractEnd) : contractEnd === null ? null : undefined,
+        });
         return { success: true };
       }),
 
@@ -2623,6 +2719,219 @@ export const appRouter = router({
         const rules = getJerseyRules(input.sportart as SportartCode, input.level);
         const warnings = validateZonesAgainstRules(input.zones as ZoneForValidation[], rules);
         return { rules, warnings };
+      }),
+  }),
+
+  /** Sponsor-Einladungen */
+  sponsorInvitation: router({
+    /** Einladung erstellen und optional E-Mail senden */
+    create: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        sponsorEmail: z.string().email(),
+        sponsorName: z.string().optional(),
+        sendEmail: z.boolean().default(true),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const membership = await requireOrgMember(ctx.user.id, input.orgId);
+        if (membership.role === "trainer") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Trainer k\u00f6nnen keine Sponsor-Einladungen erstellen" });
+        }
+        const org = await getOrganizationById(input.orgId);
+        const token = nanoid(32);
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 Tage
+        const id = await createSponsorInvitation({
+          orgId: input.orgId,
+          token,
+          sponsorEmail: input.sponsorEmail,
+          sponsorName: input.sponsorName || null,
+          invitedBy: ctx.user.id,
+          expiresAt,
+        });
+        // E-Mail senden via notifyOwner (als Workaround)
+        if (input.sendEmail) {
+          await notifyOwner({
+            title: `Sponsor-Einladung an ${input.sponsorEmail}`,
+            content: `Verein: ${org?.name || "Unbekannt"}\nSponsor: ${input.sponsorName || input.sponsorEmail}\nLink: ${process.env.VITE_APP_URL || ""}/sponsor-form/${token}\n\nBitte leiten Sie diesen Link an den Sponsor weiter.`,
+          });
+        }
+        return { id, token, expiresAt };
+      }),
+
+    /** Alle Einladungen einer Organisation auflisten */
+    list: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        await requireOrgMember(ctx.user.id, input.orgId);
+        return listSponsorInvitations(input.orgId);
+      }),
+
+    /** Einladung per Token abrufen (öffentlich - für Sponsor-Formular) */
+    getByToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const invitation = await getSponsorInvitationByToken(input.token);
+        if (!invitation) throw new TRPCError({ code: "NOT_FOUND", message: "Einladung nicht gefunden" });
+        if (invitation.status === "expired" || invitation.expiresAt < new Date()) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung ist abgelaufen" });
+        }
+        if (invitation.status === "completed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung wurde bereits ausgef\u00fcllt" });
+        }
+        // Org-Daten f\u00fcr Anzeige laden
+        const org = await getOrganizationById(invitation.orgId);
+        return { ...invitation, orgName: org?.name || "Unbekannt" };
+      }),
+
+    /** Sponsor-Formular ausf\u00fcllen (\u00f6ffentlich - Sponsor f\u00fcllt seine Daten aus) */
+    complete: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        name: z.string().min(1),
+        logoBase64: z.string(),
+        mimeType: z.string(),
+        contactFirstName: z.string().min(1),
+        contactLastName: z.string().min(1),
+        contactEmail: z.string().email(),
+        contactPhone: z.string().optional(),
+        street: z.string().min(1),
+        zip: z.string().min(1),
+        city: z.string().min(1),
+        country: z.string().default("Deutschland"),
+        vatId: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const invitation = await getSponsorInvitationByToken(input.token);
+        if (!invitation) throw new TRPCError({ code: "NOT_FOUND", message: "Einladung nicht gefunden" });
+        if (invitation.status !== "pending") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung wurde bereits bearbeitet" });
+        }
+        if (invitation.expiresAt < new Date()) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Diese Einladung ist abgelaufen" });
+        }
+        // Logo zu S3 hochladen
+        const buffer = Buffer.from(input.logoBase64, "base64");
+        const ext = input.mimeType.includes("png") ? ".png" : input.mimeType.includes("svg") ? ".svg" : input.mimeType.includes("pdf") ? ".pdf" : ".jpg";
+        const key = `org-${invitation.orgId}/sponsor-templates/${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}`;
+        const { key: storageKey, url } = await storagePut(key + ext, buffer, input.mimeType);
+        // Sponsor-Template erstellen
+        const sponsorId = await createSponsorTemplate({
+          orgId: invitation.orgId,
+          name: input.name,
+          logoUrl: url,
+          storageKey,
+          logoMimeType: input.mimeType,
+          sponsorType: "mannschaftssponsor",
+          obligation: "nicht_verpflichtend",
+          contactFirstName: input.contactFirstName,
+          contactLastName: input.contactLastName,
+          contactEmail: input.contactEmail,
+          contactPhone: input.contactPhone || null,
+          street: input.street,
+          zip: input.zip,
+          city: input.city,
+          country: input.country,
+          vatId: input.vatId || null,
+          billingDifferent: false,
+          createdBy: invitation.invitedBy,
+        });
+        // Einladung als abgeschlossen markieren
+        await completeSponsorInvitation(input.token, sponsorId);
+        // Owner benachrichtigen
+        await notifyOwner({
+          title: "Sponsor hat Daten ausgef\u00fcllt",
+          content: `Der Sponsor "${input.name}" hat seine Daten \u00fcber den Einladungslink ausgef\u00fcllt. Die Daten sind jetzt in der Verwaltung sichtbar.`,
+        });
+        return { success: true };
+      }),
+  }),
+
+  // ─── Two-Factor Authentication (2FA) ─────────────────────────────────────────────────────────
+  twoFactor: router({
+    /** Prüfe ob 2FA für den aktuellen Benutzer aktiviert ist */
+    status: protectedProcedure.query(async ({ ctx }) => {
+      const user = await getUserById(ctx.user.id);
+      return {
+        enabled: user?.totpEnabled ?? false,
+        hasSecret: !!user?.totpSecret,
+      };
+    }),
+
+    /** Starte 2FA-Setup: Generiere Secret und QR-Code */
+    setup: protectedProcedure.mutation(async ({ ctx }) => {
+      const user = await getUserById(ctx.user.id);
+      if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "Benutzer nicht gefunden" });
+      if (user.totpEnabled) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist bereits aktiviert" });
+
+      const email = user.email || user.name || `user-${user.id}`;
+      const { secret, otpauthUrl } = generateTotpSecret(email);
+      const qrCodeDataUrl = await generateQrCodeDataUrl(otpauthUrl);
+
+      // Secret in DB speichern (noch nicht aktiviert)
+      await setUserTotpSecret(ctx.user.id, secret);
+
+      return {
+        secret,
+        qrCodeDataUrl,
+        otpauthUrl,
+      };
+    }),
+
+    /** Bestätige 2FA-Setup mit einem gültigen TOTP-Code */
+    confirmSetup: protectedProcedure
+      .input(z.object({ token: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await getUserById(ctx.user.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+        if (user.totpEnabled) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist bereits aktiviert" });
+        if (!user.totpSecret) throw new TRPCError({ code: "BAD_REQUEST", message: "Kein 2FA-Setup gestartet" });
+
+        const isValid = verifyTotpToken(input.token, user.totpSecret);
+        if (!isValid) throw new TRPCError({ code: "BAD_REQUEST", message: "Ungültiger Code. Bitte versuchen Sie es erneut." });
+
+        // Backup-Codes generieren
+        const { plaintext, hashed } = await generateBackupCodes();
+
+        // 2FA aktivieren und Backup-Codes speichern
+        await enableUserTotp(ctx.user.id, JSON.stringify(hashed));
+
+        return {
+          success: true,
+          backupCodes: plaintext,
+        };
+      }),
+
+    /** 2FA deaktivieren (erfordert gültigen TOTP-Code) */
+    disable: protectedProcedure
+      .input(z.object({ token: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await getUserById(ctx.user.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!user.totpEnabled) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist nicht aktiviert" });
+        if (!user.totpSecret) throw new TRPCError({ code: "BAD_REQUEST" });
+
+        const isValid = verifyTotpToken(input.token, user.totpSecret);
+        if (!isValid) throw new TRPCError({ code: "BAD_REQUEST", message: "Ungültiger Code" });
+
+        await disableUserTotp(ctx.user.id);
+        return { success: true };
+      }),
+
+    /** Neue Backup-Codes generieren (erfordert gültigen TOTP-Code) */
+    regenerateBackupCodes: protectedProcedure
+      .input(z.object({ token: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await getUserById(ctx.user.id);
+        if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!user.totpEnabled || !user.totpSecret) throw new TRPCError({ code: "BAD_REQUEST", message: "2FA ist nicht aktiviert" });
+
+        const isValid = verifyTotpToken(input.token, user.totpSecret);
+        if (!isValid) throw new TRPCError({ code: "BAD_REQUEST", message: "Ungültiger Code" });
+
+        const { plaintext, hashed } = await generateBackupCodes();
+        await updateUserBackupCodes(ctx.user.id, JSON.stringify(hashed));
+
+        return { backupCodes: plaintext };
       }),
   }),
 });

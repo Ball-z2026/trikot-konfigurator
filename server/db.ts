@@ -41,6 +41,8 @@ import {
   InsertSponsorProductAssignment,
   mockupApprovals,
   InsertMockupApproval,
+  sponsorInvitations,
+  InsertSponsorInvitation,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -394,7 +396,8 @@ export async function listOrganizationsByUser(userId: number) {
     const org = await getOrganizationById(orgId);
     if (org) {
       const membership = userMemberships.find((m) => m.orgId === orgId);
-      orgs.push({ ...org, userRole: membership?.role });
+      const defaultLogo = await getDefaultOrgLogo(orgId);
+      orgs.push({ ...org, userRole: membership?.role, defaultLogoUrl: defaultLogo?.imageUrl || null });
     }
   }
   return orgs;
@@ -789,6 +792,12 @@ export async function listTeamsByDepartment(departmentId: number) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(teams).where(eq(teams.departmentId, departmentId));
+}
+
+export async function listTeamsByOrg(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(teams).where(eq(teams.orgId, orgId));
 }
 
 export async function listTeamsByTrainer(trainerId: number) {
@@ -1670,4 +1679,73 @@ export async function getApprovalStatusForMockup(mockupId: number) {
   }).from(mockupApprovals)
     .where(eq(mockupApprovals.mockupId, mockupId))
     .orderBy(desc(mockupApprovals.revision));
+}
+
+
+// ─── Sponsor-Einladungen ───────────────────────────────────────────────────────
+
+export async function createSponsorInvitation(data: InsertSponsorInvitation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(sponsorInvitations).values(data).$returningId();
+  return result.id;
+}
+
+export async function getSponsorInvitationByToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(sponsorInvitations).where(eq(sponsorInvitations.token, token)).limit(1);
+  return rows[0] || null;
+}
+
+export async function listSponsorInvitations(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sponsorInvitations)
+    .where(eq(sponsorInvitations.orgId, orgId))
+    .orderBy(desc(sponsorInvitations.createdAt));
+}
+
+export async function completeSponsorInvitation(token: string, sponsorTemplateId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(sponsorInvitations).set({
+    status: "completed",
+    sponsorTemplateId,
+    completedAt: new Date(),
+  }).where(eq(sponsorInvitations.token, token));
+}
+
+
+// ─── 2FA (Two-Factor Authentication) Helpers ────────────────────────────────
+
+export async function setUserTotpSecret(userId: number, totpSecret: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ totpSecret }).where(eq(users.id, userId));
+}
+
+export async function enableUserTotp(userId: number, backupCodes: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ totpEnabled: true, backupCodes }).where(eq(users.id, userId));
+}
+
+export async function disableUserTotp(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ totpEnabled: false, totpSecret: null, backupCodes: null }).where(eq(users.id, userId));
+}
+
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateUserBackupCodes(userId: number, backupCodes: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ backupCodes }).where(eq(users.id, userId));
 }
