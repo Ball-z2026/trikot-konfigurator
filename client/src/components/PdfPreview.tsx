@@ -12,7 +12,7 @@ interface PdfPreviewProps {
  * Rendert die erste Seite eines PDFs als Bild-Vorschau.
  * Fällt auf ein FileText-Icon zurück wenn das Rendering fehlschlägt.
  */
-export default function PdfPreview({ url, className = "", width = 200, height = 200 }: PdfPreviewProps) {
+export function PdfPreview({ url, className = "", width = 200, height = 200 }: PdfPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);

@@ -55,7 +55,7 @@ import { CmykColorPicker } from "@/components/CmykColorPicker";
 import { formatCmyk, hexToCmyk } from "@/lib/cmyk";
 import { storageUrl } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
-import PdfPreview from "@/components/PdfPreview";
+import { PdfPreview } from "@/components/PdfPreview";
 
 const AiMockupView = lazy(() => import("@/components/AiMockupView"));
 

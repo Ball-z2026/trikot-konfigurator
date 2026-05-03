@@ -21,7 +21,7 @@ import { Link, useLocation, useParams } from "wouter";
 import OrgOnboarding from "./OrgOnboarding";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
-import PdfPreview from "@/components/PdfPreview";
+import { PdfPreview } from "@/components/PdfPreview";
 
 // ─── Org List (when no org selected) ─────────────────────────────────────────
 function OrgList() {

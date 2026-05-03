@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { CheckCircle2, XCircle, Loader2, ClipboardCheck, AlertTriangle, FileText } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "wouter";
-import PdfPreview from "@/components/PdfPreview";
+import { PdfPreview } from "@/components/PdfPreview";
 
 function storageUrl(url: string | null | undefined): string {
   if (!url) return "";

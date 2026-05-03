@@ -333,7 +333,218 @@ function InvitedTrainerLogoDisplay({ orgId }: { orgId: number }) {
   );
 }
 
-// ─── Team List (Trainer sieht seine Mannschaften) ─────────────────────────────
+// ─── Trainer Sponsor Section (nur Mannschaftssponsoren) ─────────────────────────────────────────────────────────────────────────────────
+function TrainerSponsorSection({ orgId, deptId }: { orgId: number; deptId: number }) {
+  const utils = trpc.useUtils();
+  const { data: sponsors, isLoading } = trpc.sponsorTemplate.list.useQuery({ orgId });
+  const { data: teams } = trpc.team.listByOrg.useQuery({ orgId });
+  const { data: departments } = trpc.department.list.useQuery({ orgId });
+  const [showCreate, setShowCreate] = useState(false);
+  const [sponsorForm, setSponsorForm] = useState({
+    name: "",
+    category: "mannschaft" as string,
+    contactFirstName: "",
+    contactLastName: "",
+    contactEmail: "",
+    street: "",
+    zip: "",
+    city: "",
+    vatId: "",
+    teamId: "",
+  });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const createSponsor = trpc.sponsorTemplate.create.useMutation({
+    onSuccess: () => {
+      utils.sponsorTemplate.list.invalidate({ orgId });
+      setShowCreate(false);
+      setSponsorForm({ name: "", category: "mannschaft", contactFirstName: "", contactLastName: "", contactEmail: "", street: "", zip: "", city: "", vatId: "", teamId: "" });
+      setLogoFile(null);
+      setLogoPreview(null);
+      toast.success("Sponsor erstellt");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setLogoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleCreate = async () => {
+    let logoBase64 = "";
+    let mimeType = "";
+    if (logoFile) {
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(logoFile);
+      });
+      logoBase64 = dataUrl.split(",")[1] || dataUrl;
+      mimeType = logoFile.type;
+    }
+    createSponsor.mutate({
+      orgId,
+      name: sponsorForm.name,
+      category: sponsorForm.category,
+      logoBase64: logoBase64 || undefined,
+      mimeType: mimeType || undefined,
+      contactFirstName: sponsorForm.contactFirstName,
+      contactLastName: sponsorForm.contactLastName,
+      contactEmail: sponsorForm.contactEmail,
+      street: sponsorForm.street,
+      zip: sponsorForm.zip,
+      city: sponsorForm.city,
+      vatId: sponsorForm.vatId || undefined,
+      teamId: sponsorForm.teamId ? parseInt(sponsorForm.teamId) : undefined,
+      departmentId: deptId,
+    });
+  };
+
+  // Nur Mannschaftssponsoren der eigenen Abteilung anzeigen
+  const mySponsors = sponsors?.filter((s: any) => s.category === "mannschaft" && s.departmentId === deptId) || [];
+
+  const canCreate = sponsorForm.name.trim() && sponsorForm.contactFirstName.trim() && sponsorForm.contactLastName.trim() && sponsorForm.contactEmail.trim() && sponsorForm.street.trim() && sponsorForm.zip.trim() && sponsorForm.city.trim() && sponsorForm.teamId;
+
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <HandCoins className="w-5 h-5 text-green-600" />
+            Mannschaftssponsoren
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Verwalten Sie die Sponsoren Ihrer Mannschaften.
+          </p>
+        </div>
+        <Dialog open={showCreate} onOpenChange={setShowCreate}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Sponsor hinzufügen
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Neuen Mannschaftssponsor anlegen</DialogTitle>
+              <DialogDescription>Erfassen Sie die Daten des Sponsors.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Firmenname *</Label>
+                <Input value={sponsorForm.name} onChange={(e) => setSponsorForm(f => ({ ...f, name: e.target.value }))} placeholder="Firmenname" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Vorname Kontaktperson *</Label>
+                  <Input value={sponsorForm.contactFirstName} onChange={(e) => setSponsorForm(f => ({ ...f, contactFirstName: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nachname Kontaktperson *</Label>
+                  <Input value={sponsorForm.contactLastName} onChange={(e) => setSponsorForm(f => ({ ...f, contactLastName: e.target.value }))} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>E-Mail *</Label>
+                <Input type="email" value={sponsorForm.contactEmail} onChange={(e) => setSponsorForm(f => ({ ...f, contactEmail: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>Straße *</Label>
+                <Input value={sponsorForm.street} onChange={(e) => setSponsorForm(f => ({ ...f, street: e.target.value }))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>PLZ *</Label>
+                  <Input value={sponsorForm.zip} onChange={(e) => setSponsorForm(f => ({ ...f, zip: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ort *</Label>
+                  <Input value={sponsorForm.city} onChange={(e) => setSponsorForm(f => ({ ...f, city: e.target.value }))} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>USt-IdNr.</Label>
+                <Input value={sponsorForm.vatId} onChange={(e) => setSponsorForm(f => ({ ...f, vatId: e.target.value }))} placeholder="DE123456789" />
+              </div>
+              <div className="space-y-2">
+                <Label>Mannschaft *</Label>
+                <Select value={sponsorForm.teamId} onValueChange={(v) => setSponsorForm(f => ({ ...f, teamId: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Mannschaft wählen" /></SelectTrigger>
+                  <SelectContent>
+                    {teams?.filter((t: any) => t.departmentId === deptId).map((t: any) => (
+                      <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Logo (optional)</Label>
+                <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/svg+xml,application/pdf" onChange={handleLogoChange} className="hidden" />
+                <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => fileInputRef.current?.click()}>
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Vorschau" className="max-h-24 mx-auto" />
+                  ) : (
+                    <div>
+                      <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                      <p className="text-xs text-muted-foreground">PNG, JPG, SVG oder PDF</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>Abbrechen</Button>
+              <Button onClick={handleCreate} disabled={!canCreate || createSponsor.isPending}>
+                {createSponsor.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Erstellen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin" /></div>
+      ) : mySponsors.length === 0 ? (
+        <div className="text-center py-8 bg-muted/30 rounded-xl border border-dashed">
+          <HandCoins className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">Noch keine Mannschaftssponsoren</p>
+          <Button className="mt-4" size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Ersten Sponsor anlegen
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          {mySponsors.map((sponsor: any) => (
+            <Card key={sponsor.id} className="overflow-hidden">
+              <div className="aspect-video bg-muted/30 flex items-center justify-center p-4">
+                {sponsor.logoUrl ? (
+                  <img src={storageUrl(sponsor.logoUrl)} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
+                ) : (
+                  <HandCoins className="w-12 h-12 text-muted-foreground" />
+                )}
+              </div>
+              <CardContent className="pt-3">
+                <p className="font-medium">{sponsor.name}</p>
+                <p className="text-xs text-muted-foreground">{sponsor.contactEmail}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Team List (Trainer sieht seine Mannschaften) ─────────────────
 function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
@@ -490,6 +701,9 @@ function TeamList({ orgId, deptId }: { orgId: number; deptId: number }) {
         ) : (
           <InvitedTrainerLogoDisplay orgId={orgId} />
         )}
+
+        {/* Sponsor-Bereich: Trainer kann Mannschaftssponsoren anlegen */}
+        <TrainerSponsorSection orgId={orgId} deptId={deptId} />
 
         {!teams || teams.length === 0 ? (
           <div className="text-center py-16 bg-muted/30 rounded-xl border border-dashed">
@@ -1587,8 +1801,29 @@ export default function TrainerDashboard() {
 
   if (!orgId || !deptId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Ungültige URL</p>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <Building2 className="w-12 h-12 text-primary mx-auto mb-2" />
+            <CardTitle>Willkommen beim Textil-Konfigurator</CardTitle>
+            <CardDescription>
+              Sie sind noch keinem Verein zugeordnet. Erstellen Sie einen neuen Verein oder lassen Sie sich von einem Vereinsverantwortlichen einladen.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Link href="/verwaltung/org">
+              <Button className="w-full">
+                <Plus className="w-4 h-4 mr-2" />
+                Verein anlegen
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="w-full">
+                Zurück zur Startseite
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }

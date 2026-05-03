@@ -57,22 +57,23 @@ export default function Login() {
         if (Array.isArray(memberships) && memberships.length > 0) {
           const first = memberships[0];
           if (first.role === "trainer") {
-            window.location.href = `/trainer/${first.orgId}/${first.departmentId}`;
+            window.location.href = `/verwaltung/trainer/${first.orgId}/${first.departmentId}`;
             return;
           }
           if (first.role === "department_lead") {
-            window.location.href = `/dept-dashboard`;
+            window.location.href = `/verwaltung/org/${first.orgId}`;
             return;
           }
           if (first.role === "owner") {
-            window.location.href = `/org/${first.orgId}`;
+            window.location.href = `/verwaltung/org/${first.orgId}`;
             return;
           }
         }
       } catch {
-        // Fallback: Zur Startseite
+        // Fallback
       }
-      window.location.href = "/";
+      // Keine Mitgliedschaft: Zum Vereins-Onboarding (Organisation erstellen)
+      window.location.href = "/verwaltung/org";
     } catch (error) {
       toast.error("Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.");
     } finally {
@@ -116,22 +117,23 @@ export default function Login() {
         if (Array.isArray(memberships) && memberships.length > 0) {
           const first = memberships[0];
           if (first.role === "trainer") {
-            window.location.href = `/trainer/${first.orgId}/${first.departmentId}`;
+            window.location.href = `/verwaltung/trainer/${first.orgId}/${first.departmentId}`;
             return;
           }
           if (first.role === "department_lead") {
-            window.location.href = `/dept-dashboard`;
+            window.location.href = `/verwaltung/org/${first.orgId}`;
             return;
           }
           if (first.role === "owner") {
-            window.location.href = `/org/${first.orgId}`;
+            window.location.href = `/verwaltung/org/${first.orgId}`;
             return;
           }
         }
       } catch {
         // Fallback
       }
-      window.location.href = "/";
+      // Keine Mitgliedschaft: Zum Vereins-Onboarding
+      window.location.href = "/verwaltung/org";
     } catch (error) {
       toast.error("Passwort-Änderung fehlgeschlagen");
     } finally {

@@ -1400,3 +1400,11 @@
 ## Admin-Button auf Startseite
 - [x] Admin-Button auf Startseite hinzufügen, sichtbar wenn niemand angemeldet ist
 - [x] Button führt zur Login-Seite, nach Anmeldung wird man rollenbasiert ins Backend weitergeleitet
+
+## Alle Rollen: Gleicher Onboarding-Flow wie Vereins-Owner
+- [x] Login-Weiterleitung: Alle Rollen ohne Mitgliedschaft -> /verwaltung/org (Vereins-Onboarding)
+- [x] DeptDashboard: Bei fehlender Mitgliedschaft -> "Verein anlegen" Button
+- [x] TrainerDashboard: Bei fehlender Mitgliedschaft -> "Verein anlegen" Button
+- [x] DeptDashboard: Sponsor-Anlage-Sektion (Spartensponsor + Mannschaftssponsor)
+- [x] TrainerDashboard: Sponsor-Anlage-Sektion (nur Mannschaftssponsor)
+- [x] Gleiche Logik wie OrgDashboard: Kontaktdaten, Logo-Upload, Pflichtfelder
