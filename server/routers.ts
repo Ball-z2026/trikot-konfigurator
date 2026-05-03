@@ -640,8 +640,8 @@ export const appRouter = router({
       return listOrganizationsByUser(ctx.user.id);
     }),
 
-    /** Organisation erstellen (Ersteller wird automatisch Hauptverantwortlicher) */
-    create: protectedProcedure
+    /** Organisation erstellen (nur Admin) */
+    create: adminProcedure
       .input(z.object({
         name: z.string().min(1),
         type: z.enum(["verein", "firma"]).default("verein"),

@@ -1470,3 +1470,6 @@
 - [x] Markus Assemacher (assemacher@icloud.com) als einzigen Admin setzen
 - [x] Alle anderen Benutzer gelöscht (41 Accounts)
 - [x] Alle Testdaten bereinigt (Organisationen, Sparten, Teams, Sponsoren, Produkte, Spieler etc.)
+
+## Bug: Normale Benutzer können Organisationen erstellen
+- [x] Bug: "Organisation hinzufügen" nur für Admins sichtbar (Frontend + Backend adminProcedure)

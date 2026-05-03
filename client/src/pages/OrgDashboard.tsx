@@ -115,6 +115,7 @@ function OrgList() {
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
             </Button>
+            {user?.role === "admin" && (
             <Dialog open={showCreate} onOpenChange={setShowCreate}>
               <DialogTrigger asChild>
                 <Button size="sm"><Plus className="w-4 h-4 mr-2" />Neue Organisation</Button>
@@ -192,6 +193,7 @@ function OrgList() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+            )}
           </div>
         </div>
       </header>
@@ -201,10 +203,16 @@ function OrgList() {
           <div className="text-center py-16 bg-muted/30 rounded-xl border border-dashed">
             <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-lg text-muted-foreground mb-2">Noch keine Organisation vorhanden</p>
-            <p className="text-sm text-muted-foreground mb-6">Erstellen Sie einen Verein oder eine Firma, um loszulegen.</p>
-            <Button onClick={() => setShowCreate(true)}>
-              <Plus className="w-4 h-4 mr-2" />Organisation erstellen
-            </Button>
+            {user?.role === "admin" ? (
+              <>
+                <p className="text-sm text-muted-foreground mb-6">Erstellen Sie einen Verein oder eine Firma, um loszulegen.</p>
+                <Button onClick={() => setShowCreate(true)}>
+                  <Plus className="w-4 h-4 mr-2" />Organisation erstellen
+                </Button>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-6">Sie wurden noch keiner Organisation zugewiesen. Bitte wenden Sie sich an Ihren Administrator.</p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
