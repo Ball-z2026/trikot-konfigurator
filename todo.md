@@ -1550,3 +1550,14 @@
 - [x] Produktdesigner soll für ALLE eingeloggten Benutzer zugänglich sein (nicht nur Admins)
 - [x] Backend: adminProcedure → protectedProcedure für Produkt-/Design-Routen
 - [x] Frontend: Admin-Checks für Produktdesigner-Navigation entfernen
+
+## Bug-Fixes: Kritische Probleme im Produktdesigner (gemeldet vom Benutzer)
+- [ - [x] BUG: Vorschau im Produktdesigner fehlt (konnte nicht reproduziert werden - funktioniert auf Dev-Server)hlen (Trikot-Vorschau nicht sichtbar)- [x] BUG: KI-Analyse-Tool fehlt im Produktdesigner (war im Konfigurator, jetzt in Produktdesigner verschoben)t/nicht erreichbar
+- [x] BUG: Basketball-Trikot erstellen → 404 (konnte nicht reproduziert werden - funktioniert auf Dev-Server)
+- [ ] REGEL: Nichts eigenständig löschen – bestehende Features müssen erhalten bleiben
+
+## Architektur-Korrektur: KI-Analyse gehört in den Produktdesigner
+- [x] KI-Analyse-Tool (TemplateUpload) aus dem Konfigurator (ProductSelect) entfernen
+- [x] KI-Analyse-Tool in den Produktdesigner (AdminProducts) integrieren
+- [x] Konfigurator zeigt nur fertige Produkte an die der Mannschaft/Sparte/Verein zugeordnet sind
+- [x] Keine Produkterstellung im Konfigurator – nur Auswahl und Befüllung

@@ -26,15 +26,17 @@ import {
   Layers,
   Stamp,
   UserCog,
+  Sparkles,
 } from "lucide-react";
-import { useState } from "react";
+import { TemplateUpload } from "@/components/TemplateUpload";
+import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
 import { TEXTIL_TEMPLATES, SPORT_TYPES, type SportType } from "@shared/templates";
 import { storageUrl } from "@/lib/utils";
 
-type CreateMode = "choose" | "sport" | "template" | "blank";
+type CreateMode = "choose" | "sport" | "template" | "blank" | "ai-analyze";
 
 export default function AdminProducts() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -87,6 +89,14 @@ export default function AdminProducts() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [showAiAnalyze, setShowAiAnalyze] = useState(false);
+
+  // Org-IDs des Users für KI-Analyse
+  const { data: myMemberships } = trpc.membership.mine.useQuery(undefined, { enabled: isAuthenticated });
+  const userOrgIds = useMemo(() => {
+    if (!myMemberships) return [];
+    return [...new Set(myMemberships.map((m: any) => m.orgId))];
+  }, [myMemberships]);
 
   const resetDialog = () => {
     setCreateMode("choose");
@@ -197,6 +207,7 @@ export default function AdminProducts() {
                   {createMode === "template" && !selectedTemplateId && "Druckverfahren wählen"}
                   {createMode === "template" && selectedTemplateId && "Produkt aus Vorlage"}
                   {createMode === "blank" && "Leeres Produkt erstellen"}
+                  {createMode === "ai-analyze" && "Bild analysieren & Vorlage erstellen"}
                 </DialogTitle>
               </DialogHeader>
 
@@ -234,6 +245,48 @@ export default function AdminProducts() {
                     </div>
                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </button>
+
+                  <button
+                    className="group relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-dashed border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all text-left sm:col-span-2"
+                    onClick={() => setCreateMode("ai-analyze")}
+                  >
+                    <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                      <Sparkles className="w-7 h-7 text-purple-600" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold text-base">KI-Bild-Analyse</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Lade ein Trikot-Bild hoch – die KI erkennt automatisch Positionen, Farben und Stil
+                      </p>
+                    </div>
+                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-purple-500 transition-colors" />
+                  </button>
+                </div>
+              )}
+
+              {/* KI-Analyse Modus */}
+              {createMode === "ai-analyze" && (
+                <div className="pt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCreateMode("choose")}
+                    className="mb-4"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Zurück
+                  </Button>
+                  <TemplateUpload
+                    orgId={userOrgIds[0] || 0}
+                    onSaved={() => {
+                      setDialogOpen(false);
+                      resetDialog();
+                      utils.product.list.invalidate();
+                    }}
+                    onCancel={() => {
+                      setCreateMode("choose");
+                    }}
+                  />
                 </div>
               )}
 
