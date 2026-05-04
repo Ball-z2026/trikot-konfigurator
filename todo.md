@@ -1581,3 +1581,4 @@
 - [x] BUG: Bildschirm friert ein wenn KI-Analyse auf "Farbe" eingestellt wird (Touch-Scroll blockiert) → touchAction dynamisch statt statisch
 - [x] BUG: KI-Analyse erkennt Zonen nicht korrekt → Prompt verbessert (Positionen pro Seite), Zonen nach Side gefiltert
 - [x] Touch-Support im AdminProductEditor: Canvas touchAction auf pan-y gesetzt, Zonen haben touch-action:none für setPointerCapture
+- [x] BUG: Bildschirm friert ein wenn man ein neues Produkt erstellen möchte im Produktdesigner → modal={false} + manuelles Overlay

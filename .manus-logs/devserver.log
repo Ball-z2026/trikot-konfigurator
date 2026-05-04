@@ -7203,3 +7203,28 @@
 [2026-05-04T06:06:01.780Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-04T06:06:01.785Z] [Auth] Missing session cookie
 [2026-05-04T06:06:01.791Z] [Auth] Missing session cookie
+[2026-05-04T07:13:12.724Z] 3:13:12 AM [vite] (client) hmr update /src/index.css, /src/components/ui/dialog.tsx
+[2026-05-04T07:13:13.115Z] 3:13:13 AM [vite] (client) hmr invalidate /src/components/ui/dialog.tsx Could not Fast Refresh ("useDialogComposition" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2026-05-04T07:13:13.116Z] 3:13:13 AM [vite] (client) hmr update /src/pages/AdminUsers.tsx, /src/pages/AdminProducts.tsx, /src/pages/DeptFonts.tsx, /src/pages/DeptDashboard.tsx, /src/pages/SponsorManagement.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/OrgDashboard.tsx, /src/components/ui/input.tsx, /src/components/ui/textarea.tsx, /src/components/TemplateUpload.tsx, /src/components/LogoCropEditor.tsx, /src/components/MemberManagement.tsx, /src/pages/PaymentSection.tsx
+[2026-05-04T07:13:39.615Z] 3:13:39 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-04T07:15:26.466Z] 3:15:26 AM [vite] (client) hmr update /src/index.css, /src/components/ui/dialog.tsx
+[2026-05-04T07:15:26.685Z] 3:15:26 AM [vite] (client) hmr invalidate /src/components/ui/dialog.tsx Could not Fast Refresh ("useDialogComposition" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2026-05-04T07:15:26.686Z] 3:15:26 AM [vite] (client) hmr update /src/pages/AdminUsers.tsx, /src/pages/AdminProducts.tsx, /src/pages/DeptFonts.tsx, /src/pages/DeptDashboard.tsx, /src/pages/SponsorManagement.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/OrgDashboard.tsx, /src/components/ui/input.tsx, /src/components/ui/textarea.tsx, /src/components/TemplateUpload.tsx, /src/components/LogoCropEditor.tsx, /src/components/MemberManagement.tsx, /src/pages/PaymentSection.tsx
+[2026-05-04T07:16:53.575Z] 3:16:53 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-04T07:18:20.305Z] 3:18:20 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-04T07:18:39.951Z] 3:18:39 AM [vite] (client) hmr update /src/index.css
+[2026-05-04T07:19:39.082Z] 3:19:39 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-04T07:20:06.675Z] 3:20:06 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-04T07:22:59.847Z] [Auth] Missing session cookie
+[2026-05-04T07:22:59.856Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.703Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.742Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.748Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.768Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.785Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.792Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.807Z] [Auth] Missing session cookie
+[2026-05-04T07:23:00.816Z] [Auth] Missing session cookie
+[2026-05-04T07:23:07.777Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-04T07:23:07.781Z] [Auth] Missing session cookie
+[2026-05-04T07:23:07.785Z] [Auth] Missing session cookie
