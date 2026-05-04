@@ -312,7 +312,7 @@ export const appRouter = router({
         return { ...product, parts, zones };
       }),
 
-    create: adminProcedure
+    create: protectedProcedure
       .input(
         z.object({
           name: z.string().min(1),
@@ -331,7 +331,7 @@ export const appRouter = router({
       }),
 
     /** Produkt aus Template erstellen – legt automatisch Teile und Zonen an */
-    createFromTemplate: adminProcedure
+    createFromTemplate: protectedProcedure
       .input(
         z.object({
           name: z.string().min(1),
@@ -384,7 +384,7 @@ export const appRouter = router({
         return { id };
       }),
 
-    update: adminProcedure
+    update: protectedProcedure
       .input(
         z.object({
           id: z.number(),
@@ -403,7 +403,7 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    delete: adminProcedure
+    delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteProduct(input.id);
@@ -419,7 +419,7 @@ export const appRouter = router({
         return listPartsByProduct(input.productId);
       }),
 
-    create: adminProcedure
+    create: protectedProcedure
       .input(
         z.object({
           productId: z.number(),
@@ -434,7 +434,7 @@ export const appRouter = router({
         return { id };
       }),
 
-    update: adminProcedure
+    update: protectedProcedure
       .input(
         z.object({
           id: z.number(),
@@ -451,7 +451,7 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    delete: adminProcedure
+    delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deletePart(input.id);
@@ -473,7 +473,7 @@ export const appRouter = router({
         return listZonesByPart(input.partId);
       }),
 
-    create: adminProcedure
+    create: protectedProcedure
       .input(
         z.object({
           productId: z.number(),
@@ -502,7 +502,7 @@ export const appRouter = router({
         return { id };
       }),
 
-    update: adminProcedure
+    update: protectedProcedure
       .input(
         z.object({
           id: z.number(),
@@ -532,14 +532,14 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    delete: adminProcedure
+    delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteZone(input.id);
         return { success: true };
       }),
 
-    bulkUpdatePositions: adminProcedure
+    bulkUpdatePositions: protectedProcedure
       .input(
         z.object({
           zones: z.array(
@@ -676,8 +676,8 @@ export const appRouter = router({
       return listOrganizationsByUser(ctx.user.id);
     }),
 
-    /** Organisation erstellen (nur Admin) */
-    create: adminProcedure
+    /** Organisation erstellen (jeder eingeloggte Benutzer) */
+    create: protectedProcedure
       .input(z.object({
         name: z.string().min(1),
         type: z.enum(["verein", "firma"]).default("verein"),

@@ -127,7 +127,6 @@ export default function AdminProductEditor() {
   const { id } = useParams<{ id: string }>();
   const productId = parseInt(id || "0");
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
   const utils = trpc.useUtils();
 
   const { data: productData, isLoading } = trpc.product.getById.useQuery(
@@ -421,7 +420,7 @@ export default function AdminProductEditor() {
     );
   }
 
-  if (!productData || !isAdmin) {
+  if (!productData) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <p className="text-muted-foreground">Produkt nicht gefunden oder kein Zugriff.</p>
@@ -435,7 +434,7 @@ export default function AdminProductEditor() {
       <header className="border-b bg-card sticky top-0 z-20">
         <div className="container flex items-center justify-between h-12 sm:h-14 px-3 sm:px-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Link href="/admin/products">
+            <Link href="/designer">
               <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 sm:h-9 sm:w-9"><ArrowLeft className="w-4 h-4" /></Button>
             </Link>
             <h1 className="text-sm sm:text-lg font-bold truncate">{productData.name}</h1>

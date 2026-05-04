@@ -39,7 +39,7 @@ type CreateMode = "choose" | "sport" | "template" | "blank";
 export default function AdminProducts() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, setLocation] = useLocation();
-  const isAdmin = user?.role === "admin";
+
 
   const utils = trpc.useUtils();
   const { data: products, isLoading } = trpc.product.list.useQuery();
@@ -47,7 +47,7 @@ export default function AdminProducts() {
   const createProduct = trpc.product.create.useMutation({
     onSuccess: (data) => {
       utils.product.list.invalidate();
-      setLocation(`/admin/products/${data.id}`);
+      setLocation(`/designer/products/${data.id}`);
       toast.success("Produkt erstellt");
       setDialogOpen(false);
       resetDialog();
@@ -58,7 +58,7 @@ export default function AdminProducts() {
   const createFromTemplate = trpc.product.createFromTemplate.useMutation({
     onSuccess: (data) => {
       utils.product.list.invalidate();
-      setLocation(`/admin/products/${data.id}`);
+      setLocation(`/designer/products/${data.id}`);
       toast.success("Produkt aus Vorlage erstellt – Teile und Zonen wurden automatisch angelegt!");
       setDialogOpen(false);
       resetDialog();
@@ -153,23 +153,7 @@ export default function AdminProducts() {
     );
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="pt-6 text-center">
-            <h2 className="text-xl font-bold mb-2">Kein Zugriff</h2>
-            <p className="text-muted-foreground mb-4">
-              Du benötigst Admin-Rechte für diesen Bereich.
-            </p>
-            <Link href="/">
-              <Button variant="outline">Zurück zur Startseite</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,7 +169,7 @@ export default function AdminProducts() {
             <h1 className="text-lg font-bold">Produktverwaltung</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/admin/users">
+            <Link href="/verwaltung/admin/users">
               <Button variant="outline" size="sm">
                 <UserCog className="w-4 h-4 mr-2" />
                 Benutzer
@@ -552,7 +536,7 @@ export default function AdminProducts() {
                           <Eye className="w-4 h-4" />
                         )}
                       </Button>
-                      <Link href={`/admin/products/${product.id}`}>
+                      <Link href={`/designer/products/${product.id}`}>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <Pencil className="w-4 h-4" />
                         </Button>

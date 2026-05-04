@@ -85,12 +85,11 @@ describe("product.create", () => {
     ).rejects.toThrow();
   });
 
-  it("rejects non-admin users", async () => {
+  it("allows non-admin logged-in users to create products", async () => {
     const ctx = createUserContext();
     const caller = appRouter.createCaller(ctx);
-    await expect(
-      caller.product.create({ name: "Test" })
-    ).rejects.toThrow();
+    const result = await caller.product.create({ name: "Test" });
+    expect(result.id).toBeDefined();
   });
 
   it("allows admin users to create products", async () => {

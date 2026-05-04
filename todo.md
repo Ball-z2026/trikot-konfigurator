@@ -1545,3 +1545,8 @@
 - [x] Höchste Auflösung (300+ DPI) sicherstellen
 - [x] Text als Vektoren in PDF (nicht gerastert)
 - [x] Arc-Text (Bogentext) auch im Druckbogen korrekt als Vektor
+
+## Bug-Fix: Produktdesigner-Zugriff
+- [x] Produktdesigner soll für ALLE eingeloggten Benutzer zugänglich sein (nicht nur Admins)
+- [x] Backend: adminProcedure → protectedProcedure für Produkt-/Design-Routen
+- [x] Frontend: Admin-Checks für Produktdesigner-Navigation entfernen

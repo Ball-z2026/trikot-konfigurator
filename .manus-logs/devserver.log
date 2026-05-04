@@ -8649,3 +8649,41 @@
 [2026-05-03T22:06:13.264Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-03T22:06:13.268Z] [Auth] Missing session cookie
 [2026-05-03T22:06:13.272Z] [Auth] Missing session cookie
+[2026-05-04T03:35:15.639Z] 11:35:15 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-04T03:35:17.155Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T03:35:17.815Z] Server running on http://localhost:3000/
+[2026-05-04T03:35:24.814Z] 11:35:24 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-04T03:35:26.317Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T03:35:26.877Z] Server running on http://localhost:3000/
+[2026-05-04T03:35:33.556Z] 11:35:33 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-04T03:35:35.257Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T03:35:36.000Z] Server running on http://localhost:3000/
+[2026-05-04T03:35:49.020Z] 11:35:49 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-04T03:35:50.787Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T03:35:51.344Z] Server running on http://localhost:3000/
+[2026-05-04T03:37:09.610Z] [Auth] Missing session cookie
+[2026-05-04T03:37:09.616Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.044Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.085Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.091Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.099Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.107Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.114Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.120Z] [Auth] Missing session cookie
+[2026-05-04T03:37:10.127Z] [Auth] Missing session cookie
+[2026-05-04T03:37:17.238Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-04T03:37:17.243Z] [Auth] Missing session cookie
+[2026-05-04T03:37:17.251Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.107Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.122Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.482Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.506Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.510Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.519Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.527Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.536Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.541Z] [Auth] Missing session cookie
+[2026-05-04T03:37:35.546Z] [Auth] Missing session cookie
+[2026-05-04T03:37:42.869Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-04T03:37:42.873Z] [Auth] Missing session cookie
+[2026-05-04T03:37:42.878Z] [Auth] Missing session cookie
