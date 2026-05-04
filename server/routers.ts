@@ -1096,23 +1096,35 @@ Mögliche Elemente:
 - custom: Sonstige Elemente
 
 Für JEDES erkannte Element gib zurück:
-1. POSITION: x, y (obere linke Ecke), width, height – alles in Prozent (0-100) relativ zum sichtbaren Kleidungsstück (NICHT zum gesamten Bild). Messe vom oberen Rand des Kleidungsstücks, nicht vom Bildrand.
+1. POSITION: x, y (obere linke Ecke), width, height – alles in Prozent (0-100).
+   KRITISCH: Die Positionen müssen RELATIV ZUR JEWEILIGEN SEITE (Vorder- oder Rückseite) angegeben werden!
+   - Wenn das Bild BEIDE Seiten nebeneinander zeigt (z.B. Vorderseite links, Rückseite rechts):
+     * Behandle JEDE Seite als eigenständiges 100%-Koordinatensystem (0-100% Breite, 0-100% Höhe)
+     * Ein Element in der Mitte der Rückseite hat x=50%, NICHT x=75% (was die Position im Gesamtbild wäre)
+     * Messe immer relativ zur jeweiligen Seite des Kleidungsstücks
+   - Wenn das Bild nur EINE Seite zeigt: Messe relativ zum sichtbaren Kleidungsstück
+   - Messe vom oberen Rand des Kleidungsstücks (Schulter), nicht vom Bildrand
 2. TEXTSTIL:
    - textStyle: "arc" (gebogen/gewölbt wie auf echten Trikots) oder "straight" (gerade)
    - arcDegree: Bogengrad in Grad (0 = gerade, positiv = nach oben gewölbt, negativ = nach unten). Typisch: 15-30° für Spielernamen auf dem Rücken
    - fontColor: Hauptfarbe des Textes als HEX (z.B. "#FFFFFF" für weiß)
-   - outlineColor: Outline/Umrandungsfarbe als HEX (z.B. "#FF0000" für rot), oder null wenn keine Outline
+   - outlineColor: Outline/Umrandungsfarbe als HEX (z.B. "#FF0000" für rot), oder "none" wenn keine Outline
    - outlineWidth: Breite der Outline in Prozent der Schrifthöhe (z.B. 10 für 10%), oder 0
    - fontStyle: Schriftart-Kategorie: "block" (fette Blockschrift), "serif" (Serifenschrift), "sans" (serifenlos), "script" (Schreibschrift), "outline" (nur Umriss), "shadow" (mit Schatten)
    - fontWeight: "normal" oder "bold"
    - fontSize: Geschätzte Schrifthöhe relativ zur Zonenhöhe in Prozent (z.B. 80 = Text füllt 80% der Zonenhöhe)
 
 WICHTIG:
-- Sei EXTREM PRÄZISE bei den Positionen. Achte auf Symmetrie (z.B. zentrierte Nummern).
-- Erkenne ob das Bild Vorder- UND Rückseite zeigt (z.B. nebeneinander).
+- Sei EXTREM PRÄZISE bei den Positionen. Achte auf Symmetrie (z.B. zentrierte Nummern = x ca. 25-35%, width ca. 30-50%).
+- Erkenne ob das Bild Vorder- UND Rückseite zeigt (z.B. nebeneinander). Wenn ja, gib Positionen PRO SEITE an (jeweils 0-100%).
 - Bei gebogenem Text: Der Bogen ist typisch für Spielernamen auf Basketball-, Football- und Baseball-Trikots.
 - Schätze Farben so genau wie möglich aus dem Bild.
-- Wenn ein Element eine Outline/Umrandung hat (z.B. weiße Schrift mit roter Umrandung), erkenne BEIDE Farben.`;
+- Wenn ein Element eine Outline/Umrandung hat (z.B. weiße Schrift mit roter Umrandung), erkenne BEIDE Farben.
+- Typische Positionen als Referenz:
+  * Vereinswappen: x=5-15%, y=5-15%, width=10-18%, height=10-15% (Herzseite)
+  * Spielername Rücken: x=15-25%, y=15-25%, width=50-70%, height=6-10% (zentriert oben)
+  * Rückennummer: x=25-35%, y=30-50%, width=30-50%, height=20-35% (zentriert Mitte)
+  * Sponsor Brust: x=20-30%, y=35-50%, width=40-60%, height=8-15% (zentriert)`;
 
         const response = await invokeLLM({
           messages: [

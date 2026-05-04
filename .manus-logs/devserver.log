@@ -7176,3 +7176,30 @@
 [2026-05-04T05:46:48.233Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-04T05:46:48.237Z] [Auth] Missing session cookie
 [2026-05-04T05:46:48.243Z] [Auth] Missing session cookie
+[2026-05-04T06:00:01.492Z] 2:00:01 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-04T06:00:13.204Z] 2:00:13 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-04T06:00:51.035Z] 2:00:51 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-04T06:00:52.909Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T06:00:53.659Z] Server running on http://localhost:3000/
+[2026-05-04T06:01:18.387Z] 2:01:18 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-04T06:02:00.919Z] Dev server process group stopped
+[2026-05-04T06:02:00.986Z] Dev server exited with code -15
+[2026-05-04T06:02:03.958Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-04T06:02:05.949Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T06:02:06.546Z] Server running on http://localhost:3000/
+[2026-05-04T06:04:18.673Z] 2:04:18 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-04T06:04:36.437Z] 2:04:36 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-04T06:05:25.727Z] 2:05:25 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-04T06:05:54.136Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.143Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.822Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.889Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.899Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.905Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.913Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.921Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.926Z] [Auth] Missing session cookie
+[2026-05-04T06:05:54.932Z] [Auth] Missing session cookie
+[2026-05-04T06:06:01.780Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-04T06:06:01.785Z] [Auth] Missing session cookie
+[2026-05-04T06:06:01.791Z] [Auth] Missing session cookie

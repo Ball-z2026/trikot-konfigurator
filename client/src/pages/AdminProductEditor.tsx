@@ -537,7 +537,7 @@ export default function AdminProductEditor() {
               <div
                 ref={canvasRef}
                 className="relative bg-[#f8f9fa] aspect-[3/4] select-none"
-                style={{ cursor: draggingZone ? "grabbing" : "default", touchAction: "none" }}
+                style={{ cursor: draggingZone ? "grabbing" : "default", touchAction: (draggingZone !== null || resizingZone !== null) ? "none" : "pan-y" }}
                 onClick={() => setSelectedZoneId(null)}
               >
                 {currentImage ? (
@@ -573,6 +573,7 @@ export default function AdminProductEditor() {
                           : `rotate(${zone.rotation || 0}deg)`,
                         transformOrigin: "center center",
                         transition: isBeingDragged ? 'none' : 'all 150ms',
+                        touchAction: 'none',
                       }}
                       onPointerDown={(e) => handleZonePointerDown(e, zone.id)}
                       onClick={(e) => { e.stopPropagation(); setSelectedZoneId(zone.id); }}

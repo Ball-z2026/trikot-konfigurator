@@ -398,6 +398,7 @@ export function TemplateUpload({
         height: `${zone.height}%`,
         borderColor: zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6",
         backgroundColor: `${zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6"}22`,
+        touchAction: editable ? 'none' : undefined,
       }}
       onMouseDown={editable ? (e) => handleMouseDown(e, zone.id, "drag") : undefined}
       onTouchStart={editable ? (e) => handleTouchStart(e, zone.id, "drag") : undefined}
@@ -641,7 +642,8 @@ export function TemplateUpload({
             ) : (
               <div
                 ref={rightCanvasRef}
-                className="relative border rounded-lg overflow-hidden bg-gray-100 touch-none"
+                className="relative border rounded-lg overflow-hidden bg-gray-100"
+                style={{ touchAction: (dragging || resizing) ? 'none' : 'auto' }}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
@@ -652,7 +654,7 @@ export function TemplateUpload({
                 {activePart?.imageUrl ? (
                   <img
                     src={storageUrl(activePart.imageUrl)}
-                    alt={activePart?.name || "Produkt"}
+                    alt={activePart?.label || "Produkt"}
                     className="w-full h-auto"
                     draggable={false}
                   />
@@ -662,8 +664,19 @@ export function TemplateUpload({
                   </div>
                 )}
 
-                {/* 1:1 kopierte Zonen auf unserem Produkt (editierbar) */}
-                {zones.map((zone) => renderZoneOverlay(zone, true))}
+                {/* 1:1 kopierte Zonen auf unserem Produkt (editierbar) - gefiltert nach Seite */}
+                {zones
+                  .filter((zone) => {
+                    if (!zone.side) return true;
+                    // Part-Key bestimmt welche Seite angezeigt wird
+                    const partKey = (activePart as any)?.key || '';
+                    const isFrontPart = partKey.toLowerCase().includes('vorder') || partKey.toLowerCase().includes('front');
+                    const isBackPart = partKey.toLowerCase().includes('rueck') || partKey.toLowerCase().includes('back');
+                    if (isFrontPart) return zone.side === 'front';
+                    if (isBackPart) return zone.side === 'back';
+                    return true; // Wenn Part-Key unklar, alle Zonen zeigen
+                  })
+                  .map((zone) => renderZoneOverlay(zone, true))}
 
                 {/* Übertragungspfeil-Overlay wenn Zonen vorhanden */}
                 {zones.length > 0 && imageUrl && (

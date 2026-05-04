@@ -1576,3 +1576,8 @@
 - [x] KI-Analyse: Nach Analyse werden Positionen 1:1 auf unser Produkt kopiert (rechte Seite zeigt Ergebnis)
 - [x] KI-Analyse: Exakte Positionierung (alle Details, Farben, Stil, Bogentext)
 - [x] KI-Analyse: Produktauswahl vor Analyse (welches unserer Produkte soll befüllt werden)
+
+## KI-Analyse-Tool Bugs
+- [x] BUG: Bildschirm friert ein wenn KI-Analyse auf "Farbe" eingestellt wird (Touch-Scroll blockiert) → touchAction dynamisch statt statisch
+- [x] BUG: KI-Analyse erkennt Zonen nicht korrekt → Prompt verbessert (Positionen pro Seite), Zonen nach Side gefiltert
+- [x] Touch-Support im AdminProductEditor: Canvas touchAction auf pan-y gesetzt, Zonen haben touch-action:none für setPointerCapture
