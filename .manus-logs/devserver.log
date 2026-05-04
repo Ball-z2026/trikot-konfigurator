@@ -7228,3 +7228,25 @@
 [2026-05-04T07:23:07.777Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-04T07:23:07.781Z] [Auth] Missing session cookie
 [2026-05-04T07:23:07.785Z] [Auth] Missing session cookie
+[2026-05-04T13:48:16.127Z] 9:48:16 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-04T13:48:20.954Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T13:48:23.474Z] Server running on http://localhost:3000/
+[2026-05-04T13:48:37.740Z] 9:48:37 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-04T13:49:29.038Z] [Auth] Missing session cookie
+[2026-05-04T13:49:29.046Z] [Auth] Missing session cookie
+[2026-05-04T13:49:29.939Z] [Auth] Missing session cookie
+[2026-05-04T13:49:30.018Z] [Auth] Missing session cookie
+[2026-05-04T13:49:30.036Z] [Auth] Missing session cookie
+[2026-05-04T13:49:30.044Z] [Auth] Missing session cookie
+[2026-05-04T13:49:30.052Z] [Auth] Missing session cookie
+[2026-05-04T13:49:30.079Z] [Auth] Missing session cookie
+[2026-05-04T13:49:30.087Z] [Auth] Missing session cookie
+[2026-05-04T13:49:30.096Z] [Auth] Missing session cookie
+[2026-05-04T13:49:36.993Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-04T13:49:36.998Z] [Auth] Missing session cookie
+[2026-05-04T13:49:37.004Z] [Auth] Missing session cookie
+[2026-05-04T13:49:41.062Z] Dev server process group stopped
+[2026-05-04T13:49:41.123Z] Dev server exited with code -15
+[2026-05-04T13:49:44.119Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-04T13:49:45.921Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T13:49:46.563Z] Server running on http://localhost:3000/

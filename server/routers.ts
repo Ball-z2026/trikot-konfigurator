@@ -1021,6 +1021,20 @@ export const appRouter = router({
         sport: z.enum(["fussball", "handball", "volleyball", "basketball"]).optional(),
         category: z.enum(["Trikot", "Bekleidung"]).optional(),
         visibility: z.enum(["private", "team", "department", "org"]).default("team"),
+        // Optional: Zonen auf ein bestehendes Produkt übertragen
+        productId: z.number().optional(),
+        zones: z.array(z.object({
+          name: z.string(),
+          purpose: z.string(),
+          x: z.number(),
+          y: z.number(),
+          width: z.number(),
+          height: z.number(),
+          side: z.enum(["front", "back"]).optional(),
+          fontColor: z.string().optional(),
+          fontWeight: z.string().optional(),
+          fontSize: z.number().optional(),
+        })).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         // Sportart ist Pflicht bei Trikots
@@ -1030,10 +1044,63 @@ export const appRouter = router({
             message: "Bei Trikots muss eine Sportart angegeben werden.",
           });
         }
+        const { productId, zones, ...templateData } = input;
         const id = await createDesignTemplate({
-          ...input,
+          ...templateData,
           createdByUserId: ctx.user.id,
         });
+
+        // Zonen auf das ausgewählte Produkt übertragen
+        if (productId && zones && zones.length > 0) {
+          const parts = await listPartsByProduct(productId);
+          for (const zone of zones) {
+            // Part anhand der Seite zuordnen: front → vorderteil/front, back → rueckteil/back
+            const side = zone.side || "front";
+            const matchingPart = parts.find((p) => {
+              const key = p.key.toLowerCase();
+              if (side === "front") return key.includes("vorder") || key.includes("front");
+              if (side === "back") return key.includes("rueck") || key.includes("back") || key.includes("rück");
+              return false;
+            });
+            // Purpose-Mapping: TemplateUpload purpose → DB purpose
+            const purposeMap: Record<string, string> = {
+              logo: "logo",
+              clubLogo: "clubLogo",
+              playerName: "playerName",
+              playerNumber: "playerNumber",
+              clubName: "clubName",
+              sponsor: "custom",
+              abbreviation: "abbreviation",
+              custom: "custom",
+            };
+            const dbPurpose = purposeMap[zone.purpose] || "custom";
+            // Zone-Typ bestimmen
+            const textPurposes = ["playerName", "playerNumber", "clubName", "abbreviation"];
+            const imagePurposes = ["logo", "clubLogo"];
+            let zoneType: "image" | "text" | "both" = "both";
+            if (textPurposes.includes(dbPurpose)) zoneType = "text";
+            else if (imagePurposes.includes(dbPurpose)) zoneType = "image";
+
+            await createZone({
+              productId,
+              partId: matchingPart?.id ?? null,
+              label: zone.name,
+              side,
+              type: zoneType,
+              purpose: dbPurpose as any,
+              posX: zone.x,
+              posY: zone.y,
+              width: zone.width,
+              height: zone.height,
+              rotation: 0,
+              fontColor: zone.fontColor || null,
+              fontWeight: zone.fontWeight || null,
+              fontSize: zone.fontSize || null,
+              sortOrder: 0,
+            });
+          }
+        }
+
         return { id };
       }),
 

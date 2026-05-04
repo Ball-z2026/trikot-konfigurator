@@ -1582,3 +1582,4 @@
 - [x] BUG: KI-Analyse erkennt Zonen nicht korrekt → Prompt verbessert (Positionen pro Seite), Zonen nach Side gefiltert
 - [x] Touch-Support im AdminProductEditor: Canvas touchAction auf pan-y gesetzt, Zonen haben touch-action:none für setPointerCapture
 - [x] BUG: Bildschirm friert ein wenn man ein neues Produkt erstellen möchte im Produktdesigner → modal={false} + manuelles Overlay
+- [x] FEATURE: KI-Analyse Zonen auf ausgewähltes Produkt übertragen (product_zones) beim Speichern der Vorlage

@@ -374,10 +374,22 @@ export function TemplateUpload({
         sport: sport as any,
         category: category as any,
         visibility,
-        // Produkt-Zuordnung speichern
+        // Produkt-Zuordnung und Zonen übertragen
         productId: selectedProductId || undefined,
+        zones: zones.length > 0 ? zones.map(z => ({
+          name: z.name,
+          purpose: z.purpose,
+          x: z.x,
+          y: z.y,
+          width: z.width,
+          height: z.height,
+          side: z.side || "front",
+          fontColor: z.fontColor,
+          fontWeight: z.fontWeight,
+          fontSize: z.fontSize,
+        })) : undefined,
       });
-      toast.success("Vorlage gespeichert!");
+      toast.success("Vorlage gespeichert! Zonen wurden auf das Produkt übertragen.");
       onSaved?.(result.id);
     } catch (error: any) {
       toast.error(error.message || "Speichern fehlgeschlagen");
