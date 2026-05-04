@@ -142,7 +142,7 @@ export default function AdminProducts() {
             <Shirt className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Anmeldung erforderlich</h2>
             <p className="text-muted-foreground mb-4">
-              Bitte melde dich an, um auf den Admin-Bereich zuzugreifen.
+              Bitte melde dich an, um auf den Produktdesigner zuzugreifen.
             </p>
             <Link href="/login">
               <Button>Anmelden</Button>

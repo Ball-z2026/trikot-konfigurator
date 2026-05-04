@@ -284,8 +284,9 @@ export const appRouter = router({
   // ─── Products ───────────────────────────────────────────────────────────
   product: router({
     list: publicProcedure.query(async ({ ctx }) => {
-      const isAdmin = ctx.user?.role === "admin";
-      return listProducts(!isAdmin);
+      // Eingeloggte User sehen alle Produkte, nicht-eingeloggte nur veröffentlichte
+      const publishedOnly = !ctx.user;
+      return listProducts(publishedOnly);
     }),
 
     getById: publicProcedure
@@ -293,7 +294,8 @@ export const appRouter = router({
       .query(async ({ input, ctx }) => {
         const product = await getProductById(input.id);
         if (!product) return null;
-        if (!product.published && ctx.user?.role !== "admin") return null;
+        // Unveröffentlichte Produkte: nur für eingeloggte User sichtbar
+        if (!product.published && !ctx.user) return null;
         const parts = await listPartsByProduct(input.id);
         const zones = await listZonesByProduct(input.id);
         // Wenn Produkt ein Template hat, imageUrls der Parts aus dem aktuellen Template nehmen
