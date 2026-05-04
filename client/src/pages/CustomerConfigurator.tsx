@@ -1696,8 +1696,8 @@ export default function CustomerConfigurator() {
                 <span className="sm:hidden">{players.length}</span>
               </Button>
             )}
-            {/* Druckbogen-Export Button */}
-            {currentDesignId && teamIdParam && userOrgId && (
+            {/* Druckbogen-Export Button – erscheint wenn Design gespeichert + Mannschaftsliste vorhanden */}
+            {currentDesignId && teamIdParam && userOrgId && players.length > 0 && (
               <Button
                 size="sm"
                 variant="outline"

@@ -145,14 +145,46 @@ export async function getUserByOpenId(openId: string) {
 export async function listProducts(publishedOnly = false) {
   const db = await getDb();
   if (!db) return [];
+  let productList;
   if (publishedOnly) {
-    return db
+    productList = await db
       .select()
       .from(products)
       .where(eq(products.published, true))
       .orderBy(asc(products.name));
+  } else {
+    productList = await db.select().from(products).orderBy(asc(products.name));
   }
-  return db.select().from(products).orderBy(asc(products.name));
+  // Für jedes Produkt ohne frontImageUrl: Vorschaubild aus Template oder Part laden
+  const { TEXTIL_TEMPLATES } = await import("../shared/templates");
+  const enriched = await Promise.all(
+    productList.map(async (product) => {
+      if (product.frontImageUrl) return product;
+      // 1. Versuch: Template-Bild verwenden (wie in getById)
+      if (product.templateId) {
+        const tmpl = TEXTIL_TEMPLATES.find((t: any) => t.id === product.templateId);
+        if (tmpl) {
+          const frontPart = tmpl.parts.find((p: any) => p.key === 'vorderteil') || tmpl.parts[0];
+          if (frontPart?.imageUrl) {
+            return { ...product, frontImageUrl: frontPart.imageUrl };
+          }
+        }
+      }
+      // 2. Fallback: Part-Bild aus DB
+      const parts = await db
+        .select({ imageUrl: productParts.imageUrl })
+        .from(productParts)
+        .where(eq(productParts.productId, product.id))
+        .orderBy(asc(productParts.sortOrder))
+        .limit(1);
+      const partImg = parts[0]?.imageUrl;
+      return {
+        ...product,
+        frontImageUrl: (partImg && partImg.length > 0) ? partImg : null,
+      };
+    })
+  );
+  return enriched;
 }
 
 export async function getProductById(id: number) {

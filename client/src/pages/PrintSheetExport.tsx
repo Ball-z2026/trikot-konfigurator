@@ -46,9 +46,9 @@ export default function PrintSheetExport() {
 
   // Daten laden
   const { data: org } = trpc.org.getById.useQuery({ id: orgId }, { enabled: !!orgId });
-  const { data: design } = trpc.savedDesign.getById.useQuery({ id: designId }, { enabled: !!designId });
-  const { data: team } = trpc.team.getById.useQuery({ id: teamId }, { enabled: !!teamId });
-  const { data: players = [] } = trpc.player.listByTeam.useQuery({ teamId }, { enabled: !!teamId });
+  const { data: design } = trpc.savedDesign.get.useQuery({ id: designId }, { enabled: !!designId });
+  const { data: team } = trpc.team.getById.useQuery({ id: teamId, orgId }, { enabled: !!teamId && !!orgId });
+  const { data: players = [] } = trpc.player.listByTeam.useQuery({ teamId, orgId }, { enabled: !!teamId && !!orgId });
 
   // Mutations
   const generateForPlayer = trpc.printSheet.generateForPlayer.useMutation();

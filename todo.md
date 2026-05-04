@@ -1561,3 +1561,14 @@
 - [x] KI-Analyse-Tool in den Produktdesigner (AdminProducts) integrieren
 - [x] Konfigurator zeigt nur fertige Produkte an die der Mannschaft/Sparte/Verein zugeordnet sind
 - [x] Keine Produkterstellung im Konfigurator – nur Auswahl und Befüllung
+
+## Bug-Fixes: Produktdesigner Vorschau + Touch-Support
+- [x] BUG: Keine Vorschaubilder im Produktdesigner sichtbar (Template-Bilder als Fallback implementiert)
+- [x] BUG: Touch-Support im Produktdesigner bereits implementiert (touchstart/touchmove/touchend, haptic feedback)
+- [x] Druckbogen-Router generateForTeam korrigiert (zonesConfig + DB-Parts/Zonen statt design.config)
+
+## KI-Analyse-Tool: Split-View Redesign
+- [x] KI-Analyse: Split-View Layout (links Vorlage-Bild, rechts unser Produkt)
+- [x] KI-Analyse: Nach Analyse werden Positionen 1:1 auf unser Produkt kopiert (rechte Seite zeigt Ergebnis)
+- [x] KI-Analyse: Exakte Positionierung (alle Details, Farben, Stil, Bogentext)
+- [x] KI-Analyse: Produktauswahl vor Analyse (welches unserer Produkte soll befüllt werden)

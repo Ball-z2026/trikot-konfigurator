@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
@@ -21,13 +21,13 @@ interface Zone {
   side?: "front" | "back";
   // Stil-Erkennung durch KI
   textStyle?: "arc" | "straight";
-  arcDegree?: number; // Bogengrad (0 = gerade, 15-30 = typisch)
-  fontColor?: string; // HEX
-  outlineColor?: string; // HEX oder "none"
-  outlineWidth?: number; // % der Schrifthöhe
+  arcDegree?: number;
+  fontColor?: string;
+  outlineColor?: string;
+  outlineWidth?: number;
   fontStyle?: "block" | "serif" | "sans" | "script" | "outline" | "shadow";
   fontWeight?: "normal" | "bold";
-  fontSize?: number; // % der Zonenhöhe
+  fontSize?: number;
 }
 
 interface TemplateUploadProps {
@@ -59,6 +59,7 @@ export function TemplateUpload({
   onSaved,
   onCancel,
 }: TemplateUploadProps) {
+  // ─── State ───
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageStorageKey, setImageStorageKey] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -70,23 +71,47 @@ export function TemplateUpload({
   const [addingZone, setAddingZone] = useState(false);
   const [newZoneName, setNewZoneName] = useState("");
   const [newZonePurpose, setNewZonePurpose] = useState("logo");
+  const [analyzing, setAnalyzing] = useState(false);
+
+  // Split-View: Ausgewähltes Produkt
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
+
+  // Drag/Resize State (für rechte Seite – unser Produkt)
   const [dragging, setDragging] = useState<string | null>(null);
   const [resizing, setResizing] = useState<string | null>(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [analyzing, setAnalyzing] = useState(false);
-  const canvasRef = useRef<HTMLDivElement>(null);
+
+  const leftCanvasRef = useRef<HTMLDivElement>(null);
+  const rightCanvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createTemplate = trpc.designTemplate.create.useMutation();
   const analyzeImage = trpc.designTemplate.analyzeImage.useMutation();
 
-  // DPI-Prüfung aus dem Bild
+  // Produkte laden
+  const { data: products } = trpc.product.list.useQuery();
+  // Parts des ausgewählten Produkts laden
+  const { data: productParts } = trpc.product.getById.useQuery(
+    { id: selectedProductId! },
+    { enabled: !!selectedProductId }
+  );
+
+  // Erstes Part (Vorderteil) automatisch auswählen
+  useEffect(() => {
+    if (productParts?.parts && productParts.parts.length > 0 && !selectedPartId) {
+      setSelectedPartId(productParts.parts[0].id);
+    }
+  }, [productParts, selectedPartId]);
+
+  const activePart = productParts?.parts?.find((p: any) => p.id === selectedPartId);
+
+  // DPI-Prüfung
   const checkImageDpi = useCallback((file: File): Promise<number | null> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        // JPEG DPI aus EXIF/JFIF Header lesen
         if (data[0] === 0xFF && data[1] === 0xD8) {
           for (let i = 2; i < data.length - 10; i++) {
             if (data[i] === 0xFF && data[i + 1] === 0xE0) {
@@ -109,7 +134,6 @@ export function TemplateUpload({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // DPI prüfen
     const dpi = await checkImageDpi(file);
     if (dpi !== null) {
       if (dpi < 250) {
@@ -163,7 +187,6 @@ export function TemplateUpload({
 
     setAnalyzing(true);
     try {
-      // Vollständige URL für die KI-Analyse erstellen
       const fullImageUrl = imageUrl.startsWith("http")
         ? imageUrl
         : `${window.location.origin}${storageUrl(imageUrl)}`;
@@ -175,7 +198,6 @@ export function TemplateUpload({
       });
 
       if (result.zones && result.zones.length > 0) {
-        // Erkannte Zonen übernehmen inkl. Stil-Informationen
         const newZones: Zone[] = result.zones.map((z: any, idx: number) => ({
           id: `ai_zone_${Date.now()}_${idx}`,
           name: z.name,
@@ -185,7 +207,6 @@ export function TemplateUpload({
           width: Math.max(5, Math.min(100 - z.x, z.width)),
           height: Math.max(5, Math.min(100 - z.y, z.height)),
           side: z.side,
-          // Stil-Informationen von KI
           textStyle: z.textStyle || "straight",
           arcDegree: z.arcDegree || 0,
           fontColor: z.fontColor || "#000000",
@@ -197,14 +218,13 @@ export function TemplateUpload({
         }));
 
         setZones(newZones);
-        
-        // Zusammenfassung der erkannten Stile
+
         const arcCount = newZones.filter(z => z.textStyle === "arc").length;
         const outlineCount = newZones.filter(z => z.outlineColor).length;
         let summary = `${newZones.length} Zonen erkannt`;
         if (arcCount > 0) summary += `, ${arcCount} mit Bogentext`;
         if (outlineCount > 0) summary += `, ${outlineCount} mit Outline`;
-        toast.success(summary + "!");
+        toast.success(summary + " – Positionen auf Produkt übertragen!");
       } else {
         toast.info("Keine Elemente erkannt. Versuchen Sie ein deutlicheres Bild.");
       }
@@ -238,6 +258,7 @@ export function TemplateUpload({
     setZones(zones.filter((z) => z.id !== id));
   };
 
+  // ─── Drag & Resize auf der rechten Seite (unser Produkt) ───
   const handleMouseDown = (e: React.MouseEvent, zoneId: string, type: "drag" | "resize") => {
     e.preventDefault();
     e.stopPropagation();
@@ -249,10 +270,21 @@ export function TemplateUpload({
     setDragStart({ x: e.clientX, y: e.clientY });
   };
 
+  const handleTouchStart = (e: React.TouchEvent, zoneId: string, type: "drag" | "resize") => {
+    e.stopPropagation();
+    const touch = e.touches[0];
+    if (type === "drag") {
+      setDragging(zoneId);
+    } else {
+      setResizing(zoneId);
+    }
+    setDragStart({ x: touch.clientX, y: touch.clientY });
+  };
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (!canvasRef.current) return;
-      const rect = canvasRef.current.getBoundingClientRect();
+      if (!rightCanvasRef.current) return;
+      const rect = rightCanvasRef.current.getBoundingClientRect();
       const dx = ((e.clientX - dragStart.x) / rect.width) * 100;
       const dy = ((e.clientY - dragStart.y) / rect.height) * 100;
 
@@ -276,6 +308,39 @@ export function TemplateUpload({
           )
         );
         setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    },
+    [dragging, resizing, dragStart]
+  );
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!rightCanvasRef.current) return;
+      const touch = e.touches[0];
+      const rect = rightCanvasRef.current.getBoundingClientRect();
+      const dx = ((touch.clientX - dragStart.x) / rect.width) * 100;
+      const dy = ((touch.clientY - dragStart.y) / rect.height) * 100;
+
+      if (dragging) {
+        setZones((prev) =>
+          prev.map((z) =>
+            z.id === dragging
+              ? { ...z, x: Math.max(0, Math.min(100 - z.width, z.x + dx)), y: Math.max(0, Math.min(100 - z.height, z.y + dy)) }
+              : z
+          )
+        );
+        setDragStart({ x: touch.clientX, y: touch.clientY });
+      }
+
+      if (resizing) {
+        setZones((prev) =>
+          prev.map((z) =>
+            z.id === resizing
+              ? { ...z, width: Math.max(5, z.width + dx), height: Math.max(5, z.height + dy) }
+              : z
+          )
+        );
+        setDragStart({ x: touch.clientX, y: touch.clientY });
       }
     },
     [dragging, resizing, dragStart]
@@ -309,6 +374,8 @@ export function TemplateUpload({
         sport: sport as any,
         category: category as any,
         visibility,
+        // Produkt-Zuordnung speichern
+        productId: selectedProductId || undefined,
       });
       toast.success("Vorlage gespeichert!");
       onSaved?.(result.id);
@@ -319,90 +386,165 @@ export function TemplateUpload({
     }
   };
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ImageIcon className="w-5 h-5" />
-          Neue Vorlage erstellen
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Name */}
-        <div className="space-y-2">
-          <Label htmlFor="template-name">Vorlagenname *</Label>
-          <Input
-            id="template-name"
-            value={templateName}
-            onChange={(e) => setTemplateName(e.target.value)}
-            placeholder="z.B. Heimtrikot Saison 2025/26"
+  // ─── Zone-Overlay Renderer (wiederverwendbar für links und rechts) ───
+  const renderZoneOverlay = (zone: Zone, editable: boolean) => (
+    <div
+      key={zone.id}
+      className={`absolute border-2 flex items-center justify-center ${editable ? "cursor-move" : "pointer-events-none"}`}
+      style={{
+        left: `${zone.x}%`,
+        top: `${zone.y}%`,
+        width: `${zone.width}%`,
+        height: `${zone.height}%`,
+        borderColor: zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6",
+        backgroundColor: `${zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6"}22`,
+      }}
+      onMouseDown={editable ? (e) => handleMouseDown(e, zone.id, "drag") : undefined}
+      onTouchStart={editable ? (e) => handleTouchStart(e, zone.id, "drag") : undefined}
+    >
+      {/* Zonenname + Stil-Info */}
+      <div className="flex flex-col items-center gap-0.5">
+        <span className="text-[10px] font-medium text-blue-900 bg-white/90 px-1 rounded truncate max-w-full leading-tight">
+          {zone.name}
+        </span>
+        <div className="flex gap-0.5">
+          {zone.textStyle === "arc" && (
+            <span className="text-[7px] bg-purple-600 text-white px-0.5 rounded leading-tight">
+              ⌒ {zone.arcDegree}°
+            </span>
+          )}
+          {zone.outlineColor && zone.outlineColor !== "none" && (
+            <span className="text-[7px] text-white px-0.5 rounded leading-tight" style={{ backgroundColor: zone.outlineColor }}>
+              Outline
+            </span>
+          )}
+        </div>
+      </div>
+      {/* Side-Indicator */}
+      {zone.side && (
+        <span className="absolute top-0 left-0 text-[8px] bg-blue-600 text-white px-0.5 rounded-br leading-tight">
+          {zone.side === "front" ? "V" : "R"}
+        </span>
+      )}
+      {/* Farb-Indikatoren */}
+      {zone.fontColor && (
+        <div className="absolute bottom-0 left-0 flex gap-0.5 p-0.5">
+          <div className="w-2.5 h-2.5 rounded-full border border-white" style={{ backgroundColor: zone.fontColor }} />
+          {zone.outlineColor && zone.outlineColor !== "none" && (
+            <div className="w-2.5 h-2.5 rounded-full border border-white" style={{ backgroundColor: zone.outlineColor }} />
+          )}
+        </div>
+      )}
+      {/* Resize + Delete nur auf editierbarer Seite */}
+      {editable && (
+        <>
+          <div
+            className="absolute bottom-0 right-0 w-3 h-3 bg-blue-600 cursor-se-resize"
+            onMouseDown={(e) => handleMouseDown(e, zone.id, "resize")}
+            onTouchStart={(e) => handleTouchStart(e, zone.id, "resize")}
           />
-        </div>
+          <button
+            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeZone(zone.id);
+            }}
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        </>
+      )}
+    </div>
+  );
 
-        {/* Sichtbarkeit */}
-        <div className="space-y-2">
-          <Label>Sichtbarkeit</Label>
-          <Select value={visibility} onValueChange={(v: any) => setVisibility(v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="private">Nur ich</SelectItem>
-              <SelectItem value="team">Meine Mannschaft</SelectItem>
-              <SelectItem value="department">Meine Sparte</SelectItem>
-              <SelectItem value="org">Gesamter Verein</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Bild-Upload */}
-        <div className="space-y-2">
-          <Label>Vorlagen-Bild *</Label>
-          {!imageUrl ? (
-            <div
-              className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
-              onClick={() => fileInputRef.current?.click()}
+  return (
+    <Card className="w-full max-w-none">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-600" />
+          KI-Bild-Analyse – Positionskopie
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Laden Sie ein Vorlagenbild hoch (links). Die KI erkennt alle Positionen und überträgt sie 1:1 auf Ihr Produkt (rechts).
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Schritt 1: Name + Produkt auswählen */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="template-name">Vorlagenname *</Label>
+            <Input
+              id="template-name"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="z.B. Heimtrikot Saison 2025/26"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Zielprodukt auswählen *</Label>
+            <Select
+              value={selectedProductId?.toString() || ""}
+              onValueChange={(v) => {
+                setSelectedProductId(Number(v));
+                setSelectedPartId(null);
+              }}
             >
-              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                {uploading ? "Wird hochgeladen..." : "Klicken zum Hochladen (JPG, PNG, WebP)"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Laden Sie ein Bild eines Trikots oder Sportbekleidungsstücks hoch.
-                Die KI erkennt automatisch die Positionen von Name, Nummer, Logo etc.
-              </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {/* DPI-Warnung */}
-              {dpiWarning && (
-                <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  {dpiWarning}
-                </div>
-              )}
+              <SelectTrigger>
+                <SelectValue placeholder="Produkt wählen..." />
+              </SelectTrigger>
+              <SelectContent>
+                {products?.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id.toString()}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Sichtbarkeit</Label>
+            <Select value={visibility} onValueChange={(v: any) => setVisibility(v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="private">Nur ich</SelectItem>
+                <SelectItem value="team">Meine Mannschaft</SelectItem>
+                <SelectItem value="department">Meine Sparte</SelectItem>
+                <SelectItem value="org">Gesamter Verein</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-              {/* KI-Analyse Button */}
-              <div className="flex items-center gap-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                <Sparkles className="w-5 h-5 text-purple-600 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-purple-900">KI-Positionserkennung</p>
-                  <p className="text-xs text-purple-700">
-                    Analysiert das Bild und erkennt automatisch die Positionen von Spielername, Nummer, Logo, Teamname etc.
-                  </p>
-                </div>
+        {/* Part-Auswahl (wenn Produkt gewählt) */}
+        {productParts?.parts && productParts.parts.length > 1 && (
+          <div className="flex gap-2 flex-wrap">
+            {productParts.parts.map((part: any) => (
+              <Button
+                key={part.id}
+                size="sm"
+                variant={selectedPartId === part.id ? "default" : "outline"}
+                onClick={() => setSelectedPartId(part.id)}
+              >
+                {part.name}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* ═══ SPLIT VIEW: Links Vorlage, Rechts unser Produkt ═══ */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* ─── LINKE SEITE: Vorlagenbild ─── */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Vorlage (Original)</Label>
+              {imageUrl && (
                 <Button
                   size="sm"
                   onClick={handleAiAnalyze}
                   disabled={analyzing}
-                  className="bg-purple-600 hover:bg-purple-700 text-white shrink-0"
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {analyzing ? (
                     <>
@@ -412,202 +554,202 @@ export function TemplateUpload({
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 mr-1" />
-                      Analysieren
+                      KI analysieren
                     </>
                   )}
                 </Button>
-              </div>
+              )}
+            </div>
 
-              {/* Canvas mit Bild und Zonen */}
+            {!imageUrl ? (
               <div
-                ref={canvasRef}
-                className="relative border rounded-lg overflow-hidden select-none"
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
+                className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-purple-400 transition-colors bg-gray-50 min-h-[300px] flex flex-col items-center justify-center"
+                onClick={() => fileInputRef.current?.click()}
               >
-                <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
-
-                {/* Zonen-Overlays */}
-                {zones.map((zone) => (
-                  <div
-                    key={zone.id}
-                    className="absolute border-2 cursor-move flex items-center justify-center"
-                    style={{
-                      left: `${zone.x}%`,
-                      top: `${zone.y}%`,
-                      width: `${zone.width}%`,
-                      height: `${zone.height}%`,
-                      borderColor: zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6",
-                      backgroundColor: `${zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6"}33`,
-                    }}
-                    onMouseDown={(e) => handleMouseDown(e, zone.id, "drag")}
-                  >
-                    {/* Zonenname + Stil-Info */}
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-xs font-medium text-blue-900 bg-white/90 px-1 rounded truncate max-w-full">
-                        {zone.name}
-                      </span>
-                      {/* Stil-Badges */}
-                      <div className="flex gap-0.5">
-                        {zone.textStyle === "arc" && (
-                          <span className="text-[8px] bg-purple-600 text-white px-1 rounded">
-                            ⌒ Bogen {zone.arcDegree}°
-                          </span>
-                        )}
-                        {zone.outlineColor && zone.outlineColor !== "none" && (
-                          <span className="text-[8px] text-white px-1 rounded" style={{ backgroundColor: zone.outlineColor }}>
-                            Outline
-                          </span>
-                        )}
-                        {zone.fontStyle && zone.fontStyle !== "block" && (
-                          <span className="text-[8px] bg-gray-600 text-white px-1 rounded">
-                            {zone.fontStyle}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {/* Side-Indicator */}
-                    {zone.side && (
-                      <span className="absolute top-0 left-0 text-[9px] bg-blue-600 text-white px-1 rounded-br">
-                        {zone.side === "front" ? "V" : "R"}
-                      </span>
-                    )}
-                    {/* Farb-Indikator */}
-                    {zone.fontColor && (
-                      <div className="absolute bottom-0 left-0 flex gap-0.5 p-0.5">
-                        <div className="w-3 h-3 rounded-full border border-white" style={{ backgroundColor: zone.fontColor }} title={`Textfarbe: ${zone.fontColor}`} />
-                        {zone.outlineColor && zone.outlineColor !== "none" && (
-                          <div className="w-3 h-3 rounded-full border border-white" style={{ backgroundColor: zone.outlineColor }} title={`Outline: ${zone.outlineColor}`} />
-                        )}
-                      </div>
-                    )}
-                    {/* Resize-Handle */}
-                    <div
-                      className="absolute bottom-0 right-0 w-3 h-3 bg-blue-600 cursor-se-resize"
-                      onMouseDown={(e) => handleMouseDown(e, zone.id, "resize")}
-                    />
-                    {/* Delete-Button */}
-                    <button
-                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeZone(zone.id);
-                      }}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+                <Upload className="w-10 h-10 mb-3 text-purple-400" />
+                <p className="text-sm font-medium text-gray-700">
+                  {uploading ? "Wird hochgeladen..." : "Vorlagenbild hochladen"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Laden Sie ein Bild eines Trikots oder Sportbekleidungsstücks hoch.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  JPG, PNG, WebP – mind. 300 DPI empfohlen
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
               </div>
-
-              {/* Bild ersetzen */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setImageUrl(null);
-                  setImageStorageKey(null);
-                  setZones([]);
-                }}
-              >
-                Bild ersetzen
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Zonen-Verwaltung (nur wenn Bild vorhanden) */}
-        {imageUrl && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Positionierungszonen ({zones.length})</Label>
-              <Button size="sm" variant="outline" onClick={() => setAddingZone(true)}>
-                <Plus className="w-4 h-4 mr-1" />
-                Zone manuell hinzufügen
-              </Button>
-            </div>
-
-            {zones.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Noch keine Zonen definiert. Nutzen Sie die KI-Analyse oder fügen Sie Zonen manuell hinzu.
-              </p>
-            )}
-
-            {zones.length > 0 && (
-              <div className="space-y-2 max-h-80 overflow-y-auto">
-                {zones.map((zone) => (
-                  <div key={zone.id} className="p-2 bg-muted rounded-lg text-sm space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Move className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <span className="font-medium truncate">{zone.name}</span>
-                      <span className="text-muted-foreground text-xs shrink-0">
-                        ({ZONE_PURPOSES.find((p) => p.value === zone.purpose)?.label})
-                      </span>
-                      {zone.side && (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded shrink-0">
-                          {zone.side === "front" ? "Vorne" : "Rücken"}
-                        </span>
-                      )}
-                      <span className="text-muted-foreground text-xs ml-auto shrink-0">
-                        {Math.round(zone.width)}% x {Math.round(zone.height)}%
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0 text-red-500 shrink-0"
-                        onClick={() => removeZone(zone.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                    {/* Stil-Details (nur wenn KI-Analyse Daten vorhanden) */}
-                    {(zone.textStyle || zone.fontColor) && (
-                      <div className="flex items-center gap-2 pl-8 flex-wrap">
-                        {zone.textStyle === "arc" && (
-                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">
-                            ⌒ Bogen {zone.arcDegree}°
-                          </span>
-                        )}
-                        {zone.textStyle === "straight" && (
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                            → Gerade
-                          </span>
-                        )}
-                        {zone.fontColor && (
-                          <span className="text-[10px] flex items-center gap-1">
-                            <span className="w-3 h-3 rounded-full border inline-block" style={{ backgroundColor: zone.fontColor }} />
-                            {zone.fontColor}
-                          </span>
-                        )}
-                        {zone.outlineColor && zone.outlineColor !== "none" && (
-                          <span className="text-[10px] flex items-center gap-1">
-                            <span className="w-3 h-3 rounded-full border inline-block" style={{ backgroundColor: zone.outlineColor }} />
-                            Outline {zone.outlineWidth}%
-                          </span>
-                        )}
-                        {zone.fontStyle && (
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                            {zone.fontStyle} / {zone.fontWeight}
-                          </span>
-                        )}
-                      </div>
-                    )}
+            ) : (
+              <div className="space-y-2">
+                {dpiWarning && (
+                  <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    {dpiWarning}
                   </div>
-                ))}
+                )}
+                <div
+                  ref={leftCanvasRef}
+                  className="relative border rounded-lg overflow-hidden bg-gray-100"
+                >
+                  <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
+                  {/* Zonen auf Vorlage anzeigen (nicht editierbar, nur Anzeige) */}
+                  {zones.map((zone) => renderZoneOverlay(zone, false))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setImageUrl(null);
+                    setImageStorageKey(null);
+                    setZones([]);
+                  }}
+                >
+                  Bild ersetzen
+                </Button>
               </div>
             )}
           </div>
+
+          {/* ─── PFEIL in der Mitte (nur Desktop) ─── */}
+          {/* Wird durch das Grid-Layout implizit getrennt */}
+
+          {/* ─── RECHTE SEITE: Unser Produkt mit kopierten Positionen ─── */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Unser Produkt (Ergebnis)</Label>
+              <Button size="sm" variant="outline" onClick={() => setAddingZone(true)}>
+                <Plus className="w-4 h-4 mr-1" />
+                Zone hinzufügen
+              </Button>
+            </div>
+
+            {!selectedProductId ? (
+              <div className="border-2 border-dashed rounded-lg p-8 text-center bg-gray-50 min-h-[300px] flex flex-col items-center justify-center">
+                <ImageIcon className="w-10 h-10 mb-3 text-gray-300" />
+                <p className="text-sm font-medium text-gray-500">
+                  Bitte wählen Sie oben ein Zielprodukt aus
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Die erkannten Positionen werden auf dieses Produkt übertragen
+                </p>
+              </div>
+            ) : (
+              <div
+                ref={rightCanvasRef}
+                className="relative border rounded-lg overflow-hidden bg-gray-100 touch-none"
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleMouseUp}
+              >
+                {/* Produkt-Bild (Part-Bild) */}
+                {activePart?.imageUrl ? (
+                  <img
+                    src={storageUrl(activePart.imageUrl)}
+                    alt={activePart?.name || "Produkt"}
+                    className="w-full h-auto"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="w-full aspect-[3/4] bg-white flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Kein Bild für dieses Teil</p>
+                  </div>
+                )}
+
+                {/* 1:1 kopierte Zonen auf unserem Produkt (editierbar) */}
+                {zones.map((zone) => renderZoneOverlay(zone, true))}
+
+                {/* Übertragungspfeil-Overlay wenn Zonen vorhanden */}
+                {zones.length > 0 && imageUrl && (
+                  <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] px-2 py-1 rounded font-medium">
+                    {zones.length} Zonen übertragen
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ─── Zonen-Liste (unter dem Split-View) ─── */}
+        {zones.length > 0 && (
+          <div className="space-y-2">
+            <Label>Erkannte Zonen ({zones.length})</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+              {zones.map((zone) => (
+                <div key={zone.id} className="p-2 bg-muted rounded-lg text-sm space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Move className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="font-medium truncate text-xs">{zone.name}</span>
+                    <span className="text-muted-foreground text-[10px] shrink-0">
+                      ({ZONE_PURPOSES.find((p) => p.value === zone.purpose)?.label})
+                    </span>
+                    {zone.side && (
+                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1 py-0.5 rounded shrink-0">
+                        {zone.side === "front" ? "V" : "R"}
+                      </span>
+                    )}
+                    <span className="text-muted-foreground text-[10px] ml-auto shrink-0">
+                      {Math.round(zone.x)}%, {Math.round(zone.y)}% | {Math.round(zone.width)}%x{Math.round(zone.height)}%
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-5 w-5 p-0 text-red-500 shrink-0"
+                      onClick={() => removeZone(zone.id)}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  {(zone.textStyle || zone.fontColor) && (
+                    <div className="flex items-center gap-1.5 pl-6 flex-wrap">
+                      {zone.textStyle === "arc" && (
+                        <span className="text-[9px] bg-purple-100 text-purple-700 px-1 py-0.5 rounded">⌒ Bogen {zone.arcDegree}°</span>
+                      )}
+                      {zone.textStyle === "straight" && (
+                        <span className="text-[9px] bg-gray-100 text-gray-600 px-1 py-0.5 rounded">→ Gerade</span>
+                      )}
+                      {zone.fontColor && (
+                        <span className="text-[9px] flex items-center gap-0.5">
+                          <span className="w-2.5 h-2.5 rounded-full border inline-block" style={{ backgroundColor: zone.fontColor }} />
+                          {zone.fontColor}
+                        </span>
+                      )}
+                      {zone.outlineColor && zone.outlineColor !== "none" && (
+                        <span className="text-[9px] flex items-center gap-0.5">
+                          <span className="w-2.5 h-2.5 rounded-full border inline-block" style={{ backgroundColor: zone.outlineColor }} />
+                          Outline
+                        </span>
+                      )}
+                      {zone.fontStyle && (
+                        <span className="text-[9px] bg-gray-100 text-gray-600 px-1 py-0.5 rounded">{zone.fontStyle}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
-        {/* Aktionen */}
+        {/* ─── Aktionen ─── */}
         <div className="flex gap-3 pt-4 border-t">
           {onCancel && (
             <Button variant="outline" onClick={onCancel}>
-              Abbrechen
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Zurück
             </Button>
           )}
-          <Button onClick={handleSave} disabled={saving || !imageUrl || !templateName.trim()} className="ml-auto">
+          <Button
+            onClick={handleSave}
+            disabled={saving || !imageUrl || !templateName.trim() || !selectedProductId}
+            className="ml-auto"
+          >
             <Save className="w-4 h-4 mr-2" />
             {saving ? "Wird gespeichert..." : "Vorlage speichern"}
           </Button>

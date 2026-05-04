@@ -3544,9 +3544,17 @@ WICHTIG:
         // Berechtigungsprüfung
         await requireOrgMember(ctx.user.id, input.orgId);
 
-        // Design laden
+        // Design laden (enthält zonesConfig = Record<zoneId, ZoneContent>)
         const design = await getSavedDesign(input.designId);
         if (!design) throw new TRPCError({ code: "NOT_FOUND", message: "Design nicht gefunden" });
+
+        // Produkt laden (enthält templateId)
+        const product = await getProductById(design.productId);
+        if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Produkt nicht gefunden" });
+
+        // Template finden für Sportart
+        const tmpl = product.templateId ? TEXTIL_TEMPLATES.find(t => t.id === product.templateId) : null;
+        const sport = (tmpl?.sport || "fussball") as SportCode;
 
         // Spieler laden
         const player = await getPlayerById(input.playerId);
@@ -3560,34 +3568,43 @@ WICHTIG:
         const org = await getOrganizationById(input.orgId);
         if (!org) throw new TRPCError({ code: "NOT_FOUND", message: "Organisation nicht gefunden" });
 
-        // Sport und Geschlecht bestimmen
-        const sport = (design.sport || "fussball") as SportCode;
         const gender = genderFromTeamCategory(team.kategorie || "herren");
         const playerSize = (player.size || "L") as SizeCode;
 
-        // Design-Konfiguration parsen
-        const designConfig = typeof design.config === "string" ? JSON.parse(design.config) : design.config;
+        // zonesConfig aus dem Design parsen: Record<zoneId, ZoneContent>
+        const zonesConfig: Record<string, any> = typeof design.zonesConfig === "string"
+          ? JSON.parse(design.zonesConfig)
+          : (design.zonesConfig as Record<string, any>) || {};
 
-        // Parts aus dem Design extrahieren und mit Spielerdaten befüllen
+        // colorsConfig aus dem Design parsen
+        const colorsConfig: any = typeof design.colorsConfig === "string"
+          ? JSON.parse(design.colorsConfig as string)
+          : design.colorsConfig || {};
+
+        // Produkt-Parts aus der DB laden
+        const dbParts = await listPartsByProduct(product.id);
+        // Produkt-Zonen aus der DB laden
+        const dbZones = await listZonesByProduct(product.id);
+
+        // Template-Parts für realWidthCm/realHeightCm
+        const templateParts = tmpl?.parts || [];
+
+        // Parts zusammenbauen
         const parts: PrintSheetConfig[] = [];
-        const partMappings = [
-          { key: "vorderteil", label: "Vorderseite" },
-          { key: "rueckteil", label: "Rückseite" },
-          { key: "aermel_links", label: "Ärmel Links" },
-          { key: "aermel_rechts", label: "Ärmel Rechts" },
-        ];
 
-        for (const mapping of partMappings) {
-          const partConfig = designConfig?.parts?.[mapping.key];
-          if (!partConfig) continue;
+        for (const dbPart of dbParts) {
+          // Template-Part finden für reale Maße
+          const tmplPart = templateParts.find(tp => tp.key === dbPart.key);
+          const baseWidthCm = tmplPart?.realWidthCm || 49;
+          const baseHeightCm = tmplPart?.realHeightCm || 68;
 
           // Maße für die Spielergröße berechnen
           const dims = getSizeDimensions(sport, playerSize, gender);
-          const isBody = mapping.key === "vorderteil" || mapping.key === "rueckteil";
-          const isSleeve = mapping.key.includes("aermel");
+          const isBody = dbPart.key === "vorderteil" || dbPart.key === "rueckteil";
+          const isSleeve = dbPart.key.includes("aermel");
 
-          let widthCm = partConfig.realWidthCm || 55;
-          let heightCm = partConfig.realHeightCm || 72;
+          let widthCm = baseWidthCm;
+          let heightCm = baseHeightCm;
 
           if (dims) {
             if (isBody) {
@@ -3599,28 +3616,34 @@ WICHTIG:
             }
           }
 
-          // Zonen aus dem Design extrahieren
-          const rawZones: PrintZone[] = (partConfig.zones || []).map((z: any) => ({
-            purpose: z.purpose || "custom",
-            content: z.content || z.text || "",
-            posXPercent: z.x ?? z.posXPercent ?? 0,
-            posYPercent: z.y ?? z.posYPercent ?? 0,
-            widthPercent: z.width ?? z.widthPercent ?? 10,
-            heightPercent: z.height ?? z.heightPercent ?? 10,
-            textStyle: z.textStyle || "straight",
-            arcDegree: z.arcDegree || 0,
-            fontColor: z.fontColor || "#000000",
-            outlineColor: z.outlineColor || "none",
-            outlineWidth: z.outlineWidth || 0,
-            fontStyle: z.fontStyle || "block",
-            fontWeight: z.fontWeight || "bold",
-            fontFamily: z.fontFamily || undefined,
-            fontSize: z.fontSize || 80,
-            textAlign: z.textAlign || "center",
-            rotation: z.rotation || 0,
-            isImage: z.isImage || z.purpose === "logo" || z.purpose === "clubLogo",
-            imageUrl: z.imageUrl || undefined,
-          }));
+          // Zonen für diesen Part filtern
+          const partZones = dbZones.filter(z => z.partId === dbPart.id);
+
+          // Zonen zusammenbauen: DB-Zone (Position) + zonesConfig (Inhalt)
+          const rawZones: PrintZone[] = partZones.map((dbZone) => {
+            const content = zonesConfig[String(dbZone.id)] || {};
+            return {
+              purpose: dbZone.purpose || "custom",
+              content: content.text || "",
+              posXPercent: dbZone.posX,
+              posYPercent: dbZone.posY,
+              widthPercent: dbZone.width,
+              heightPercent: dbZone.height,
+              textStyle: content.textStyle || "straight",
+              arcDegree: content.arcDegree || 0,
+              fontColor: content.fontColor || dbZone.fontColor || "#000000",
+              outlineColor: content.outlineColor || "none",
+              outlineWidth: content.outlineWidth || 0,
+              fontStyle: content.fontStyle || "block",
+              fontWeight: content.fontWeight || dbZone.fontWeight || "bold",
+              fontFamily: content.fontFamily || dbZone.fontFamily || undefined,
+              fontSize: content.fontSize || dbZone.fontSize || 80,
+              textAlign: (content.textAlign || dbZone.textAlign || "center") as "left" | "center" | "right",
+              rotation: dbZone.rotation || 0,
+              isImage: content.imageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
+              imageUrl: content.imageUrl || undefined,
+            };
+          });
 
           // Spielerdaten in die Zonen einfüllen
           const playerData: PlayerPrintData = {
@@ -3637,8 +3660,8 @@ WICHTIG:
           const filledZones = fillZonesForPlayer(rawZones, playerData, org.name);
 
           parts.push({
-            partKey: mapping.key,
-            partLabel: mapping.label,
+            partKey: dbPart.key,
+            partLabel: dbPart.label,
             realWidthCm: widthCm,
             realHeightCm: heightCm,
             zones: filledZones,
@@ -3703,10 +3726,39 @@ WICHTIG:
         await requireOrgMember(ctx.user.id, input.orgId);
 
         // Alle Spieler des Teams laden
-        const players = await listPlayersByTeam(input.teamId);
-        if (players.length === 0) {
+        const teamPlayers = await listPlayersByTeam(input.teamId);
+        if (teamPlayers.length === 0) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Keine Spieler im Team" });
         }
+
+        // Design laden (enthält zonesConfig = Record<zoneId, ZoneContent>)
+        const design = await getSavedDesign(input.designId);
+        if (!design) throw new TRPCError({ code: "NOT_FOUND", message: "Design nicht gefunden" });
+
+        // Produkt laden (enthält templateId)
+        const product = await getProductById(design.productId);
+        if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Produkt nicht gefunden" });
+
+        // Template finden für Sportart
+        const tmpl = product.templateId ? TEXTIL_TEMPLATES.find(t => t.id === product.templateId) : null;
+        const sport = (tmpl?.sport || "fussball") as SportCode;
+
+        // Team und Organisation laden
+        const team = await getTeamById(input.teamId);
+        const org = await getOrganizationById(input.orgId);
+        if (!team || !org) throw new TRPCError({ code: "NOT_FOUND", message: "Team oder Organisation nicht gefunden" });
+
+        const gender = genderFromTeamCategory(team.kategorie || "herren");
+
+        // zonesConfig aus dem Design parsen: Record<zoneId, ZoneContent>
+        const zonesConfig: Record<string, any> = typeof design.zonesConfig === "string"
+          ? JSON.parse(design.zonesConfig)
+          : (design.zonesConfig as Record<string, any>) || {};
+
+        // Produkt-Parts und -Zonen aus der DB laden (einmalig, nicht pro Spieler)
+        const dbParts = await listPartsByProduct(product.id);
+        const dbZones = await listZonesByProduct(product.id);
+        const templateParts = tmpl?.parts || [];
 
         const allResults: {
           player: { id: number; name: string; number: string | null; size: string };
@@ -3714,40 +3766,24 @@ WICHTIG:
         }[] = [];
 
         // Für jeden Spieler Druckbögen generieren
-        for (const player of players) {
+        for (const player of teamPlayers) {
           try {
-            // Design laden
-            const design = await getSavedDesign(input.designId);
-            if (!design) continue;
-
-            const team = await getTeamById(player.teamId);
-            const org = await getOrganizationById(input.orgId);
-            if (!team || !org) continue;
-
-            const sport = (design.sport || "fussball") as SportCode;
-            const gender = genderFromTeamCategory(team.kategorie || "herren");
             const playerSize = (player.size || "L") as SizeCode;
 
-            const designConfig = typeof design.config === "string" ? JSON.parse(design.config) : design.config;
-
+            // Parts zusammenbauen (gleiche Logik wie generateForPlayer)
             const parts: PrintSheetConfig[] = [];
-            const partMappings = [
-              { key: "vorderteil", label: "Vorderseite" },
-              { key: "rueckteil", label: "Rückseite" },
-              { key: "aermel_links", label: "Ärmel Links" },
-              { key: "aermel_rechts", label: "Ärmel Rechts" },
-            ];
 
-            for (const mapping of partMappings) {
-              const partConfig = designConfig?.parts?.[mapping.key];
-              if (!partConfig) continue;
+            for (const dbPart of dbParts) {
+              const tmplPart = templateParts.find(tp => tp.key === dbPart.key);
+              const baseWidthCm = tmplPart?.realWidthCm || 49;
+              const baseHeightCm = tmplPart?.realHeightCm || 68;
 
               const dims = getSizeDimensions(sport, playerSize, gender);
-              const isBody = mapping.key === "vorderteil" || mapping.key === "rueckteil";
-              const isSleeve = mapping.key.includes("aermel");
+              const isBody = dbPart.key === "vorderteil" || dbPart.key === "rueckteil";
+              const isSleeve = dbPart.key.includes("aermel");
 
-              let widthCm = partConfig.realWidthCm || 55;
-              let heightCm = partConfig.realHeightCm || 72;
+              let widthCm = baseWidthCm;
+              let heightCm = baseHeightCm;
 
               if (dims) {
                 if (isBody) {
@@ -3759,28 +3795,36 @@ WICHTIG:
                 }
               }
 
-              const rawZones: PrintZone[] = (partConfig.zones || []).map((z: any) => ({
-                purpose: z.purpose || "custom",
-                content: z.content || z.text || "",
-                posXPercent: z.x ?? z.posXPercent ?? 0,
-                posYPercent: z.y ?? z.posYPercent ?? 0,
-                widthPercent: z.width ?? z.widthPercent ?? 10,
-                heightPercent: z.height ?? z.heightPercent ?? 10,
-                textStyle: z.textStyle || "straight",
-                arcDegree: z.arcDegree || 0,
-                fontColor: z.fontColor || "#000000",
-                outlineColor: z.outlineColor || "none",
-                outlineWidth: z.outlineWidth || 0,
-                fontStyle: z.fontStyle || "block",
-                fontWeight: z.fontWeight || "bold",
-                fontFamily: z.fontFamily || undefined,
-                fontSize: z.fontSize || 80,
-                textAlign: z.textAlign || "center",
-                rotation: z.rotation || 0,
-                isImage: z.isImage || z.purpose === "logo" || z.purpose === "clubLogo",
-                imageUrl: z.imageUrl || undefined,
-              }));
+              // Zonen für diesen Part filtern
+              const partZones = dbZones.filter(z => z.partId === dbPart.id);
 
+              // Zonen zusammenbauen: DB-Zone (Position) + zonesConfig (Inhalt)
+              const rawZones: PrintZone[] = partZones.map((dbZone) => {
+                const content = zonesConfig[String(dbZone.id)] || {};
+                return {
+                  purpose: dbZone.purpose || "custom",
+                  content: content.text || "",
+                  posXPercent: dbZone.posX,
+                  posYPercent: dbZone.posY,
+                  widthPercent: dbZone.width,
+                  heightPercent: dbZone.height,
+                  textStyle: content.textStyle || "straight",
+                  arcDegree: content.arcDegree || 0,
+                  fontColor: content.fontColor || dbZone.fontColor || "#000000",
+                  outlineColor: content.outlineColor || "none",
+                  outlineWidth: content.outlineWidth || 0,
+                  fontStyle: content.fontStyle || "block",
+                  fontWeight: content.fontWeight || dbZone.fontWeight || "bold",
+                  fontFamily: content.fontFamily || dbZone.fontFamily || undefined,
+                  fontSize: content.fontSize || dbZone.fontSize || 80,
+                  textAlign: (content.textAlign || dbZone.textAlign || "center") as "left" | "center" | "right",
+                  rotation: dbZone.rotation || 0,
+                  isImage: content.imageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
+                  imageUrl: content.imageUrl || undefined,
+                };
+              });
+
+              // Spielerdaten in die Zonen einfüllen
               const playerData: PlayerPrintData = {
                 playerId: player.id,
                 playerName: player.name,
@@ -3795,14 +3839,15 @@ WICHTIG:
               const filledZones = fillZonesForPlayer(rawZones, playerData, org.name);
 
               parts.push({
-                partKey: mapping.key,
-                partLabel: mapping.label,
+                partKey: dbPart.key,
+                partLabel: dbPart.label,
                 realWidthCm: widthCm,
                 realHeightCm: heightCm,
                 zones: filledZones,
               });
             }
 
+            // Druckbögen generieren
             const printConfig: PrintJobConfig = {
               clubName: org.name,
               sport,
@@ -3862,7 +3907,7 @@ WICHTIG:
         return {
           teamId: input.teamId,
           designId: input.designId,
-          totalPlayers: players.length,
+          totalPlayers: teamPlayers.length,
           successCount: allResults.filter(r => r.sheets.length > 0).length,
           results: allResults,
         };

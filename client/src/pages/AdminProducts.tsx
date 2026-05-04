@@ -534,9 +534,9 @@ export default function AdminProducts() {
                 className="group overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div className="aspect-[4/3] bg-muted/20 overflow-hidden relative">
-                  {product.imageUrl ? (
+                  {product.frontImageUrl ? (
                     <img
-                      src={storageUrl(product.imageUrl)}
+                      src={storageUrl(product.frontImageUrl)}
                       alt={product.name}
                       className="w-full h-full object-contain p-4"
                     />
