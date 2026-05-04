@@ -15,9 +15,9 @@ describe("storageUrl utility", () => {
       .toBe("/api/storage-proxy/trikot_vorderteil_58c100c1.png");
   });
 
-  it("should transform SVG storage URLs", () => {
-    expect(storageUrl("/manus-storage/trikot_svg_vorderteil_9c36a538.svg"))
-      .toBe("/api/storage-proxy/trikot_svg_vorderteil_9c36a538.svg");
+  it("should transform basketball image URLs", () => {
+    expect(storageUrl("/manus-storage/basketball_front_81321f1e.png"))
+      .toBe("/api/storage-proxy/basketball_front_81321f1e.png");
   });
 
   it("should not transform non-storage URLs", () => {
@@ -58,17 +58,16 @@ describe("storageUrl utility", () => {
 });
 
 describe("/api/storage-proxy/ route", () => {
-  it("should serve files through the proxy route", async () => {
-    // Test that the route responds with 200 for a known file
-    const response = await fetch("http://localhost:3000/api/storage-proxy/trikot_svg_vorderteil_9c36a538.svg");
+  it("should serve PNG files through the proxy route", async () => {
+    const response = await fetch("http://localhost:3000/api/storage-proxy/trikot_vorderteil_58c100c1.png");
     expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toContain("image/svg+xml");
+    expect(response.headers.get("content-type")).toContain("image/png");
     expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
     expect(response.headers.get("access-control-allow-origin")).toBe("*");
   });
 
-  it("should serve PNG files through the proxy route", async () => {
-    const response = await fetch("http://localhost:3000/api/storage-proxy/trikot_vorderteil_58c100c1.png");
+  it("should serve basketball front image through the proxy route", async () => {
+    const response = await fetch("http://localhost:3000/api/storage-proxy/basketball_front_81321f1e.png");
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("image/png");
   });

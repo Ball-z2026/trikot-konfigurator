@@ -475,7 +475,6 @@ export default function CustomerConfigurator() {
   // Bekleidungs-Templates (Aufwärmshirt, Zip-Jacke, Half-Zipper, Warme Jacke, Trainingshose)
   // haben farbige PNGs (z.B. dunkelblau). Für diese brauchen wir 'color' blend mode.
   // Trikot-Templates haben weiße PNGs und brauchen 'multiply' blend mode.
-  // SVG-basierte Templates (z.B. fussball_dtf_svg) haben ebenfalls farbige Bilder.
   const isColoredBase = useMemo(() => {
     if (!productData?.templateId) return false;
     const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
@@ -487,8 +486,6 @@ export default function CustomerConfigurator() {
     }
     // Bekleidungs-Templates haben farbige PNGs
     if (tmpl.category === 'Bekleidung') return true;
-    // SVG-basierte Templates haben farbige Bilder (vom Proxy als PNG geliefert)
-    if (tmpl.parts?.[0]?.imageUrl?.includes('.svg')) return true;
     return false;
   }, [productData?.templateId, productData]);
   // Legacy alias for backward compatibility

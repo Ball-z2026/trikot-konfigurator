@@ -533,22 +533,26 @@ export default function AdminProducts() {
                 key={product.id}
                 className="group overflow-hidden hover:shadow-md transition-shadow"
               >
-                <div className="aspect-[4/3] bg-muted/20 overflow-hidden relative">
-                  {product.frontImageUrl ? (
-                    <img
-                      src={storageUrl(product.frontImageUrl)}
-                      alt={product.name}
-                      className="w-full h-full object-contain p-4"
-                    />
-                  ) : product.templateId ? (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Shirt className="w-16 h-16 text-primary/30" />
-                    </div>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <FileText className="w-12 h-12 text-muted-foreground/30" />
-                    </div>
-                  )}
+                <div className="aspect-[4/3] bg-[#b8bcc2] overflow-hidden relative">
+                  {(() => {
+                    const imageUrl = product.frontImageUrl
+                      || (product.templateId && TEXTIL_TEMPLATES.find((t: any) => t.id === product.templateId)?.previewUrl)
+                      || null;
+                    if (imageUrl) {
+                      return (
+                        <img
+                          src={storageUrl(imageUrl)}
+                          alt={product.name}
+                          className="w-full h-full object-contain p-4"
+                        />
+                      );
+                    }
+                    return (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FileText className="w-12 h-12 text-muted-foreground/30" />
+                      </div>
+                    );
+                  })()}
                   <div className="absolute top-2 right-2 flex gap-1">
                     {product.published ? (
                       <Badge variant="default" className="text-xs">

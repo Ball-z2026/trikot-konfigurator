@@ -7025,3 +7025,48 @@
 [2026-05-04T04:49:31.755Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-04T04:49:31.759Z] [Auth] Missing session cookie
 [2026-05-04T04:49:31.765Z] [Auth] Missing session cookie
+[2026-05-04T05:01:34.155Z] 1:01:34 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/ProductSelect.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-04T05:01:34.234Z] 1:01:34 AM [tsx] change in ./shared/templates.ts Restarting...
+[2026-05-04T05:01:35.796Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T05:01:36.362Z] Server running on http://localhost:3000/
+[2026-05-04T05:02:02.112Z] 1:02:02 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/ProductSelect.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-04T05:02:02.188Z] 1:02:02 AM [tsx] change in ./shared/templates.ts Restarting...
+[2026-05-04T05:02:03.631Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T05:02:04.175Z] Server running on http://localhost:3000/
+[2026-05-04T05:02:23.662Z] 1:02:23 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-04T05:29:53.487Z] [Auth] Missing session cookie
+[2026-05-04T05:29:59.409Z] [Auth] Missing session cookie
+[2026-05-04T05:30:05.382Z] [Auth] Missing session cookie
+[2026-05-04T05:32:24.409Z] [Auth] Missing session cookie
+[2026-05-04T05:32:30.064Z] [Auth] Missing session cookie
+[2026-05-04T05:32:35.627Z] [Auth] Missing session cookie
+[2026-05-04T05:35:15.944Z] 1:35:15 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-04T05:35:56.780Z] 1:35:56 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-04T05:36:04.918Z] [Auth] Missing session cookie
+[2026-05-04T05:37:38.433Z] 1:37:38 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/ProductSelect.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-04T05:37:38.533Z] 1:37:38 AM [tsx] change in ./shared/templates.ts Restarting...
+[2026-05-04T05:37:40.106Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T05:37:40.760Z] Server running on http://localhost:3000/
+[2026-05-04T05:37:49.778Z] [Auth] Missing session cookie
+[2026-05-04T05:39:25.614Z] Dev server process group stopped
+[2026-05-04T05:39:25.656Z] Dev server exited with code -15
+[2026-05-04T05:39:28.660Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-04T05:39:30.437Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T05:39:31.120Z] Server running on http://localhost:3000/
+[2026-05-04T05:39:42.441Z] [Auth] Missing session cookie
+[2026-05-04T05:39:48.444Z] [Auth] Missing session cookie
+[2026-05-04T05:39:54.583Z] [Auth] Missing session cookie
+[2026-05-04T05:40:31.784Z] [Auth] Missing session cookie
+[2026-05-04T05:40:39.695Z] [Auth] Missing session cookie
+[2026-05-04T05:40:39.699Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.212Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.261Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.269Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.278Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.284Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.291Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.298Z] [Auth] Missing session cookie
+[2026-05-04T05:40:40.303Z] [Auth] Missing session cookie
+[2026-05-04T05:40:47.296Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-04T05:40:47.300Z] [Auth] Missing session cookie
+[2026-05-04T05:40:47.306Z] [Auth] Missing session cookie

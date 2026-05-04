@@ -1555,6 +1555,10 @@
 - [ - [x] BUG: Vorschau im Produktdesigner fehlt (konnte nicht reproduziert werden - funktioniert auf Dev-Server)hlen (Trikot-Vorschau nicht sichtbar)- [x] BUG: KI-Analyse-Tool fehlt im Produktdesigner (war im Konfigurator, jetzt in Produktdesigner verschoben)t/nicht erreichbar
 - [x] BUG: Basketball-Trikot erstellen → 404 (konnte nicht reproduziert werden - funktioniert auf Dev-Server)
 - [ ] REGEL: Nichts eigenständig löschen – bestehende Features müssen erhalten bleiben
+- [x] SVG-Bilder durch echte PNG-Fotos ersetzt (alle Produkte: Trikots + Bekleidung)
+- [x] Vorschaubilder im Produktdesigner und Konfigurator konsistent (Template previewUrl Fallback)
+- [x] Sportartspezifische Bilder für Sublimation-Templates (Fußball, Handball, Volleyball, Basketball)
+- [ ] Touch-Support im Produktdesigner funktioniert nicht (Zonen-Drag&Drop auf Mobilgeräten)
 
 ## Architektur-Korrektur: KI-Analyse gehört in den Produktdesigner
 - [x] KI-Analyse-Tool (TemplateUpload) aus dem Konfigurator (ProductSelect) entfernen
