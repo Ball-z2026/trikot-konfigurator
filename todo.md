@@ -1558,7 +1558,7 @@
 - [x] SVG-Bilder durch echte PNG-Fotos ersetzt (alle Produkte: Trikots + Bekleidung)
 - [x] Vorschaubilder im Produktdesigner und Konfigurator konsistent (Template previewUrl Fallback)
 - [x] Sportartspezifische Bilder für Sublimation-Templates (Fußball, Handball, Volleyball, Basketball)
-- [ ] Touch-Support im Produktdesigner funktioniert nicht (Zonen-Drag&Drop auf Mobilgeräten)
+- [x] Touch-Support im Produktdesigner funktioniert nicht (Zonen-Drag&Drop auf Mobilgeräten) → Migriert auf Pointer Events API
 
 ## Architektur-Korrektur: KI-Analyse gehört in den Produktdesigner
 - [x] KI-Analyse-Tool (TemplateUpload) aus dem Konfigurator (ProductSelect) entfernen

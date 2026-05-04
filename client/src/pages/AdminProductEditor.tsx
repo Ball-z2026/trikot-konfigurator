@@ -194,6 +194,8 @@ export default function AdminProductEditor() {
     x: number; y: number; zoneX: number; zoneY: number; zoneW: number; zoneH: number;
   } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const dragStateRef = useRef<{ dragging: number | null; resizing: number | null; startX: number; startY: number; zoneX: number; zoneY: number; zoneW: number; zoneH: number }>({ dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0 });
+  const rafRef = useRef<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [colorPalette, setColorPalette] = useState<string[]>([]);
@@ -289,37 +291,39 @@ export default function AdminProductEditor() {
     [updatePartMut]
   );
 
-  // ─── Zone Drag & Drop (Mouse + Touch) ───────────────────────────────────────────────────────
-  const getRelativePosition = useCallback((e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) => {
+  // ─── Zone Drag & Drop (Pointer Events API - iOS Safari kompatibel) ─────────────────────────
+  const getRelativePosition = useCallback((e: React.PointerEvent | PointerEvent) => {
     if (!canvasRef.current) return { x: 0, y: 0 };
     const rect = canvasRef.current.getBoundingClientRect();
-    let clientX: number, clientY: number;
-    if ("touches" in e) {
-      const touch = e.touches[0] || (e as TouchEvent).changedTouches?.[0];
-      if (!touch) return { x: 0, y: 0 };
-      clientX = touch.clientX;
-      clientY = touch.clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
     return {
-      x: ((clientX - rect.left) / rect.width) * 100,
-      y: ((clientY - rect.top) / rect.height) * 100,
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
     };
   }, []);
 
   const handleZonePointerDown = useCallback(
-    (e: React.MouseEvent | React.TouchEvent, zoneId: number, isResize = false) => {
+    (e: React.PointerEvent, zoneId: number, isResize = false) => {
       e.preventDefault();
       e.stopPropagation();
       const zone = localZones.find((z) => z.id === zoneId);
       if (!zone) return;
+      // Capture pointer for reliable tracking on touch
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
       // Haptic feedback on touch
-      if ("touches" in e && navigator.vibrate) {
+      if (e.pointerType === "touch" && navigator.vibrate) {
         navigator.vibrate(15);
       }
       const pos = getRelativePosition(e);
+      dragStateRef.current = {
+        dragging: isResize ? null : zoneId,
+        resizing: isResize ? zoneId : null,
+        startX: pos.x,
+        startY: pos.y,
+        zoneX: zone.posX,
+        zoneY: zone.posY,
+        zoneW: zone.width,
+        zoneH: zone.height,
+      };
       setDragStart({ x: pos.x, y: pos.y, zoneX: zone.posX, zoneY: zone.posY, zoneW: zone.width, zoneH: zone.height });
       if (isResize) setResizingZone(zoneId);
       else setDraggingZone(zoneId);
@@ -329,34 +333,43 @@ export default function AdminProductEditor() {
   );
 
   useEffect(() => {
-    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
-      if (!dragStart) return;
-      if ("touches" in e) e.preventDefault();
-      const pos = getRelativePosition(e);
-      const dx = pos.x - dragStart.x;
-      const dy = pos.y - dragStart.y;
-      if (draggingZone !== null) {
-        setLocalZones((prev) =>
-          prev.map((z) =>
-            z.id === draggingZone
-              ? { ...z, posX: Math.max(0, Math.min(100 - z.width, dragStart.zoneX + dx)), posY: Math.max(0, Math.min(100 - z.height, dragStart.zoneY + dy)) }
-              : z
-          )
-        );
-      }
-      if (resizingZone !== null) {
-        setLocalZones((prev) =>
-          prev.map((z) =>
-            z.id === resizingZone
-              ? { ...z, width: Math.max(3, Math.min(100 - z.posX, dragStart.zoneW + dx)), height: Math.max(3, Math.min(100 - z.posY, dragStart.zoneH + dy)) }
-              : z
-          )
-        );
-      }
+    const handlePointerMove = (e: PointerEvent) => {
+      const ds = dragStateRef.current;
+      if (ds.dragging === null && ds.resizing === null) return;
+      e.preventDefault();
+      const canvasEl = canvasRef.current;
+      if (!canvasEl) return;
+      const rect = canvasEl.getBoundingClientRect();
+      const posX = ((e.clientX - rect.left) / rect.width) * 100;
+      const posY = ((e.clientY - rect.top) / rect.height) * 100;
+      const dx = posX - ds.startX;
+      const dy = posY - ds.startY;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        if (ds.dragging !== null) {
+          setLocalZones((prev) =>
+            prev.map((z) =>
+              z.id === ds.dragging
+                ? { ...z, posX: Math.max(0, Math.min(100 - z.width, ds.zoneX + dx)), posY: Math.max(0, Math.min(100 - z.height, ds.zoneY + dy)) }
+                : z
+            )
+          );
+        }
+        if (ds.resizing !== null) {
+          setLocalZones((prev) =>
+            prev.map((z) =>
+              z.id === ds.resizing
+                ? { ...z, width: Math.max(3, Math.min(100 - z.posX, ds.zoneW + dx)), height: Math.max(3, Math.min(100 - z.posY, ds.zoneH + dy)) }
+                : z
+            )
+          );
+        }
+      });
     };
 
     const handlePointerUp = () => {
-      if (draggingZone !== null || resizingZone !== null) {
+      const ds = dragStateRef.current;
+      if (ds.dragging !== null || ds.resizing !== null) {
         const changedZones = localZones
           .filter((z) => {
             const orig = productData?.zones?.find((oz: any) => oz.id === z.id);
@@ -372,26 +385,24 @@ export default function AdminProductEditor() {
           }));
         if (changedZones.length > 0) bulkUpdatePositions.mutate({ zones: changedZones });
       }
+      dragStateRef.current = { dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0 };
       setDraggingZone(null);
       setResizingZone(null);
       setDragStart(null);
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     };
 
     if (draggingZone !== null || resizingZone !== null) {
-      window.addEventListener("mousemove", handlePointerMove);
-      window.addEventListener("mouseup", handlePointerUp);
-      window.addEventListener("touchmove", handlePointerMove, { passive: false });
-      window.addEventListener("touchend", handlePointerUp);
-      window.addEventListener("touchcancel", handlePointerUp);
+      window.addEventListener("pointermove", handlePointerMove, { passive: false });
+      window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", handlePointerUp);
       return () => {
-        window.removeEventListener("mousemove", handlePointerMove);
-        window.removeEventListener("mouseup", handlePointerUp);
-        window.removeEventListener("touchmove", handlePointerMove);
-        window.removeEventListener("touchend", handlePointerUp);
-        window.removeEventListener("touchcancel", handlePointerUp);
+        window.removeEventListener("pointermove", handlePointerMove);
+        window.removeEventListener("pointerup", handlePointerUp);
+        window.removeEventListener("pointercancel", handlePointerUp);
       };
     }
-  }, [draggingZone, resizingZone, dragStart, localZones, productData, bulkUpdatePositions, getRelativePosition]);
+  }, [draggingZone, resizingZone, localZones, productData, bulkUpdatePositions]);
 
   // ─── Zone update helper ────────────────────────────────────────────────
   const updateLocalZone = (zoneId: number, updates: Partial<ZoneData>) => {
@@ -563,8 +574,7 @@ export default function AdminProductEditor() {
                         transformOrigin: "center center",
                         transition: isBeingDragged ? 'none' : 'all 150ms',
                       }}
-                      onMouseDown={(e) => handleZonePointerDown(e, zone.id)}
-                      onTouchStart={(e) => handleZonePointerDown(e, zone.id)}
+                      onPointerDown={(e) => handleZonePointerDown(e, zone.id)}
                       onClick={(e) => { e.stopPropagation(); setSelectedZoneId(zone.id); }}
                     >
                       {/* Zone Label */}
@@ -602,10 +612,9 @@ export default function AdminProductEditor() {
                       </div>
 
                       {/* Resize Handle */}
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-4 sm:h-4 rounded-sm cursor-se-resize" style={{ backgroundColor: zoneBorderColors[colorIdx] }} onMouseDown={(e) => handleZonePointerDown(e, zone.id, true)}
-                        onTouchStart={(e) => handleZonePointerDown(e, zone.id, true)}>
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-4 sm:h-4 rounded-sm cursor-se-resize" style={{ backgroundColor: zoneBorderColors[colorIdx], touchAction: 'none' }} onPointerDown={(e) => handleZonePointerDown(e, zone.id, true)}>
                         {/* Erweiterter Touch-Bereich */}
-                        <div className="absolute -top-3 -left-3 -right-1 -bottom-1" onMouseDown={(e) => handleZonePointerDown(e, zone.id, true)} onTouchStart={(e) => handleZonePointerDown(e, zone.id, true)} />
+                        <div className="absolute -top-3 -left-3 -right-1 -bottom-1" style={{ touchAction: 'none' }} onPointerDown={(e) => handleZonePointerDown(e, zone.id, true)} />
                       </div>
 
                       {/* Rotation indicator */}

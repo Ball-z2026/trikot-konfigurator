@@ -7070,3 +7070,109 @@
 [2026-05-04T05:40:47.296Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-04T05:40:47.300Z] [Auth] Missing session cookie
 [2026-05-04T05:40:47.306Z] [Auth] Missing session cookie
+[2026-05-04T05:44:52.142Z] 1:44:52 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-04T05:44:52.266Z] 1:44:52 AM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProductEditor.tsx: Unexpected token, expected "," (293:2)
+[2026-05-04T05:44:52.267Z] 
+[2026-05-04T05:44:52.268Z] 291 |     [updatePartMut]
+[2026-05-04T05:44:52.268Z] 292 |   // ─── Zone Drag & Drop (Pointer Events API - iOS Safari kompatibel) ─────────────────────────
+[2026-05-04T05:44:52.268Z] > 293 |   const getRelativePosition = useCallback((e: React.PointerEvent | PointerEvent) => {
+[2026-05-04T05:44:52.269Z] |   ^
+[2026-05-04T05:44:52.269Z] 294 |     if (!canvasRef.current) return { x: 0, y: 0 };
+[2026-05-04T05:44:52.269Z] 295 |     const rect = canvasRef.current.getBoundingClientRect();
+[2026-05-04T05:44:52.270Z] 296 |     return {
+[2026-05-04T05:44:52.270Z] Plugin: vite:react-babel
+[2026-05-04T05:44:52.270Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProductEditor.tsx:293:2
+[2026-05-04T05:44:52.271Z] 291 |      [updatePartMut]
+[2026-05-04T05:44:52.271Z] 292 |    // ─── Zone Drag & Drop (Pointer Events API - iOS Safari kompatibel) ─────────────────────────
+[2026-05-04T05:44:52.271Z] 293 |    const getRelativePosition = useCallback((e: React.PointerEvent | PointerEvent) => {
+[2026-05-04T05:44:52.272Z] |    ^
+[2026-05-04T05:44:52.272Z] 294 |      if (!canvasRef.current) return { x: 0, y: 0 };
+[2026-05-04T05:44:52.272Z] 295 |      const rect = canvasRef.current.getBoundingClientRect();
+[2026-05-04T05:44:52.273Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-04T05:44:52.273Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-04T05:44:52.274Z] at unexpected (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1544:16)
+[2026-05-04T05:44:52.274Z] at expect (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/util.ts:157:12)
+[2026-05-04T05:44:52.274Z] at parseCallExpressionArguments (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1031:14)
+[2026-05-04T05:44:52.275Z] at parseCoverCallAndAsyncArrowHead (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:922:29)
+[2026-05-04T05:44:52.275Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:804:19)
+[2026-05-04T05:44:52.275Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2809:20)
+[2026-05-04T05:44:52.276Z] at parseSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:763:19)
+[2026-05-04T05:44:52.276Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:748:17)
+[2026-05-04T05:44:52.276Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-04T05:44:52.276Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-04T05:44:52.277Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-04T05:44:52.277Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-04T05:44:52.277Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-04T05:44:52.278Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-04T05:44:52.278Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-04T05:44:52.278Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-04T05:44:52.279Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-05-04T05:44:52.279Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3192:16)
+[2026-05-04T05:44:52.279Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-05-04T05:44:52.280Z] at parseVar (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1587:18)
+[2026-05-04T05:44:52.280Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+[2026-05-04T05:44:52.280Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3085:33)
+[2026-05-04T05:44:52.281Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:612:21)
+[2026-05-04T05:44:52.281Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-04T05:44:52.281Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-04T05:44:52.281Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-04T05:44:52.282Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-04T05:44:52.282Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-04T05:44:52.282Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-04T05:44:52.283Z] at parseFunctionBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2621:24)
+[2026-05-04T05:44:52.283Z] at parseFunctionBodyAndFinish (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2590:10)
+[2026-05-04T05:44:52.284Z] at parseFunctionBodyAndFinish (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2609:20)
+[2026-05-04T05:44:52.284Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1695:12)
+[2026-05-04T05:44:52.284Z] at withSmartMixTopicForbiddingContext (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3171:14)
+[2026-05-04T05:44:52.284Z] at parseFunction (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1693:10)
+[2026-05-04T05:44:52.285Z] at parseExportDefaultExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:2570:19)
+[2026-05-04T05:44:52.285Z] at parseExportDefaultExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3076:20)
+[2026-05-04T05:44:52.286Z] at parseExport (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:2452:25)
+[2026-05-04T05:44:52.287Z] at parseExport (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3046:22)
+[2026-05-04T05:44:52.287Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:649:25)
+[2026-05-04T05:44:52.289Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-04T05:44:52.290Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-04T05:44:52.290Z] at parseModuleItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:419:17)
+[2026-05-04T05:44:52.291Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1443:16)
+[2026-05-04T05:44:52.291Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-04T05:44:52.292Z] at parseProgram (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:229:10)
+[2026-05-04T05:44:52.292Z] at parseTopLevel (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:203:25)
+[2026-05-04T05:44:52.293Z] at parse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/index.ts:83:25)
+[2026-05-04T05:44:52.365Z] 1:44:52 AM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProductEditor.tsx: Unexpected token, expected "," (293:2)
+[2026-05-04T05:44:52.366Z] 
+[2026-05-04T05:44:52.367Z] 291 |     [updatePartMut]
+[2026-05-04T05:44:52.367Z] 292 |   // ─── Zone Drag & Drop (Pointer Events API - iOS Safari kompatibel) ─────────────────────────
+[2026-05-04T05:44:52.367Z] > 293 |   const getRelativePosition = useCallback((e: React.PointerEvent | PointerEvent) => {
+[2026-05-04T05:44:52.367Z] |   ^
+[2026-05-04T05:44:52.368Z] 294 |     if (!canvasRef.current) return { x: 0, y: 0 };
+[2026-05-04T05:44:52.368Z] 295 |     const rect = canvasRef.current.getBoundingClientRect();
+[2026-05-04T05:44:52.368Z] 296 |     return {
+[2026-05-04T05:44:52.369Z] Plugin: vite:react-babel
+[2026-05-04T05:44:52.369Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/AdminProductEditor.tsx:293:2
+[2026-05-04T05:44:52.369Z] 291 |      [updatePartMut]
+[2026-05-04T05:44:52.370Z] 292 |    // ─── Zone Drag & Drop (Pointer Events API - iOS Safari kompatibel) ─────────────────────────
+[2026-05-04T05:44:52.370Z] 293 |    const getRelativePosition = useCallback((e: React.PointerEvent | PointerEvent) => {
+[2026-05-04T05:44:52.370Z] |    ^
+[2026-05-04T05:44:52.371Z] 294 |      if (!canvasRef.current) return { x: 0, y: 0 };
+[2026-05-04T05:44:52.371Z] 295 |      const rect = canvasRef.current.getBoundingClientRect();
+[2026-05-04T05:45:05.141Z] 1:45:05 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-04T05:45:18.137Z] 1:45:18 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-04T05:46:08.876Z] 1:46:08 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-04T05:46:13.240Z] Dev server process group stopped
+[2026-05-04T05:46:13.334Z] Dev server exited with code -15
+[2026-05-04T05:46:16.300Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-04T05:46:18.811Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-04T05:46:19.803Z] Server running on http://localhost:3000/
+[2026-05-04T05:46:40.382Z] [Auth] Missing session cookie
+[2026-05-04T05:46:40.386Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.043Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.084Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.091Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.097Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.105Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.112Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.119Z] [Auth] Missing session cookie
+[2026-05-04T05:46:41.128Z] [Auth] Missing session cookie
+[2026-05-04T05:46:48.233Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-04T05:46:48.237Z] [Auth] Missing session cookie
+[2026-05-04T05:46:48.243Z] [Auth] Missing session cookie
