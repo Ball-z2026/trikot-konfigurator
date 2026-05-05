@@ -69,12 +69,18 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
 
       await new Promise((r) => setTimeout(r, 100));
 
+      // Nur den sichtbaren Viewport erfassen (was der User gerade sieht)
       const dataUrl = await toPng(document.body, {
         quality: 0.8,
         pixelRatio: 1,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        style: {
+          transform: `translate(-${window.scrollX}px, -${window.scrollY}px)`,
+        },
         filter: (node) => {
           // Feedback-Widget aus Screenshot ausschließen
-          if (node.id === "beta-feedback-widget") return false;
+          if ((node as HTMLElement).id === "beta-feedback-widget") return false;
           return true;
         },
       });
