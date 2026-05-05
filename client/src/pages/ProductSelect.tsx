@@ -3,14 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
-import { Shirt, ArrowRight, ArrowLeft, Loader2, Filter, Users, Trophy, Package } from "lucide-react";
+import { Shirt, ArrowRight, ArrowLeft, Loader2, Filter, Users, Trophy, Package, Sparkles, Eye, Lock, Building2, UsersRound } from "lucide-react";
 
 import { TEXTIL_TEMPLATES, SPORT_TYPES, type SportType } from "@shared/templates";
 import { storageUrl } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+
+const VISIBILITY_LABELS: Record<string, { label: string; icon: typeof Eye }> = {
+  private: { label: "Privat", icon: Lock },
+  team: { label: "Mannschaft", icon: UsersRound },
+  department: { label: "Abteilung", icon: Users },
+  org: { label: "Verein", icon: Building2 },
+};
 
 export default function ProductSelect() {
   const [, setLocation] = useLocation();
@@ -20,7 +28,7 @@ export default function ProductSelect() {
   const [selectedSport, setSelectedSport] = useState<SportType | "alle" | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"alle" | "Trikot" | "Bekleidung">("alle");
-
+  const [activeTab, setActiveTab] = useState<"products" | "templates">("products");
 
   // ─── Daten laden ───
   const { data: products, isLoading: productsLoading } = trpc.product.list.useQuery();
@@ -47,11 +55,49 @@ export default function ProductSelect() {
         ...t,
         orgId: membership?.orgId,
         deptName: membership?.departmentName || "Unbekannt",
+        departmentId: membership?.departmentId,
       };
     });
   }, [myTeams, myMemberships]);
 
-  // ─── Ausrüster-Filter: Wenn Sparte einen Ausrüster hat, nur dessen Produkte zeigen ───
+  // ─── Vorlagen laden (basierend auf Sichtbarkeit) ───
+  const selectedTeamData = useMemo(() => {
+    if (!selectedTeamId) return null;
+    return teamsWithDept.find(t => t.id === selectedTeamId) || null;
+  }, [selectedTeamId, teamsWithDept]);
+
+  const templateOrgId = selectedTeamData?.orgId || userOrgIds[0] || 0;
+  const templateDeptId = selectedTeamData?.departmentId || undefined;
+  const templateTeamId = selectedTeamId || undefined;
+
+  const { data: designTemplates, isLoading: templatesLoading } = trpc.designTemplate.list.useQuery(
+    {
+      orgId: templateOrgId,
+      departmentId: templateDeptId,
+      teamId: templateTeamId,
+    },
+    { enabled: isAuthenticated && templateOrgId > 0 }
+  );
+
+  // ─── Vorlagen filtern nach Sportart und Kategorie ───
+  const filteredTemplates = useMemo(() => {
+    if (!designTemplates) return [];
+    let filtered = designTemplates;
+
+    // Sportart-Filter
+    if (selectedSport && selectedSport !== "alle") {
+      filtered = filtered.filter(t => t.sport === selectedSport);
+    }
+
+    // Kategorie-Filter
+    if (selectedCategory !== "alle") {
+      filtered = filtered.filter(t => t.category === selectedCategory);
+    }
+
+    return filtered;
+  }, [designTemplates, selectedSport, selectedCategory]);
+
+  // ─── Ausrüster-Filter ───
   const activeSupplierBrand = useMemo(() => {
     if (!selectedTeamId || !allDeptSuppliers) return null;
     const team = teamsWithDept.find(t => t.id === selectedTeamId);
@@ -83,10 +129,6 @@ export default function ProductSelect() {
         return tmpl?.category === selectedCategory;
       });
     }
-
-    // Ausrüster-Filter (wenn Sparte einen vorgeschriebenen Ausrüster hat)
-    // Hinweis: Aktuell filtern wir nicht nach Marke im Produktnamen, da Produkte
-    // keine direkte Marken-Zuordnung haben. Dies kann später erweitert werden.
 
     return filtered;
   }, [publishedProducts, selectedSport, selectedCategory, activeSupplierBrand]);
@@ -188,7 +230,7 @@ export default function ProductSelect() {
                 </label>
                 <Select
                   value={selectedTeamId?.toString() || ""}
-                  onValueChange={(v) => setSelectedTeamId(v ? parseInt(v) : null)}
+                  onValueChange={(v) => setSelectedTeamId(v && v !== "none" ? parseInt(v) : null)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Mannschaft wählen..." />
@@ -237,105 +279,238 @@ export default function ProductSelect() {
             )}
           </div>
 
-          {/* ─── Produktliste ─── */}
-          {productsLoading ? (
-            <div className="text-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-              <p className="text-muted-foreground">Produkte werden geladen...</p>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-10 sm:py-16 bg-muted/30 rounded-xl border border-dashed">
-              <Shirt className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-              <p className="text-muted-foreground text-base sm:text-lg">
-                Keine passenden Produkte gefunden.
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Versuchen Sie andere Filtereinstellungen.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-muted-foreground">
-                  {filteredProducts.length} Produkt{filteredProducts.length !== 1 ? "e" : ""} gefunden
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {filteredProducts.map((product) => {
-                  const tmpl = product.templateId ? TEXTIL_TEMPLATES.find(t => t.id === product.templateId) : null;
-                  const sportInfo = tmpl?.sport ? SPORT_TYPES.find(s => s.id === tmpl.sport) : null;
+          {/* ─── Tabs: Produkte / Vorlagen ─── */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="products" className="gap-2">
+                <Shirt className="w-4 h-4" />
+                Produkte
+                <Badge variant="secondary" className="ml-1 text-xs">{filteredProducts.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="gap-2">
+                <Sparkles className="w-4 h-4" />
+                Vorlagen
+                <Badge variant="secondary" className="ml-1 text-xs">{filteredTemplates.length}</Badge>
+              </TabsTrigger>
+            </TabsList>
 
-                  return (
-                    <Card
-                      key={product.id}
-                      className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
-                      onClick={() => {
-                        // Bei Trikots: Sportart muss gewählt sein
-                        if (tmpl?.category === "Trikot" && (!selectedSport || selectedSport === "alle")) {
-                          // Sportart automatisch aus Template übernehmen
-                        }
-                        const params = new URLSearchParams();
-                        if (selectedTeamId) params.set("teamId", selectedTeamId.toString());
-                        if (selectedSport && selectedSport !== "alle") params.set("sport", selectedSport);
-                        const query = params.toString() ? `?${params.toString()}` : "";
-                        setLocation(`/konfigurator/${product.id}${query}`);
-                      }}
-                    >
-                      <div className="aspect-[4/3] bg-[#b8bcc2] relative overflow-hidden">
-                        {(() => {
-                          const imageUrl = product.frontImageUrl
-                            || (product.templateId && TEXTIL_TEMPLATES.find(t => t.id === product.templateId)?.previewUrl)
-                            || null;
-                          if (imageUrl) {
-                            return (
+            {/* ─── Tab: Produkte ─── */}
+            <TabsContent value="products">
+              {productsLoading ? (
+                <div className="text-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+                  <p className="text-muted-foreground">Produkte werden geladen...</p>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-10 sm:py-16 bg-muted/30 rounded-xl border border-dashed">
+                  <Shirt className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                  <p className="text-muted-foreground text-base sm:text-lg">
+                    Keine passenden Produkte gefunden.
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Versuchen Sie andere Filtereinstellungen.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      {filteredProducts.length} Produkt{filteredProducts.length !== 1 ? "e" : ""} gefunden
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {filteredProducts.map((product) => {
+                      const tmpl = product.templateId ? TEXTIL_TEMPLATES.find(t => t.id === product.templateId) : null;
+                      const sportInfo = tmpl?.sport ? SPORT_TYPES.find(s => s.id === tmpl.sport) : null;
+
+                      return (
+                        <Card
+                          key={product.id}
+                          className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+                          onClick={() => {
+                            const params = new URLSearchParams();
+                            if (selectedTeamId) params.set("teamId", selectedTeamId.toString());
+                            if (selectedSport && selectedSport !== "alle") params.set("sport", selectedSport);
+                            const query = params.toString() ? `?${params.toString()}` : "";
+                            setLocation(`/konfigurator/${product.id}${query}`);
+                          }}
+                        >
+                          <div className="aspect-[4/3] bg-[#b8bcc2] relative overflow-hidden">
+                            {(() => {
+                              const imageUrl = product.frontImageUrl
+                                || (product.templateId && TEXTIL_TEMPLATES.find(t => t.id === product.templateId)?.previewUrl)
+                                || null;
+                              if (imageUrl) {
+                                return (
+                                  <img
+                                    src={storageUrl(imageUrl)}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                                  />
+                                );
+                              }
+                              return (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Shirt className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground/30" />
+                                </div>
+                              );
+                            })()}
+                            {sportInfo && (
+                              <Badge className="absolute top-2 left-2 text-xs" variant="secondary">
+                                {sportInfo.icon} {sportInfo.name}
+                              </Badge>
+                            )}
+                            {tmpl?.category && (
+                              <Badge className="absolute top-2 right-2 text-xs" variant="outline">
+                                {tmpl.category}
+                              </Badge>
+                            )}
+                          </div>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-base sm:text-lg">{product.name}</CardTitle>
+                            {product.category && (
+                              <CardDescription>{product.category}</CardDescription>
+                            )}
+                          </CardHeader>
+                          <CardContent>
+                            <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                              Konfigurieren
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+
+            {/* ─── Tab: Vorlagen (KI-Analyse-Ergebnisse) ─── */}
+            <TabsContent value="templates">
+              {templatesLoading ? (
+                <div className="text-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+                  <p className="text-muted-foreground">Vorlagen werden geladen...</p>
+                </div>
+              ) : !templateOrgId ? (
+                <div className="text-center py-10 sm:py-16 bg-muted/30 rounded-xl border border-dashed">
+                  <Building2 className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                  <p className="text-muted-foreground text-base sm:text-lg">
+                    Bitte wählen Sie eine Mannschaft aus, um Vorlagen zu sehen.
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Vorlagen werden basierend auf Ihrer Vereinszugehörigkeit angezeigt.
+                  </p>
+                </div>
+              ) : filteredTemplates.length === 0 ? (
+                <div className="text-center py-10 sm:py-16 bg-muted/30 rounded-xl border border-dashed">
+                  <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                  <p className="text-muted-foreground text-base sm:text-lg">
+                    Keine Vorlagen verfügbar.
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Vorlagen können im Produkt-Designer per KI-Bild-Analyse erstellt werden.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      {filteredTemplates.length} Vorlage{filteredTemplates.length !== 1 ? "n" : ""} verfügbar
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {filteredTemplates.map((template) => {
+                      const visInfo = VISIBILITY_LABELS[template.visibility] || VISIBILITY_LABELS.team;
+                      const VisIcon = visInfo.icon;
+                      const sportInfo = template.sport ? SPORT_TYPES.find(s => s.id === template.sport) : null;
+
+                      return (
+                        <Card
+                          key={template.id}
+                          className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer border-purple-200/50 hover:border-purple-400/50"
+                          onClick={() => {
+                            // Vorlage anwenden: Zum Konfigurator navigieren mit templateId
+                            const params = new URLSearchParams();
+                            if (selectedTeamId) params.set("teamId", selectedTeamId.toString());
+                            if (selectedSport && selectedSport !== "alle") params.set("sport", selectedSport);
+                            params.set("templateId", template.id.toString());
+                            // Wenn die Vorlage ein Produkt referenziert, dieses verwenden
+                            const config = template.positionsConfig as any;
+                            const productIdFromTemplate = config?.productId;
+                            if (productIdFromTemplate) {
+                              setLocation(`/konfigurator/${productIdFromTemplate}?${params.toString()}`);
+                            } else {
+                              // Fallback: Erstes passendes Produkt finden
+                              const matchingProduct = publishedProducts.find(p => {
+                                if (!template.sport) return true;
+                                const tmpl = p.templateId ? TEXTIL_TEMPLATES.find(t => t.id === p.templateId) : null;
+                                return tmpl?.sport === template.sport;
+                              });
+                              if (matchingProduct) {
+                                setLocation(`/konfigurator/${matchingProduct.id}?${params.toString()}`);
+                              } else {
+                                // Kein passendes Produkt → Erstes Produkt nehmen
+                                if (publishedProducts.length > 0) {
+                                  setLocation(`/konfigurator/${publishedProducts[0].id}?${params.toString()}`);
+                                }
+                              }
+                            }
+                          }}
+                        >
+                          <div className="aspect-[4/3] bg-gradient-to-br from-purple-50 to-indigo-50 relative overflow-hidden">
+                            {template.imageUrl ? (
                               <img
-                                src={storageUrl(imageUrl)}
-                                alt={product.name}
+                                src={storageUrl(template.imageUrl)}
+                                alt={template.name}
                                 className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                               />
-                            );
-                          }
-                          return (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Shirt className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground/30" />
-                            </div>
-                          );
-                        })()}
-                        {/* Sport-Badge */}
-                        {sportInfo && (
-                          <Badge className="absolute top-2 left-2 text-xs" variant="secondary">
-                            {sportInfo.icon} {sportInfo.name}
-                          </Badge>
-                        )}
-                        {/* Kategorie-Badge */}
-                        {tmpl?.category && (
-                          <Badge className="absolute top-2 right-2 text-xs" variant="outline">
-                            {tmpl.category}
-                          </Badge>
-                        )}
-                      </div>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base sm:text-lg">{product.name}</CardTitle>
-                        {product.category && (
-                          <CardDescription>{product.category}</CardDescription>
-                        )}
-                      </CardHeader>
-                      <CardContent>
-                        <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                          Konfigurieren
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </>
-          )}
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-purple-300" />
+                              </div>
+                            )}
+                            {/* Sichtbarkeits-Badge */}
+                            <Badge className="absolute top-2 left-2 text-xs gap-1" variant="secondary">
+                              <VisIcon className="w-3 h-3" />
+                              {visInfo.label}
+                            </Badge>
+                            {/* Sport-Badge */}
+                            {sportInfo && (
+                              <Badge className="absolute top-2 right-2 text-xs" variant="outline">
+                                {sportInfo.icon} {sportInfo.name}
+                              </Badge>
+                            )}
+                            {/* KI-Badge */}
+                            <Badge className="absolute bottom-2 left-2 text-xs bg-purple-600 text-white">
+                              <Sparkles className="w-3 h-3 mr-1" />
+                              KI-Vorlage
+                            </Badge>
+                          </div>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-base sm:text-lg">{template.name}</CardTitle>
+                            <CardDescription>
+                              {template.category || "Vorlage"}
+                              {template.description && ` – ${template.description}`}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <Button variant="outline" className="w-full group-hover:bg-purple-600 group-hover:text-white transition-colors border-purple-200">
+                              Vorlage verwenden
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
-
-
     </div>
   );
 }

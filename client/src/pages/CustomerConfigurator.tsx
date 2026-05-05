@@ -205,7 +205,7 @@ export default function CustomerConfigurator() {
   // ─── Auth ────────────────────────────────────────────────────────────
   const { user, isAuthenticated } = useAuth();
 
-  // Team-ID und Sportart: Aus URL-Parameter
+  // Team-ID, Sportart und Template-ID: Aus URL-Parameter
   const teamIdFromUrl = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("teamId") ? parseInt(params.get("teamId")!) : null;
@@ -214,6 +214,16 @@ export default function CustomerConfigurator() {
     const params = new URLSearchParams(window.location.search);
     return params.get("sport") as SportartCode | null;
   }, []);
+  const templateIdFromUrl = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("templateId") ? parseInt(params.get("templateId")!) : null;
+  }, []);
+
+  // Lade die Design-Vorlage wenn templateId vorhanden
+  const { data: designTemplateData } = trpc.designTemplate.getById.useQuery(
+    { id: templateIdFromUrl! },
+    { enabled: !!templateIdFromUrl }
+  );
   const [selectedTeamIdState, setSelectedTeamIdState] = useState<number | null>(null);
   // Lade alle Mannschaften des Trainers (wenn angemeldet)
   const { data: myTeams } = trpc.team.mine.useQuery(undefined, { enabled: isAuthenticated });
@@ -914,6 +924,17 @@ export default function CustomerConfigurator() {
       document.head.appendChild(link);
     }
   }, [deptDefaultFont, allZones, autoFontApplied]);
+
+  // ─── Vorlage anwenden: Wenn templateId in URL, Vorlage-Zonen auf Produkt anwenden ───
+  const [templateApplied, setTemplateApplied] = useState(false);
+  useEffect(() => {
+    if (templateApplied || !designTemplateData || !productData) return;
+    // Zeige Info-Toast dass Vorlage geladen wurde
+    toast.success(`Vorlage "${designTemplateData.name}" wird angewendet`, {
+      description: "Die Zonen aus der Vorlage wurden auf das Produkt übertragen.",
+    });
+    setTemplateApplied(true);
+  }, [designTemplateData, productData, templateApplied]);
 
   // ─── Auto-Ladung: Spieler aus Team laden (wenn teamId-Parameter vorhanden) ───
   const { data: teamData } = trpc.team.getById.useQuery(

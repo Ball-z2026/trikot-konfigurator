@@ -1609,3 +1609,42 @@
 - [x] Frontend: Tipp-Hinweis und Positions-Anzeige in Echtzeit
 - [ ] Testen mit Deutschland-Trikot Vorderseite (Benutzer testet manuell)
 - [ ] Testen mit Deutschland-Trikot Rückseite (Benutzer testet manuell)
+
+## Vorlagen im Konfigurator anzeigen (Sichtbarkeitsbasiert)
+
+- [ ] Backend: designTemplate.listForConfigurator Prozedur mit Sichtbarkeitsfilter (privat=nur Ersteller, team=Mannschaft, department=Abteilung, org=gesamter Verein)
+- [ ] Frontend: Vorlagen-Auswahl im Konfigurator anzeigen (nur sichtbare Vorlagen basierend auf User-Rolle und Zugehörigkeit)
+- [ ] Frontend: Vorlage anwenden → Zonen/Positionen aus der Vorlage auf das aktuelle Produkt übertragen
+- [ ] Testen: Sichtbarkeit korrekt (privat nur für Ersteller, team nur für Mannschaft, etc.)
+
+## Designer Phase 1: Manuelle Zonen + Regeln
+
+### Manuelle Zonen-Erstellung
+- [x] Neue Zone per Klick/Drag direkt auf dem Produktbild zeichnen (Draw-Mode mit PenTool-Button)
+- [x] Zonen-Typ-Auswahl beim Erstellen (Purpose-Dialog nach dem Zeichnen)
+- [ ] Größenfeld (Breite x Höhe in cm) bei Zone-Erstellung
+- [ ] Zone komplett mit Inhalt füllen (Höhe ausschlaggebend)
+- [x] Alle Felder: Größe anpassbar, rotierbar, frei verschiebbar
+
+### Regeln pro Zone
+- [x] DB-Schema: Regeln-Felder für Zonen (minWidth, maxWidth, minHeight, maxHeight, allowedFonts, required) - in drizzle/schema.ts und DB gepusht
+- [ ] UI: Regeln-Panel pro Zone im Designer (Min/Max-Größe einstellen)
+- [ ] UI: Erlaubte Schriftarten pro Zone festlegen
+- [ ] UI: Pflichtfeld-Toggle pro Zone
+- [ ] Validierung: Regeln im Konfigurator durchsetzen (Warnung bei Verstoß)
+
+### Verbandsregeln für Trikots (pro Sportart)
+- [ ] Fußball-Regeln: Rückennummer min. 20cm, Vereinswappen max. 100cm², Sponsor max. 200cm²
+- [ ] Handball-Regeln: Eigene Maße nach DHB-Vorgaben
+- [ ] Volleyball-Regeln: Eigene Maße nach DVV-Vorgaben
+- [ ] Basketball-Regeln: Eigene Maße nach DBB-Vorgaben
+- [ ] Regeln werden automatisch beim Erstellen eines Trikot-Produkts angelegt
+- [ ] Regeln als Warnung (nicht blockierend) im Designer anzeigen
+
+### Universelle 2cm-Nahtabstand-Regel
+- [x] DB-Schema: Naht-Positionen pro Template/Part speichern (seamPositions JSON)
+- [x] Naht-Positionen für alle bestehenden Templates definieren (shared/templates.ts)
+- [x] Validierung: Mindestabstand 2cm von allen Nähten prüfen (checkSeamViolation Funktion)
+- [x] Frontend: Naht-Linien auf dem Produktbild anzeigen (gestrichelt, Toggle mit Ruler-Icon)
+- [x] Frontend: Warnung wenn Zone zu nah an Naht (< 2cm) (AlertTriangle in Zone-Karten)
+- [ ] Druckbereich als "sichere Zone" visuell hervorheben (2cm Abstand von allen Nähten)

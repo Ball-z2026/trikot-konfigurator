@@ -200,7 +200,7 @@ import {
 } from "./twoFactor";
 
 // Shared zone schema for reuse
-const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "custom"]);
+const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "coordinates", "hashtag", "custom"]);
 const zoneType = z.enum(["image", "text", "both"]);
 
 // Admin-only procedure guard

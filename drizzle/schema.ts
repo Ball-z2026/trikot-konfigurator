@@ -208,6 +208,12 @@ export const productParts = mysqlTable("product_parts", {
   imageUrl: text("imageUrl"),
   /** Standardfarbe für dieses Teil (Hex, z.B. "#ffffff") – nur bei Sublimation relevant */
   defaultColor: varchar("defaultColor", { length: 20 }),
+  /** Naht-Positionen als JSON-Array von SeamLine-Objekten */
+  seamPositions: json("seamPositions").$type<Array<{ label: string; x1: number; y1: number; x2: number; y2: number }>>(),
+  /** Reale Breite des Parts in cm (Größe L, flach liegend) */
+  realWidthCm: float("realWidthCm"),
+  /** Reale Höhe des Parts in cm (Größe L, flach liegend) */
+  realHeightCm: float("realHeightCm"),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -272,6 +278,20 @@ export const productZones = mysqlTable("product_zones", {
   outlineColor: varchar("outlineColor", { length: 20 }),
   /** Outline-Breite in % der Schrifthöhe (0 = keine) */
   outlineWidth: float("outlineWidth").default(0),
+  /** Minimale Breite in cm (Verbandsregel) */
+  minWidthCm: float("minWidthCm"),
+  /** Maximale Breite in cm (Verbandsregel) */
+  maxWidthCm: float("maxWidthCm"),
+  /** Minimale Höhe in cm (Verbandsregel) */
+  minHeightCm: float("minHeightCm"),
+  /** Maximale Höhe in cm (Verbandsregel) */
+  maxHeightCm: float("maxHeightCm"),
+  /** Maximale Fläche in cm² (Verbandsregel) */
+  maxAreaCm2: float("maxAreaCm2"),
+  /** Pflichtfeld – muss im Konfigurator ausgefüllt werden */
+  required: boolean("required").default(false).notNull(),
+  /** Erlaubte Schriftarten als JSON-Array (leer = alle erlaubt) */
+  allowedFonts: json("allowedFonts").$type<string[]>(),
   /** Sortierreihenfolge */
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

@@ -17,7 +17,35 @@ export interface TemplateZone {
   height: number;
   widthCm?: number;
   heightCm?: number;
+  /** Minimale Breite in cm (Verbandsregel) */
+  minWidthCm?: number;
+  /** Maximale Breite in cm (Verbandsregel) */
+  maxWidthCm?: number;
+  /** Minimale Höhe in cm (Verbandsregel) */
+  minHeightCm?: number;
+  /** Maximale Höhe in cm (Verbandsregel) */
+  maxHeightCm?: number;
+  /** Maximale Fläche in cm² (Verbandsregel) */
+  maxAreaCm2?: number;
+  /** Pflichtfeld – muss im Konfigurator ausgefüllt werden */
+  required?: boolean;
+  /** Erlaubte Schriftarten (leeres Array = alle erlaubt) */
+  allowedFonts?: string[];
   sortOrder: number;
+}
+
+/** Naht-Linie: Start- und Endpunkt in % des Bildes */
+export interface SeamLine {
+  /** Bezeichnung der Naht (z.B. "Schulternaht", "Seitennaht links") */
+  label: string;
+  /** Startpunkt X in % */
+  x1: number;
+  /** Startpunkt Y in % */
+  y1: number;
+  /** Endpunkt X in % */
+  x2: number;
+  /** Endpunkt Y in % */
+  y2: number;
 }
 
 export interface TemplatePart {
@@ -29,6 +57,8 @@ export interface TemplatePart {
   realWidthCm: number;
   /** Reale Höhe des Parts in cm (Größe L, flach liegend) - für exakte cm-Umrechnung */
   realHeightCm: number;
+  /** Naht-Positionen auf diesem Teil (Linien in %) */
+  seamPositions?: SeamLine[];
   zones: TemplateZone[];
 }
 

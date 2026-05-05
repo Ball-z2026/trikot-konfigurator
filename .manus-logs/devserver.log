@@ -7424,3 +7424,30 @@
 [2026-05-05T05:04:45.965Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-05T05:04:47.678Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-05T05:04:48.298Z] Server running on http://localhost:3000/
+[2026-05-05T05:40:13.017Z] 1:40:13 AM [vite] (client) hmr update /src/pages/ProductSelect.tsx, /src/index.css
+[2026-05-05T05:40:44.036Z] 1:40:44 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T05:43:44.662Z] 1:43:44 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T05:44:10.513Z] 1:44:10 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-05T05:44:24.702Z] Dev server process group stopped
+[2026-05-05T05:44:24.764Z] Dev server exited with code -15
+[2026-05-05T05:44:27.738Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T05:44:29.470Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T05:44:30.876Z] Server running on http://localhost:3000/
+[2026-05-05T06:04:08.476Z] 2:04:08 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/pages/ProductSelect.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-05T06:04:08.577Z] 2:04:08 AM [tsx] change in ./shared/templates.ts Restarting...
+[2026-05-05T06:04:10.613Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T06:04:11.913Z] Server running on http://localhost:3000/
+[2026-05-05T06:04:31.641Z] 2:04:31 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-05T06:04:33.517Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T06:04:34.164Z] Server running on http://localhost:3000/
+[2026-05-05T06:07:38.817Z] 2:07:38 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:08:17.592Z] 2:08:17 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:08:55.824Z] 2:08:55 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:09:29.013Z] 2:09:29 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:10:00.534Z] 2:10:00 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:10:28.250Z] 2:10:28 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:11:55.119Z] 2:11:55 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:12:14.777Z] 2:12:14 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T06:13:31.704Z] 2:13:31 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-05T06:13:33.987Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T06:13:34.957Z] Server running on http://localhost:3000/

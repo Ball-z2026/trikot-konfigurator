@@ -43,6 +43,7 @@ import {
   X,
   MapPin,
   AtSign,
+  AlertTriangle,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
 import { storageUrl } from "@/lib/utils";
@@ -200,6 +201,14 @@ export default function AdminProductEditor() {
   const [uploadProgress, setUploadProgress] = useState("");
   const [colorPalette, setColorPalette] = useState<string[]>([]);
   const [newColor, setNewColor] = useState("#1e40af");
+  // Draw Mode: Neue Zone per Klick+Drag auf dem Bild zeichnen
+  const [drawMode, setDrawMode] = useState(false);
+  const [drawing, setDrawing] = useState(false);
+  const [drawRect, setDrawRect] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
+  const [showPurposeDialog, setShowPurposeDialog] = useState(false);
+  const [pendingDrawRect, setPendingDrawRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  // Naht-Linien anzeigen
+  const [showSeams, setShowSeams] = useState(true);
 
   const parts: PartData[] = (productData?.parts as PartData[]) || [];
   const hasParts = parts.length > 0;
@@ -413,6 +422,106 @@ export default function AdminProductEditor() {
     updateZoneMut.mutate({ id: zoneId, [field]: value });
   };
 
+  // ─── Draw Mode Handlers ─────────────────────────────────────────────────
+  const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
+    if (!drawMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
+    const rect = canvasEl.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setDrawing(true);
+    setDrawRect({ startX: x, startY: y, endX: x, endY: y });
+  }, [drawMode]);
+
+  const handleCanvasPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!drawing || !drawRect) return;
+    e.preventDefault();
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
+    const rect = canvasEl.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    setDrawRect(prev => prev ? { ...prev, endX: x, endY: y } : null);
+  }, [drawing, drawRect]);
+
+  const handleCanvasPointerUp = useCallback(() => {
+    if (!drawing || !drawRect) return;
+    setDrawing(false);
+    const x = Math.min(drawRect.startX, drawRect.endX);
+    const y = Math.min(drawRect.startY, drawRect.endY);
+    const w = Math.abs(drawRect.endX - drawRect.startX);
+    const h = Math.abs(drawRect.endY - drawRect.startY);
+    setDrawRect(null);
+    // Mindestgröße: 3% x 3%
+    if (w < 3 || h < 3) {
+      toast.error("Zone zu klein – bitte größer zeichnen");
+      return;
+    }
+    setPendingDrawRect({ x, y, w, h });
+    setShowPurposeDialog(true);
+  }, [drawing, drawRect]);
+
+  const handleCreateDrawnZone = (purpose: string) => {
+    if (!pendingDrawRect) return;
+    const autoType = PURPOSE_CONFIG[purpose]?.autoType || "text";
+    createZone.mutate({
+      productId,
+      partId: activePartId || undefined,
+      label: PURPOSE_CONFIG[purpose]?.label || `Zone ${currentZones.length + 1}`,
+      side: "front",
+      type: autoType,
+      purpose: purpose as any,
+      posX: Math.round(pendingDrawRect.x * 100) / 100,
+      posY: Math.round(pendingDrawRect.y * 100) / 100,
+      width: Math.round(pendingDrawRect.w * 100) / 100,
+      height: Math.round(pendingDrawRect.h * 100) / 100,
+      rotation: 0,
+      sortOrder: currentZones.length,
+    });
+    setShowPurposeDialog(false);
+    setPendingDrawRect(null);
+    setDrawMode(false);
+    toast.success(`${PURPOSE_CONFIG[purpose]?.label || "Zone"} erstellt`);
+  };
+
+  // ─── Nahtabstand-Prüfung ────────────────────────────────────────────────
+  const getSeamPositions = () => {
+    if (!productData?.templateId) return [];
+    const tmpl = TEXTIL_TEMPLATES.find(t => t.id === productData.templateId);
+    if (!tmpl) return [];
+    const activeSide = activePart?.key === "back" ? "back" : "front";
+    const part = tmpl.parts.find(p => p.key === activeSide);
+    return (part as any)?.seamPositions || [];
+  };
+
+  const checkSeamViolation = (zone: ZoneData) => {
+    const seams = getSeamPositions();
+    if (seams.length === 0) return null;
+    // 2cm Mindestabstand – bei 60cm Trikotbreite ≈ 3.3%
+    const minDistPercent = 3.3;
+    for (const seam of seams) {
+      if (seam.type === "vertical") {
+        const seamX = seam.position;
+        const zoneLeft = zone.posX;
+        const zoneRight = zone.posX + zone.width;
+        if (Math.abs(zoneLeft - seamX) < minDistPercent || Math.abs(zoneRight - seamX) < minDistPercent) {
+          return `Zu nah an ${seam.label} (min. 2cm Abstand)`;
+        }
+      } else if (seam.type === "horizontal") {
+        const seamY = seam.position;
+        const zoneTop = zone.posY;
+        const zoneBottom = zone.posY + zone.height;
+        if (Math.abs(zoneTop - seamY) < minDistPercent || Math.abs(zoneBottom - seamY) < minDistPercent) {
+          return `Zu nah an ${seam.label} (min. 2cm Abstand)`;
+        }
+      }
+    }
+    return null;
+  };
+
   // ─── Zone Colors ────────────────────────────────────────────────────────
   const zoneColors = [
     "rgba(59, 130, 246, 0.3)", "rgba(16, 185, 129, 0.3)", "rgba(245, 158, 11, 0.3)",
@@ -537,9 +646,52 @@ export default function AdminProductEditor() {
               <div
                 ref={canvasRef}
                 className="relative bg-[#f8f9fa] aspect-[3/4] select-none"
-                style={{ cursor: draggingZone ? "grabbing" : "default", touchAction: (draggingZone !== null || resizingZone !== null) ? "none" : "pan-y" }}
-                onClick={() => setSelectedZoneId(null)}
+                style={{ cursor: drawMode ? "crosshair" : draggingZone ? "grabbing" : "default", touchAction: (draggingZone !== null || resizingZone !== null || drawMode) ? "none" : "pan-y" }}
+                onClick={() => !drawMode && setSelectedZoneId(null)}
+                onPointerDown={handleCanvasPointerDown}
+                onPointerMove={handleCanvasPointerMove}
+                onPointerUp={handleCanvasPointerUp}
               >
+                {/* Draw Mode Indicator */}
+                {drawMode && (
+                  <div className="absolute top-2 left-2 z-50 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-md font-medium animate-pulse">
+                    ✂️ Zeichnen aktiv – Klicken + Ziehen
+                  </div>
+                )}
+
+                {/* Naht-Linien */}
+                {showSeams && getSeamPositions().map((seam: any, idx: number) => (
+                  <div
+                    key={`seam-${idx}`}
+                    className="absolute pointer-events-none z-[2]"
+                    style={{
+                      ...(seam.type === "vertical" ? { left: `${seam.position}%`, top: 0, width: "1px", height: "100%" } : { top: `${seam.position}%`, left: 0, height: "1px", width: "100%" }),
+                      borderLeft: seam.type === "vertical" ? "1.5px dashed rgba(255,0,0,0.4)" : undefined,
+                      borderTop: seam.type === "horizontal" ? "1.5px dashed rgba(255,0,0,0.4)" : undefined,
+                    }}
+                  >
+                    <span className="absolute text-[8px] text-red-500 bg-white/80 px-0.5 rounded" style={{ ...(seam.type === "vertical" ? { top: "2px", left: "3px" } : { left: "2px", top: "3px" }) }}>
+                      {seam.label}
+                    </span>
+                  </div>
+                ))}
+
+                {/* Draw Rectangle Preview */}
+                {drawRect && (
+                  <div
+                    className="absolute border-2 border-dashed border-primary bg-primary/10 z-40 pointer-events-none"
+                    style={{
+                      left: `${Math.min(drawRect.startX, drawRect.endX)}%`,
+                      top: `${Math.min(drawRect.startY, drawRect.endY)}%`,
+                      width: `${Math.abs(drawRect.endX - drawRect.startX)}%`,
+                      height: `${Math.abs(drawRect.endY - drawRect.startY)}%`,
+                    }}
+                  >
+                    <span className="absolute -top-5 left-0 text-[10px] bg-primary text-white px-1 rounded">
+                      {Math.round(Math.abs(drawRect.endX - drawRect.startX))}% × {Math.round(Math.abs(drawRect.endY - drawRect.startY))}%
+                    </span>
+                  </div>
+                )}
                 {currentImage ? (
                   <img src={currentImage} alt="Produktansicht" className="w-full h-full object-contain pointer-events-none" draggable={false} />
                 ) : (
@@ -846,31 +998,50 @@ export default function AdminProductEditor() {
 
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
-                {/* Add Zone Button */}
-                <div className="flex items-center justify-between">
+                {/* Add Zone Buttons */}
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-sm font-medium">Platzierungszonen</span>
-                  <Button
-                    size="sm"
-                    className="h-8 text-xs"
-                    onClick={() =>
-                      createZone.mutate({
-                        productId,
-                        partId: activePartId || undefined,
-                        label: `Zone ${currentZones.length + 1}`,
-                        side: "front",
-                        type: "image",
-                        purpose: "logo",
-                        posX: 25,
-                        posY: 25,
-                        width: 25,
-                        height: 20,
-                        rotation: 0,
-                        sortOrder: currentZones.length,
-                      })
-                    }
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1" />Zone hinzufügen
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      variant={drawMode ? "default" : "outline"}
+                      className={`h-8 text-xs ${drawMode ? 'ring-2 ring-primary/50' : ''}`}
+                      onClick={() => setDrawMode(!drawMode)}
+                    >
+                      <PenTool className="w-3.5 h-3.5 mr-1" />{drawMode ? 'Zeichnen beenden' : 'Zone zeichnen'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() =>
+                        createZone.mutate({
+                          productId,
+                          partId: activePartId || undefined,
+                          label: `Zone ${currentZones.length + 1}`,
+                          side: "front",
+                          type: "image",
+                          purpose: "logo",
+                          posX: 25,
+                          posY: 25,
+                          width: 25,
+                          height: 20,
+                          rotation: 0,
+                          sortOrder: currentZones.length,
+                        })
+                      }
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />Zone hinzufügen
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={showSeams ? "secondary" : "ghost"}
+                      className="h-8 text-xs"
+                      onClick={() => setShowSeams(!showSeams)}
+                      title="Nähte ein-/ausblenden"
+                    >
+                      <Ruler className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Zone List */}
@@ -891,6 +1062,7 @@ export default function AdminProductEditor() {
                         const isSelected = selectedZoneId === zone.id;
                         const PurposeIcon = PURPOSE_CONFIG[zone.purpose]?.icon || FileImage;
                         const isTextZone = zone.type === "text" || zone.type === "both";
+                        const seamWarning = checkSeamViolation(zone);
 
                         return (
                           <Card
@@ -918,6 +1090,14 @@ export default function AdminProductEditor() {
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </Button>
                               </div>
+
+                              {/* Seam Warning */}
+                              {seamWarning && (
+                                <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                                  <AlertTriangle className="w-3 h-3 shrink-0" />
+                                  <span>{seamWarning}</span>
+                                </div>
+                              )}
 
                               {/* Row: Type + Purpose */}
                               <div className="grid grid-cols-2 gap-2">
@@ -1187,6 +1367,39 @@ export default function AdminProductEditor() {
           </div>
         </div>
       </main>
+
+      {/* Purpose Selection Dialog after Drawing */}
+      {showPurposeDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => { setShowPurposeDialog(false); setPendingDrawRect(null); }}>
+          <div className="bg-card rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-1">Zone-Typ auswählen</h3>
+            <p className="text-xs text-muted-foreground mb-4">Was soll in dieser Zone platziert werden?</p>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(PURPOSE_CONFIG).map(([key, config]) => {
+                const Icon = config.icon;
+                return (
+                  <button
+                    key={key}
+                    className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent hover:border-primary transition-colors text-left"
+                    onClick={() => handleCreateDrawnZone(key)}
+                  >
+                    <Icon className="w-4 h-4 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{config.label}</div>
+                      <div className="text-[10px] text-muted-foreground truncate">{config.description}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button variant="ghost" size="sm" onClick={() => { setShowPurposeDialog(false); setPendingDrawRect(null); }}>
+                <X className="w-3.5 h-3.5 mr-1" />Abbrechen
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

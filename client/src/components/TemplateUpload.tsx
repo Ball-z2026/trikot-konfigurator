@@ -435,7 +435,7 @@ export function TemplateUpload({
         name: templateName,
         imageUrl,
         storageKey: imageStorageKey || undefined,
-        positionsConfig: zones.length > 0 ? zones : undefined,
+        positionsConfig: zones.length > 0 ? { productId: selectedProductId || null, zones } : undefined,
         orgId,
         departmentId,
         teamId,
