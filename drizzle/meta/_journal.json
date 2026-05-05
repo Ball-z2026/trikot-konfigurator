@@ -372,6 +372,13 @@
       "when": 1778000292054,
       "tag": "0052_heavy_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "5",
+      "when": 1778011933942,
+      "tag": "0053_cool_tyrannus",
+      "breakpoints": true
     }
   ]
 }

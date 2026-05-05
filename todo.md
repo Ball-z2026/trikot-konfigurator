@@ -1801,3 +1801,12 @@
 
 - [x] Bug: Ausstatter-Feld in Vereinsverwaltung nicht anklickbar (TabsList horizontal scrollbar + SelectTrigger w-full)
 - [x] Bug: Erfolgsmeldungen/Toasts nach Upload bleiben zu lange sichtbar - verkürzt auf 2.5s
+
+## Feedback-Bugs Batch (Mai 2025 - aus Admin-Dashboard)
+
+- [x] Bug ID 120003: Admin-Dashboard BetaFeedbackPanel überlappt auf Mobile (responsive grid + flex-col)
+- [x] Bug ID 60002: Konfigurator - lässt sich nicht nach unten scrollen bei vielen Zonen (main overflow-y-auto)
+- [x] Bug ID 150003: Produktdesigner - Bearbeiten-Button funktioniert nicht / Zone nicht verschiebbar (touchAction fix bereits im vorherigen Checkpoint)
+- [x] Bug ID 150002: Konfigurator - Ausstatter-Anzeige prüfen wenn Ausstatter festgelegt (Hinweis wird angezeigt, Filterung ist Feature-Request - Produkte brauchen brand-Zuordnung)
+- [x] Bug ID 150001: Verwaltung - Ausstatter-Bindungsbereich Optionen erweitern (spielkleidung Enum + UI hinzugefügt)
+- [x] Bereits behobene Bugs (ID 120002, 90001, 90002, 60001, 30001, 1, 180001) als resolved in DB markiert

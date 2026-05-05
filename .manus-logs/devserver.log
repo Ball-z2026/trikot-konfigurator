@@ -7817,3 +7817,11 @@
 [2026-05-05T19:23:56.914Z] 3:23:56 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
 [2026-05-05T19:24:22.050Z] 3:24:22 PM [vite] (client) hmr update /src/pages/OrgDashboard.tsx, /src/index.css
 [2026-05-05T19:25:18.635Z] 3:25:18 PM [vite] (client) hmr update /src/index.css, /src/components/ui/select.tsx
+[2026-05-05T20:03:11.611Z] 4:03:11 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T20:04:00.183Z] 4:04:00 PM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T20:11:57.412Z] 4:11:57 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-05T20:11:59.173Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T20:12:00.560Z] Server running on http://localhost:3000/
+[2026-05-05T20:12:55.750Z] 4:12:55 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-05T20:12:57.387Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T20:12:57.928Z] Server running on http://localhost:3000/

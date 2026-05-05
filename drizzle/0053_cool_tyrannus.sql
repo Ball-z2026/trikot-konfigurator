@@ -1,0 +1,1 @@
+ALTER TABLE `organizations` MODIFY COLUMN `supplierScope` enum('ganzer_verein','nur_sparten','nur_trikots','spielkleidung','alle_artikel');

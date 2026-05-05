@@ -78,7 +78,7 @@ export const organizations = mysqlTable("organizations", {
   /** Ausstatter / Supplier */
   supplierBrand: varchar("supplierBrand", { length: 100 }),
   /** Bindungsbereich: ganzer_verein, nur_sparten, nur_trikots, alle_artikel */
-  supplierScope: mysqlEnum("supplierScope", ["ganzer_verein", "nur_sparten", "nur_trikots", "alle_artikel"]),
+  supplierScope: mysqlEnum("supplierScope", ["ganzer_verein", "nur_sparten", "nur_trikots", "spielkleidung", "alle_artikel"]),
   /** Vertragslaufzeit Start */
   supplierContractStart: timestamp("supplierContractStart"),
   /** Vertragslaufzeit Ende */

@@ -469,7 +469,7 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
   return (
     <div className="space-y-4">
       {/* Statistik-Karten */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
         <Card>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-orange-600">{openCount}</div>
@@ -497,9 +497,9 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
       </div>
 
       {/* Filter */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <Select value={filterPage} onValueChange={setFilterPage}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="Alle Seiten" />
           </SelectTrigger>
           <SelectContent>
@@ -510,7 +510,7 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="Alle Status" />
           </SelectTrigger>
           <SelectContent>
@@ -547,9 +547,9 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
               }`}
             >
               <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="font-semibold text-sm">{fb.userName || "Anonym"}</span>
                       <Badge variant="secondary" className="text-[10px]">{fb.page}</Badge>
                       {fb.area && <Badge variant="outline" className="text-[10px]">{fb.area}</Badge>}
@@ -566,7 +566,7 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
                     {(fb as any).priority && (fb as any).priority !== "medium" && (
                       <Badge
                         variant="outline"

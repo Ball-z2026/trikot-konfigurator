@@ -1992,6 +1992,7 @@ const SUPPLIER_SCOPES = [
   { value: "ganzer_verein", label: "Ganzer Verein (bindend für alle)" },
   { value: "nur_sparten", label: "Nur für Sparten" },
   { value: "nur_trikots", label: "Nur für Trikots" },
+  { value: "spielkleidung", label: "Nur Spielkleidung (Trikot, Hose, Stutzen)" },
   { value: "alle_artikel", label: "Für alle Artikel" },
 ];
 
@@ -2211,6 +2212,7 @@ function SupplierSection({ org, orgId }: { org: any; orgId: number }) {
                 {scope === "ganzer_verein" && "Der Ausstatter ist für den gesamten Verein bindend. Alle Sparten und Artikel müssen von diesem Ausstatter bezogen werden."}
                 {scope === "nur_sparten" && "Der Ausstatter ist nur für die Sparten/Abteilungen bindend. Einzelne Artikel können von anderen Herstellern stammen."}
                 {scope === "nur_trikots" && "Der Ausstatter ist nur für Trikots bindend. Andere Artikel (Hoodies, Jacken etc.) können frei gewählt werden."}
+                {scope === "spielkleidung" && "Der Ausstatter ist für die gesamte Spielkleidung bindend (Trikot, Hose, Stutzen). Trainingskleidung und andere Artikel können frei gewählt werden."}
                 {scope === "alle_artikel" && "Der Ausstatter gilt für alle Artikel des Vereins (Trikots, Hoodies, Jacken, T-Shirts etc.)."}
               </p>
             </div>

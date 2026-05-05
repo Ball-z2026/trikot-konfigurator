@@ -818,7 +818,7 @@ export const appRouter = router({
         jerseyName: z.string().max(255).optional(),
         onboardingComplete: z.boolean().optional(),
         supplierBrand: z.string().max(100).optional().nullable(),
-        supplierScope: z.enum(["ganzer_verein", "nur_sparten", "nur_trikots", "alle_artikel"]).optional().nullable(),
+        supplierScope: z.enum(["ganzer_verein", "nur_sparten", "nur_trikots", "spielkleidung", "alle_artikel"]).optional().nullable(),
         supplierContractStart: z.string().optional().nullable(),
         supplierContractEnd: z.string().optional().nullable(),
       }))

@@ -1796,7 +1796,7 @@ export default function CustomerConfigurator() {
   }
 
   return (
-    <div className="min-h-screen bg-background h-screen overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-background h-screen flex flex-col overflow-hidden">
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-20">
         <div className="container flex items-center justify-between h-12 sm:h-14 px-3 sm:px-4">
@@ -1911,7 +1911,7 @@ export default function CustomerConfigurator() {
         </div>
       </header>
 
-      <main className="container py-4 sm:py-6 px-3 sm:px-4 flex-1 overflow-hidden">
+      <main className="container py-4 sm:py-6 px-3 sm:px-4 flex-1 overflow-y-auto">
         <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6">
           {/* Left: Canvas */}
           <div className="space-y-3 overflow-y-auto pr-2">
