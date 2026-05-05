@@ -344,6 +344,20 @@
       "when": 1777965652658,
       "tag": "0048_brief_black_panther",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "5",
+      "when": 1777969939694,
+      "tag": "0049_loose_quasar",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "5",
+      "when": 1777970356636,
+      "tag": "0050_slimy_archangel",
+      "breakpoints": true
     }
   ]
 }

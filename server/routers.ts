@@ -185,6 +185,11 @@ import {
   listVotesByPoll,
   hasUserVoted,
   getPollResults,
+  createBetaFeedback,
+  listBetaFeedback,
+  countBetaFeedbackByPage,
+  updateBetaFeedbackStatus,
+  deleteBetaFeedback,
 } from "./db";
 import { storagePut, storageGet } from "./storage";
 import {
@@ -4550,6 +4555,93 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           successCount: allResults.filter(r => r.sheets.length > 0).length,
           results: allResults,
         };
+      }),
+  }),
+
+  // ─── Beta-Feedback-System ──────────────────────────────────────────────────────────────────────────────
+  betaFeedback: router({
+    /** Feedback erstellen (jeder eingeloggte User) */
+    create: protectedProcedure
+      .input(z.object({
+        page: z.string().min(1),
+        area: z.string().optional(),
+        message: z.string().min(1),
+        currentUrl: z.string().optional(),
+        userAgent: z.string().optional(),
+        screenshotUrl: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const id = await createBetaFeedback({
+          userId: ctx.user.id,
+          userName: ctx.user.name || "Unbekannt",
+          page: input.page,
+          area: input.area || null,
+          message: input.message,
+          currentUrl: input.currentUrl || null,
+          userAgent: input.userAgent || null,
+          screenshotUrl: input.screenshotUrl || null,
+        });
+        return { id };
+      }),
+
+    /** Screenshot hochladen (Base64 -> S3) */
+    uploadScreenshot: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const base64Data = input.imageBase64.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        const key = `beta-feedback/screenshot-${ctx.user.id}-${Date.now()}.png`;
+        const { url } = await storagePut(key, buffer, "image/png");
+        return { url };
+      }),
+
+    /** Alle Feedbacks auflisten (Admin) */
+    list: protectedProcedure
+      .input(z.object({
+        page: z.string().optional(),
+        status: z.enum(["open", "resolved", "still_present"]).optional(),
+      }).optional())
+      .query(async ({ input, ctx }) => {
+        // Nur Admins sehen alle Feedbacks
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur Admins können Feedbacks einsehen" });
+        }
+        return listBetaFeedback(input || undefined);
+      }),
+
+    /** Offene Feedbacks zählen pro Seite (für Badge) */
+    countByPage: protectedProcedure
+      .input(z.object({ page: z.string() }))
+      .query(async ({ input }) => {
+        return countBetaFeedbackByPage(input.page);
+      }),
+
+    /** Status aktualisieren (Admin) */
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["open", "resolved", "still_present"]),
+        adminNote: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur Admins können Status ändern" });
+        }
+        await updateBetaFeedbackStatus(input.id, input.status, input.adminNote);
+        return { success: true };
+      }),
+
+    /** Feedback löschen (Admin) */
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur Admins können Feedbacks löschen" });
+        }
+        await deleteBetaFeedback(input.id);
+        return { success: true };
       }),
   }),
 });

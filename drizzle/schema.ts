@@ -997,3 +997,37 @@ export const templatePollVotes = mysqlTable("template_poll_votes", {
 
 export type TemplatePollVote = typeof templatePollVotes.$inferSelect;
 export type InsertTemplatePollVote = typeof templatePollVotes.$inferInsert;
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Beta-Feedback-System
+// ═══════════════════════════════════════════════════════════════════
+
+export const betaFeedback = mysqlTable("beta_feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Wer hat das Feedback geschrieben (null = anonymer Tester) */
+  userId: int("userId"),
+  /** Name des Testers (für Anzeige) */
+  userName: varchar("userName", { length: 255 }),
+  /** Auf welcher Seite wurde das Feedback gegeben */
+  page: varchar("page", { length: 100 }).notNull(),
+  /** Genauerer Bereich auf der Seite (z.B. "Farb-Tab", "Zonen-Panel") */
+  area: varchar("area", { length: 255 }),
+  /** Die Problembeschreibung */
+  message: text("message").notNull(),
+  /** Status des Feedbacks */
+  status: mysqlEnum("status", ["open", "resolved", "still_present"]).default("open").notNull(),
+  /** Admin-Notiz zur Lösung */
+  adminNote: text("adminNote"),
+  /** Browser / User-Agent Info */
+  userAgent: text("userAgent"),
+  /** Aktuelle URL beim Feedback */
+  currentUrl: varchar("currentUrl", { length: 500 }),
+  /** Screenshot-URL (S3-Pfad) */
+  screenshotUrl: varchar("screenshotUrl", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+});
+
+export type BetaFeedback = typeof betaFeedback.$inferSelect;
+export type InsertBetaFeedback = typeof betaFeedback.$inferInsert;

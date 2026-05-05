@@ -1,0 +1,1 @@
+ALTER TABLE `beta_feedback` ADD `screenshotUrl` varchar(500);

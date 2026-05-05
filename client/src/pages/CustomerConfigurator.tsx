@@ -129,6 +129,14 @@ type ZoneData = {
   outlineColor: string | null;
   outlineWidth: number | null;
   sortOrder: number;
+  // Regel-Felder (vom Admin definiert)
+  minWidthCm: number | null;
+  maxWidthCm: number | null;
+  minHeightCm: number | null;
+  maxHeightCm: number | null;
+  maxAreaCm2: number | null;
+  required: boolean;
+  allowedFonts: string[] | null;
 };
 
 type ZoneContent = {
@@ -457,6 +465,83 @@ export default function CustomerConfigurator() {
     const warnings = validateZonesAgainstRules(zonesForValidation, fullRuleSet);
     setValidationWarnings(warnings);
   }, [fullRuleSet, allZones, parts]);
+
+  // ─── Zonen-Regeln-Validierung (Admin-definierte Regeln pro Zone) ─────────────────
+  type ZoneRuleWarning = { zoneLabel: string; message: string; severity: "error" | "warning" };
+  const zoneRuleWarnings: ZoneRuleWarning[] = useMemo(() => {
+    if (!allZones.length) return [];
+    const warnings: ZoneRuleWarning[] = [];
+    for (const zone of allZones) {
+      const content = zoneContents[zone.id];
+      const hasContent = content?.text || content?.imageDataUrl || content?.imageUrl;
+
+      // Pflichtfeld-Prüfung
+      if (zone.required && !hasContent) {
+        warnings.push({
+          zoneLabel: zone.label,
+          message: `Pflichtfeld – bitte ausfüllen`,
+          severity: "error",
+        });
+      }
+
+      // Erlaubte Schriftarten prüfen
+      if (zone.allowedFonts && zone.allowedFonts.length > 0 && content?.fontFamily) {
+        if (!zone.allowedFonts.includes(content.fontFamily)) {
+          warnings.push({
+            zoneLabel: zone.label,
+            message: `Schriftart "${content.fontFamily}" nicht erlaubt. Erlaubt: ${zone.allowedFonts.join(", ")}`,
+            severity: "warning",
+          });
+        }
+      }
+
+      // Größen-Regeln prüfen (nur wenn cm-Maße vorhanden)
+      if (zone.widthCm) {
+        if (zone.minWidthCm && zone.widthCm < zone.minWidthCm) {
+          warnings.push({
+            zoneLabel: zone.label,
+            message: `Breite ${zone.widthCm.toFixed(1)} cm unter Minimum ${zone.minWidthCm} cm`,
+            severity: "error",
+          });
+        }
+        if (zone.maxWidthCm && zone.widthCm > zone.maxWidthCm) {
+          warnings.push({
+            zoneLabel: zone.label,
+            message: `Breite ${zone.widthCm.toFixed(1)} cm über Maximum ${zone.maxWidthCm} cm`,
+            severity: "error",
+          });
+        }
+      }
+      if (zone.heightCm) {
+        if (zone.minHeightCm && zone.heightCm < zone.minHeightCm) {
+          warnings.push({
+            zoneLabel: zone.label,
+            message: `Höhe ${zone.heightCm.toFixed(1)} cm unter Minimum ${zone.minHeightCm} cm`,
+            severity: "error",
+          });
+        }
+        if (zone.maxHeightCm && zone.heightCm > zone.maxHeightCm) {
+          warnings.push({
+            zoneLabel: zone.label,
+            message: `Höhe ${zone.heightCm.toFixed(1)} cm über Maximum ${zone.maxHeightCm} cm`,
+            severity: "error",
+          });
+        }
+      }
+      // Flächen-Regel
+      if (zone.widthCm && zone.heightCm && zone.maxAreaCm2) {
+        const area = zone.widthCm * zone.heightCm;
+        if (area > zone.maxAreaCm2) {
+          warnings.push({
+            zoneLabel: zone.label,
+            message: `Fläche ${area.toFixed(0)} cm² über Maximum ${zone.maxAreaCm2} cm²`,
+            severity: "error",
+          });
+        }
+      }
+    }
+    return warnings;
+  }, [allZones, zoneContents]);
 
   // Druckverfahren erkennen (auch alte templateIds und Part-Anzahl berücksichtigen)
   const isSublimation = useMemo(() => {
@@ -2772,6 +2857,29 @@ export default function CustomerConfigurator() {
                   </div>
                 )}
 
+                {/* Zonen-Regeln-Warnungen (Admin-definierte Regeln) */}
+                {zoneRuleWarnings.length > 0 && (
+                  <Card className="border-red-300 bg-red-50/50 dark:border-red-700 dark:bg-red-950/30">
+                    <CardContent className="pt-3 pb-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-red-600" />
+                        <span className="text-sm font-semibold text-red-800 dark:text-red-200">Zonen-Regeln</span>
+                        <Badge variant="outline" className="ml-auto text-[10px] border-red-400 text-red-700">
+                          {zoneRuleWarnings.filter(w => w.severity === 'error').length} Fehler, {zoneRuleWarnings.filter(w => w.severity === 'warning').length} Hinweise
+                        </Badge>
+                      </div>
+                      <div className="space-y-1.5 ml-6">
+                        {zoneRuleWarnings.map((w, i) => (
+                          <div key={i} className={`text-xs flex items-start gap-1.5 ${w.severity === 'error' ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                            <span className="shrink-0">{w.severity === 'error' ? '❌' : '⚠️'}</span>
+                            <span><strong>{w.zoneLabel}:</strong> {w.message}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Hinweis: Verpflichtende Sponsoren */}
                 {mandatorySponsors && mandatorySponsors.length > 0 && (
                   <Card className="border-blue-300 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-950/30">
@@ -2788,7 +2896,7 @@ export default function CustomerConfigurator() {
                           <div key={s.id} className="text-xs flex items-center gap-2 text-blue-700 dark:text-blue-400">
                             {s.logoUrl && (
                               (s.logoMimeType === 'application/pdf' || s.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                                <PdfPreview url={storageUrl(s.logoUrl)} width={20} height={20} />
+                                <PdfPreview url={storageUrl(s.logoUrl) || s.logoUrl} width={20} height={20} />
                               ) : (
                                 <img src={storageUrl(s.logoUrl)} alt={s.name} className="w-5 h-5 object-contain" />
                               )

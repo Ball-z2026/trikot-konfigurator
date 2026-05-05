@@ -1078,17 +1078,17 @@
 - [ ] PNG-Export in hoher Auflösung für Social Media / Vorschau
 
 ## Bug: Aufwärm-Shirt Farben ändern funktioniert nicht
-- [ ] Farbauswahl beim Aufwärm-Shirt färbt das Bild nicht ein
-- [ ] Fix und Test
+- [x] Farbauswahl beim Aufwärm-Shirt färbt das Bild nicht ein (Fix: 'color' blend mode durch 'hue' ersetzt an allen 3 Stellen)
+- [x] Fix und Test
 
 ## Bug: KI-Mockup Rückseite zeigt falsches Bild
 - [x] Bei KI-Mockup Rückseite wird das falsche Bild angezeigt (Fix: processedPartImages mit partImageMap befüllt, Screenshot-Logik von setViewMode("single") auf setViewMode("parts") geändert, AiMockupView captureDesignImage mit URL-zu-base64 Konvertierung)
 - [x] Fix und Test (im Browser verifiziert: Vorderseite zeigt Vorderteil, Rückseite zeigt Rückteil)
 
 ## Bug: KI-Mockup Vorschau zeigt Rohbild statt konfigurierten Screenshot
-- [ ] KI-Mockup Vorschau zeigt das rohe Part-Bild (mit Farbe + Zonen-Platzhalter) statt den sauberen konfigurierten Canvas-Screenshot
-- [ ] Screenshot-Logik muss den Canvas im parts-View korrekt erfassen (mit Farbe, Logos, Texten, ohne Platzhalter)
-- [ ] Fix und Test
+- [x] KI-Mockup Vorschau zeigt das rohe Part-Bild (mit Farbe + Zonen-Platzhalter) statt den sauberen konfigurierten Canvas-Screenshot
+- [x] Screenshot-Logik muss den Canvas im parts-View korrekt erfassen (mit Farbe, Logos, Texten, ohne Platzhalter)
+- [x] Fix und Test (captureDesignImage: canvasContainerRef hat jetzt Priorität 2 statt 3; Vorschau zeigt nur cachedScreenshot)
 
 ## Bug: DTF-Grundfarbe färbt die ganze Konfigurator-Seite ein
 - [x] Die DTF-Grundfarbe wird auf den gesamten Seitenhintergrund angewendet statt nur auf das Trikot-Bild
@@ -1631,7 +1631,7 @@
 - [x] UI: Regeln-Panel pro Zone im Designer (Min/Max-Größe, Max-Fläche einstellen)
 - [x] UI: Erlaubte Schriftarten pro Zone festlegen (Checkbox-Liste)
 - [x] UI: Pflichtfeld-Toggle pro Zone (Switch)
-- [ ] Validierung: Regeln im Konfigurator durchsetzen (Warnung bei Verstoß)
+- [x] Validierung: Regeln im Konfigurator durchsetzen (Warnung bei Verstoß) – ZoneData erweitert, useMemo-Validierung für required/allowedFonts/min-max-Größen, UI-Warnkarte im Zonen-Tab
 
 ### Verbandsregeln für Trikots (pro Sportart)
 - [x] Fußball-Regeln: Rückennummer min. 25cm, Vereinswappen max. 100cm², Sponsor max. 200cm² (BFV-Richtlinie)
@@ -1731,3 +1731,32 @@
 - [x] Im Fullscreen-Modus: Zonen verschieben, skalieren, rotieren, Farben ändern, Schriftart wählen
 - [x] Rechte Sidebar: cm-Maße pro Zone, Rotation-Slider, Verbandsregeln-Warnungen
 - [x] Schließen-Button (X) um zurück zur normalen Ansicht zu kommen
+
+## Beta-Feedback-System
+
+### DB-Schema & Backend
+- [x] DB-Tabelle: betaFeedback (id, userId, userName, page, area, message, status, adminNote, screenshotUrl, createdAt, resolvedAt)
+- [x] Backend: CRUD-Routen für Feedback (create, list, updateStatus, uploadScreenshot, delete)
+- [x] Status-Enum: open, resolved, still_present
+
+### Frontend: Feedback-Widget
+- [x] BetaFeedbackWidget Komponente (schwebendes Icon auf jeder Seite)
+- [x] Klick öffnet Formular: Seite wird automatisch erkannt, Textfeld für Beschreibung
+- [x] Admin sieht zusätzlich: "Problem behoben" und "Problem weiter vorhanden" Buttons
+- [x] Feedback-Zähler pro Seite (Badge am Widget)
+- [x] Screenshot-Button: automatischer Screenshot via html-to-image, Upload zu S3
+- [x] Admin-Button "An Manus senden": kopiert formatierte Feedback-Details in Zwischenablage
+
+### Integration auf allen Seiten
+- [x] Verwaltung (OrgDashboard) – via BetaFeedbackGlobal
+- [x] Produkt (AdminProductEditor) – via BetaFeedbackGlobal
+- [x] Konfigurator (CustomerConfigurator) – via BetaFeedbackGlobal
+- [x] Produktdesigner (AdminProducts) – via BetaFeedbackGlobal
+- [x] Mitgliederverwaltung (AdminUsers) – via BetaFeedbackGlobal
+
+### Admin-Feedback-Dashboard
+- [x] Zentrale Übersicht aller Feedbacks im Admin-Dashboard (Tab "Beta-Feedback")
+- [x] Filter nach Seite, Status (offen/behoben/weiter vorhanden)
+- [x] "Problem behoben" Button setzt Häkchen
+- [x] "Problem weiter vorhanden" Button markiert als weiterhin offen
+- [x] "An Manus senden" Button kopiert Details in Zwischenablage

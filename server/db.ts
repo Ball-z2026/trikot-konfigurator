@@ -57,6 +57,8 @@ import {
   InsertTemplatePollOption,
   templatePollVotes,
   InsertTemplatePollVote,
+  betaFeedback,
+  InsertBetaFeedback,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -2193,4 +2195,52 @@ export async function getPollResults(pollId: number) {
     ...opt,
     voteCount: votes.filter(v => v.optionId === opt.id).length,
   }));
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Beta-Feedback
+// ═══════════════════════════════════════════════════════════════════
+
+export async function createBetaFeedback(data: InsertBetaFeedback) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(betaFeedback).values(data);
+  return result[0].insertId;
+}
+
+export async function listBetaFeedback(filters?: { page?: string; status?: string }) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [];
+  if (filters?.page) conditions.push(eq(betaFeedback.page, filters.page));
+  if (filters?.status) conditions.push(eq(betaFeedback.status, filters.status as any));
+  
+  if (conditions.length > 0) {
+    return db.select().from(betaFeedback).where(and(...conditions)).orderBy(desc(betaFeedback.createdAt));
+  }
+  return db.select().from(betaFeedback).orderBy(desc(betaFeedback.createdAt));
+}
+
+export async function countBetaFeedbackByPage(page: string) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(betaFeedback)
+    .where(and(eq(betaFeedback.page, page), eq(betaFeedback.status, "open")));
+  return result[0]?.count || 0;
+}
+
+export async function updateBetaFeedbackStatus(id: number, status: "open" | "resolved" | "still_present", adminNote?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const updateData: any = { status };
+  if (status === "resolved") updateData.resolvedAt = new Date();
+  if (adminNote !== undefined) updateData.adminNote = adminNote;
+  await db.update(betaFeedback).set(updateData).where(eq(betaFeedback.id, id));
+}
+
+export async function deleteBetaFeedback(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(betaFeedback).where(eq(betaFeedback.id, id));
 }

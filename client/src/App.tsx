@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { BetaFeedbackGlobal } from "@/components/BetaFeedbackGlobal";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
@@ -103,6 +104,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <BetaFeedbackGlobal />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

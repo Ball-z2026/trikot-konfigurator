@@ -1,5 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,11 +14,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Building2, Users, Package, Shield, ArrowLeft, Megaphone,
   Layers, UserCheck, ChevronRight, LayoutDashboard, ShoppingBag,
+  Bug, CheckCircle2, AlertCircle, Trash2, Copy,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 import { storageUrl } from "@/lib/utils";
 import { SponsorLogoImage } from "@/components/SponsorLogoImage";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 export default function AdminDashboard() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -130,7 +135,7 @@ function DashboardContent() {
 
         {/* Tabs */}
         <Tabs defaultValue="orgs">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="orgs" className="gap-2">
               <Building2 className="w-4 h-4" />
               Vereine ({orgs?.length ?? "..."})
@@ -142,6 +147,10 @@ function DashboardContent() {
             <TabsTrigger value="products" className="gap-2">
               <Package className="w-4 h-4" />
               Produkte ({products?.length ?? "..."})
+            </TabsTrigger>
+            <TabsTrigger value="feedback" className="gap-2">
+              <Bug className="w-4 h-4" />
+              Beta-Feedback
             </TabsTrigger>
           </TabsList>
 
@@ -358,6 +367,11 @@ function DashboardContent() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Beta-Feedback Tab */}
+          <TabsContent value="feedback" className="mt-4">
+            <BetaFeedbackPanel setLocation={setLocation} />
+          </TabsContent>
         </Tabs>
 
         {/* Schnellzugriff */}
@@ -387,6 +401,252 @@ function DashboardContent() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+// ─── Beta-Feedback Admin-Panel ───────────────────────────────────────────────
+
+function BetaFeedbackPanel({ setLocation }: { setLocation: (path: string) => void }) {
+  const [filterPage, setFilterPage] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+
+  const { data: feedbacks, refetch } = trpc.betaFeedback.list.useQuery(
+    {
+      ...(filterPage !== "all" ? { page: filterPage } : {}),
+      ...(filterStatus !== "all" ? { status: filterStatus as "open" | "resolved" | "still_present" } : {}),
+    }
+  );
+
+  const updateStatusMutation = trpc.betaFeedback.updateStatus.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Status aktualisiert");
+    },
+  });
+
+  const deleteMutation = trpc.betaFeedback.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Feedback gelöscht");
+    },
+  });
+
+  // "An Manus senden" - kopiert formatiertes Problem in Zwischenablage
+  const handleCopyForManus = (fb: any) => {
+    const text = `## Beta-Feedback: Problem auf Seite "${fb.page}"${fb.area ? ` (Bereich: ${fb.area})` : ""}
+
+**Gemeldet von:** ${fb.userName || "Anonym"}
+**Datum:** ${new Date(fb.createdAt).toLocaleString("de-DE")}
+**URL:** ${fb.currentUrl || "Nicht verfügbar"}
+**Status:** ${fb.status === "resolved" ? "Behoben" : fb.status === "still_present" ? "Weiter vorhanden" : "Offen"}
+
+### Problembeschreibung:
+${fb.message}
+${fb.screenshotUrl ? `\n### Screenshot:\n${window.location.origin}${fb.screenshotUrl}` : ""}
+${fb.adminNote ? `\n### Admin-Notiz:\n${fb.adminNote}` : ""}
+
+---
+Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "${fb.area}"` : ""}.`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("Problem-Details in Zwischenablage kopiert! Einfach bei Manus einfügen.");
+    });
+  };
+
+  // Einzigartige Seiten für Filter
+  const uniquePages = Array.from(new Set(feedbacks?.map(f => f.page) || []));
+
+  const openCount = feedbacks?.filter(f => f.status === "open").length ?? 0;
+  const resolvedCount = feedbacks?.filter(f => f.status === "resolved").length ?? 0;
+  const stillPresentCount = feedbacks?.filter(f => f.status === "still_present").length ?? 0;
+
+  return (
+    <div className="space-y-4">
+      {/* Statistik-Karten */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-orange-600">{openCount}</div>
+            <div className="text-xs text-muted-foreground">Offen</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-red-600">{stillPresentCount}</div>
+            <div className="text-xs text-muted-foreground">Weiter vorhanden</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-green-600">{resolvedCount}</div>
+            <div className="text-xs text-muted-foreground">Behoben</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filter */}
+      <div className="flex gap-3">
+        <Select value={filterPage} onValueChange={setFilterPage}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Alle Seiten" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle Seiten</SelectItem>
+            {uniquePages.map(p => (
+              <SelectItem key={p} value={p}>{p}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Alle Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle Status</SelectItem>
+            <SelectItem value="open">Offen</SelectItem>
+            <SelectItem value="still_present">Weiter vorhanden</SelectItem>
+            <SelectItem value="resolved">Behoben</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Feedback-Liste */}
+      {!feedbacks || feedbacks.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <Bug className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p>Keine Feedbacks gefunden</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {feedbacks.map((fb) => (
+            <Card
+              key={fb.id}
+              className={`${
+                fb.status === "resolved"
+                  ? "border-green-200 dark:border-green-800"
+                  : fb.status === "still_present"
+                  ? "border-red-200 dark:border-red-800"
+                  : "border-orange-200 dark:border-orange-800"
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-sm">{fb.userName || "Anonym"}</span>
+                      <Badge variant="secondary" className="text-[10px]">{fb.page}</Badge>
+                      {fb.area && <Badge variant="outline" className="text-[10px]">{fb.area}</Badge>}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(fb.createdAt).toLocaleString("de-DE")}
+                      {fb.currentUrl && (
+                        <span className="ml-2 text-blue-600 cursor-pointer hover:underline" onClick={() => {
+                          const url = new URL(fb.currentUrl!, window.location.origin);
+                          setLocation(url.pathname);
+                        }}>
+                          → Zur Seite
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`${
+                      fb.status === "resolved"
+                        ? "border-green-400 text-green-700 bg-green-50"
+                        : fb.status === "still_present"
+                        ? "border-red-400 text-red-700 bg-red-50"
+                        : "border-orange-400 text-orange-700 bg-orange-50"
+                    }`}
+                  >
+                    {fb.status === "resolved" ? "✓ Behoben" : fb.status === "still_present" ? "✗ Weiter vorhanden" : "● Offen"}
+                  </Badge>
+                </div>
+
+                <p className="text-sm whitespace-pre-wrap mb-3">{fb.message}</p>
+
+                {/* Screenshot */}
+                {fb.screenshotUrl && (
+                  <div className="mb-3">
+                    <img
+                      src={fb.screenshotUrl}
+                      alt="Screenshot"
+                      className="max-h-48 rounded border cursor-pointer hover:opacity-80 object-contain"
+                      onClick={() => window.open(fb.screenshotUrl!, "_blank")}
+                    />
+                  </div>
+                )}
+
+                {fb.adminNote && (
+                  <div className="text-xs bg-muted p-2 rounded mb-3">
+                    <span className="font-semibold">Admin-Notiz:</span> {fb.adminNote}
+                  </div>
+                )}
+
+                {/* Action-Buttons */}
+                <div className="flex flex-wrap gap-2">
+                  {fb.status !== "resolved" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs border-green-400 text-green-700 hover:bg-green-50"
+                      onClick={() => updateStatusMutation.mutate({ id: fb.id, status: "resolved" })}
+                    >
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Problem behoben
+                    </Button>
+                  )}
+                  {fb.status !== "still_present" && fb.status !== "resolved" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs border-red-400 text-red-700 hover:bg-red-50"
+                      onClick={() => updateStatusMutation.mutate({ id: fb.id, status: "still_present" })}
+                    >
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Weiter vorhanden
+                    </Button>
+                  )}
+                  {fb.status === "resolved" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs border-orange-400 text-orange-700 hover:bg-orange-50"
+                      onClick={() => updateStatusMutation.mutate({ id: fb.id, status: "open" })}
+                    >
+                      Wieder öffnen
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs border-purple-400 text-purple-700 hover:bg-purple-50"
+                    onClick={() => handleCopyForManus(fb)}
+                  >
+                    <Copy className="w-3 h-3 mr-1" />
+                    An Manus senden
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs text-red-500 hover:text-red-700 ml-auto"
+                    onClick={() => {
+                      if (confirm("Feedback wirklich löschen?")) {
+                        deleteMutation.mutate({ id: fb.id });
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

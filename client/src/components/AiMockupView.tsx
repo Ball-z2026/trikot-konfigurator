@@ -184,20 +184,12 @@ export function AiMockupView({
 
   /** Erstelle ein Referenzbild für die KI-Generierung */
   const captureDesignImage = async (): Promise<string | undefined> => {
-    // Priorität 1: cachedScreenshot (bereits base64)
+    // Priorität 1: cachedScreenshot (bereits base64 - enthält Farbe + Logos + Texte)
     if (cachedScreenshot) {
       return cachedScreenshot;
     }
 
-    // Priorität 2: Part-Bild für die richtige Seite (URL → base64 konvertieren)
-    const sideKey = side === "back" ? "rueckteil" : "vorderteil";
-    const sidePart = sortedParts.find(p => p.key === sideKey || p.key.includes(sideKey));
-    if (sidePart && processedPartImages[sidePart.id]) {
-      const base64 = await imageUrlToBase64(processedPartImages[sidePart.id]);
-      if (base64) return base64;
-    }
-
-    // Priorität 3: canvasContainerRef Screenshot
+    // Priorität 2: canvasContainerRef Screenshot (Live-Canvas mit Farbe/Logos/Texten)
     if (canvasContainerRef?.current) {
       try {
         const { toPng } = await import("html-to-image");
@@ -208,10 +200,18 @@ export function AiMockupView({
           cacheBust: true,
           includeQueryParams: true,
         });
-        return dataUrl;
+        if (dataUrl && dataUrl.length > 100) return dataUrl;
       } catch {
         // Fallback
       }
+    }
+
+    // Priorität 3: Part-Bild für die richtige Seite (URL → base64) - nur als letzter Fallback
+    const sideKey = side === "back" ? "rueckteil" : "vorderteil";
+    const sidePart = sortedParts.find(p => p.key === sideKey || p.key.includes(sideKey));
+    if (sidePart && processedPartImages[sidePart.id]) {
+      const base64 = await imageUrlToBase64(processedPartImages[sidePart.id]);
+      if (base64) return base64;
     }
 
     // Priorität 4: Erstes verfügbares Part-Bild (URL → base64)
@@ -295,12 +295,9 @@ export function AiMockupView({
     a.click();
   };
 
-  // Bestimme das Vorschau-Bild basierend auf der gewählten Seite
-  // Priorität: cachedScreenshot (konfigurierter Canvas mit Farbe/Logos) > rohe Part-Bilder (nur Fallback)
-  const sideKeyForPreview = side === "back" ? "rueckteil" : "vorderteil";
-  const sidePartForPreview = sortedParts.find(p => p.key === sideKeyForPreview || p.key.includes(sideKeyForPreview));
-  const sidePreviewImage = sidePartForPreview ? processedPartImages[sidePartForPreview.id] : null;
-  const previewImage = cachedScreenshot || sidePreviewImage;
+  // Vorschau-Bild: NUR cachedScreenshot verwenden (enthält Farbe + Logos + Texte)
+  // Rohe Part-Bilder werden NICHT als Vorschau angezeigt um Verwirrung zu vermeiden
+  const previewImage = cachedScreenshot;
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -513,7 +510,7 @@ export function AiMockupView({
           </p>
           {!cachedScreenshot && (
             <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-md">
-              Hinweis: Kein Design-Screenshot verfügbar. Bitte zuerst das Design konfigurieren.
+              Hinweis: Kein Design-Screenshot verfügbar. Das Mockup wird aus dem aktuellen Canvas erstellt.
             </p>
           )}
         </div>
