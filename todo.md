@@ -1760,3 +1760,11 @@
 - [x] "Problem behoben" Button setzt Häkchen
 - [x] "Problem weiter vorhanden" Button markiert als weiterhin offen
 - [x] "An Manus senden" Button kopiert Details in Zwischenablage
+
+## E-Mail/Passwort-Login (Alternative zu Manus OAuth)
+- [x] DB: Passwort-Feld (passwordHash) und email-Feld zur users-Tabelle – bereits vorhanden
+- [x] Backend: Passwort-Hashing mit bcrypt – bcryptjs bereits installiert und in localAuth.ts genutzt
+- [x] Backend: Login-Route (E-Mail + Passwort → Session-Cookie) – POST /api/auth/local-login
+- [x] Backend: Register-Route – POST /api/auth/register
+- [x] Frontend: Login-Seite mit E-Mail/Passwort-Formular + Manus-OAuth-Button – /login
+- [x] Admin-Account angelegt: assemacher@icloud.com mit Passwort Test1234! und role=admin (ID: 540037)
