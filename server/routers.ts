@@ -818,7 +818,7 @@ export const appRouter = router({
         jerseyName: z.string().max(255).optional(),
         onboardingComplete: z.boolean().optional(),
         supplierBrand: z.string().max(100).optional().nullable(),
-        supplierScope: z.enum(["ganzer_verein", "nur_sparten", "nur_trikots", "spielkleidung", "alle_artikel"]).optional().nullable(),
+        supplierScope: z.enum(["ganzer_verein", "nur_sparten", "nur_trikots", "spielkleidung", "nur_baelle", "alle_artikel"]).optional().nullable(),
         supplierContractStart: z.string().optional().nullable(),
         supplierContractEnd: z.string().optional().nullable(),
       }))
@@ -4212,7 +4212,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         const org = await getOrganizationById(input.orgId);
         if (!org) throw new TRPCError({ code: "NOT_FOUND", message: "Organisation nicht gefunden" });
 
-        const gender = genderFromTeamCategory(team.kategorie || "herren");
+        const gender = genderFromTeamCategory(team.category || "herren");
         const playerSize = (player.size || "L") as SizeCode;
 
         // zonesConfig aus dem Design parsen: Record<zoneId, ZoneContent>
@@ -4392,7 +4392,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         const org = await getOrganizationById(input.orgId);
         if (!team || !org) throw new TRPCError({ code: "NOT_FOUND", message: "Team oder Organisation nicht gefunden" });
 
-        const gender = genderFromTeamCategory(team.kategorie || "herren");
+        const gender = genderFromTeamCategory(team.category || "herren");
 
         // zonesConfig aus dem Design parsen: Record<zoneId, ZoneContent>
         const zonesConfig: Record<string, any> = typeof design.zonesConfig === "string"

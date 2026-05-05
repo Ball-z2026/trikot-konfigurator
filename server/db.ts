@@ -1301,11 +1301,11 @@ export async function createSavedDesign(data: {
   thumbnailUrl?: string;
   isOrgTemplate?: boolean;
   orgId?: number;
-  category?: string;
+  category?: "heimtrikot" | "auswaertstrikot" | "training" | "sonstiges";
 }) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const result = await db.insert(savedDesigns).values(data);
+  const result = await db.insert(savedDesigns).values(data as any);
   return Number(result[0].insertId);
 }
 
@@ -1339,11 +1339,11 @@ export async function updateSavedDesign(id: number, data: {
   thumbnailUrl?: string;
   isOrgTemplate?: boolean;
   orgId?: number;
-  category?: string;
+  category?: "heimtrikot" | "auswaertstrikot" | "training" | "sonstiges";
 }) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  await db.update(savedDesigns).set(data).where(eq(savedDesigns.id, id));
+  await db.update(savedDesigns).set(data as any).where(eq(savedDesigns.id, id));
 }
 
 export async function deleteSavedDesign(id: number) {

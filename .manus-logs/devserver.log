@@ -7827,3 +7827,32 @@
 [2026-05-05T20:12:57.928Z] Server running on http://localhost:3000/
 [2026-05-05T20:22:09.566Z] 4:22:09 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
 [2026-05-05T20:22:26.965Z] 4:22:26 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T21:09:46.093Z] 5:09:46 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-05T21:09:47.965Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:09:48.578Z] Server running on http://localhost:3000/
+[2026-05-05T21:15:42.339Z] Dev server process group stopped
+[2026-05-05T21:15:42.380Z] Dev server exited with code -15
+[2026-05-05T21:15:45.359Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T21:15:47.297Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:15:47.992Z] Server running on http://localhost:3000/
+[2026-05-05T21:17:44.155Z] 5:17:44 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-05T21:17:45.832Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:17:46.653Z] Server running on http://localhost:3000/
+[2026-05-05T21:18:07.560Z] 5:18:07 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-05T21:18:09.233Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:18:09.798Z] Server running on http://localhost:3000/
+[2026-05-05T21:19:02.378Z] 5:19:02 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-05T21:19:04.439Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:19:05.172Z] Server running on http://localhost:3000/
+[2026-05-05T21:19:14.433Z] 5:19:14 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-05T21:19:16.137Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:19:16.715Z] Server running on http://localhost:3000/
+[2026-05-05T21:19:20.123Z] 5:19:20 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-05T21:19:21.783Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:19:22.380Z] Server running on http://localhost:3000/
+[2026-05-05T21:32:53.428Z] 5:32:53 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-05T21:32:55.228Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:32:56.567Z] Server running on http://localhost:3000/
+[2026-05-05T21:33:23.650Z] 5:33:23 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-05T21:33:25.394Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T21:33:25.991Z] Server running on http://localhost:3000/

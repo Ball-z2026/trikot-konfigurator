@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Building2, Users, Package, Shield, ArrowLeft, Megaphone,
   Layers, UserCheck, ChevronRight, LayoutDashboard, ShoppingBag,
-  Bug, CheckCircle2, AlertCircle, Trash2, Copy, Wrench, ExternalLink,
+  Bug, CheckCircle2, AlertCircle, Trash2, Copy, Wrench, ExternalLink, Pencil,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
@@ -619,7 +619,17 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                       size="sm"
                       variant="default"
                       className="h-8 text-xs"
-                      onClick={() => window.open(fb.currentUrl!, "_blank")}
+                      onClick={() => {
+                        // Extrahiere den Pfad aus der URL und navigiere innerhalb der App
+                        try {
+                          const url = new URL(fb.currentUrl!);
+                          const path = url.pathname + (url.search ? url.search + "&" : "?") + "feedbackTestId=" + fb.id;
+                          setLocation(path);
+                        } catch {
+                          // Fallback: wenn URL nicht parsebar, direkt verwenden
+                          setLocation(fb.currentUrl! + (fb.currentUrl!.includes("?") ? "&" : "?") + "feedbackTestId=" + fb.id);
+                        }
+                      }}
                     >
                       <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
                       Problem testen
@@ -649,11 +659,45 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                   </div>
                 )}
 
-                {fb.adminNote && (
-                  <div className="text-xs bg-muted p-2 rounded mb-3">
-                    <span className="font-semibold">Admin-Notiz:</span> {fb.adminNote}
-                  </div>
-                )}
+                {/* Entwickler-Notiz (editierbar) */}
+                <div className="mb-3">
+                  {fb.adminNote ? (
+                    <div className="text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Wrench className="w-3 h-3 text-slate-500" />
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">Entwickler-Notiz:</span>
+                      </div>
+                      <p className="text-slate-700 dark:text-slate-200 whitespace-pre-wrap">{fb.adminNote}</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 text-xs mt-2 text-slate-500 hover:text-slate-700"
+                        onClick={() => {
+                          const note = prompt("Entwickler-Notiz bearbeiten:", fb.adminNote || "");
+                          if (note !== null) {
+                            updateStatusMutation.mutate({ id: fb.id, status: fb.status as any, adminNote: note });
+                          }
+                        }}
+                      >
+                        <Pencil className="w-3 h-3 mr-1" />Bearbeiten
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs text-slate-500 hover:text-slate-700"
+                      onClick={() => {
+                        const note = prompt("Entwickler-Notiz hinzuf\u00fcgen (Was wurde gemacht? Wo k\u00f6nnen Probleme entstehen?):");
+                        if (note) {
+                          updateStatusMutation.mutate({ id: fb.id, status: fb.status as any, adminNote: note });
+                        }
+                      }}
+                    >
+                      <Wrench className="w-3 h-3 mr-1" />+ Entwickler-Notiz
+                    </Button>
+                  )}
+                </div>
 
                 {/* Verifizierungs-Link */}
                 {(fb as any).verifyUrl && (

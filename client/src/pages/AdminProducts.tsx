@@ -601,11 +601,14 @@ export default function AdminProducts() {
                           <Eye className="w-4 h-4" />
                         )}
                       </Button>
-                      <Link href={`/designer/products/${product.id}`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setLocation(`/designer/products/${product.id}`)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"

@@ -1815,3 +1815,22 @@
 
 - [x] Feature: Zurück-Button im Feedback-Detail um zur Problemliste zurückzukehren
 - [x] Feature: Test-Button zum direkten Überprüfen des Problems (Link zur gemeldeten URL)
+
+## Feedback Test-Workflow Verbesserung (Mai 2025)
+
+- [- [x] Feature: "Problem testen" navigiert innerhalb der App zur exakten gemeldeten URL
+- [x] Feature: Floating "Zurück zum Feedback"-Bar auf der Testseite mit Bewertung (Behoben / Nicht behoben) Nicht behoben)
+
+## Produktdesigner Editor Layout (Mai 2025)
+
+- [x] Feature: AdminProductEditor Layout komplett umbauen - Trikot/Artikel so groß wie möglich, Optionen rechts schmal
+
+## Kritische Bugs - Sofort beheben (Mai 2025)
+
+- [x] Bug KRITISCH: Bearbeiten-Button im Produktdesigner nicht anklickbar (ID 180002, 150003, 180003) - Link+Button zu onClick umgebaut
+- [x] Bug KRITISCH: Feedback-Widget lässt Seite verschwinden (ID 180003, 120001) - Screenshot-Capture robuster gemacht
+- [x] Bug: Admin-Dashboard Überlappungen (ID 180001, 120003) - responsive grid + flex-col
+- [x] Feature: Ausstatter-Logik: Vereinsausstatter schließt Spartenausstatter aus + Ballausrüster pro Sparte (ID 180004)
+- [x] Feature: Entwickler-Notiz im Feedback-Panel (was wurde gemacht, potenzielle Probleme)
+- [x] System: TypeScript-Fehler beheben (Buffer import, player.number, savedDesigns, SponsorReview guard)
+- [x] System: CustomerConfigurator Parse-Fehler war alter Log-Eintrag, kein aktueller Fehler

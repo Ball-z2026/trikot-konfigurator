@@ -1993,6 +1993,7 @@ const SUPPLIER_SCOPES = [
   { value: "nur_sparten", label: "Nur für Sparten" },
   { value: "nur_trikots", label: "Nur für Trikots" },
   { value: "spielkleidung", label: "Nur Spielkleidung (Trikot, Hose, Stutzen)" },
+  { value: "nur_baelle", label: "Nur Ballausrüster (Bälle & Zubehör)" },
   { value: "alle_artikel", label: "Für alle Artikel" },
 ];
 
@@ -2213,6 +2214,7 @@ function SupplierSection({ org, orgId }: { org: any; orgId: number }) {
                 {scope === "nur_sparten" && "Der Ausstatter ist nur für die Sparten/Abteilungen bindend. Einzelne Artikel können von anderen Herstellern stammen."}
                 {scope === "nur_trikots" && "Der Ausstatter ist nur für Trikots bindend. Andere Artikel (Hoodies, Jacken etc.) können frei gewählt werden."}
                 {scope === "spielkleidung" && "Der Ausstatter ist für die gesamte Spielkleidung bindend (Trikot, Hose, Stutzen). Trainingskleidung und andere Artikel können frei gewählt werden."}
+                {scope === "nur_baelle" && "Der Ausstatter ist nur für Bälle und Ballzubehör bindend. Textilien und andere Artikel können frei gewählt werden."}
                 {scope === "alle_artikel" && "Der Ausstatter gilt für alle Artikel des Vereins (Trikots, Hoodies, Jacken, T-Shirts etc.)."}
               </p>
             </div>
@@ -2287,9 +2289,14 @@ function SupplierSection({ org, orgId }: { org: any; orgId: number }) {
               Jede Sparte kann einen eigenen Ausrüster haben (z.B. Fußball → Nike, Handball → Kempa)
             </p>
           </div>
+          {hasSupplier && scope === "ganzer_verein" && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-2">
+              ⚠️ Der Vereinsausstatter gilt für den gesamten Verein. Sparten-Ausrüster können nicht hinzugefügt werden, solange der Bindungsbereich "Ganzer Verein" aktiv ist.
+            </p>
+          )}
           <Dialog open={showAddDeptSupplier} onOpenChange={setShowAddDeptSupplier}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" disabled={hasSupplier && org.supplierScope === "ganzer_verein"}>
                 <Plus className="w-4 h-4 mr-2" />Sparten-Ausrüster
               </Button>
             </DialogTrigger>

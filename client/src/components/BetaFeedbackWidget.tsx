@@ -65,15 +65,10 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
   const handleTakeScreenshot = async () => {
     setTakingScreenshot(true);
     try {
-      // Kurz das Widget ausblenden für den Screenshot
-      const widget = document.getElementById("beta-feedback-widget");
-      if (widget) widget.style.display = "none";
-
-      await new Promise((r) => setTimeout(r, 100));
-
-      // Nur den sichtbaren Viewport erfassen (was der User gerade sieht)
+      // Screenshot des sichtbaren Viewports - Widget wird per filter ausgeschlossen
+      // Kein display:none mehr, da das React-State-Probleme verursachen kann
       const dataUrl = await toPng(document.body, {
-        quality: 0.8,
+        quality: 0.7,
         pixelRatio: 1,
         width: window.innerWidth,
         height: window.innerHeight,
@@ -81,20 +76,19 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
           transform: `translate(-${window.scrollX}px, -${window.scrollY}px)`,
         },
         filter: (node) => {
-          // Feedback-Widget aus Screenshot ausschließen
-          if ((node as HTMLElement).id === "beta-feedback-widget") return false;
+          // Feedback-Widget und Test-Bar aus Screenshot ausschließen
+          const el = node as HTMLElement;
+          if (el.id === "beta-feedback-widget") return false;
+          if (el.id === "feedback-test-bar") return false;
           return true;
         },
       });
 
-      if (widget) widget.style.display = "";
       setScreenshotPreview(dataUrl);
       toast.success("Screenshot erstellt!");
     } catch (err) {
       console.error("Screenshot fehlgeschlagen:", err);
-      toast.error("Screenshot konnte nicht erstellt werden");
-      const widget = document.getElementById("beta-feedback-widget");
-      if (widget) widget.style.display = "";
+      toast.error("Screenshot konnte nicht erstellt werden. Feedback kann trotzdem gesendet werden.");
     } finally {
       setTakingScreenshot(false);
     }

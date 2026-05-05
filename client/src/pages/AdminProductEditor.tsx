@@ -654,9 +654,9 @@ export default function AdminProductEditor() {
       </header>
 
       <main className="container py-4 sm:py-6 px-3 sm:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] xl:grid-cols-[1fr_360px] gap-4 sm:gap-6 lg:h-[calc(100vh-120px)]">
           {/* Left: Canvas */}
-          <div className="space-y-3">
+          <div className="space-y-3 lg:overflow-hidden lg:flex lg:flex-col">
             {/* Part Tabs / Navigation */}
             {hasParts && (
               <div className="space-y-2">
@@ -722,10 +722,10 @@ export default function AdminProductEditor() {
             )}
 
             {/* Canvas Area */}
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden lg:flex-1 lg:min-h-0">
               <div
                 ref={canvasRef}
-                className="relative bg-[#f8f9fa] aspect-[3/4] select-none lg:max-h-[calc(100vh-140px)]"
+                className="relative bg-[#f8f9fa] aspect-[3/4] select-none lg:max-h-[calc(100vh-180px)] xl:max-h-[calc(100vh-140px)]"
                 style={{ cursor: drawMode ? "crosshair" : draggingZone ? "grabbing" : "default", touchAction: (draggingZone !== null || resizingZone !== null || drawMode || currentZones.length > 0) ? "none" : "pan-y" }}
                 onClick={() => !drawMode && setSelectedZoneId(null)}
                 onPointerDown={handleCanvasPointerDown}
@@ -864,7 +864,7 @@ export default function AdminProductEditor() {
           </div>
 
           {/* Right: Settings Panel */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1">
             <Tabs defaultValue="zones">
               <TabsList className="w-full">
                 <TabsTrigger value="details" className="flex-1 text-xs sm:text-sm">Details</TabsTrigger>

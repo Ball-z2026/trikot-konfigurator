@@ -26,6 +26,7 @@ import SponsorReview from "./pages/SponsorReview";
 import SponsorForm from "./pages/SponsorForm";
 import TwoFactorSetup from "./pages/TwoFactorSetup";
 import AdminDashboard from "./pages/AdminDashboard";
+import { FeedbackTestBar } from "./components/FeedbackTestBar";
 import PrintSheetExport from "./pages/PrintSheetExport";
 import ApprovalReview from "./pages/ApprovalReview";
 import TeamPoll from "./pages/TeamPoll";
@@ -105,6 +106,7 @@ function App() {
           <Toaster duration={2500} />
           <Router />
           <BetaFeedbackGlobal />
+          <FeedbackTestBar />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

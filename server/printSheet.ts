@@ -16,7 +16,7 @@
  */
 
 import PDFDocument from "pdfkit";
-import type { Buffer } from "node:buffer";
+import { Buffer } from "node:buffer";
 import {
   getSizeDimensions,
   type SizeCode,
@@ -226,7 +226,7 @@ export async function generatePrintSheet(
   doc.fontSize(6);
   doc.fillColor("black");
   doc.text(
-    `${config.clubName} | ${config.player.playerName} #${config.player.number} | ${part.partLabel} | Größe ${config.player.size} | ${partWidthCm}×${partHeightCm} cm | Beschnitt ${bleedMm}mm`,
+    `${config.clubName} | ${config.player.playerName} #${config.player.playerNumber} | ${part.partLabel} | Größe ${config.player.size} | ${partWidthCm}×${partHeightCm} cm | Beschnitt ${bleedMm}mm`,
     bleedPt,
     2,
     { width: safeWidth, align: "center" }

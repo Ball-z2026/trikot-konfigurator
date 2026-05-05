@@ -94,6 +94,7 @@ export default function SponsorReview() {
     );
   }
 
+  if (!data.sponsor || !data.mockup) return <div className="min-h-screen flex items-center justify-center"><p>Daten nicht verfügbar</p></div>;
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto space-y-6">
