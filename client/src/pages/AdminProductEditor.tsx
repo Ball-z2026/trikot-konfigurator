@@ -206,6 +206,16 @@ export default function AdminProductEditor() {
     onSuccess: () => utils.product.getById.invalidate({ id: productId }),
   });
 
+  // Freigabe-Workflow
+  const submitForApproval = trpc.templateApproval.submitForApproval.useMutation({
+    onSuccess: () => toast.success("Freigabe-Anfrage gesendet!"),
+    onError: (err) => toast.error(err.message),
+  });
+  const createPoll = trpc.templatePoll.create.useMutation({
+    onSuccess: () => toast.success("Abstimmung erstellt!"),
+    onError: (err) => toast.error(err.message),
+  });
+
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -1679,6 +1689,141 @@ export default function AdminProductEditor() {
           </div>
         </div>
       )}
+
+      {/* ═══ FREIGABE-DIALOG ═══ */}
+      <Dialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Vorlage zur Freigabe senden</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Senden Sie diese Vorlage zur Genehmigung an den Spartenleiter, Owner oder Sponsoren.
+              Erst nach Freigabe wird die Vorlage im Konfigurator sichtbar.
+            </p>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Genehmiger auswählen</Label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={approvalApprovers.some(a => a.type === "department_lead")}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setApprovalApprovers([...approvalApprovers, { type: "department_lead" }]);
+                      } else {
+                        setApprovalApprovers(approvalApprovers.filter(a => a.type !== "department_lead"));
+                      }
+                    }}
+                    className="rounded"
+                  />
+                  Spartenleiter
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={approvalApprovers.some(a => a.type === "owner")}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setApprovalApprovers([...approvalApprovers, { type: "owner" }]);
+                      } else {
+                        setApprovalApprovers(approvalApprovers.filter(a => a.type !== "owner"));
+                      }
+                    }}
+                    className="rounded"
+                  />
+                  Vereins-Owner
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={approvalApprovers.some(a => a.type === "sponsor")}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setApprovalApprovers([...approvalApprovers, { type: "sponsor" }]);
+                      } else {
+                        setApprovalApprovers(approvalApprovers.filter(a => a.type !== "sponsor"));
+                      }
+                    }}
+                    className="rounded"
+                  />
+                  Sponsoren
+                </label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowApprovalDialog(false)}>Abbrechen</Button>
+            <Button
+              disabled={approvalApprovers.length === 0 || submitForApproval.isPending}
+              onClick={() => {
+                // Wir brauchen eine designTemplate-ID - verwende productId als Referenz
+                submitForApproval.mutate({
+                  templateId: productId,
+                  approvers: approvalApprovers,
+                  message: `Freigabe-Anfrage für Produkt: ${name}`,
+                });
+                setShowApprovalDialog(false);
+                setApprovalApprovers([]);
+              }}
+            >
+              {submitForApproval.isPending ? "Sende..." : "Freigabe anfordern"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══ ABSTIMMUNGS-DIALOG ═══ */}
+      <Dialog open={showPollDialog} onOpenChange={setShowPollDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mannschafts-Abstimmung erstellen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Teilen Sie diese Vorlage mit Ihrer Mannschaft zur Abstimmung.
+              Spieler können dann über die Vorlage abstimmen.
+            </p>
+            <div className="space-y-2">
+              <Label>Titel der Abstimmung</Label>
+              <Input
+                value={pollTitle}
+                onChange={(e) => setPollTitle(e.target.value)}
+                placeholder="z.B. Neues Trikot-Design 2025/26"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Beschreibung (optional)</Label>
+              <Textarea
+                value={pollDescription}
+                onChange={(e) => setPollDescription(e.target.value)}
+                placeholder="Beschreibung für die Mannschaft..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPollDialog(false)}>Abbrechen</Button>
+            <Button
+              disabled={!pollTitle.trim() || createPoll.isPending}
+              onClick={() => {
+                createPoll.mutate({
+                  title: pollTitle,
+                  description: pollDescription || undefined,
+                  teamId: 0, // TODO: Mannschafts-Auswahl
+                  orgId: 0, // TODO: Org-ID aus Kontext
+                  templateIds: [productId],
+                });
+                setShowPollDialog(false);
+                setPollTitle("");
+                setPollDescription("");
+              }}
+            >
+              {createPoll.isPending ? "Erstelle..." : "Abstimmung starten"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

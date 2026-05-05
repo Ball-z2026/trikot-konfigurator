@@ -276,7 +276,7 @@ export async function createProductFromTemplate(
     zones: Array<{
       label: string;
       type: "image" | "text" | "both";
-      purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
+      purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom" | "coordinates" | "hashtag" | "flag" | "qrCode" | "sponsor" | "abbreviation";
       posX: number;
       posY: number;
       width: number;
@@ -2026,7 +2026,7 @@ export async function createDesignTemplate(data: InsertDesignTemplate) {
   return result.insertId;
 }
 
-export async function listDesignTemplates(orgId: number, userId: number, departmentId?: number, teamId?: number) {
+export async function listDesignTemplates(orgId: number, userId: number, departmentId?: number, teamId?: number, userRole?: string) {
   const db = await getDb();
   if (!db) return [];
   // Alle Vorlagen die der Benutzer sehen darf:
@@ -2036,11 +2036,25 @@ export async function listDesignTemplates(orgId: number, userId: number, departm
   // 4. Org-Vorlagen
   const all = await db.select().from(designTemplates).where(eq(designTemplates.orgId, orgId));
   return all.filter(t => {
-    if (t.createdByUserId === userId) return true; // Eigene immer sichtbar
-    if (t.visibility === "org") return true;
-    if (t.visibility === "department" && departmentId && t.departmentId === departmentId) return true;
-    if (t.visibility === "team" && teamId && t.teamId === teamId) return true;
-    return false;
+    // Eigene Vorlagen immer sichtbar
+    if (t.createdByUserId === userId) return true;
+    
+    // Sichtbarkeits-Filter
+    const isVisible = (() => {
+      if (t.visibility === "org") return true;
+      if (t.visibility === "department" && departmentId && t.departmentId === departmentId) return true;
+      if (t.visibility === "team" && teamId && t.teamId === teamId) return true;
+      return false;
+    })();
+    if (!isVisible) return false;
+    
+    // Freigabe-Logik: Trainer sehen nur freigegebene Vorlagen (approved)
+    // Owner und department_lead sehen alle (auch pending/draft)
+    if (userRole === "trainer") {
+      return t.approvalStatus === "approved" || t.approvalStatus === null;
+    }
+    
+    return true; // Owner/department_lead sehen alles
   });
 }
 

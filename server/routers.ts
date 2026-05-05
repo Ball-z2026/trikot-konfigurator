@@ -1021,7 +1021,10 @@ export const appRouter = router({
         teamId: z.number().optional(),
       }))
       .query(async ({ input, ctx }) => {
-        return listDesignTemplates(input.orgId, ctx.user.id, input.departmentId, input.teamId);
+        // Rolle des Users in der Org ermitteln für Freigabe-Sichtbarkeit
+        const membership = await getMembershipByUserAndOrg(ctx.user.id, input.orgId);
+        const userRole = membership?.role || "trainer";
+        return listDesignTemplates(input.orgId, ctx.user.id, input.departmentId, input.teamId, userRole);
       }),
 
     /** Einzelne Vorlage laden */

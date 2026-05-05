@@ -1709,24 +1709,25 @@
 - [x] Backend: Freigabe-Anfrage senden (templateApproval.submitForApproval)
 - [x] Backend: Genehmigung erteilen/ablehnen (templateApproval.decide)
 - [x] Backend: Abstimmung erstellen und Stimmen abgeben (templatePoll.create, .vote, .results, .hasVoted, .close)
-- [ ] Frontend: Freigabe-Button im Produktdesigner (statt direktem Export)
-- [ ] Frontend: Freigabe-Ansicht für Spartenleiter/Owner (Genehmigen/Ablehnen)
+- [x] Frontend: Freigabe-Button im Produktdesigner (Dialog mit Genehmiger-Auswahl)
+- [ ] Frontend: Freigabe-Ansicht für Spartenleiter/Owner (Genehmigen/Ablehnen) - eigene Seite
 - [ ] Frontend: Sponsor-Freigabe (Mockup-Vorschau für Sponsoren)
-- [ ] Frontend: Teilen-Button für Mannschafts-Abstimmung/Umfrage
+- [x] Frontend: Teilen-Button für Mannschafts-Abstimmung/Umfrage (Dialog mit Titel/Beschreibung)
 - [ ] Frontend: Abstimmungs-Ansicht für Mannschaftsmitglieder
-- [ ] Sichtbarkeits-Logik: Nur freigegebene Vorlagen im Konfigurator (wenn Trainer angemeldet)
+- [x] Sichtbarkeits-Logik: Nur freigegebene Vorlagen im Konfigurator (wenn Trainer angemeldet) - listDesignTemplates filtert nach approvalStatus
 
 ### Bug: Vorlage speichert Original-Bild statt erstellte Konfiguration
-- [ ] Prüfen: Beim Speichern einer Vorlage im Produktdesigner wird das Original-Bild gespeichert, nicht die erstellte Vorlage mit Zonen
-- [ ] Fix: Vorlage muss die komplette Zonen-Konfiguration (Positionen, Typen, Regeln) speichern
-- [ ] Fix: Thumbnail/Vorschau der Vorlage soll das konfigurierte Trikot zeigen (nicht nur das Basis-Bild)
+- [x] Prüfen: Beim Speichern einer Vorlage im Produktdesigner wird das Original-Bild gespeichert, nicht die erstellte Vorlage mit Zonen
+- [x] Fix: Vorlage muss die komplette Zonen-Konfiguration (Positionen, Typen, Regeln) speichern (positionsConfig)
+- [x] Fix: Thumbnail/Vorschau der Vorlage soll das konfigurierte Trikot zeigen (html-to-image Screenshot)
 
 ### Bug-Fix: Vorlage speichert Original-Bild statt Produkt-Vorlage
-- [ ] Beim Speichern der Vorlage: Screenshot des Produkt-Bereichs (weißes Trikot + Zonen) als imageUrl verwenden
-- [ ] html-to-image oder Canvas-Screenshot des rightCanvasRef generieren
-- [ ] Screenshot als Blob hochladen und als imageUrl der Vorlage setzen
+- [x] Beim Speichern der Vorlage: Screenshot des Produkt-Bereichs (weißes Trikot + Zonen) als imageUrl verwenden
+- [x] html-to-image Screenshot des rightCanvasRef/fullscreenCanvasRef generieren
+- [x] Screenshot als base64 an /api/upload senden und als imageUrl der Vorlage setzen
 
 ### Feature: Fullscreen-Ansicht im TemplateUpload für genaue Positionierung
-- [ ] Klick auf Produkt-Trikot (rechte Seite) öffnet Fullscreen/Modal
-- [ ] Im Fullscreen-Modus: Zonen verschieben, skalieren, genau positionieren
-- [ ] Schließen-Button um zurück zur normalen Ansicht zu kommen
+- [x] Klick auf Produkt-Trikot (rechte Seite) öffnet Fullscreen/Modal (Maximize2-Button)
+- [x] Im Fullscreen-Modus: Zonen verschieben, skalieren, rotieren, Farben ändern, Schriftart wählen
+- [x] Rechte Sidebar: cm-Maße pro Zone, Rotation-Slider, Verbandsregeln-Warnungen
+- [x] Schließen-Button (X) um zurück zur normalen Ansicht zu kommen
