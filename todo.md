@@ -1810,3 +1810,8 @@
 - [x] Bug ID 150002: Konfigurator - Ausstatter-Anzeige prüfen wenn Ausstatter festgelegt (Hinweis wird angezeigt, Filterung ist Feature-Request - Produkte brauchen brand-Zuordnung)
 - [x] Bug ID 150001: Verwaltung - Ausstatter-Bindungsbereich Optionen erweitern (spielkleidung Enum + UI hinzugefügt)
 - [x] Bereits behobene Bugs (ID 120002, 90001, 90002, 60001, 30001, 1, 180001) als resolved in DB markiert
+
+## Admin-Dashboard Feedback UX (Mai 2025)
+
+- [x] Feature: Zurück-Button im Feedback-Detail um zur Problemliste zurückzukehren
+- [x] Feature: Test-Button zum direkten Überprüfen des Problems (Link zur gemeldeten URL)

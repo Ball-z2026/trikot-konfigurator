@@ -410,6 +410,7 @@ function DashboardContent() {
 function BetaFeedbackPanel({ setLocation }: { setLocation: (path: string) => void }) {
   const [filterPage, setFilterPage] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const { data: feedbacks, refetch } = trpc.betaFeedback.list.useQuery(
     {
@@ -523,6 +524,19 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
         </Select>
       </div>
 
+      {/* Zurück-Button wenn Detail-Ansicht aktiv */}
+      {expandedId !== null && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mb-2"
+          onClick={() => setExpandedId(null)}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Zurück zur Übersicht
+        </Button>
+      )}
+
       {/* Feedback-Liste */}
       {!feedbacks || feedbacks.length === 0 ? (
         <Card>
@@ -533,7 +547,7 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
         </Card>
       ) : (
         <div className="space-y-3">
-          {feedbacks.map((fb) => (
+          {(expandedId !== null ? feedbacks.filter(f => f.id === expandedId) : feedbacks).map((fb) => (
             <Card
               key={fb.id}
               className={`${
@@ -597,6 +611,31 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                 </div>
 
                 <p className="text-sm whitespace-pre-wrap mb-3">{fb.message}</p>
+
+                {/* Test-Button - direkt zur gemeldeten Seite */}
+                {fb.currentUrl && (
+                  <div className="mb-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="h-8 text-xs"
+                      onClick={() => window.open(fb.currentUrl!, "_blank")}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                      Problem testen
+                    </Button>
+                    {expandedId !== fb.id && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs"
+                        onClick={() => setExpandedId(fb.id)}
+                      >
+                        Details anzeigen
+                      </Button>
+                    )}
+                  </div>
+                )}
 
                 {/* Screenshot */}
                 {fb.screenshotUrl && (
