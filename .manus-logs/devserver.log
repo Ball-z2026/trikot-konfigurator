@@ -7649,3 +7649,7 @@
 [2026-05-05T08:40:39.318Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-05T08:40:40.009Z] Server running on http://localhost:3000/
 [2026-05-05T08:56:45.559Z] 4:56:45 AM [vite] (client) hmr update /src/index.css, /src/components/BetaFeedbackWidget.tsx
+[2026-05-05T13:15:40.595Z] Dev server process group stopped
+[2026-05-05T13:15:43.612Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T13:15:53.951Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T13:16:01.589Z] Server running on http://localhost:3000/

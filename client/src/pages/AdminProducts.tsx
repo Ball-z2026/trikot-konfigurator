@@ -204,7 +204,12 @@ export default function AdminProducts() {
             {dialogOpen && (
               <div
                 className="fixed inset-0 z-40 bg-black/50"
-                onClick={() => { setDialogOpen(false); resetDialog(); }}
+                onClick={(e) => {
+                  // Nicht schließen wenn Klick auf dem Feedback-Widget war
+                  const target = e.target as HTMLElement;
+                  if (target.closest('#beta-feedback-widget')) return;
+                  setDialogOpen(false); resetDialog();
+                }}
               />
             )}
             <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto z-50">

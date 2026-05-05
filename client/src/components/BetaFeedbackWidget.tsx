@@ -151,7 +151,7 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
   if (!user) return null;
 
   return (
-    <div id="beta-feedback-widget" className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end gap-2">
+    <div id="beta-feedback-widget" className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end gap-2" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       {/* Admin: Feedback-Liste anzeigen */}
       {isAdmin && showFeedbacks && feedbacks && feedbacks.length > 0 && (
         <Card className="w-96 max-h-[70vh] overflow-y-auto shadow-xl border-orange-200 dark:border-orange-800 animate-in slide-in-from-bottom-2">

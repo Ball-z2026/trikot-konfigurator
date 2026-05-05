@@ -1768,3 +1768,8 @@
 - [x] Backend: Register-Route – POST /api/auth/register
 - [x] Frontend: Login-Seite mit E-Mail/Passwort-Formular + Manus-OAuth-Button – /login
 - [x] Admin-Account angelegt: assemacher@icloud.com mit Passwort Test1234! und role=admin (ID: 540037)
+
+## Bug: Beta-Feedback Widget springt zurück zur Produktliste (BEHOBEN)
+- [x] Beim Klick auf "Problem melden" im Produktdesigner (während KI-Produkterstellung) springt die Seite zurück zur Produktliste
+- [x] Widget darf keine Navigation/State-Änderung der darunterliegenden Seite auslösen
+- [x] Fix: stopPropagation auf Widget-Container + Overlay-Klick prüft ob Klick auf Widget war
