@@ -192,7 +192,6 @@ export default function AdminProducts() {
               setDialogOpen(open);
               if (!open) resetDialog();
             }}
-            modal={false}
           >
             <DialogTrigger asChild>
               <Button size="sm" className="h-8 text-xs sm:text-sm">
@@ -201,13 +200,7 @@ export default function AdminProducts() {
                 <span className="sm:hidden">Neu</span>
               </Button>
             </DialogTrigger>
-            {/* Manuelles Overlay für modal={false} - verhindert iOS Touch-Freeze */}
-            {dialogOpen && (
-              <div
-                className="fixed inset-0 z-40 bg-black/50 pointer-events-none"
-              />
-            )}
-            <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto z-50">
+            <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {createMode === "choose" && "Neues Produkt erstellen"}

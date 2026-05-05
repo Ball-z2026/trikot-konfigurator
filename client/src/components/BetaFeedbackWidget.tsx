@@ -62,11 +62,22 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
   });
 
   // Screenshot erstellen
+  // Erkennung ob Mobile-Gerät
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   const handleTakeScreenshot = async () => {
+    // Auf Mobile: html-to-image verursacht DOM-Manipulation die die Seite crasht
+    // Stattdessen nativen Screenshot-Hinweis zeigen
+    if (isMobile) {
+      toast.info(
+        "Auf dem Handy bitte einen nativen Screenshot machen (Power + Lautstärke) und das Bild dann hier beschreiben.",
+        { duration: 5000 }
+      );
+      return;
+    }
+
     setTakingScreenshot(true);
     try {
-      // Screenshot des sichtbaren Viewports - Widget wird per filter ausgeschlossen
-      // Kein display:none mehr, da das React-State-Probleme verursachen kann
       const dataUrl = await toPng(document.body, {
         quality: 0.7,
         pixelRatio: 1,
@@ -76,7 +87,6 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
           transform: `translate(-${window.scrollX}px, -${window.scrollY}px)`,
         },
         filter: (node) => {
-          // Feedback-Widget und Test-Bar aus Screenshot ausschließen
           const el = node as HTMLElement;
           if (el.id === "beta-feedback-widget") return false;
           if (el.id === "feedback-test-bar") return false;

@@ -1839,8 +1839,15 @@
 
 - [x] Bug FIX: Zone-Drag - setPointerCapture entfernt (window-Events kommen jetzt korrekt an auf Touch)
 - [x] Bug FIX: FeedbackTestBar navigiert jetzt korrekt zu /admin
-- [ ] Feature: Bewertungssystem für jeden Tab/Reiter (funktioniert nicht / gut / hervorragend)
+- [x] Feature: Bewertungssystem für jeden Tab/Reiter (funktioniert nicht / gut / hervorragend)
   - [x] DB-Schema: section_ratings Tabelle (sectionId, rating, lockedBy)
   - [x] Backend: CRUD-API für Bewertungen
   - [x] Frontend: Bewertungsleiste-Komponente
-  - [ ] Integration in alle Tabs (Verein, Produktdesigner, Konfigurator, Admin)
+  - [x] Integration in alle Tabs (Verein, Produktdesigner, Konfigurator, Admin) – 21 Tabs total
+
+## KRITISCH: Produktdesigner Bugs (5. Versuch - Mai 2025)
+
+- [x] Bug KRITISCH: Bearbeiten-Button auf Mobile im Produktdesigner nicht klickbar – Fix: Dialog auf modal=true (Standard), manuelles Overlay entfernt, Touch-Target 44px
+- [x] Bug KRITISCH: Feedback-Widget Screenshot lässt Seite verschwinden auf Mobile – Fix: html-to-image auf Mobile deaktiviert, nativer Screenshot-Hinweis
+- [x] Bug: AdminProductEditor Trikot-Bild auf Laptop nicht groß genug – Fix: maxHeight erhöht (100vh-100px), Fullscreen-Editor auf 900px
+- [x] Root-Cause: iOS Touch-Hit-Test ignoriert pointer-events:none bei fixed inset-0 Overlays; html-to-image crasht Mobile-DOM

@@ -859,7 +859,7 @@ export function TemplateUpload({
               <Label className="text-base font-semibold">Unser Produkt (Ergebnis)</Label>
               <div className="flex gap-1">
                 {selectedProductId && zones.length > 0 && (
-                  <Button size="sm" variant="default" onClick={() => setFullscreenMode(true)} className="bg-indigo-600 hover:bg-indigo-700">
+                  <Button size="sm" variant="default" onClick={() => setFullscreenMode(true)} className="bg-indigo-600 hover:bg-indigo-700 min-h-[44px] min-w-[44px] touch-manipulation">
                     <Maximize2 className="w-4 h-4 mr-1" />
                     Bearbeiten
                   </Button>
@@ -1091,14 +1091,14 @@ export function TemplateUpload({
             </div>
 
             {/* Main Content: Canvas links, Sidebar rechts */}
-            <div className="flex w-full pt-14">
+            <div className="flex w-full pt-14 flex-col lg:flex-row">
               {/* ─── Canvas (großes Trikot-Bild) ─── */}
-              <div className="flex-1 flex items-center justify-center bg-gray-100 p-8 overflow-auto">
+              <div className="flex-1 flex items-center justify-center bg-gray-100 p-4 lg:p-8 overflow-auto">
                 <div
                   ref={fullscreenCanvasRef}
                   data-canvas="right"
                   className="relative bg-gray-100 select-none shadow-xl rounded-lg overflow-hidden"
-                  style={{ maxWidth: '700px', width: '100%', touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
+                  style={{ maxWidth: '900px', width: '100%', touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
                   {activePart?.imageUrl ? (
                     <img
@@ -1130,7 +1130,7 @@ export function TemplateUpload({
               </div>
 
               {/* ─── Sidebar: Zone-Eigenschaften ─── */}
-              <div className="w-80 border-l bg-white overflow-y-auto p-4 space-y-3">
+              <div className="hidden lg:block w-80 border-l bg-white overflow-y-auto p-4 space-y-3">
                 <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wide">Zonen</h3>
                 
                 {/* Verbandsregeln-Warnungen */}

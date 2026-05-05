@@ -726,7 +726,7 @@ export default function AdminProductEditor() {
             <Card className="overflow-hidden lg:flex-1 lg:min-h-0">
               <div
                 ref={canvasRef}
-                className="relative bg-[#f8f9fa] aspect-[3/4] select-none lg:max-h-[calc(100vh-180px)] xl:max-h-[calc(100vh-140px)]"
+                className="relative bg-[#f8f9fa] aspect-[3/4] select-none lg:max-h-[calc(100vh-120px)] xl:max-h-[calc(100vh-100px)]"
                 style={{ cursor: drawMode ? "crosshair" : draggingZone ? "grabbing" : "default", touchAction: (draggingZone !== null || resizingZone !== null || drawMode || currentZones.length > 0) ? "none" : "pan-y" }}
                 onClick={() => !drawMode && setSelectedZoneId(null)}
                 onPointerDown={handleCanvasPointerDown}
