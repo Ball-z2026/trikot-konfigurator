@@ -102,7 +102,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
-          <Toaster />
+          <Toaster duration={2500} />
           <Router />
           <BetaFeedbackGlobal />
         </TooltipProvider>

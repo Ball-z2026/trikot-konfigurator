@@ -702,26 +702,26 @@ function OrgDetail({ orgId }: { orgId: number }) {
       <div className="container py-6 relative z-10">
         <Tabs defaultValue={isOwner ? "stammdaten" : isDeptLead ? "departments" : "members"}>
           <TabsList
-            className="mb-6 flex-wrap bg-muted/50 p-1 rounded-xl"
+            className="mb-6 flex flex-nowrap overflow-x-auto bg-muted/50 p-1 rounded-xl max-w-full scrollbar-thin"
             style={org.primaryColor ? {
               '--tab-active-bg': org.primaryColor,
               '--tab-active-text': '#fff',
             } as React.CSSProperties : undefined}
           >
             {/* Owner sieht alle Tabs */}
-            {isOwner && <TabsTrigger value="stammdaten" className="gap-2 data-[state=active]:shadow-sm" style={org.primaryColor ? { '--tw-shadow-color': org.primaryColor } as React.CSSProperties : undefined}><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>}
-            {isOwner && <TabsTrigger value="logos" className="gap-2 data-[state=active]:shadow-sm"><Image className="w-4 h-4" />Logos</TabsTrigger>}
+            {isOwner && <TabsTrigger value="stammdaten" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm" style={org.primaryColor ? { '--tw-shadow-color': org.primaryColor } as React.CSSProperties : undefined}><Building2 className="w-4 h-4" />Übersicht</TabsTrigger>}
+            {isOwner && <TabsTrigger value="logos" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm"><Image className="w-4 h-4" />Logos</TabsTrigger>}
             {/* Owner + SL sehen Sponsoren */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="sponsors" className="gap-2 data-[state=active]:shadow-sm"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="sponsors" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm"><Megaphone className="w-4 h-4" />Sponsoren</TabsTrigger>}
             {/* Owner + SL sehen Abteilungen */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="departments" className="gap-2 data-[state=active]:shadow-sm"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="departments" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm"><Building2 className="w-4 h-4" />Abteilungen</TabsTrigger>}
             {/* Alle sehen Mitglieder (gefiltert nach Rolle im Backend) */}
-            <TabsTrigger value="members" className="gap-2 data-[state=active]:shadow-sm"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
+            <TabsTrigger value="members" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm"><Users className="w-4 h-4" />Mitglieder</TabsTrigger>
             {/* Owner + SL sehen Kollektionen */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2 data-[state=active]:shadow-sm"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="collections" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm"><Library className="w-4 h-4" />Kollektionen</TabsTrigger>}
             {/* Owner + SL sehen Vereinsmitglieder (optional) */}
-            {(isOwner || isDeptLead) && <TabsTrigger value="org-members" className="gap-2 data-[state=active]:shadow-sm"><UserPlus className="w-4 h-4" />Vereinsmitglieder</TabsTrigger>}
-            {isOwner && <TabsTrigger value="supplier" className="gap-2 data-[state=active]:shadow-sm"><ShieldCheck className="w-4 h-4" />Ausstatter</TabsTrigger>}
+            {(isOwner || isDeptLead) && <TabsTrigger value="org-members" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm"><UserPlus className="w-4 h-4" />Vereinsmitglieder</TabsTrigger>}
+            {isOwner && <TabsTrigger value="supplier" className="gap-2 shrink-0 whitespace-nowrap data-[state=active]:shadow-sm"><ShieldCheck className="w-4 h-4" />Ausstatter</TabsTrigger>}
           </TabsList>
 
           {/* ─── Stammdaten Tab ─── */}

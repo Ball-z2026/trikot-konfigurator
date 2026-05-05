@@ -1796,3 +1796,8 @@
 - [x] Bug: Mobile Darstellung: Felder überlappen sich auf dem Handy (responsive fixes)
 - [x] Feature: Beta-Feedback Admin: "Dran gearbeitet"-Button (Status wenn Manus den Bug bearbeitet hat)
 - [x] Feature: Beta-Feedback Admin: Link-Feld zum direkten Springen zur betroffenen Stelle
+
+## Vereinsverwaltung Bugs (Mai 2025)
+
+- [x] Bug: Ausstatter-Feld in Vereinsverwaltung nicht anklickbar (TabsList horizontal scrollbar + SelectTrigger w-full)
+- [x] Bug: Erfolgsmeldungen/Toasts nach Upload bleiben zu lange sichtbar - verkürzt auf 2.5s
