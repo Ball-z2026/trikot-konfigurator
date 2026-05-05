@@ -1,0 +1,2 @@
+ALTER TABLE `beta_feedback` MODIFY COLUMN `status` enum('open','resolved','still_present','in_progress') NOT NULL DEFAULT 'open';--> statement-breakpoint
+ALTER TABLE `beta_feedback` ADD `verifyUrl` varchar(500);

@@ -1788,3 +1788,11 @@
 ## Bug: Produktdesigner Dialog schließt bei Klick außerhalb (BEHOBEN)
 - [x] "Neues Produkt"-Dialog schließt sich nicht mehr bei Klick außerhalb
 - [x] Overlay hat pointer-events-none, Dialog nur über X-Button oder Abbrechen schließbar
+
+## Produktdesigner Bugs (Mai 2025)
+
+- [x] Bug: Zonen nur entlang Achsen verschiebbar, sollen frei positionierbar sein (touchAction fix)
+- [x] Bug: "Feld bearbeiten" Layout: Trikot groß links, Bearbeitungsoptionen rechts (optimiert)
+- [x] Bug: Mobile Darstellung: Felder überlappen sich auf dem Handy (responsive fixes)
+- [x] Feature: Beta-Feedback Admin: "Dran gearbeitet"-Button (Status wenn Manus den Bug bearbeitet hat)
+- [x] Feature: Beta-Feedback Admin: Link-Feld zum direkten Springen zur betroffenen Stelle

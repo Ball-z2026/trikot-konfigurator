@@ -7786,3 +7786,30 @@
 [2026-05-05T14:45:47.042Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-05T14:45:47.740Z] Server running on http://localhost:3000/
 [2026-05-05T14:47:41.789Z] 10:47:41 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-05T16:57:55.593Z] 12:57:55 PM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-05T16:57:57.302Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T16:57:58.189Z] Server running on http://localhost:3000/
+[2026-05-05T16:58:20.071Z] 12:58:20 PM [tsx] change in ./server/db.ts Restarting...
+[2026-05-05T16:58:21.992Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T16:58:22.696Z] Server running on http://localhost:3000/
+[2026-05-05T16:58:35.028Z] 12:58:35 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-05T16:58:37.047Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T16:58:37.633Z] Server running on http://localhost:3000/
+[2026-05-05T16:58:44.558Z] 12:58:44 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-05T16:58:47.022Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T16:58:47.846Z] Server running on http://localhost:3000/
+[2026-05-05T16:59:18.861Z] 12:59:18 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T16:59:30.932Z] 12:59:30 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T17:00:01.505Z] 1:00:01 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T17:00:24.036Z] 1:00:24 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T17:00:34.179Z] 1:00:34 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T17:00:52.709Z] 1:00:52 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T17:01:04.620Z] 1:01:04 PM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T17:05:29.635Z] 1:05:29 PM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T17:06:01.426Z] 1:06:01 PM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T17:06:18.963Z] 1:06:18 PM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-05T17:08:07.677Z] 1:08:07 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-05T17:08:24.755Z] 1:08:24 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-05T17:08:40.824Z] 1:08:40 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-05T17:08:51.642Z] 1:08:51 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-05T17:09:02.030Z] 1:09:02 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css

@@ -4603,7 +4603,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
     list: protectedProcedure
       .input(z.object({
         page: z.string().optional(),
-        status: z.enum(["open", "resolved", "still_present"]).optional(),
+        status: z.enum(["open", "resolved", "still_present", "in_progress"]).optional(),
       }).optional())
       .query(async ({ input, ctx }) => {
         // Nur Admins sehen alle Feedbacks
@@ -4624,14 +4624,15 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
     updateStatus: protectedProcedure
       .input(z.object({
         id: z.number(),
-        status: z.enum(["open", "resolved", "still_present"]),
+        status: z.enum(["open", "resolved", "still_present", "in_progress"]),
         adminNote: z.string().optional(),
+        verifyUrl: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         if (ctx.user.role !== "admin") {
           throw new TRPCError({ code: "FORBIDDEN", message: "Nur Admins können Status ändern" });
         }
-        await updateBetaFeedbackStatus(input.id, input.status, input.adminNote);
+        await updateBetaFeedbackStatus(input.id, input.status, input.adminNote, input.verifyUrl);
         return { success: true };
       }),
 

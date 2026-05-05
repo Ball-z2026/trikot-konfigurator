@@ -365,6 +365,13 @@
       "when": 1777989867867,
       "tag": "0051_white_mephisto",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "5",
+      "when": 1778000292054,
+      "tag": "0052_heavy_patriot",
+      "breakpoints": true
     }
   ]
 }

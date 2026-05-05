@@ -654,7 +654,7 @@ export default function AdminProductEditor() {
       </header>
 
       <main className="container py-4 sm:py-6 px-3 sm:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-4 sm:gap-6">
           {/* Left: Canvas */}
           <div className="space-y-3">
             {/* Part Tabs / Navigation */}
@@ -725,8 +725,8 @@ export default function AdminProductEditor() {
             <Card className="overflow-hidden">
               <div
                 ref={canvasRef}
-                className="relative bg-[#f8f9fa] aspect-[3/4] select-none"
-                style={{ cursor: drawMode ? "crosshair" : draggingZone ? "grabbing" : "default", touchAction: (draggingZone !== null || resizingZone !== null || drawMode) ? "none" : "pan-y" }}
+                className="relative bg-[#f8f9fa] aspect-[3/4] select-none lg:max-h-[calc(100vh-140px)]"
+                style={{ cursor: drawMode ? "crosshair" : draggingZone ? "grabbing" : "default", touchAction: (draggingZone !== null || resizingZone !== null || drawMode || currentZones.length > 0) ? "none" : "pan-y" }}
                 onClick={() => !drawMode && setSelectedZoneId(null)}
                 onPointerDown={handleCanvasPointerDown}
                 onPointerMove={handleCanvasPointerMove}

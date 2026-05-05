@@ -2230,12 +2230,13 @@ export async function countBetaFeedbackByPage(page: string) {
   return result[0]?.count || 0;
 }
 
-export async function updateBetaFeedbackStatus(id: number, status: "open" | "resolved" | "still_present", adminNote?: string) {
+export async function updateBetaFeedbackStatus(id: number, status: "open" | "resolved" | "still_present" | "in_progress", adminNote?: string, verifyUrl?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const updateData: any = { status };
   if (status === "resolved") updateData.resolvedAt = new Date();
   if (adminNote !== undefined) updateData.adminNote = adminNote;
+  if (verifyUrl !== undefined) updateData.verifyUrl = verifyUrl;
   await db.update(betaFeedback).set(updateData).where(eq(betaFeedback.id, id));
 }
 

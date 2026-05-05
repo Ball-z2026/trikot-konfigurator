@@ -169,20 +169,20 @@ export default function AdminProducts() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-10">
-        <div className="container flex items-center justify-between h-14">
-          <div className="flex items-center gap-3">
+        <div className="container flex items-center justify-between h-14 px-3 sm:px-4 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Link href="/">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 sm:h-9 sm:w-9">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <h1 className="text-lg font-bold">Produktverwaltung</h1>
+            <h1 className="text-sm sm:text-lg font-bold truncate">Produktverwaltung</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <Link href="/verwaltung/admin/users">
-              <Button variant="outline" size="sm">
-                <UserCog className="w-4 h-4 mr-2" />
-                Benutzer
+              <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm">
+                <UserCog className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Benutzer</span>
               </Button>
             </Link>
           </div>
@@ -195,9 +195,10 @@ export default function AdminProducts() {
             modal={false}
           >
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Neues Produkt
+              <Button size="sm" className="h-8 text-xs sm:text-sm">
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Neues Produkt</span>
+                <span className="sm:hidden">Neu</span>
               </Button>
             </DialogTrigger>
             {/* Manuelles Overlay für modal={false} - verhindert iOS Touch-Freeze */}
@@ -516,7 +517,7 @@ export default function AdminProducts() {
       </header>
 
       {/* Product List */}
-      <main className="container py-6">
+      <main className="container py-4 sm:py-6 px-3 sm:px-4">
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -534,7 +535,7 @@ export default function AdminProducts() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {products.map((product: any) => (
               <Card
                 key={product.id}
@@ -574,15 +575,15 @@ export default function AdminProducts() {
                     )}
                   </div>
                 </div>
-                <CardContent className="p-4">
+                <CardContent className="p-3 sm:p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <h3 className="font-semibold truncate">{product.name}</h3>
+                      <h3 className="text-sm sm:text-base font-semibold truncate">{product.name}</h3>
                       {product.category && (
-                        <p className="text-sm text-muted-foreground">{product.category}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{product.category}</p>
                       )}
                     </div>
-                    <div className="flex gap-1 shrink-0">
+                    <div className="flex gap-0.5 sm:gap-1 shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"

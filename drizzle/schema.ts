@@ -1016,9 +1016,11 @@ export const betaFeedback = mysqlTable("beta_feedback", {
   /** Die Problembeschreibung */
   message: text("message").notNull(),
   /** Status des Feedbacks */
-  status: mysqlEnum("status", ["open", "resolved", "still_present"]).default("open").notNull(),
+  status: mysqlEnum("status", ["open", "resolved", "still_present", "in_progress"]).default("open").notNull(),
   /** Admin-Notiz zur Lösung */
   adminNote: text("adminNote"),
+  /** Verifizierungs-URL: Link zum direkten Prüfen ob Bug behoben */
+  verifyUrl: varchar("verifyUrl", { length: 500 }),
   /** Browser / User-Agent Info */
   userAgent: text("userAgent"),
   /** Aktuelle URL beim Feedback */

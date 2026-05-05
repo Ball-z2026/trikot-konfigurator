@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Building2, Users, Package, Shield, ArrowLeft, Megaphone,
   Layers, UserCheck, ChevronRight, LayoutDashboard, ShoppingBag,
-  Bug, CheckCircle2, AlertCircle, Trash2, Copy,
+  Bug, CheckCircle2, AlertCircle, Trash2, Copy, Wrench, ExternalLink,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
@@ -414,7 +414,7 @@ function BetaFeedbackPanel({ setLocation }: { setLocation: (path: string) => voi
   const { data: feedbacks, refetch } = trpc.betaFeedback.list.useQuery(
     {
       ...(filterPage !== "all" ? { page: filterPage } : {}),
-      ...(filterStatus !== "all" ? { status: filterStatus as "open" | "resolved" | "still_present" } : {}),
+      ...(filterStatus !== "all" ? { status: filterStatus as "open" | "resolved" | "still_present" | "in_progress" } : {}),
     }
   );
 
@@ -435,18 +435,20 @@ function BetaFeedbackPanel({ setLocation }: { setLocation: (path: string) => voi
   // "An Manus senden" - kopiert formatiertes Problem in Zwischenablage
   const priorityLabels: Record<string, string> = { low: "Niedrig", medium: "Mittel", high: "Hoch", critical: "Kritisch" };
   const handleCopyForManus = (fb: any) => {
+    const statusLabel = fb.status === "resolved" ? "Behoben" : fb.status === "still_present" ? "Weiter vorhanden" : fb.status === "in_progress" ? "In Bearbeitung" : "Offen";
     const text = `## Beta-Feedback: Problem auf Seite "${fb.page}"${fb.area ? ` (Bereich: ${fb.area})` : ""}
 
 **Gemeldet von:** ${fb.userName || "Anonym"}
 **Datum:** ${new Date(fb.createdAt).toLocaleString("de-DE")}
 **Priorität:** ${priorityLabels[fb.priority] || "Mittel"}
 **URL:** ${fb.currentUrl || "Nicht verfügbar"}
-**Status:** ${fb.status === "resolved" ? "Behoben" : fb.status === "still_present" ? "Weiter vorhanden" : "Offen"}
+**Status:** ${statusLabel}
 
 ### Problembeschreibung:
 ${fb.message}
 ${fb.screenshotUrl ? `\n### Screenshot:\n${window.location.origin}${fb.screenshotUrl}` : ""}
 ${fb.adminNote ? `\n### Admin-Notiz:\n${fb.adminNote}` : ""}
+${fb.verifyUrl ? `\n### Prüf-Link:\n${fb.verifyUrl}` : ""}
 
 ---
 Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "${fb.area}"` : ""}.`;
@@ -460,17 +462,24 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
   const uniquePages = Array.from(new Set(feedbacks?.map(f => f.page) || []));
 
   const openCount = feedbacks?.filter(f => f.status === "open").length ?? 0;
+  const inProgressCount = feedbacks?.filter(f => f.status === "in_progress").length ?? 0;
   const resolvedCount = feedbacks?.filter(f => f.status === "resolved").length ?? 0;
   const stillPresentCount = feedbacks?.filter(f => f.status === "still_present").length ?? 0;
 
   return (
     <div className="space-y-4">
       {/* Statistik-Karten */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-orange-600">{openCount}</div>
             <div className="text-xs text-muted-foreground">Offen</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-blue-600">{inProgressCount}</div>
+            <div className="text-xs text-muted-foreground">In Bearbeitung</div>
           </CardContent>
         </Card>
         <Card>
@@ -507,6 +516,7 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
           <SelectContent>
             <SelectItem value="all">Alle Status</SelectItem>
             <SelectItem value="open">Offen</SelectItem>
+            <SelectItem value="in_progress">In Bearbeitung</SelectItem>
             <SelectItem value="still_present">Weiter vorhanden</SelectItem>
             <SelectItem value="resolved">Behoben</SelectItem>
           </SelectContent>
@@ -531,6 +541,8 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                   ? "border-green-200 dark:border-green-800"
                   : fb.status === "still_present"
                   ? "border-red-200 dark:border-red-800"
+                  : fb.status === "in_progress"
+                  ? "border-blue-200 dark:border-blue-800"
                   : "border-orange-200 dark:border-orange-800"
               }`}
             >
@@ -574,10 +586,12 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                           ? "border-green-400 text-green-700 bg-green-50"
                           : fb.status === "still_present"
                           ? "border-red-400 text-red-700 bg-red-50"
+                          : fb.status === "in_progress"
+                          ? "border-blue-400 text-blue-700 bg-blue-50"
                           : "border-orange-400 text-orange-700 bg-orange-50"
                       }`}
                     >
-                      {fb.status === "resolved" ? "✓ Behoben" : fb.status === "still_present" ? "✗ Weiter vorhanden" : "● Offen"}
+                      {fb.status === "resolved" ? "✓ Behoben" : fb.status === "still_present" ? "✗ Weiter vorhanden" : fb.status === "in_progress" ? "⚙ In Bearbeitung" : "● Offen"}
                     </Badge>
                   </div>
                 </div>
@@ -602,8 +616,48 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                   </div>
                 )}
 
+                {/* Verifizierungs-Link */}
+                {(fb as any).verifyUrl && (
+                  <div className="text-xs bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-2 rounded mb-3 flex items-center gap-2">
+                    <span className="font-semibold text-blue-700 dark:text-blue-300">Prüf-Link:</span>
+                    <a
+                      href={(fb as any).verifyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline truncate flex-1"
+                    >
+                      {(fb as any).verifyUrl}
+                    </a>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-5 w-5 p-0"
+                      onClick={() => {
+                        navigator.clipboard.writeText((fb as any).verifyUrl);
+                        toast.success("Link kopiert!");
+                      }}
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
+
                 {/* Action-Buttons */}
                 <div className="flex flex-wrap gap-2">
+                  {fb.status !== "in_progress" && fb.status !== "resolved" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs border-blue-400 text-blue-700 hover:bg-blue-50"
+                      onClick={() => {
+                        const verifyUrl = fb.currentUrl || "";
+                        updateStatusMutation.mutate({ id: fb.id, status: "in_progress", verifyUrl });
+                      }}
+                    >
+                      <Wrench className="w-3 h-3 mr-1" />
+                      Dran gearbeitet
+                    </Button>
+                  )}
                   {fb.status !== "resolved" && (
                     <Button
                       size="sm"
@@ -626,7 +680,7 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                       Weiter vorhanden
                     </Button>
                   )}
-                  {fb.status === "resolved" && (
+                  {(fb.status === "resolved" || fb.status === "in_progress") && (
                     <Button
                       size="sm"
                       variant="outline"
