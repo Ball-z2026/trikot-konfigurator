@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectionRatingBar } from "@/components/SectionRatingBar";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -390,8 +391,8 @@ export default function AdminProductEditor() {
       e.stopPropagation();
       const zone = localZones.find((z) => z.id === zoneId);
       if (!zone) return;
-      // Capture pointer for reliable tracking on touch
-      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+      // NOTE: setPointerCapture wurde entfernt weil es window-Events blockiert.
+      // Stattdessen nutzen wir touchAction: 'none' auf dem Canvas + window-Listener.
       // Haptic feedback on touch
       if (e.pointerType === "touch" && navigator.vibrate) {
         navigator.vibrate(15);
@@ -877,6 +878,7 @@ export default function AdminProductEditor() {
 
               {/* Product Details Tab */}
               <TabsContent value="details" className="space-y-4 mt-3 sm:mt-4">
+                <SectionRatingBar sectionId="designer.details" />
                 <Card>
                   <CardHeader className="pb-2 sm:pb-3"><CardTitle className="text-sm sm:text-base">Produktdetails</CardTitle></CardHeader>
                   <CardContent className="space-y-3 sm:space-y-4">
@@ -1079,6 +1081,7 @@ export default function AdminProductEditor() {
 
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                <SectionRatingBar sectionId="designer.zonen" />
                 {/* Add Zone Buttons */}
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-sm font-medium">Platzierungszonen</span>

@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectionRatingBar } from "@/components/SectionRatingBar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -2555,6 +2556,7 @@ export default function CustomerConfigurator() {
               {/* Colors Tab */}
               {(isSublimation || isDtf) && (
                 <TabsContent value="colors" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                  <SectionRatingBar sectionId="konfigurator.farben" />
                   {/* Sublimation: Per-Part Color Selection */}
                   {isSublimation && (
                     <Card>
@@ -2830,6 +2832,7 @@ export default function CustomerConfigurator() {
 
               {/* Zones Tab */}
               <TabsContent value="zones" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                <SectionRatingBar sectionId="konfigurator.zonen" />
                 {/* Verbandsvorgaben-Warnungen */}
                 {validationWarnings.length > 0 && productData?.category === 'Trikot' && (
                   <Card className="border-amber-300 bg-amber-50/50 dark:border-amber-700 dark:bg-amber-950/30">
@@ -3595,6 +3598,7 @@ export default function CustomerConfigurator() {
 
               {/* Team Tab */}
               <TabsContent value="team" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                <SectionRatingBar sectionId="konfigurator.mannschaft" />
                 <Card>
                   <CardHeader className="pb-2 sm:pb-3">
                     <CardTitle className="text-sm sm:text-base">Mannschaftsliste</CardTitle>

@@ -28,7 +28,7 @@ export function FeedbackTestBar() {
       utils.betaFeedback.list.invalidate();
       toast.success("Status aktualisiert!");
       // Zurück zum Dashboard
-      setLocation("/verwaltung/admin");
+      setLocation("/admin");
     },
     onError: () => toast.error("Fehler beim Aktualisieren"),
   });
@@ -62,7 +62,7 @@ export function FeedbackTestBar() {
   };
 
   const handleBack = () => {
-    setLocation("/verwaltung/admin");
+    setLocation("/admin");
   };
 
   const handleDismiss = () => {

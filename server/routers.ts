@@ -4647,5 +4647,32 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         return { success: true };
       }),
   }),
+
+  // ─── Section Ratings (Bewertungssystem) ────────────────────────────────────────────
+  sectionRating: router({
+    list: protectedProcedure.query(async () => {
+      const { listSectionRatings } = await import("./db");
+      return listSectionRatings();
+    }),
+    get: protectedProcedure
+      .input(z.object({ sectionId: z.string() }))
+      .query(async ({ input }) => {
+        const { getSectionRating } = await import("./db");
+        return getSectionRating(input.sectionId);
+      }),
+    upsert: protectedProcedure
+      .input(z.object({
+        sectionId: z.string(),
+        rating: z.enum(["bad", "good", "excellent"]),
+        comment: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Nur Admins können Bewertungen setzen" });
+        }
+        const { upsertSectionRating } = await import("./db");
+        return upsertSectionRating({ ...input, ratedBy: ctx.user.id });
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

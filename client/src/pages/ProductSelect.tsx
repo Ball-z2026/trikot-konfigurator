@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectionRatingBar } from "@/components/SectionRatingBar";
 import { trpc } from "@/lib/trpc";
 import { Shirt, ArrowRight, ArrowLeft, Loader2, Filter, Users, Trophy, Package, Sparkles, Eye, Lock, Building2, UsersRound } from "lucide-react";
 
@@ -296,6 +297,7 @@ export default function ProductSelect() {
 
             {/* ─── Tab: Produkte ─── */}
             <TabsContent value="products">
+              <SectionRatingBar sectionId="produktauswahl.produkte" />
               {productsLoading ? (
                 <div className="text-center py-16">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
@@ -388,6 +390,7 @@ export default function ProductSelect() {
 
             {/* ─── Tab: Vorlagen (KI-Analyse-Ergebnisse) ─── */}
             <TabsContent value="templates">
+              <SectionRatingBar sectionId="produktauswahl.vorlagen" />
               {templatesLoading ? (
                 <div className="text-center py-16">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />

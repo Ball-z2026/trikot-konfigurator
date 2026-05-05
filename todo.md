@@ -1834,3 +1834,13 @@
 - [x] Feature: Entwickler-Notiz im Feedback-Panel (was wurde gemacht, potenzielle Probleme)
 - [x] System: TypeScript-Fehler beheben (Buffer import, player.number, savedDesigns, SponsorReview guard)
 - [x] System: CustomerConfigurator Parse-Fehler war alter Log-Eintrag, kein aktueller Fehler
+
+## Kritische Fixes + Bewertungssystem (Mai 2025)
+
+- [x] Bug FIX: Zone-Drag - setPointerCapture entfernt (window-Events kommen jetzt korrekt an auf Touch)
+- [x] Bug FIX: FeedbackTestBar navigiert jetzt korrekt zu /admin
+- [ ] Feature: Bewertungssystem für jeden Tab/Reiter (funktioniert nicht / gut / hervorragend)
+  - [x] DB-Schema: section_ratings Tabelle (sectionId, rating, lockedBy)
+  - [x] Backend: CRUD-API für Bewertungen
+  - [x] Frontend: Bewertungsleiste-Komponente
+  - [ ] Integration in alle Tabs (Verein, Produktdesigner, Konfigurator, Admin)

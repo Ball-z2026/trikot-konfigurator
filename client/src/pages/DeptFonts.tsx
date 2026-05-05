@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectionRatingBar } from "@/components/SectionRatingBar";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import {
@@ -549,6 +550,7 @@ export default function DeptFonts() {
 
           {/* ─── Fonts Tab ─── */}
           <TabsContent value="fonts">
+            <SectionRatingBar sectionId="sparte.schriftarten" />
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-bold">Freigegebene Schriftarten</h2>
@@ -852,6 +854,7 @@ export default function DeptFonts() {
 
           {/* ─── Members Tab ─── */}
           <TabsContent value="members">
+            <SectionRatingBar sectionId="sparte.mitglieder" />
             <MembersTab
               orgId={orgId}
               deptId={deptId}

@@ -1035,3 +1035,27 @@ export const betaFeedback = mysqlTable("beta_feedback", {
 
 export type BetaFeedback = typeof betaFeedback.$inferSelect;
 export type InsertBetaFeedback = typeof betaFeedback.$inferInsert;
+
+
+// ─── Bewertungssystem für Beta-Bereiche ──────────────────────────────────────
+/**
+ * Jeder Tab/Bereich kann vom Admin bewertet werden:
+ * - "bad" = Funktioniert nicht (kann jederzeit geändert werden)
+ * - "good" = Gut (Änderung nur nach Rückfrage)
+ * - "excellent" = Hervorragend (gesperrt, nur auf explizite Aufforderung änderbar)
+ */
+export const sectionRatings = mysqlTable("section_ratings", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Eindeutiger Bezeichner des Bereichs, z.B. "org.stammdaten", "org.mitglieder", "designer.products" */
+  sectionId: varchar("sectionId", { length: 100 }).notNull().unique(),
+  /** Bewertung des Bereichs */
+  rating: mysqlEnum("rating", ["bad", "good", "excellent"]).notNull(),
+  /** Wer hat die Bewertung gesetzt */
+  ratedBy: int("ratedBy").references(() => users.id),
+  /** Optionaler Kommentar */
+  comment: text("comment"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SectionRating = typeof sectionRatings.$inferSelect;
+export type InsertSectionRating = typeof sectionRatings.$inferInsert;

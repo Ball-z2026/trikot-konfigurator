@@ -59,6 +59,7 @@ import {
   InsertTemplatePollVote,
   betaFeedback,
   InsertBetaFeedback,
+  sectionRatings,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -2244,4 +2245,32 @@ export async function deleteBetaFeedback(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(betaFeedback).where(eq(betaFeedback.id, id));
+}
+
+// ─── Section Ratings (Bewertungssystem) ────────────────────────────────────────────
+
+export async function getSectionRating(sectionId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [rating] = await db.select().from(sectionRatings).where(eq(sectionRatings.sectionId, sectionId));
+  return rating || null;
+}
+
+export async function listSectionRatings() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(sectionRatings);
+}
+
+export async function upsertSectionRating(data: { sectionId: string; rating: "bad" | "good" | "excellent"; ratedBy: number; comment?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [existing] = await db.select().from(sectionRatings).where(eq(sectionRatings.sectionId, data.sectionId));
+  if (existing) {
+    await db.update(sectionRatings).set({ rating: data.rating, ratedBy: data.ratedBy, comment: data.comment || null }).where(eq(sectionRatings.id, existing.id));
+    return { ...existing, rating: data.rating, ratedBy: data.ratedBy, comment: data.comment || null };
+  } else {
+    const [result] = await db.insert(sectionRatings).values({ sectionId: data.sectionId, rating: data.rating, ratedBy: data.ratedBy, comment: data.comment || null });
+    return { id: result.insertId, ...data };
+  }
 }

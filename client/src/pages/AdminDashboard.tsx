@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectionRatingBar } from "@/components/SectionRatingBar";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -156,6 +157,7 @@ function DashboardContent() {
 
           {/* Vereine Tab */}
           <TabsContent value="orgs" className="mt-4">
+            <SectionRatingBar sectionId="admin.vereine" />
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -232,6 +234,7 @@ function DashboardContent() {
 
           {/* Benutzer Tab */}
           <TabsContent value="users" className="mt-4">
+            <SectionRatingBar sectionId="admin.benutzer" />
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -302,6 +305,7 @@ function DashboardContent() {
 
           {/* Produkte Tab */}
           <TabsContent value="products" className="mt-4">
+            <SectionRatingBar sectionId="admin.produkte" />
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -370,6 +374,7 @@ function DashboardContent() {
 
           {/* Beta-Feedback Tab */}
           <TabsContent value="feedback" className="mt-4">
+            <SectionRatingBar sectionId="admin.feedback" />
             <BetaFeedbackPanel setLocation={setLocation} />
           </TabsContent>
         </Tabs>

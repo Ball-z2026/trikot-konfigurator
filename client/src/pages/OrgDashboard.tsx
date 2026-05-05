@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLoginUrl } from "@/const";
+import { SectionRatingBar } from "@/components/SectionRatingBar";
 import { trpc } from "@/lib/trpc";
 import {
   Building2, Users, Image, Type, Plus, Trash2, Star, StarOff,
@@ -726,11 +727,13 @@ function OrgDetail({ orgId }: { orgId: number }) {
 
           {/* ─── Stammdaten Tab ─── */}
           <TabsContent value="stammdaten">
+            <SectionRatingBar sectionId="org.stammdaten" />
             <OrgStammdaten org={org} orgId={orgId} isOwner={isOwner} />
           </TabsContent>
 
           {/* ─── Logos Tab ─── */}
           <TabsContent value="logos">
+            <SectionRatingBar sectionId="org.logos" />
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-bold">Logo-Varianten</h2>
@@ -863,6 +866,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Sponsors Tab ─── */}
           <TabsContent value="sponsors">
+            <SectionRatingBar sectionId="org.sponsoren" />
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-bold">Sponsor-Vorlagen</h2>
@@ -1125,6 +1129,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Departments Tab ─── */}
           <TabsContent value="departments">
+            <SectionRatingBar sectionId="org.abteilungen" />
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-bold">Abteilungen / Sparten</h2>
@@ -1230,6 +1235,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Members Tab ─── */}
           <TabsContent value="members">
+            <SectionRatingBar sectionId="org.mitglieder" />
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-bold">Mitglieder</h2>
@@ -1411,11 +1417,13 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Kollektionen Tab ─── */}
           <TabsContent value="collections">
+            <SectionRatingBar sectionId="org.kollektionen" />
             <OrgCollectionsSection orgId={orgId} isOwner={isOwner} org={org} />
           </TabsContent>
 
           {/* ─── Vereinsmitglieder Tab (optional) ─── */}
           <TabsContent value="org-members">
+            <SectionRatingBar sectionId="org.vereinsmitglieder" />
             <Card className="border-amber-200 bg-amber-50 mb-4">
               <CardContent className="py-4">
                 <div className="flex gap-3 items-start">
@@ -1439,6 +1447,7 @@ accept=".pdf,image/png,image/jpeg,image/svg+xml,image/webp"
 
           {/* ─── Ausstatter Tab ─── */}
           <TabsContent value="supplier">
+            <SectionRatingBar sectionId="org.ausstatter" />
             <SupplierSection org={org} orgId={orgId} />
           </TabsContent>
         </Tabs>
