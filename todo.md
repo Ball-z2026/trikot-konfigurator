@@ -1701,3 +1701,32 @@
   - [x] Druckbereiche mit 2cm Nahtabstand (Brust, Bauch, Rücken, Ärmel)
   - [x] Marken-/Modell-Erkennung (Nike, Adidas, Puma etc.)
   - [x] Empfohlene max. Größen pro Druckbereich in cm
+
+### Freigabe-Workflow im Produktdesigner
+- [x] DB-Schema: Freigabe-Status für Design-Vorlagen (draft, pending, approved, rejected) - approvalStatus auf designTemplates
+- [x] DB-Schema: Genehmigungen-Tabelle (templateApprovals: department_lead, owner, sponsor)
+- [x] DB-Schema: Abstimmungs-Tabelle (templatePolls + templatePollOptions + templatePollVotes)
+- [x] Backend: Freigabe-Anfrage senden (templateApproval.submitForApproval)
+- [x] Backend: Genehmigung erteilen/ablehnen (templateApproval.decide)
+- [x] Backend: Abstimmung erstellen und Stimmen abgeben (templatePoll.create, .vote, .results, .hasVoted, .close)
+- [ ] Frontend: Freigabe-Button im Produktdesigner (statt direktem Export)
+- [ ] Frontend: Freigabe-Ansicht für Spartenleiter/Owner (Genehmigen/Ablehnen)
+- [ ] Frontend: Sponsor-Freigabe (Mockup-Vorschau für Sponsoren)
+- [ ] Frontend: Teilen-Button für Mannschafts-Abstimmung/Umfrage
+- [ ] Frontend: Abstimmungs-Ansicht für Mannschaftsmitglieder
+- [ ] Sichtbarkeits-Logik: Nur freigegebene Vorlagen im Konfigurator (wenn Trainer angemeldet)
+
+### Bug: Vorlage speichert Original-Bild statt erstellte Konfiguration
+- [ ] Prüfen: Beim Speichern einer Vorlage im Produktdesigner wird das Original-Bild gespeichert, nicht die erstellte Vorlage mit Zonen
+- [ ] Fix: Vorlage muss die komplette Zonen-Konfiguration (Positionen, Typen, Regeln) speichern
+- [ ] Fix: Thumbnail/Vorschau der Vorlage soll das konfigurierte Trikot zeigen (nicht nur das Basis-Bild)
+
+### Bug-Fix: Vorlage speichert Original-Bild statt Produkt-Vorlage
+- [ ] Beim Speichern der Vorlage: Screenshot des Produkt-Bereichs (weißes Trikot + Zonen) als imageUrl verwenden
+- [ ] html-to-image oder Canvas-Screenshot des rightCanvasRef generieren
+- [ ] Screenshot als Blob hochladen und als imageUrl der Vorlage setzen
+
+### Feature: Fullscreen-Ansicht im TemplateUpload für genaue Positionierung
+- [ ] Klick auf Produkt-Trikot (rechte Seite) öffnet Fullscreen/Modal
+- [ ] Im Fullscreen-Modus: Zonen verschieben, skalieren, genau positionieren
+- [ ] Schließen-Button um zurück zur normalen Ansicht zu kommen

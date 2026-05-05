@@ -169,6 +169,22 @@ import {
   getDesignTemplateById,
   deleteDesignTemplate,
   updateDesignTemplate,
+  createTemplateApproval,
+  getTemplateApprovalById,
+  listApprovalsByTemplate,
+  listPendingApprovalsForUser,
+  updateTemplateApproval,
+  setDesignTemplateApprovalStatus,
+  createTemplatePoll,
+  getTemplatePollById,
+  listPollsByTeam,
+  updateTemplatePoll,
+  createPollOption,
+  listPollOptions,
+  createPollVote,
+  listVotesByPoll,
+  hasUserVoted,
+  getPollResults,
 } from "./db";
 import { storagePut, storageGet } from "./storage";
 import {
@@ -1629,6 +1645,180 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         } catch {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Antwort konnte nicht verarbeitet werden" });
         }
+      }),
+  }),
+
+  // ─── Freigabe-Workflow (Template Approvals) ────────────────────────────
+  templateApproval: router({
+    /** Vorlage zur Freigabe einreichen (Trainer → Spartenleiter/Owner + Sponsoren) */
+    submitForApproval: protectedProcedure
+      .input(z.object({
+        templateId: z.number(),
+        approvers: z.array(z.object({
+          type: z.enum(["department_lead", "owner", "sponsor"]),
+          userId: z.number().optional(),
+          sponsorId: z.number().optional(),
+        })),
+        message: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await setDesignTemplateApprovalStatus(input.templateId, "pending");
+
+        for (const a of input.approvers) {
+          await createTemplateApproval({
+            templateId: input.templateId,
+            approverType: a.type as "department_lead" | "owner" | "sponsor",
+            approverUserId: a.userId || null,
+            sponsorId: a.sponsorId || null,
+          });
+        }
+
+        return { success: true, pendingCount: input.approvers.length };
+      }),
+
+    /** Genehmigung erteilen oder ablehnen */
+    decide: protectedProcedure
+      .input(z.object({
+        approvalId: z.number(),
+        decision: z.enum(["approved", "rejected"]),
+        comment: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await updateTemplateApproval(input.approvalId, {
+          status: input.decision,
+          comment: input.comment || null,
+          decidedAt: new Date(),
+        });
+
+        const approval = await getTemplateApprovalById(input.approvalId);
+        if (!approval) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const allApprovals = await listApprovalsByTemplate(approval.templateId);
+        const allApproved = allApprovals.every(a => a.status === "approved");
+        const anyRejected = allApprovals.some(a => a.status === "rejected");
+
+        if (allApproved) {
+          await setDesignTemplateApprovalStatus(approval.templateId, "approved");
+        } else if (anyRejected) {
+          await setDesignTemplateApprovalStatus(approval.templateId, "rejected");
+        }
+
+        return { success: true, templateStatus: allApproved ? "approved" : anyRejected ? "rejected" : "pending" };
+      }),
+
+    /** Alle ausstehenden Freigaben für den aktuellen Benutzer */
+    pendingForMe: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const pending = await listPendingApprovalsForUser(ctx.user.id);
+        const results = [];
+        for (const p of pending) {
+          const template = await getDesignTemplateById(p.templateId);
+          if (template) {
+            results.push({ ...p, template });
+          }
+        }
+        return results;
+      }),
+
+    /** Freigabe-Status einer Vorlage abfragen */
+    statusForTemplate: protectedProcedure
+      .input(z.object({ templateId: z.number() }))
+      .query(async ({ input }) => {
+        return listApprovalsByTemplate(input.templateId);
+      }),
+  }),
+
+  // ─── Mannschafts-Abstimmung (Template Polls) ─────────────────────────
+  templatePoll: router({
+    /** Neue Abstimmung erstellen (Trainer teilt Vorlagen mit Mannschaft) */
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().min(1),
+        description: z.string().optional(),
+        teamId: z.number(),
+        orgId: z.number(),
+        templateIds: z.array(z.number()).min(1),
+        expiresAt: z.date().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const pollId = await createTemplatePoll({
+          title: input.title,
+          description: input.description || null,
+          teamId: input.teamId,
+          orgId: input.orgId,
+          createdByUserId: ctx.user.id,
+          expiresAt: input.expiresAt || null,
+        });
+
+        // Optionen erstellen (eine pro Vorlage)
+        for (const templateId of input.templateIds) {
+          const template = await getDesignTemplateById(templateId);
+          await createPollOption({
+            pollId,
+            templateId,
+            label: template?.name || `Vorlage ${templateId}`,
+          });
+        }
+
+        return { success: true, pollId };
+      }),
+
+    /** Abstimmung abschließen */
+    close: protectedProcedure
+      .input(z.object({ pollId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        await updateTemplatePoll(input.pollId, { status: "closed" });
+        return { success: true };
+      }),
+
+    /** Stimme abgeben */
+    vote: protectedProcedure
+      .input(z.object({
+        pollId: z.number(),
+        optionId: z.number(),
+        comment: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Prüfe ob bereits abgestimmt
+        const alreadyVoted = await hasUserVoted(input.pollId, ctx.user.id);
+        if (alreadyVoted) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Du hast bereits abgestimmt" });
+        }
+
+        await createPollVote({
+          pollId: input.pollId,
+          optionId: input.optionId,
+          userId: ctx.user.id,
+          comment: input.comment || null,
+        });
+
+        return { success: true };
+      }),
+
+    /** Abstimmungen für eine Mannschaft auflisten */
+    listByTeam: protectedProcedure
+      .input(z.object({ teamId: z.number() }))
+      .query(async ({ input }) => {
+        return listPollsByTeam(input.teamId);
+      }),
+
+    /** Ergebnisse einer Abstimmung */
+    results: protectedProcedure
+      .input(z.object({ pollId: z.number() }))
+      .query(async ({ input }) => {
+        const poll = await getTemplatePollById(input.pollId);
+        if (!poll) throw new TRPCError({ code: "NOT_FOUND" });
+        const results = await getPollResults(input.pollId);
+        const votes = await listVotesByPoll(input.pollId);
+        return { poll, options: results, totalVotes: votes.length };
+      }),
+
+    /** Prüfe ob der aktuelle User bereits abgestimmt hat */
+    hasVoted: protectedProcedure
+      .input(z.object({ pollId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return hasUserVoted(input.pollId, ctx.user.id);
       }),
   }),
 

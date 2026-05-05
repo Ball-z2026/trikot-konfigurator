@@ -49,6 +49,14 @@ import {
   InsertDepartmentSupplier,
   designTemplates,
   InsertDesignTemplate,
+  templateApprovals,
+  InsertTemplateApproval,
+  templatePolls,
+  InsertTemplatePoll,
+  templatePollOptions,
+  InsertTemplatePollOption,
+  templatePollVotes,
+  InsertTemplatePollVote,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1792,10 +1800,14 @@ export async function updateUserBackupCodes(userId: number, backupCodes: string)
 // ─── Admin Dashboard Statistics ─────────────────────────────────────────────
 
 export async function listAllOrganizations() {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
   return db.select().from(organizations);
 }
 
 export async function getAdminDashboardStats() {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
   const [userCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
   const [orgCount] = await db.select({ count: sql<number>`count(*)` }).from(organizations);
   const [productCount] = await db.select({ count: sql<number>`count(*)` }).from(products);
@@ -2049,4 +2061,122 @@ export async function updateDesignTemplate(id: number, data: Partial<InsertDesig
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   await db.update(designTemplates).set(data).where(eq(designTemplates.id, id));
+}
+
+
+// ─── Template Approval Helpers ──────────────────────────────────────────────
+
+export async function createTemplateApproval(data: InsertTemplateApproval) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const [result] = await db.insert(templateApprovals).values(data);
+  return result.insertId;
+}
+
+export async function getTemplateApprovalById(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const [result] = await db.select().from(templateApprovals).where(eq(templateApprovals.id, id));
+  return result || null;
+}
+
+export async function listApprovalsByTemplate(templateId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(templateApprovals).where(eq(templateApprovals.templateId, templateId));
+}
+
+export async function listPendingApprovalsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(templateApprovals).where(
+    and(eq(templateApprovals.approverUserId, userId), eq(templateApprovals.status, "pending"))
+  );
+}
+
+export async function updateTemplateApproval(id: number, data: Partial<InsertTemplateApproval> & { decidedAt?: Date }) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(templateApprovals).set(data).where(eq(templateApprovals.id, id));
+}
+
+export async function setDesignTemplateApprovalStatus(templateId: number, status: "draft" | "pending" | "approved" | "rejected") {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(designTemplates).set({ approvalStatus: status }).where(eq(designTemplates.id, templateId));
+}
+
+// ─── Template Poll Helpers ──────────────────────────────────────────────────
+
+export async function createTemplatePoll(data: InsertTemplatePoll) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const [result] = await db.insert(templatePolls).values(data);
+  return result.insertId;
+}
+
+export async function getTemplatePollById(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const [result] = await db.select().from(templatePolls).where(eq(templatePolls.id, id));
+  return result || null;
+}
+
+export async function listPollsByTeam(teamId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(templatePolls).where(eq(templatePolls.teamId, teamId)).orderBy(desc(templatePolls.createdAt));
+}
+
+export async function updateTemplatePoll(id: number, data: Partial<InsertTemplatePoll>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.update(templatePolls).set(data).where(eq(templatePolls.id, id));
+}
+
+export async function createPollOption(data: InsertTemplatePollOption) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const [result] = await db.insert(templatePollOptions).values(data);
+  return result.insertId;
+}
+
+export async function listPollOptions(pollId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(templatePollOptions).where(eq(templatePollOptions.pollId, pollId));
+}
+
+export async function createPollVote(data: InsertTemplatePollVote) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const [result] = await db.insert(templatePollVotes).values(data);
+  return result.insertId;
+}
+
+export async function listVotesByPoll(pollId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.select().from(templatePollVotes).where(eq(templatePollVotes.pollId, pollId));
+}
+
+export async function hasUserVoted(pollId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const votes = await db.select().from(templatePollVotes).where(
+    and(eq(templatePollVotes.pollId, pollId), eq(templatePollVotes.userId, userId))
+  );
+  return votes.length > 0;
+}
+
+export async function getPollResults(pollId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const options = await db.select().from(templatePollOptions).where(eq(templatePollOptions.pollId, pollId));
+  const votes = await db.select().from(templatePollVotes).where(eq(templatePollVotes.pollId, pollId));
+  
+  return options.map(opt => ({
+    ...opt,
+    voteCount: votes.filter(v => v.optionId === opt.id).length,
+  }));
 }

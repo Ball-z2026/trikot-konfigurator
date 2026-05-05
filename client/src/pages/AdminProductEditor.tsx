@@ -17,6 +17,8 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -47,6 +49,8 @@ import {
   AtSign,
   AlertTriangle,
   ShieldCheck,
+  Send,
+  Share2,
   Flag,
   QrCode,
   Fingerprint,
@@ -228,6 +232,13 @@ export default function AdminProductEditor() {
   const [pendingDrawRect, setPendingDrawRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   // Naht-Linien anzeigen
   const [showSeams, setShowSeams] = useState(true);
+  // Freigabe-Dialog
+  const [showApprovalDialog, setShowApprovalDialog] = useState(false);
+  const [approvalApprovers, setApprovalApprovers] = useState<Array<{type: "department_lead" | "owner" | "sponsor", userId?: number, sponsorId?: number}>>([]);
+  // Abstimmungs-Dialog
+  const [showPollDialog, setShowPollDialog] = useState(false);
+  const [pollTitle, setPollTitle] = useState("");
+  const [pollDescription, setPollDescription] = useState("");
 
   const parts: PartData[] = (productData?.parts as PartData[]) || [];
   const hasParts = parts.length > 0;
@@ -616,6 +627,12 @@ export default function AdminProductEditor() {
             </Badge>
           </div>
           <div className="flex gap-1.5 sm:gap-2 shrink-0">
+            <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm" onClick={() => setShowApprovalDialog(true)}>
+              <Send className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Freigabe</span>
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm" onClick={() => setShowPollDialog(true)}>
+              <Share2 className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Abstimmung</span>
+            </Button>
             <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm" onClick={() => updateProduct.mutate({ id: productId, published: !productData.published })}>
               {productData.published ? <><EyeOff className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Zurückziehen</span></> : <><Eye className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Veröffentlichen</span></>}
             </Button>

@@ -895,6 +895,8 @@ export const designTemplates = mysqlTable("design_templates", {
   category: mysqlEnum("category", ["Trikot", "Bekleidung"]).default("Trikot"),
   /** Sichtbarkeit */
   visibility: mysqlEnum("visibility", ["private", "team", "department", "org"]).default("team").notNull(),
+  /** Freigabe-Status: draft (Entwurf), pending (zur Freigabe eingereicht), approved (freigegeben), rejected (abgelehnt) */
+  approvalStatus: mysqlEnum("approvalStatus", ["draft", "pending", "approved", "rejected"]).default("draft").notNull(),
   /** Ersteller */
   createdByUserId: int("createdByUserId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -903,3 +905,95 @@ export const designTemplates = mysqlTable("design_templates", {
 
 export type DesignTemplate = typeof designTemplates.$inferSelect;
 export type InsertDesignTemplate = typeof designTemplates.$inferInsert;
+
+/**
+ * Template-Freigaben – Wer muss eine Vorlage genehmigen?
+ * 
+ * Workflow:
+ * 1. Trainer erstellt Vorlage im Produktdesigner und klickt "Zur Freigabe einreichen"
+ * 2. Freigabe-Anfragen werden an Spartenleiter, Owner und/oder Sponsoren gesendet
+ * 3. Jeder Genehmiger kann freigeben oder ablehnen (mit Kommentar)
+ * 4. Erst wenn ALLE erforderlichen Genehmiger freigegeben haben, wird die Vorlage im Konfigurator sichtbar
+ */
+export const templateApprovals = mysqlTable("template_approvals", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Referenz auf die Design-Vorlage */
+  templateId: int("templateId").notNull(),
+  /** Typ des Genehmigers */
+  approverType: mysqlEnum("approverType", ["department_lead", "owner", "sponsor"]).notNull(),
+  /** User-ID des Genehmigers (für department_lead/owner) */
+  approverUserId: int("approverUserId"),
+  /** Sponsor-ID (für Sponsor-Freigaben) */
+  sponsorId: int("sponsorId"),
+  /** Status der einzelnen Genehmigung */
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  /** Kommentar bei Freigabe/Ablehnung */
+  comment: text("comment"),
+  /** Zeitpunkt der Entscheidung */
+  decidedAt: timestamp("decidedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TemplateApproval = typeof templateApprovals.$inferSelect;
+export type InsertTemplateApproval = typeof templateApprovals.$inferInsert;
+
+/**
+ * Mannschafts-Abstimmungen – Trainer teilt Vorlage mit Mannschaft zur Abstimmung
+ */
+export const templatePolls = mysqlTable("template_polls", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Titel der Abstimmung */
+  title: varchar("title", { length: 255 }).notNull(),
+  /** Beschreibung/Frage (optional) */
+  description: text("description"),
+  /** Mannschaft für die abgestimmt wird */
+  teamId: int("teamId").notNull(),
+  /** Organisation */
+  orgId: int("orgId").notNull(),
+  /** Ersteller (Trainer) */
+  createdByUserId: int("createdByUserId").notNull(),
+  /** Status: open (läuft), closed (beendet) */
+  status: mysqlEnum("status", ["open", "closed"]).default("open").notNull(),
+  /** Ablaufdatum (optional) */
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TemplatePoll = typeof templatePolls.$inferSelect;
+export type InsertTemplatePoll = typeof templatePolls.$inferInsert;
+
+/**
+ * Abstimmungs-Optionen – Welche Vorlagen stehen zur Wahl?
+ */
+export const templatePollOptions = mysqlTable("template_poll_options", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Referenz auf die Abstimmung */
+  pollId: int("pollId").notNull(),
+  /** Referenz auf die Design-Vorlage */
+  templateId: int("templateId").notNull(),
+  /** Optionaler Titel/Label */
+  label: varchar("label", { length: 255 }),
+});
+
+export type TemplatePollOption = typeof templatePollOptions.$inferSelect;
+export type InsertTemplatePollOption = typeof templatePollOptions.$inferInsert;
+
+/**
+ * Stimmen – Mannschaftsmitglieder stimmen ab
+ */
+export const templatePollVotes = mysqlTable("template_poll_votes", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Referenz auf die Abstimmung */
+  pollId: int("pollId").notNull(),
+  /** Referenz auf die gewählte Option */
+  optionId: int("optionId").notNull(),
+  /** Wer hat abgestimmt */
+  userId: int("userId").notNull(),
+  /** Optionaler Kommentar */
+  comment: text("comment"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TemplatePollVote = typeof templatePollVotes.$inferSelect;
+export type InsertTemplatePollVote = typeof templatePollVotes.$inferInsert;
