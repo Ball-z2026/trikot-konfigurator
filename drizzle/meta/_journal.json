@@ -330,6 +330,13 @@
       "when": 1777961086518,
       "tag": "0046_yellow_blazing_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "5",
+      "when": 1777963216144,
+      "tag": "0047_flawless_firedrake",
+      "breakpoints": true
     }
   ]
 }

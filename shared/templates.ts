@@ -10,7 +10,7 @@
 export interface TemplateZone {
   label: string;
   type: "image" | "text" | "both";
-  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "custom";
+  purpose: "logo" | "clubLogo" | "playerName" | "playerNumber" | "playerInitials" | "clubName" | "abbreviation" | "coordinates" | "hashtag" | "flag" | "qrCode" | "sponsor" | "custom";
   posX: number;
   posY: number;
   width: number;

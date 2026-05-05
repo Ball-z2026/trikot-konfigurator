@@ -1628,18 +1628,18 @@
 
 ### Regeln pro Zone
 - [x] DB-Schema: Regeln-Felder für Zonen (minWidth, maxWidth, minHeight, maxHeight, allowedFonts, required) - in drizzle/schema.ts und DB gepusht
-- [ ] UI: Regeln-Panel pro Zone im Designer (Min/Max-Größe einstellen)
-- [ ] UI: Erlaubte Schriftarten pro Zone festlegen
-- [ ] UI: Pflichtfeld-Toggle pro Zone
+- [x] UI: Regeln-Panel pro Zone im Designer (Min/Max-Größe, Max-Fläche einstellen)
+- [x] UI: Erlaubte Schriftarten pro Zone festlegen (Checkbox-Liste)
+- [x] UI: Pflichtfeld-Toggle pro Zone (Switch)
 - [ ] Validierung: Regeln im Konfigurator durchsetzen (Warnung bei Verstoß)
 
 ### Verbandsregeln für Trikots (pro Sportart)
-- [ ] Fußball-Regeln: Rückennummer min. 20cm, Vereinswappen max. 100cm², Sponsor max. 200cm²
-- [ ] Handball-Regeln: Eigene Maße nach DHB-Vorgaben
-- [ ] Volleyball-Regeln: Eigene Maße nach DVV-Vorgaben
-- [ ] Basketball-Regeln: Eigene Maße nach DBB-Vorgaben
-- [ ] Regeln werden automatisch beim Erstellen eines Trikot-Produkts angelegt
-- [ ] Regeln als Warnung (nicht blockierend) im Designer anzeigen
+- [x] Fußball-Regeln: Rückennummer min. 25cm, Vereinswappen max. 100cm², Sponsor max. 200cm² (BFV-Richtlinie)
+- [x] Handball-Regeln: Eigene Maße nach DHB-Vorgaben (in jerseyRules.ts)
+- [x] Volleyball-Regeln: Eigene Maße nach DVV-Vorgaben (in jerseyRules.ts)
+- [x] Basketball-Regeln: Eigene Maße nach DBB-Vorgaben (in jerseyRules.ts)
+- [x] Regeln werden automatisch beim Erstellen eines Trikot-Produkts angelegt (via getJerseyRules)
+- [x] Regeln als Warnung (nicht blockierend) im Admin-Designer anzeigen (Verbandsvorgaben-Panel)
 
 ### Universelle 2cm-Nahtabstand-Regel
 - [x] DB-Schema: Naht-Positionen pro Template/Part speichern (seamPositions JSON)
@@ -1648,3 +1648,56 @@
 - [x] Frontend: Naht-Linien auf dem Produktbild anzeigen (gestrichelt, Toggle mit Ruler-Icon)
 - [x] Frontend: Warnung wenn Zone zu nah an Naht (< 2cm) (AlertTriangle in Zone-Karten)
 - [ ] Druckbereich als "sichere Zone" visuell hervorheben (2cm Abstand von allen Nähten)
+
+### Zonen-Typen erweitern (Feature 3)
+- [x] Neue Zone-Typen: flag (Flagge), qrCode (QR-Code), sponsor (Sponsor)
+- [x] DB-Schema: purpose-Enum um flag, qrCode, sponsor erweitert + Migration gepusht
+- [x] Router: zonePurpose z.enum erweitert
+- [x] Frontend: PURPOSE_CONFIG mit Icons (Flag, QrCode, Shirt) und Beschreibungen
+- [x] shared/templates.ts: purpose-Typ-Union erweitert
+
+### Mehrere Vorlagen pro Produkt (Feature 4)
+- [x] DB-Schema: designTemplates Tabelle mit orgId, departmentId, teamId, sport, category, visibility
+- [x] Router: CRUD für designTemplates (create, list, getById, update, delete)
+- [x] Frontend: TemplateUpload-Komponente mit KI-Erkennung
+- [x] Frontend: ProductSelect-Seite mit Vorlagen-Auswahl (Filter nach Sportart/Kategorie)
+- [x] Frontend: CustomerConfigurator wendet Vorlage-Zonen auf Produkt an
+- [x] Sichtbarkeits-System: private, team, department, org
+
+### Vorlagen-Vorschau mit Beispiel-Daten (Feature 5)
+- [x] Vorschau-Tab im AdminProductEditor mit Beispiel-Spielerdaten
+- [x] Zonen werden mit Beispiel-Texten gefüllt (Müller #10, Schmidt #7, Weber #3)
+- [x] Schrift-Einstellungen (fontFamily, fontWeight, fontColor) werden in der Vorschau angewendet
+- [x] Rotation und Positionierung werden korrekt dargestellt
+
+### Import/Export von Vorlagen (Feature 6)
+- [x] Backend: designTemplate.export Endpunkt (JSON mit Zonen, Positionen, Schriften)
+- [x] Backend: designTemplate.import Endpunkt (JSON importieren, neue Vorlage erstellen)
+- [x] Export enthält: Name, Beschreibung, Sport, Kategorie, Bild-URL, alle Zonen mit Regeln
+- [x] Import erstellt neue Vorlage mit "(Import)" Suffix und positionsConfig
+
+### Farb-Zonen (Feature 7)
+- [x] Admin: Farbpalette pro Produkt definieren (Sublimation) im Details-Tab
+- [x] Admin: Farben hinzufügen/entfernen mit Hex-Picker
+- [x] Kunde: Pro Trikotteil Farbe aus Palette wählen (CustomerConfigurator)
+- [x] Kunde: CMYK-Farbwähler für freie Farbwahl
+- [x] CSS-basiertes Coloring mit mix-blend-mode (kein Canvas/CORS)
+- [x] DTF: Grundfarbe oder Markentrikot-Upload als Alternative
+- [x] defaultColor pro Part (wird beim Laden automatisch gesetzt)
+
+### Vorlagen-Bibliothek (Feature 8)
+- [x] OrgDashboard: Vereinskollektionen-Tab mit Erstellen, Löschen, Verbindlichkeit
+- [x] ProductSelect: Vorlagen-Tab mit Filter nach Sportart/Kategorie
+- [x] designTemplate Router: CRUD mit Sichtbarkeits-System (private, team, department, org)
+- [x] TemplateUpload: KI-basierte Vorlage-Erstellung per Bild-Upload
+- [x] Rollenbasiert: Trainer (team), Spartenleiter (department), Owner (org)
+
+### Marken-Trikot hochladen (Feature 9)
+- [x] Markentrikot-Upload im CustomerConfigurator (DTF-Modus) mit DPI-/Überdrucken-Prüfung
+- [x] KI-basierte Zonen-Erkennung (analyzeImage mit Grid-Overlay)
+- [x] NEU: analyzeJersey-Endpunkt für Marken-Trikot-Analyse
+  - [x] Naht-Erkennung (Schulter-, Seiten-, Ärmel-, Kragennähte als Linien in %)
+  - [x] Panel-Zerlegung (Vorderteil, Rückenteil, Ärmel, Kragen, Seitenstreifen)
+  - [x] Druckbereiche mit 2cm Nahtabstand (Brust, Bauch, Rücken, Ärmel)
+  - [x] Marken-/Modell-Erkennung (Nike, Adidas, Puma etc.)
+  - [x] Empfohlene max. Größen pro Druckbereich in cm

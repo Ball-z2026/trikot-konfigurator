@@ -200,7 +200,7 @@ import {
 } from "./twoFactor";
 
 // Shared zone schema for reuse
-const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "coordinates", "hashtag", "custom"]);
+const zonePurpose = z.enum(["logo", "clubLogo", "playerName", "playerNumber", "playerInitials", "clubName", "abbreviation", "coordinates", "hashtag", "flag", "qrCode", "sponsor", "custom"]);
 const zoneType = z.enum(["image", "text", "both"]);
 
 // Admin-only procedure guard
@@ -526,6 +526,14 @@ export const appRouter = router({
           fontWeight: z.string().nullable().optional(),
           textAlign: z.string().nullable().optional(),
           sortOrder: z.number().optional(),
+          // Regel-Felder
+          minWidthCm: z.number().nullable().optional(),
+          maxWidthCm: z.number().nullable().optional(),
+          minHeightCm: z.number().nullable().optional(),
+          maxHeightCm: z.number().nullable().optional(),
+          maxAreaCm2: z.number().nullable().optional(),
+          required: z.boolean().optional(),
+          allowedFonts: z.array(z.string()).nullable().optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -1149,6 +1157,120 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    /** Vorlage als JSON exportieren */
+    export: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const tmpl = await getDesignTemplateById(input.id);
+        if (!tmpl) throw new TRPCError({ code: "NOT_FOUND" });
+        // Zonen des zugeordneten Produkts laden (falls vorhanden)
+        const config = tmpl.positionsConfig as any;
+        const productId = config?.productId;
+        let zones: any[] = [];
+        if (productId) {
+          const productZones = await listZonesByProduct(productId);
+          zones = productZones.map(z => ({
+            label: z.label,
+            purpose: z.purpose,
+            type: z.type,
+            side: z.side,
+            posX: z.posX,
+            posY: z.posY,
+            width: z.width,
+            height: z.height,
+            rotation: z.rotation,
+            fontFamily: z.fontFamily,
+            fontWeight: z.fontWeight,
+            fontSize: z.fontSize,
+            fontColor: z.fontColor,
+            textAlign: z.textAlign,
+            textStyle: z.textStyle,
+            arcDegree: z.arcDegree,
+            outlineColor: z.outlineColor,
+            outlineWidth: z.outlineWidth,
+            widthCm: z.widthCm,
+            heightCm: z.heightCm,
+            minWidthCm: z.minWidthCm,
+            maxWidthCm: z.maxWidthCm,
+            minHeightCm: z.minHeightCm,
+            maxHeightCm: z.maxHeightCm,
+            maxAreaCm2: z.maxAreaCm2,
+            required: z.required,
+          }));
+        }
+        return {
+          version: "1.0",
+          name: tmpl.name,
+          description: tmpl.description,
+          sport: tmpl.sport,
+          category: tmpl.category,
+          imageUrl: tmpl.imageUrl,
+          zones,
+          exportedAt: new Date().toISOString(),
+        };
+      }),
+
+    /** Vorlage aus JSON importieren */
+    import: protectedProcedure
+      .input(z.object({
+        orgId: z.number(),
+        departmentId: z.number().optional(),
+        teamId: z.number().optional(),
+        templateJson: z.object({
+          name: z.string(),
+          description: z.string().nullable().optional(),
+          sport: z.enum(["fussball", "handball", "volleyball", "basketball"]).nullable().optional(),
+          category: z.enum(["Trikot", "Bekleidung"]).nullable().optional(),
+          imageUrl: z.string(),
+          zones: z.array(z.object({
+            label: z.string(),
+            purpose: z.string(),
+            type: z.string().optional(),
+            side: z.string().optional(),
+            posX: z.number(),
+            posY: z.number(),
+            width: z.number(),
+            height: z.number(),
+            rotation: z.number().optional(),
+            fontFamily: z.string().nullable().optional(),
+            fontWeight: z.string().nullable().optional(),
+            fontSize: z.number().nullable().optional(),
+            fontColor: z.string().nullable().optional(),
+            textAlign: z.string().nullable().optional(),
+            textStyle: z.string().nullable().optional(),
+            arcDegree: z.number().nullable().optional(),
+            outlineColor: z.string().nullable().optional(),
+            outlineWidth: z.number().nullable().optional(),
+            widthCm: z.number().nullable().optional(),
+            heightCm: z.number().nullable().optional(),
+            minWidthCm: z.number().nullable().optional(),
+            maxWidthCm: z.number().nullable().optional(),
+            minHeightCm: z.number().nullable().optional(),
+            maxHeightCm: z.number().nullable().optional(),
+            maxAreaCm2: z.number().nullable().optional(),
+            required: z.boolean().nullable().optional(),
+          })).optional(),
+        }),
+        visibility: z.enum(["private", "team", "department", "org"]).default("team"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { templateJson, orgId, departmentId, teamId, visibility } = input;
+        const id = await createDesignTemplate({
+          name: `${templateJson.name} (Import)`,
+          description: templateJson.description || null,
+          imageUrl: templateJson.imageUrl,
+          sport: templateJson.sport || null,
+          category: templateJson.category || "Trikot",
+          orgId,
+          departmentId: departmentId || null,
+          teamId: teamId || null,
+          visibility,
+          createdByUserId: ctx.user.id,
+          positionsConfig: { zones: templateJson.zones || [] },
+        });
+        return { id, name: templateJson.name };
+      }),
+
     /** KI-Bild-Analyse: Exakte Bounding-Box-Erkennung + Schrifterkennung */
     analyzeImage: protectedProcedure
       .input(z.object({
@@ -1362,6 +1484,148 @@ Liefere NUR Elemente die du SICHER erkennst.`,
           }).filter((z: any) => z !== null && z.width > 0 && z.height > 0);
           
           return { zones: validatedZones };
+        } catch {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Antwort konnte nicht verarbeitet werden" });
+        }
+      }),
+
+    /** Marken-Trikot analysieren: Naht-Erkennung, Panel-Zerlegung, Druckbereiche */
+    analyzeJersey: protectedProcedure
+      .input(z.object({
+        imageUrl: z.string(),
+        sport: z.enum(["fussball", "handball", "volleyball", "basketball"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+
+        const systemPrompt = `Du bist ein Experte für Sportbekleidungs-Analyse und Textildruck.
+
+## AUFGABE
+Analysiere das hochgeladene Foto eines Marken-Trikots (z.B. Nike, Adidas, Puma) und identifiziere:
+
+1. **PANELS (Schnittteile)**: Erkenne die einzelnen Panels des Trikots
+   - Vorderteil (front)
+   - Rückenteil (back)
+   - Ärmel links (sleeve_left)
+   - Ärmel rechts (sleeve_right)
+   - Kragen (collar) - falls sichtbar
+   - Seitenstreifen (side_panel) - falls vorhanden
+
+2. **NÄHTE**: Erkenne alle sichtbaren Nähte und gib ihre Position als Linie an
+   - Schulternähte
+   - Seitennähte
+   - Ärmelnähte
+   - Kragennähte
+   - Einsätze/Paspeln
+
+3. **DRUCKBEREICHE**: Definiere die sicheren Druckbereiche (mind. 2cm Abstand von Nähten)
+   - Brust (links/rechts/mitte)
+   - Bauch
+   - Rücken oben (Schulterblatt)
+   - Rücken mitte (Nummer)
+   - Rücken unten (Name)
+   - Ärmel
+
+4. **MARKE**: Erkenne den Hersteller und das Modell (falls möglich)
+
+Alle Positionen in PROZENT des Bildbereichs (0-100).
+Nähte als Linien (x1,y1 -> x2,y2).
+Panels und Druckbereiche als Rechtecke (x, y, width, height).`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: { url: input.imageUrl, detail: "high" },
+                },
+                {
+                  type: "text",
+                  text: `Analysiere dieses Markentrikot-Foto${input.sport ? " (Sportart: " + input.sport + ")" : ""}.
+Erkenne alle Panels, Nähte und sichere Druckbereiche.
+Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
+                },
+              ],
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "jersey_analysis",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  brand: { type: "string", description: "Erkannter Hersteller (z.B. Nike, Adidas, Puma, unbekannt)" },
+                  model: { type: "string", description: "Erkanntes Modell (z.B. Dri-FIT ADV, Tiro 24, oder unbekannt)" },
+                  panels: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        key: { type: "string", description: "Panel-ID: front, back, sleeve_left, sleeve_right, collar, side_panel" },
+                        label: { type: "string", description: "Deutsche Bezeichnung" },
+                        x: { type: "number", description: "X-Position in %" },
+                        y: { type: "number", description: "Y-Position in %" },
+                        width: { type: "number", description: "Breite in %" },
+                        height: { type: "number", description: "Höhe in %" },
+                        visible: { type: "boolean", description: "Ist das Panel auf dem Foto sichtbar?" },
+                      },
+                      required: ["key", "label", "x", "y", "width", "height", "visible"],
+                      additionalProperties: false,
+                    },
+                  },
+                  seams: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        label: { type: "string", description: "Naht-Bezeichnung (z.B. Schulternaht links)" },
+                        x1: { type: "number", description: "Start X in %" },
+                        y1: { type: "number", description: "Start Y in %" },
+                        x2: { type: "number", description: "Ende X in %" },
+                        y2: { type: "number", description: "Ende Y in %" },
+                      },
+                      required: ["label", "x1", "y1", "x2", "y2"],
+                      additionalProperties: false,
+                    },
+                  },
+                  printAreas: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        label: { type: "string", description: "Druckbereich-Bezeichnung" },
+                        purpose: { type: "string", description: "Empfohlene Nutzung: sponsor, clubLogo, playerNumber, playerName, custom" },
+                        x: { type: "number", description: "X-Position in % (2cm Abstand von Nähten)" },
+                        y: { type: "number", description: "Y-Position in %" },
+                        width: { type: "number", description: "Breite in %" },
+                        height: { type: "number", description: "Höhe in %" },
+                        maxWidthCm: { type: "number", description: "Empfohlene max. Breite in cm" },
+                        maxHeightCm: { type: "number", description: "Empfohlene max. Höhe in cm" },
+                      },
+                      required: ["label", "purpose", "x", "y", "width", "height", "maxWidthCm", "maxHeightCm"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["brand", "model", "panels", "seams", "printAreas"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content || typeof content !== "string") {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Analyse fehlgeschlagen" });
+        }
+
+        try {
+          return JSON.parse(content);
         } catch {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Antwort konnte nicht verarbeitet werden" });
         }

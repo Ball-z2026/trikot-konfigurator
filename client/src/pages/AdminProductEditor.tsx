@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -44,8 +46,14 @@ import {
   MapPin,
   AtSign,
   AlertTriangle,
+  ShieldCheck,
+  Flag,
+  QrCode,
+  Fingerprint,
+  Shirt,
 } from "lucide-react";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
+import { getJerseyRules, validateZonesAgainstRules, type JerseyRuleSet, type ValidationWarning, type ZoneForValidation, type SportartCode } from "@shared/jerseyRules";
 import { storageUrl } from "@/lib/utils";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Link, useParams } from "wouter";
@@ -80,6 +88,14 @@ type ZoneData = {
   fontWeight: string | null;
   textAlign: string | null;
   sortOrder: number;
+  // Regel-Felder
+  minWidthCm: number | null;
+  maxWidthCm: number | null;
+  minHeightCm: number | null;
+  maxHeightCm: number | null;
+  maxAreaCm2: number | null;
+  required: boolean;
+  allowedFonts: string[] | null;
 };
 
 const PURPOSE_CONFIG: Record<string, { label: string; icon: typeof FileImage; description: string; autoType: "image" | "text" | "both" }> = {
@@ -92,6 +108,9 @@ const PURPOSE_CONFIG: Record<string, { label: string; icon: typeof FileImage; de
   abbreviation: { label: "Kürzel", icon: Type, description: "Kürzel/Abkürzung (z.B. Vereinskürzel)", autoType: "text" as const },
   coordinates: { label: "Koordinaten", icon: MapPin, description: "GPS-Koordinaten des Vereins (automatisch aus Adresse)", autoType: "text" as const },
   hashtag: { label: "Hashtag", icon: AtSign, description: "Vereins-Hashtag (z.B. #TSVMusterstadt)", autoType: "text" as const },
+  flag: { label: "Flagge", icon: Flag, description: "Nationalflagge oder Vereinsflagge (Bild-Upload)", autoType: "image" as const },
+  qrCode: { label: "QR-Code", icon: QrCode, description: "QR-Code (z.B. Link zur Vereinsseite)", autoType: "image" as const },
+  sponsor: { label: "Sponsor", icon: Shirt, description: "Sponsoren-Logo oder -Text (Brust, Rücken, Ärmel)", autoType: "both" as const },
   custom: { label: "Freitext", icon: PenTool, description: "Freie Texteingabe durch Kunde", autoType: "text" as const },
 };
 
@@ -238,6 +257,13 @@ export default function AdminProductEditor() {
           fontColor: z.fontColor ?? null,
           fontWeight: z.fontWeight ?? null,
           textAlign: z.textAlign ?? null,
+          minWidthCm: (z as any).minWidthCm ?? null,
+          maxWidthCm: (z as any).maxWidthCm ?? null,
+          minHeightCm: (z as any).minHeightCm ?? null,
+          maxHeightCm: (z as any).maxHeightCm ?? null,
+          maxAreaCm2: (z as any).maxAreaCm2 ?? null,
+          required: (z as any).required ?? false,
+          allowedFonts: (z as any).allowedFonts ?? null,
         }))
       );
       if (activePartId === null && productData.parts?.length) {
@@ -252,6 +278,33 @@ export default function AdminProductEditor() {
     ? localZones.filter((z) => z.partId === activePartId)
     : localZones;
   const selectedZone = localZones.find((z) => z.id === selectedZoneId);
+
+  // ─── Verbandsregeln-Validierung ─────────────────────────────────────────
+  const effectiveSport: SportartCode | null = useMemo(() => {
+    if (!productData?.templateId) return null;
+    const tmpl = TEXTIL_TEMPLATES.find((t) => t.id === productData.templateId);
+    return (tmpl?.sport as SportartCode) || null;
+  }, [productData?.templateId]);
+
+  const fullRuleSet: JerseyRuleSet | null = useMemo(() => {
+    if (!effectiveSport) return null;
+    return getJerseyRules(effectiveSport, "amateur");
+  }, [effectiveSport]);
+
+  const validationWarnings: ValidationWarning[] = useMemo(() => {
+    if (!fullRuleSet || !localZones.length || category !== "Trikot") return [];
+    const zonesForValidation: ZoneForValidation[] = localZones.map(z => {
+      const part = parts.find(p => p.id === z.partId);
+      const partKey = part?.key || "front";
+      return {
+        purpose: z.purpose || "custom",
+        widthCm: z.widthCm || undefined,
+        heightCm: z.heightCm || undefined,
+        part: partKey,
+      };
+    });
+    return validateZonesAgainstRules(zonesForValidation, fullRuleSet);
+  }, [fullRuleSet, localZones, parts, category]);
 
   // ─── Image Upload for Part ─────────────────────────────────────────────
   const handlePartImageUpload = useCallback(
@@ -792,6 +845,7 @@ export default function AdminProductEditor() {
                   <TabsTrigger value="part" className="flex-1 text-xs sm:text-sm">Teil</TabsTrigger>
                 )}
                 <TabsTrigger value="zones" className="flex-1 text-xs sm:text-sm">Zonen</TabsTrigger>
+                <TabsTrigger value="preview" className="flex-1 text-xs sm:text-sm">Vorschau</TabsTrigger>
               </TabsList>
 
               {/* Product Details Tab */}
@@ -1044,6 +1098,34 @@ export default function AdminProductEditor() {
                   </div>
                 </div>
 
+                {/* Verbandsregeln-Warnungen */}
+                {validationWarnings.length > 0 && (
+                  <div className="border border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30 rounded-md p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600" />
+                      <span className="text-xs font-semibold text-amber-800 dark:text-amber-200">Verbandsvorgaben ({effectiveSport?.charAt(0).toUpperCase()}{effectiveSport?.slice(1)})</span>
+                      <span className="ml-auto text-[10px] text-amber-600">
+                        {validationWarnings.filter(w => w.severity === 'error').length} Fehler, {validationWarnings.filter(w => w.severity === 'warning').length} Hinweise
+                      </span>
+                    </div>
+                    <div className="space-y-1 ml-6">
+                      {validationWarnings.map((w, i) => (
+                        <div key={i} className={`text-xs flex items-start gap-1.5 ${w.severity === 'error' ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                          <span className="shrink-0">{w.severity === 'error' ? '❌' : '⚠️'}</span>
+                          <span><strong>{w.zone}:</strong> {w.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-amber-600/70 mt-2 ml-6">Quelle: {fullRuleSet?.number.source}</p>
+                  </div>
+                )}
+                {validationWarnings.length === 0 && fullRuleSet && category === 'Trikot' && localZones.length > 0 && (
+                  <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400 bg-green-50/50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md p-2">
+                    <span>✅</span>
+                    <span>Alle Verbandsvorgaben eingehalten ({effectiveSport?.charAt(0).toUpperCase()}{effectiveSport?.slice(1)})</span>
+                  </div>
+                )}
+
                 {/* Zone List */}
                 {currentZones.length === 0 ? (
                   <Card>
@@ -1232,6 +1314,111 @@ export default function AdminProductEditor() {
                                     </div>
                                   </div>
 
+                                  {/* Regeln-Panel (für alle Zone-Typen) */}
+                                  <Separator className="my-1" />
+                                  <div>
+                                    <Label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1"><ShieldCheck className="w-3 h-3" />Regeln</Label>
+                                    <div className="space-y-2 bg-muted/30 rounded p-2">
+                                      {/* Pflichtfeld */}
+                                      <div className="flex items-center justify-between">
+                                        <Label className="text-[10px]">Pflichtfeld</Label>
+                                        <Switch
+                                          checked={zone.required}
+                                          onCheckedChange={(checked) => {
+                                            updateLocalZone(zone.id, { required: checked });
+                                            updateZoneMut.mutate({ id: zone.id, required: checked });
+                                          }}
+                                        />
+                                      </div>
+                                      {/* Min/Max Breite */}
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div className="relative">
+                                          <Input
+                                            type="number" step="0.1" min="0" placeholder="Min B"
+                                            className="h-7 text-xs pr-8"
+                                            value={zone.minWidthCm ?? ""}
+                                            onChange={(e) => updateLocalZone(zone.id, { minWidthCm: e.target.value ? parseFloat(e.target.value) : null })}
+                                            onBlur={() => updateZoneMut.mutate({ id: zone.id, minWidthCm: zone.minWidthCm })}
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">cm</span>
+                                        </div>
+                                        <div className="relative">
+                                          <Input
+                                            type="number" step="0.1" min="0" placeholder="Max B"
+                                            className="h-7 text-xs pr-8"
+                                            value={zone.maxWidthCm ?? ""}
+                                            onChange={(e) => updateLocalZone(zone.id, { maxWidthCm: e.target.value ? parseFloat(e.target.value) : null })}
+                                            onBlur={() => updateZoneMut.mutate({ id: zone.id, maxWidthCm: zone.maxWidthCm })}
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">cm</span>
+                                        </div>
+                                      </div>
+                                      {/* Min/Max Höhe */}
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div className="relative">
+                                          <Input
+                                            type="number" step="0.1" min="0" placeholder="Min H"
+                                            className="h-7 text-xs pr-8"
+                                            value={zone.minHeightCm ?? ""}
+                                            onChange={(e) => updateLocalZone(zone.id, { minHeightCm: e.target.value ? parseFloat(e.target.value) : null })}
+                                            onBlur={() => updateZoneMut.mutate({ id: zone.id, minHeightCm: zone.minHeightCm })}
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">cm</span>
+                                        </div>
+                                        <div className="relative">
+                                          <Input
+                                            type="number" step="0.1" min="0" placeholder="Max H"
+                                            className="h-7 text-xs pr-8"
+                                            value={zone.maxHeightCm ?? ""}
+                                            onChange={(e) => updateLocalZone(zone.id, { maxHeightCm: e.target.value ? parseFloat(e.target.value) : null })}
+                                            onBlur={() => updateZoneMut.mutate({ id: zone.id, maxHeightCm: zone.maxHeightCm })}
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">cm</span>
+                                        </div>
+                                      </div>
+                                      {/* Max Fläche */}
+                                      <div className="relative">
+                                        <Input
+                                          type="number" step="1" min="0" placeholder="Max Fläche"
+                                          className="h-7 text-xs pr-10"
+                                          value={zone.maxAreaCm2 ?? ""}
+                                          onChange={(e) => updateLocalZone(zone.id, { maxAreaCm2: e.target.value ? parseFloat(e.target.value) : null })}
+                                          onBlur={() => updateZoneMut.mutate({ id: zone.id, maxAreaCm2: zone.maxAreaCm2 })}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">cm²</span>
+                                      </div>
+                                      {/* Erlaubte Schriftarten */}
+                                      <div>
+                                        <Label className="text-[10px] text-muted-foreground mb-1 block">Erlaubte Schriftarten</Label>
+                                        <div className="grid grid-cols-2 gap-1">
+                                          {FONT_OPTIONS.map((f) => (
+                                            <label key={f.value} className="flex items-center gap-1.5 text-[10px] cursor-pointer">
+                                              <Checkbox
+                                                checked={(zone.allowedFonts || []).includes(f.value)}
+                                                onCheckedChange={(checked) => {
+                                                  const current = zone.allowedFonts || [];
+                                                  const updated = checked
+                                                    ? [...current, f.value]
+                                                    : current.filter((x) => x !== f.value);
+                                                  const newVal = updated.length > 0 ? updated : null;
+                                                  updateLocalZone(zone.id, { allowedFonts: newVal });
+                                                  updateZoneMut.mutate({ id: zone.id, allowedFonts: newVal });
+                                                }}
+                                              />
+                                              <span style={{ fontFamily: f.value }}>{f.label.split(" (")[0]}</span>
+                                            </label>
+                                          ))}
+                                        </div>
+                                        <p className="text-[9px] text-muted-foreground mt-1">Leer = alle Schriften erlaubt</p>
+                                      </div>
+                                    </div>
+                                  </div>
+
                                   {/* Font Settings (only for text zones) */}
                                   {isTextZone && (
                                     <>
@@ -1362,6 +1549,81 @@ export default function AdminProductEditor() {
                 <p className="text-[10px] sm:text-xs text-muted-foreground text-center px-4">
                   Ziehe die Zonen auf dem Bild, um sie zu positionieren. Klicke eine Zone an, um alle Einstellungen zu sehen.
                 </p>
+              </TabsContent>
+
+              {/* Vorschau Tab mit Beispiel-Daten */}
+              <TabsContent value="preview" className="space-y-3 mt-3 sm:mt-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Vorschau mit Beispiel-Daten</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      So sieht das Produkt mit ausgefüllten Zonen aus:
+                    </p>
+                    <div className="relative bg-muted/30 rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
+                      {currentImage && (
+                        <img src={currentImage} alt="Vorschau" className="w-full h-full object-contain" />
+                      )}
+                      {/* Zonen mit Beispiel-Daten überlagern */}
+                      {currentZones.map((zone, idx) => {
+                        const exampleData: Record<string, string> = {
+                          playerName: "MÜLLER",
+                          playerNumber: "10",
+                          playerInitials: "MM",
+                          clubName: "FC Musterstadt",
+                          abbreviation: "FCM",
+                          coordinates: "51.51°N 7.47°E",
+                          hashtag: "#FCMuster",
+                          clubLogo: "🛡️",
+                          logo: "🏢",
+                          sponsor: "SPONSOR",
+                          flag: "🇩🇪",
+                          qrCode: "▣",
+                          custom: "Text",
+                        };
+                        const text = exampleData[zone.purpose] || "...";
+                        const isImageType = zone.type === "image" && !['clubLogo', 'flag', 'qrCode'].includes(zone.purpose);
+                        return (
+                          <div
+                            key={zone.id}
+                            className="absolute flex items-center justify-center overflow-hidden"
+                            style={{
+                              left: `${zone.posX}%`,
+                              top: `${zone.posY}%`,
+                              width: `${zone.width}%`,
+                              height: `${zone.height}%`,
+                              transform: `rotate(${zone.rotation || 0}deg)`,
+                              border: '1px dashed rgba(0,0,0,0.2)',
+                              borderRadius: '2px',
+                              backgroundColor: isImageType ? 'rgba(100,100,100,0.1)' : 'transparent',
+                            }}
+                          >
+                            <span
+                              className="text-center leading-tight"
+                              style={{
+                                fontFamily: zone.fontFamily || 'Inter',
+                                fontWeight: zone.fontWeight || 'bold',
+                                color: zone.fontColor || '#000',
+                                fontSize: 'clamp(8px, 1.5vw, 14px)',
+                              }}
+                            >
+                              {text}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="border-t pt-2">
+                      <p className="text-[10px] font-medium text-muted-foreground mb-1">Beispiel-Spieler:</p>
+                      <div className="grid grid-cols-3 gap-1 text-[10px]">
+                        <div className="bg-muted/50 rounded px-1.5 py-0.5">• Müller (#10)</div>
+                        <div className="bg-muted/50 rounded px-1.5 py-0.5">• Schmidt (#7)</div>
+                        <div className="bg-muted/50 rounded px-1.5 py-0.5">• Weber (#3)</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </div>
