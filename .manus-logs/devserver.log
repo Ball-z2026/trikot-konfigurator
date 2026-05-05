@@ -7604,3 +7604,10 @@
 [2026-05-05T07:58:56.626Z] 3:58:56 AM [tsx] change in ./server/db.ts Restarting...
 [2026-05-05T07:58:58.615Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-05T07:58:59.378Z] Server running on http://localhost:3000/
+[2026-05-05T08:07:23.954Z] 4:07:23 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
+[2026-05-05T08:07:25.462Z] 4:07:25 AM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-progress
+[2026-05-05T08:07:25.467Z] 4:07:25 AM [vite] (client) ✨ optimized dependencies changed. reloading
+[2026-05-05T08:11:30.258Z] 4:11:30 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T08:14:36.076Z] 4:14:36 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T08:14:59.270Z] 4:14:59 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T08:15:23.395Z] 4:15:23 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css

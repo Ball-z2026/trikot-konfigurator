@@ -1876,7 +1876,7 @@ export default function CustomerConfigurator() {
                                  {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
                                    <div className="absolute inset-0 pointer-events-none" style={{
                                      backgroundColor: getPartColor(part.id),
-                                     mixBlendMode: "color" as const,
+                                     mixBlendMode: "hue" as const,
                                   }} />
                                 )}
                                 {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
@@ -2109,7 +2109,7 @@ export default function CustomerConfigurator() {
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
                                       backgroundColor: getPartColor(part.id),
-                                      mixBlendMode: "color" as const,
+                                      mixBlendMode: "hue" as const,
                                     }}
                                   />
                                 )}
@@ -2328,15 +2328,14 @@ export default function CustomerConfigurator() {
                         style={{ mixBlendMode: hasTransparentImages ? undefined : "multiply" as const }}
                         
                       />
-                      {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
-                      {/* SVGs werden vom Storage-Proxy als opake PNGs geliefert. */}
-                      {/* 'color' blend mode ändert nur Farbton+Sättigung, behält Helligkeit/Details */}
+                      {/* Farb-Overlay für Bekleidung (farbige PNGs): 'hue' blend mode */}
+                      {/* 'hue' ändert den Farbton des Bildes, behält Sättigung+Helligkeit */}
                       {hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
                             backgroundColor: activeColor,
-                            mixBlendMode: "color" as const,
+                            mixBlendMode: "hue" as const,
                           }}
                         />
                       )}
@@ -2369,6 +2368,27 @@ export default function CustomerConfigurator() {
                       draggable={false}
                     />
                   )}
+                  {/* Naht-Linien (2cm Mindestabstand) */}
+                  {productData?.category === 'Trikot' && productData?.templateId && (() => {
+                    const tmpl = TEXTIL_TEMPLATES.find(t => t.id === productData.templateId);
+                    if (!tmpl) return null;
+                    const partKey = activeSide === 'back' ? 'back' : 'front';
+                    const part = tmpl.parts.find(p => p.key === partKey);
+                    const seams = (part as any)?.seamPositions || [];
+                    if (seams.length === 0) return null;
+                    return seams.map((seam: any, idx: number) => (
+                      <div
+                        key={`seam-${idx}`}
+                        className="absolute pointer-events-none"
+                        style={{
+                          zIndex: 3,
+                          ...(seam.type === "vertical" 
+                            ? { left: `${seam.position}%`, top: 0, width: "1px", height: "100%", borderLeft: "1.5px dashed rgba(255,0,0,0.3)" } 
+                            : { top: `${seam.position}%`, left: 0, height: "1px", width: "100%", borderTop: "1.5px dashed rgba(255,0,0,0.3)" }),
+                        }}
+                      />
+                    ));
+                  })()}
                   {/* Zone Overlays */}
                   {currentZones.map((zone, idx) => (
                     <ZoneOverlay key={zone.id} zone={zone} idx={idx} scale={1} interactive={true} />

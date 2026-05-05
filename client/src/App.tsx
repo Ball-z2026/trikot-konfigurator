@@ -26,6 +26,8 @@ import SponsorForm from "./pages/SponsorForm";
 import TwoFactorSetup from "./pages/TwoFactorSetup";
 import AdminDashboard from "./pages/AdminDashboard";
 import PrintSheetExport from "./pages/PrintSheetExport";
+import ApprovalReview from "./pages/ApprovalReview";
+import TeamPoll from "./pages/TeamPoll";
 
 function Router() {
   return (
@@ -66,6 +68,10 @@ function Router() {
 
       {/* Sicherheit */}
       <Route path="/verwaltung/sicherheit/2fa" component={TwoFactorSetup} />
+
+      {/* Freigabe & Abstimmung */}
+      <Route path="/freigabe/:orgId" component={ApprovalReview} />
+      <Route path="/abstimmung/:pollId" component={TeamPoll} />
 
       {/* Druckbogen-Export */}
       <Route path="/druckbogen/:orgId/:designId/:teamId" component={PrintSheetExport} />

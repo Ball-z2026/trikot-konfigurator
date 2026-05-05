@@ -1710,10 +1710,10 @@
 - [x] Backend: Genehmigung erteilen/ablehnen (templateApproval.decide)
 - [x] Backend: Abstimmung erstellen und Stimmen abgeben (templatePoll.create, .vote, .results, .hasVoted, .close)
 - [x] Frontend: Freigabe-Button im Produktdesigner (Dialog mit Genehmiger-Auswahl)
-- [ ] Frontend: Freigabe-Ansicht für Spartenleiter/Owner (Genehmigen/Ablehnen) - eigene Seite
+- [x] Frontend: Freigabe-Ansicht für Spartenleiter/Owner (ApprovalReview.tsx - /freigabe/:orgId)
 - [ ] Frontend: Sponsor-Freigabe (Mockup-Vorschau für Sponsoren)
 - [x] Frontend: Teilen-Button für Mannschafts-Abstimmung/Umfrage (Dialog mit Titel/Beschreibung)
-- [ ] Frontend: Abstimmungs-Ansicht für Mannschaftsmitglieder
+- [x] Frontend: Abstimmungs-Ansicht für Mannschaftsmitglieder (TeamPoll.tsx - /abstimmung/:pollId)
 - [x] Sichtbarkeits-Logik: Nur freigegebene Vorlagen im Konfigurator (wenn Trainer angemeldet) - listDesignTemplates filtert nach approvalStatus
 
 ### Bug: Vorlage speichert Original-Bild statt erstellte Konfiguration
