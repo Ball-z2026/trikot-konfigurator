@@ -433,11 +433,13 @@ function BetaFeedbackPanel({ setLocation }: { setLocation: (path: string) => voi
   });
 
   // "An Manus senden" - kopiert formatiertes Problem in Zwischenablage
+  const priorityLabels: Record<string, string> = { low: "Niedrig", medium: "Mittel", high: "Hoch", critical: "Kritisch" };
   const handleCopyForManus = (fb: any) => {
     const text = `## Beta-Feedback: Problem auf Seite "${fb.page}"${fb.area ? ` (Bereich: ${fb.area})` : ""}
 
 **Gemeldet von:** ${fb.userName || "Anonym"}
 **Datum:** ${new Date(fb.createdAt).toLocaleString("de-DE")}
+**Priorität:** ${priorityLabels[fb.priority] || "Mittel"}
 **URL:** ${fb.currentUrl || "Nicht verfügbar"}
 **Status:** ${fb.status === "resolved" ? "Behoben" : fb.status === "still_present" ? "Weiter vorhanden" : "Offen"}
 
@@ -552,18 +554,32 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                       )}
                     </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={`${
-                      fb.status === "resolved"
-                        ? "border-green-400 text-green-700 bg-green-50"
-                        : fb.status === "still_present"
-                        ? "border-red-400 text-red-700 bg-red-50"
-                        : "border-orange-400 text-orange-700 bg-orange-50"
-                    }`}
-                  >
-                    {fb.status === "resolved" ? "✓ Behoben" : fb.status === "still_present" ? "✗ Weiter vorhanden" : "● Offen"}
-                  </Badge>
+                  <div className="flex items-center gap-1">
+                    {(fb as any).priority && (fb as any).priority !== "medium" && (
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] ${
+                          (fb as any).priority === "critical" ? "border-red-500 text-red-700 bg-red-50" :
+                          (fb as any).priority === "high" ? "border-orange-400 text-orange-700 bg-orange-50" :
+                          "border-gray-300 text-gray-600"
+                        }`}
+                      >
+                        {(fb as any).priority === "critical" ? "Kritisch" : (fb as any).priority === "high" ? "Hoch" : "Niedrig"}
+                      </Badge>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className={`${
+                        fb.status === "resolved"
+                          ? "border-green-400 text-green-700 bg-green-50"
+                          : fb.status === "still_present"
+                          ? "border-red-400 text-red-700 bg-red-50"
+                          : "border-orange-400 text-orange-700 bg-orange-50"
+                      }`}
+                    >
+                      {fb.status === "resolved" ? "✓ Behoben" : fb.status === "still_present" ? "✗ Weiter vorhanden" : "● Offen"}
+                    </Badge>
+                  </div>
                 </div>
 
                 <p className="text-sm whitespace-pre-wrap mb-3">{fb.message}</p>

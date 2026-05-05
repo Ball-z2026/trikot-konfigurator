@@ -7653,3 +7653,14 @@
 [2026-05-05T13:15:43.612Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-05T13:15:53.951Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-05T13:16:01.589Z] Server running on http://localhost:3000/
+[2026-05-05T14:04:13.657Z] 10:04:13 AM [tsx] change in ./drizzle/schema.ts Restarting...
+[2026-05-05T14:04:15.712Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T14:04:16.602Z] Server running on http://localhost:3000/
+[2026-05-05T14:05:03.475Z] 10:05:03 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-05T14:05:05.231Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T14:05:05.907Z] Server running on http://localhost:3000/
+[2026-05-05T14:08:36.449Z] 10:08:36 AM [vite] (client) hmr update /src/index.css, /src/components/BetaFeedbackWidget.tsx
+[2026-05-05T14:09:00.045Z] 10:09:00 AM [vite] (client) hmr update /src/index.css, /src/components/BetaFeedbackWidget.tsx
+[2026-05-05T14:09:17.208Z] 10:09:17 AM [vite] (client) hmr update /src/index.css, /src/components/BetaFeedbackWidget.tsx
+[2026-05-05T14:10:18.131Z] 10:10:18 AM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T14:10:38.609Z] 10:10:38 AM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css

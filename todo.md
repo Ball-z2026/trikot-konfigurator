@@ -1773,3 +1773,9 @@
 - [x] Beim Klick auf "Problem melden" im Produktdesigner (während KI-Produkterstellung) springt die Seite zurück zur Produktliste
 - [x] Widget darf keine Navigation/State-Änderung der darunterliegenden Seite auslösen
 - [x] Fix: stopPropagation auf Widget-Container + Overlay-Klick prüft ob Klick auf Widget war
+
+## Feedback-Widget: Prioritäts-Feld
+- [x] DB: priority-Feld zur betaFeedback Tabelle (enum: low, medium, high, critical)
+- [x] Backend: create-Route um priority erweitern, list-Route gibt priority zurück
+- [x] Frontend Widget: Prioritäts-Auswahl im Formular (Niedrig, Mittel, Hoch, Kritisch)
+- [x] Frontend Admin-Panel: Priorität anzeigen (Badge) + An-Manus-senden Text enthält Priorität

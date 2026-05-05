@@ -1023,6 +1023,8 @@ export const betaFeedback = mysqlTable("beta_feedback", {
   userAgent: text("userAgent"),
   /** Aktuelle URL beim Feedback */
   currentUrl: varchar("currentUrl", { length: 500 }),
+  /** Priorität des Problems */
+  priority: mysqlEnum("priority", ["low", "medium", "high", "critical"]).default("medium").notNull(),
   /** Screenshot-URL (S3-Pfad) */
   screenshotUrl: varchar("screenshotUrl", { length: 500 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

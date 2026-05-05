@@ -1,0 +1,1 @@
+ALTER TABLE `beta_feedback` ADD `priority` enum('low','medium','high','critical') DEFAULT 'medium' NOT NULL;

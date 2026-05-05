@@ -20,6 +20,7 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [priority, setPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
   const [showFeedbacks, setShowFeedbacks] = useState(false);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [takingScreenshot, setTakingScreenshot] = useState(false);
@@ -44,6 +45,7 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
     onSuccess: () => {
       toast.success("Feedback gesendet! Danke für deine Meldung.");
       setMessage("");
+      setPriority("medium");
       setScreenshotPreview(null);
       setIsOpen(false);
     },
@@ -120,6 +122,7 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
       page,
       area: area || undefined,
       message: message.trim(),
+      priority,
       currentUrl: window.location.href,
       userAgent: navigator.userAgent,
       screenshotUrl,
@@ -127,11 +130,13 @@ export function BetaFeedbackWidget({ page, area }: BetaFeedbackWidgetProps) {
   };
 
   // "An Manus senden" - kopiert formatiertes Problem in Zwischenablage
+  const priorityLabels: Record<string, string> = { low: "Niedrig", medium: "Mittel", high: "Hoch", critical: "Kritisch" };
   const handleCopyForManus = (fb: any) => {
     const text = `## Beta-Feedback: Problem auf Seite "${fb.page}"${fb.area ? ` (Bereich: ${fb.area})` : ""}
 
 **Gemeldet von:** ${fb.userName || "Anonym"}
 **Datum:** ${new Date(fb.createdAt).toLocaleString("de-DE")}
+**Priorität:** ${priorityLabels[fb.priority] || "Mittel"}
 **URL:** ${fb.currentUrl || "Nicht verfügbar"}
 **Status:** ${fb.status === "resolved" ? "Behoben" : fb.status === "still_present" ? "Weiter vorhanden" : "Offen"}
 
@@ -178,18 +183,32 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-semibold">{fb.userName || "Anonym"}</span>
-                    <Badge
-                      variant="outline"
-                      className={`text-[9px] ${
-                        fb.status === "resolved"
-                          ? "border-green-400 text-green-700"
-                          : fb.status === "still_present"
-                          ? "border-red-400 text-red-700"
-                          : "border-orange-400 text-orange-700"
-                      }`}
-                    >
-                      {fb.status === "resolved" ? "Behoben" : fb.status === "still_present" ? "Offen" : "Neu"}
-                    </Badge>
+                    <div className="flex items-center gap-1">
+                      {fb.priority && fb.priority !== "medium" && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] ${
+                            fb.priority === "critical" ? "border-red-500 text-red-700 bg-red-50" :
+                            fb.priority === "high" ? "border-orange-400 text-orange-700 bg-orange-50" :
+                            "border-gray-300 text-gray-600"
+                          }`}
+                        >
+                          {fb.priority === "critical" ? "Kritisch" : fb.priority === "high" ? "Hoch" : "Niedrig"}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className={`text-[9px] ${
+                          fb.status === "resolved"
+                            ? "border-green-400 text-green-700"
+                            : fb.status === "still_present"
+                            ? "border-red-400 text-red-700"
+                            : "border-orange-400 text-orange-700"
+                        }`}
+                      >
+                        {fb.status === "resolved" ? "Behoben" : fb.status === "still_present" ? "Offen" : "Neu"}
+                      </Badge>
+                    </div>
                   </div>
                   {fb.area && (
                     <div className="text-[10px] text-muted-foreground mb-1">Bereich: {fb.area}</div>
@@ -288,6 +307,32 @@ Bitte behebe dieses Problem auf der Seite "${fb.page}"${fb.area ? ` im Bereich "
                 className="min-h-[80px] text-sm resize-none"
                 autoFocus
               />
+
+              {/* Prioritäts-Auswahl */}
+              <div>
+                <span className="text-[10px] text-muted-foreground block mb-1">Priorität:</span>
+                <div className="flex gap-1">
+                  {([
+                    { value: "low" as const, label: "Niedrig", color: "bg-gray-100 text-gray-700 border-gray-300" },
+                    { value: "medium" as const, label: "Mittel", color: "bg-yellow-100 text-yellow-800 border-yellow-400" },
+                    { value: "high" as const, label: "Hoch", color: "bg-orange-100 text-orange-800 border-orange-400" },
+                    { value: "critical" as const, label: "Kritisch", color: "bg-red-100 text-red-800 border-red-400" },
+                  ]).map((p) => (
+                    <button
+                      key={p.value}
+                      type="button"
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-all ${
+                        priority === p.value
+                          ? `${p.color} ring-2 ring-offset-1 ring-current`
+                          : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100"
+                      }`}
+                      onClick={() => setPriority(p.value)}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Screenshot-Bereich */}
               <div className="flex items-center gap-2">
