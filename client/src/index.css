@@ -196,3 +196,31 @@
     -webkit-overflow-scrolling: auto !important;
   }
 }
+
+/* Konfigurator Layout: Feste Höhe auf Desktop, unabhängiges Scrollen beider Spalten */
+@media (min-width: 1024px) {
+  .konfigurator-shell {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .konfigurator-main {
+    flex: 1;
+    overflow: hidden;
+  }
+  .konfigurator-grid {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+  }
+  .konfigurator-left {
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
+  .konfigurator-right {
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+}

@@ -1627,10 +1627,13 @@ export default function CustomerConfigurator() {
     const isFreeZoneDraggable = isFreeZoneMode && interactive;
     const isBeingDragged = draggingZone === zone.id || resizingZone === zone.id;
     const canDelete = isFreeZoneMode && zone.purpose !== "clubLogo";
+    const hasContent = !!(content?.imageDataUrl || content?.imageUrl || content?.text);
+    const manyZones = currentZones.length > 10;
+    const isReducedVisibility = manyZones && !isSelected && !isFreeZoneMode;
 
     return (
       <div
-        className={`absolute flex items-center justify-center ${isBeingDragged ? "zone-dragging" : "transition-all duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""}`}
+        className={`absolute flex items-center justify-center ${isBeingDragged ? "zone-dragging" : "transition-all duration-150"} ${isDragTarget ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : ""} ${isReducedVisibility ? "hover:opacity-100" : ""}`}
         style={{
           left: `${zone.posX}%`,
           top: `${zone.posY}%`,
@@ -1640,7 +1643,7 @@ export default function CustomerConfigurator() {
           transform: isBeingDragged
             ? `${rotation !== 0 ? `rotate(${rotation}deg) ` : ""}scale(1.04)`
             : rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-          opacity: isBeingDragged ? 0.92 : undefined,
+          opacity: isBeingDragged ? 0.92 : isReducedVisibility ? 0.15 : undefined,
           willChange: isBeingDragged ? "left, top, width, height, transform" : undefined,
           border: isBeingDragged
             ? `2px solid hsl(var(--primary))`
@@ -1793,7 +1796,7 @@ export default function CustomerConfigurator() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background h-screen overflow-hidden flex flex-col">
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-20">
         <div className="container flex items-center justify-between h-12 sm:h-14 px-3 sm:px-4">
@@ -1908,11 +1911,12 @@ export default function CustomerConfigurator() {
         </div>
       </header>
 
-      <main className="container py-4 sm:py-6 px-3 sm:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6 items-start">
+      <main className="container py-4 sm:py-6 px-3 sm:px-4 flex-1 overflow-hidden">
+        <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 sm:gap-6">
           {/* Left: Canvas */}
-          <div className="space-y-3 lg:sticky lg:top-4">
-            {/* Part Navigation */}
+          <div className="space-y-3 overflow-y-auto pr-2">
+            {/* Part Navigation - sticky oben */}
+            <div className="sticky top-0 z-10 bg-background pb-2">
             {hasParts ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -2158,6 +2162,7 @@ export default function CustomerConfigurator() {
 
               </div>
             )}
+            </div>{/* Ende sticky Part-Navigation */}
 
             {/* Overview Mode */}
             {hasParts && viewMode === "overview" && (
@@ -2484,7 +2489,7 @@ export default function CustomerConfigurator() {
           </div>
 
           {/* Right: Configuration Panel */}
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto pr-1">
             {/* Org-/Abt.-Auswahl bei mehreren Mitgliedschaften */}
             {isAuthenticated && myMemberships && myMemberships.length > 0 && (
               <Card className="p-3">

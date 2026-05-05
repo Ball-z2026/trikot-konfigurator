@@ -7664,3 +7664,125 @@
 [2026-05-05T14:09:17.208Z] 10:09:17 AM [vite] (client) hmr update /src/index.css, /src/components/BetaFeedbackWidget.tsx
 [2026-05-05T14:10:18.131Z] 10:10:18 AM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
 [2026-05-05T14:10:38.609Z] 10:10:38 AM [vite] (client) hmr update /src/pages/AdminDashboard.tsx, /src/index.css
+[2026-05-05T14:20:46.464Z] 10:20:46 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:21:12.605Z] 10:21:12 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:22:05.910Z] 10:22:05 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:22:19.778Z] 10:22:19 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:24:40.170Z] Dev server process group stopped
+[2026-05-05T14:24:40.206Z] Dev server exited with code -15
+[2026-05-05T14:24:43.206Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T14:24:45.096Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T14:24:45.672Z] Server running on http://localhost:3000/
+[2026-05-05T14:25:28.915Z] 10:25:28 AM [vite] (client) hmr update /src/index.css
+[2026-05-05T14:25:42.164Z] 10:25:42 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:26:36.745Z] 10:26:36 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:27:18.437Z] Dev server process group stopped
+[2026-05-05T14:27:18.483Z] Dev server exited with code -15
+[2026-05-05T14:27:21.467Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T14:27:23.112Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T14:27:23.644Z] Server running on http://localhost:3000/
+[2026-05-05T14:30:23.792Z] Dev server process group stopped
+[2026-05-05T14:30:23.827Z] Dev server exited with code -15
+[2026-05-05T14:30:26.805Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T14:30:28.777Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T14:30:29.364Z] Server running on http://localhost:3000/
+[2026-05-05T14:38:02.548Z] 10:38:02 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:38:02.723Z] 10:38:02 AM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx: Expected corresponding JSX closing tag for <div>. (3704:6)
+[2026-05-05T14:38:02.723Z] 
+[2026-05-05T14:38:02.724Z] 3702 |           </div>
+[2026-05-05T14:38:02.724Z] 3703 |         </div>
+[2026-05-05T14:38:02.724Z] > 3704 |       </main>
+[2026-05-05T14:38:02.725Z] |       ^
+[2026-05-05T14:38:02.725Z] 3705 |       {/* Save Design Dialog */}
+[2026-05-05T14:38:02.726Z] 3706 |       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+[2026-05-05T14:38:02.726Z] 3707 |         <DialogContent className="sm:max-w-md">
+[2026-05-05T14:38:02.726Z] Plugin: vite:react-babel
+[2026-05-05T14:38:02.727Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:3704:6
+[2026-05-05T14:38:02.727Z] 3702 |            </div>
+[2026-05-05T14:38:02.728Z] 3703 |          </div>
+[2026-05-05T14:38:02.728Z] 3704 |        </main>
+[2026-05-05T14:38:02.729Z] |        ^
+[2026-05-05T14:38:02.729Z] 3705 |        {/* Save Design Dialog */}
+[2026-05-05T14:38:02.730Z] 3706 |        <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+[2026-05-05T14:38:02.730Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-05T14:38:02.731Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-05T14:38:02.731Z] at jsxParseElementAt (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:527:18)
+[2026-05-05T14:38:02.732Z] at jsxParseElementAt (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+[2026-05-05T14:38:02.732Z] at jsxParseElementAt (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+[2026-05-05T14:38:02.733Z] at jsxParseElement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:559:19)
+[2026-05-05T14:38:02.734Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:573:21)
+[2026-05-05T14:38:02.734Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+[2026-05-05T14:38:02.735Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-05T14:38:02.735Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-05T14:38:02.736Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-05T14:38:02.736Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-05T14:38:02.737Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-05T14:38:02.737Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-05T14:38:02.738Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-05T14:38:02.738Z] at fn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3745:23)
+[2026-05-05T14:38:02.738Z] at tryParse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/util.ts:174:20)
+[2026-05-05T14:38:02.739Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3744:20)
+[2026-05-05T14:38:02.739Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-05-05T14:38:02.740Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3197:12)
+[2026-05-05T14:38:02.741Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-05-05T14:38:02.741Z] at parseMaybeAssignAllowInOrVoidPattern (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3311:17)
+[2026-05-05T14:38:02.741Z] at parseParenAndDistinguishExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1825:16)
+[2026-05-05T14:38:02.742Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1170:21)
+[2026-05-05T14:38:02.742Z] at parseExprAtom (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+[2026-05-05T14:38:02.743Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+[2026-05-05T14:38:02.743Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-05T14:38:02.744Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-05T14:38:02.744Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-05T14:38:02.745Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-05T14:38:02.745Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-05T14:38:02.746Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-05T14:38:02.746Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-05T14:38:02.747Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-05T14:38:02.748Z] at parseExpressionBase (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:226:23)
+[2026-05-05T14:38:02.748Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:39)
+[2026-05-05T14:38:02.749Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3192:16)
+[2026-05-05T14:38:02.749Z] at parseExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:217:17)
+[2026-05-05T14:38:02.750Z] at parseReturnStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1115:28)
+[2026-05-05T14:38:02.750Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:543:21)
+[2026-05-05T14:38:02.751Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-05T14:38:02.751Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-05T14:38:02.752Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-05T14:38:02.752Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-05T14:38:02.753Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-05T14:38:02.753Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-05T14:38:02.754Z] at parseFunctionBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2621:24)
+[2026-05-05T14:38:02.754Z] at parseFunctionBodyAndFinish (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2590:10)
+[2026-05-05T14:38:02.755Z] at parseFunctionBodyAndFinish (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2609:20)
+[2026-05-05T14:38:02.755Z] at <anonymous> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1695:12)
+[2026-05-05T14:38:02.908Z] 10:38:02 AM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx: Expected corresponding JSX closing tag for <div>. (3704:6)
+[2026-05-05T14:38:02.909Z] 
+[2026-05-05T14:38:02.909Z] 3702 |           </div>
+[2026-05-05T14:38:02.910Z] 3703 |         </div>
+[2026-05-05T14:38:02.910Z] > 3704 |       </main>
+[2026-05-05T14:38:02.910Z] |       ^
+[2026-05-05T14:38:02.911Z] 3705 |       {/* Save Design Dialog */}
+[2026-05-05T14:38:02.911Z] 3706 |       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+[2026-05-05T14:38:02.911Z] 3707 |         <DialogContent className="sm:max-w-md">
+[2026-05-05T14:38:02.911Z] Plugin: vite:react-babel
+[2026-05-05T14:38:02.912Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/CustomerConfigurator.tsx:3704:6
+[2026-05-05T14:38:02.912Z] 3702 |            </div>
+[2026-05-05T14:38:02.912Z] 3703 |          </div>
+[2026-05-05T14:38:02.913Z] 3704 |        </main>
+[2026-05-05T14:38:02.913Z] |        ^
+[2026-05-05T14:38:02.913Z] 3705 |        {/* Save Design Dialog */}
+[2026-05-05T14:38:02.914Z] 3706 |        <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+[2026-05-05T14:38:33.263Z] 10:38:33 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:39:55.865Z] 10:39:55 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:40:48.424Z] Dev server process group stopped
+[2026-05-05T14:40:48.491Z] Dev server exited with code -15
+[2026-05-05T14:40:51.471Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T14:40:53.658Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T14:40:54.364Z] Server running on http://localhost:3000/
+[2026-05-05T14:41:42.640Z] 10:41:42 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:42:27.989Z] 10:42:27 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-05T14:45:42.031Z] Dev server process group stopped
+[2026-05-05T14:45:42.073Z] Dev server exited with code -15
+[2026-05-05T14:45:45.064Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-05T14:45:47.042Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-05T14:45:47.740Z] Server running on http://localhost:3000/
+[2026-05-05T14:47:41.789Z] 10:47:41 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css

@@ -203,13 +203,7 @@ export default function AdminProducts() {
             {/* Manuelles Overlay für modal={false} - verhindert iOS Touch-Freeze */}
             {dialogOpen && (
               <div
-                className="fixed inset-0 z-40 bg-black/50"
-                onClick={(e) => {
-                  // Nicht schließen wenn Klick auf dem Feedback-Widget war
-                  const target = e.target as HTMLElement;
-                  if (target.closest('#beta-feedback-widget')) return;
-                  setDialogOpen(false); resetDialog();
-                }}
+                className="fixed inset-0 z-40 bg-black/50 pointer-events-none"
               />
             )}
             <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto z-50">

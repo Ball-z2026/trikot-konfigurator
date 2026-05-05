@@ -1779,3 +1779,12 @@
 - [x] Backend: create-Route um priority erweitern, list-Route gibt priority zurück
 - [x] Frontend Widget: Prioritäts-Auswahl im Formular (Niedrig, Mittel, Hoch, Kritisch)
 - [x] Frontend Admin-Panel: Priorität anzeigen (Badge) + An-Manus-senden Text enthält Priorität
+
+## Bug: Konfigurator zeigt zu viele Zonen + kein Scrollen im Hauptbereich (BEHOBEN)
+- [x] Layout: h-screen + overflow-hidden + flex-col auf äußerem Container, beide Spalten scrollen unabhängig
+- [x] Part-Navigation sticky oben in der linken Spalte
+- [x] Zonen-Overlays: Bei >10 Zonen werden nicht-ausgewählte Zonen auf opacity 0.15 reduziert (hover zeigt sie)
+
+## Bug: Produktdesigner Dialog schließt bei Klick außerhalb (BEHOBEN)
+- [x] "Neues Produkt"-Dialog schließt sich nicht mehr bei Klick außerhalb
+- [x] Overlay hat pointer-events-none, Dialog nur über X-Button oder Abbrechen schließbar
