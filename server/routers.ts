@@ -1034,6 +1034,11 @@ export const appRouter = router({
           fontColor: z.string().optional(),
           fontWeight: z.string().optional(),
           fontSize: z.number().optional(),
+          fontFamily: z.string().optional(),
+          textStyle: z.enum(["arc", "straight"]).optional(),
+          arcDegree: z.number().optional(),
+          outlineColor: z.string().optional(),
+          outlineWidth: z.number().optional(),
         })).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
@@ -1096,6 +1101,11 @@ export const appRouter = router({
               fontColor: zone.fontColor || null,
               fontWeight: zone.fontWeight || null,
               fontSize: zone.fontSize || null,
+              fontFamily: zone.fontFamily || null,
+              textStyle: (zone.textStyle as any) || null,
+              arcDegree: zone.arcDegree || null,
+              outlineColor: zone.outlineColor || null,
+              outlineWidth: zone.outlineWidth || null,
               sortOrder: 0,
             });
           }
@@ -1139,7 +1149,7 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    /** KI-Bild-Analyse: Positionen, Stil, Farben, Bogentext von Name, Nummer, Logo etc. erkennen */
+    /** KI-Bild-Analyse: Exakte Bounding-Box-Erkennung + Schrifterkennung */
     analyzeImage: protectedProcedure
       .input(z.object({
         imageUrl: z.string(),
@@ -1148,51 +1158,87 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const { invokeLLM } = await import("./_core/llm");
+        const { createGridOverlayImage, gridCellsToPercent } = await import("./gridOverlay");
 
-        const systemPrompt = `Du bist ein Experte für Sportbekleidung und Textildesign mit jahrelanger Erfahrung in der Druckproduktion. Analysiere das hochgeladene Bild eines Trikots oder Sportbekleidungsstücks EXTREM GENAU.
+        // Schritt 1: Bild herunterladen und Grid-Overlay erstellen
+        let gridImageBase64: string;
+        let imageWidth: number;
+        let imageHeight: number;
+        
+        try {
+          const response = await fetch(input.imageUrl);
+          const imageBuffer = Buffer.from(await response.arrayBuffer());
+          const gridResult = await createGridOverlayImage(imageBuffer);
+          gridImageBase64 = gridResult.gridImageBase64;
+          imageWidth = gridResult.imageWidth;
+          imageHeight = gridResult.imageHeight;
+        } catch (e) {
+          // Fallback: Bild direkt ohne Grid verwenden
+          gridImageBase64 = input.imageUrl;
+          imageWidth = 800;
+          imageHeight = 1000;
+        }
 
-Deine Aufgabe: Erkenne ALLE sichtbaren Text- und Grafik-Elemente und deren EXAKTE Positionen auf dem Kleidungsstück. Das Ziel ist eine 100%-ige Positionskopie – die erkannten Positionen müssen so präzise sein, dass sie 1:1 auf ein anderes Trikot übertragen werden können.
+        const systemPrompt = `Du bist ein PIXEL-GENAUER Computer-Vision-Analyst für Sportbekleidung.
 
-Mögliche Elemente:
-- playerName: Spielername (meist oben auf dem Rücken, oft GEBOGEN/GEWÖLBT)
-- playerNumber: Rücken-/Frontnummer (große Ziffern)
-- clubName: Vereins-/Teamname (oft auf der Vorderseite, manchmal GEBOGEN)
-- logo: Vereinswappen/Logo (meist auf der Herzseite/links oben)
-- sponsor: Sponsoren-Logo
+## GRID-SYSTEM
+
+Das Bild hat ein ROTES RASTER mit Beschriftungen:
+- Spalten: A bis J (von links nach rechts, je 10% der Bildbreite)
+- Zeilen: 1 bis 10 (von oben nach unten, je 10% der Bildhöhe)
+
+Jede Zelle ist z.B. "A1" (oben links), "J10" (unten rechts), "E5" (Mitte).
+
+## DEINE AUFGABE
+
+Für jedes erkannte Element (Text, Logo, Nummer, Name, Sponsor):
+1. Bestimme die START-ZELLE (obere linke Ecke des Elements)
+2. Bestimme die END-ZELLE (untere rechte Ecke des Elements)
+3. Gib ZUSÄTZLICH eine FEIN-JUSTIERUNG in % innerhalb der Start-Zelle an (0-100%)
+
+## FEIN-JUSTIERUNG (für sub-cell Genauigkeit)
+
+Da jede Zelle 10% des Bildes ist, brauchst du eine Fein-Justierung:
+- offsetX: Wie weit ist die linke Kante des Elements INNERHALB der Start-Zelle? (0% = am linken Rand der Zelle, 50% = Mitte, 100% = rechter Rand)
+- offsetY: Wie weit ist die obere Kante des Elements INNERHALB der Start-Zelle? (0% = oberer Rand, 50% = Mitte, 100% = unterer Rand)
+- endOffsetX: Wie weit reicht das Element INNERHALB der End-Zelle? (0% = linker Rand, 50% = Mitte, 100% = rechter Rand)
+- endOffsetY: Wie weit reicht das Element INNERHALB der End-Zelle? (0% = oberer Rand, 50% = Mitte, 100% = unterer Rand)
+
+## SCHRIFTERKENNUNG
+
+Für jeden Text: Welche **Google Font** passt am besten?
+- Breite Block-Schriften, bold, condensed → "Bebas Neue", "Anton"
+- Kondensierte Bold-Schriften → "Oswald", "Barlow Condensed", "Teko"
+- Geometrische Sans-Serif → "Montserrat", "Poppins"
+- Sportliche Display-Fonts → "Russo One", "Righteous", "Passion One"
+
+## ELEMENTTYPEN
+
+- playerName: Spielername
+- playerNumber: Spielernummer (Brust oder Rücken)
+- clubName: Vereinsname
+- logo: Vereinswappen/Logo
+- sponsor: Sponsor
 - abbreviation: Kürzel
-- custom: Sonstige Elemente
+- custom: Patch, Badge, Flagge, Herstellerlogo
 
-Für JEDES erkannte Element gib zurück:
-1. POSITION: x, y (obere linke Ecke), width, height – alles in Prozent (0-100).
-   KRITISCH: Die Positionen müssen RELATIV ZUR JEWEILIGEN SEITE (Vorder- oder Rückseite) angegeben werden!
-   - Wenn das Bild BEIDE Seiten nebeneinander zeigt (z.B. Vorderseite links, Rückseite rechts):
-     * Behandle JEDE Seite als eigenständiges 100%-Koordinatensystem (0-100% Breite, 0-100% Höhe)
-     * Ein Element in der Mitte der Rückseite hat x=50%, NICHT x=75% (was die Position im Gesamtbild wäre)
-     * Messe immer relativ zur jeweiligen Seite des Kleidungsstücks
-   - Wenn das Bild nur EINE Seite zeigt: Messe relativ zum sichtbaren Kleidungsstück
-   - Messe vom oberen Rand des Kleidungsstücks (Schulter), nicht vom Bildrand
-2. TEXTSTIL:
-   - textStyle: "arc" (gebogen/gewölbt wie auf echten Trikots) oder "straight" (gerade)
-   - arcDegree: Bogengrad in Grad (0 = gerade, positiv = nach oben gewölbt, negativ = nach unten). Typisch: 15-30° für Spielernamen auf dem Rücken
-   - fontColor: Hauptfarbe des Textes als HEX (z.B. "#FFFFFF" für weiß)
-   - outlineColor: Outline/Umrandungsfarbe als HEX (z.B. "#FF0000" für rot), oder "none" wenn keine Outline
-   - outlineWidth: Breite der Outline in Prozent der Schrifthöhe (z.B. 10 für 10%), oder 0
-   - fontStyle: Schriftart-Kategorie: "block" (fette Blockschrift), "serif" (Serifenschrift), "sans" (serifenlos), "script" (Schreibschrift), "outline" (nur Umriss), "shadow" (mit Schatten)
-   - fontWeight: "normal" oder "bold"
-   - fontSize: Geschätzte Schrifthöhe relativ zur Zonenhöhe in Prozent (z.B. 80 = Text füllt 80% der Zonenhöhe)
+## DEUTSCHE BEZEICHNUNGEN (PFLICHT)
 
-WICHTIG:
-- Sei EXTREM PRÄZISE bei den Positionen. Achte auf Symmetrie (z.B. zentrierte Nummern = x ca. 25-35%, width ca. 30-50%).
-- Erkenne ob das Bild Vorder- UND Rückseite zeigt (z.B. nebeneinander). Wenn ja, gib Positionen PRO SEITE an (jeweils 0-100%).
-- Bei gebogenem Text: Der Bogen ist typisch für Spielernamen auf Basketball-, Football- und Baseball-Trikots.
-- Schätze Farben so genau wie möglich aus dem Bild.
-- Wenn ein Element eine Outline/Umrandung hat (z.B. weiße Schrift mit roter Umrandung), erkenne BEIDE Farben.
-- Typische Positionen als Referenz:
-  * Vereinswappen: x=5-15%, y=5-15%, width=10-18%, height=10-15% (Herzseite)
-  * Spielername Rücken: x=15-25%, y=15-25%, width=50-70%, height=6-10% (zentriert oben)
-  * Rückennummer: x=25-35%, y=30-50%, width=30-50%, height=20-35% (zentriert Mitte)
-  * Sponsor Brust: x=20-30%, y=35-50%, width=40-60%, height=8-15% (zentriert)`;
+- "Spielername" / "Rückennummer" / "Brustnummer"
+- "Vereinswappen" / "Vereinsname"
+- "Sponsor Brust" / "Sponsor Bauch" / "Sponsor Rücken"
+- "Herstellerlogo" / "Patch" / "Badge" / "Flagge"
 
+## BEISPIEL
+
+Ein Logo auf der linken Brust, das bei Zelle B2 beginnt und bei C3 endet:
+- startCell: "B2", endCell: "C3"
+- offsetX: 30 (beginnt 30% innerhalb von Spalte B)
+- offsetY: 20 (beginnt 20% innerhalb von Zeile 2)
+- endOffsetX: 70 (endet 70% innerhalb von Spalte C)
+- endOffsetY: 80 (endet 80% innerhalb von Zeile 3)`;
+
+        // Schritt 2: LLM mit Grid-Overlay-Bild aufrufen
         const response = await invokeLLM({
           messages: [
             { role: "system", content: systemPrompt },
@@ -1201,11 +1247,23 @@ WICHTIG:
               content: [
                 {
                   type: "image_url",
-                  image_url: { url: input.imageUrl, detail: "high" },
+                  image_url: { url: gridImageBase64, detail: "high" },
                 },
                 {
                   type: "text",
-                  text: `Analysiere dieses ${input.category || "Sportbekleidungs"}-Bild${input.sport ? " (Sportart: " + input.sport + ")" : ""} EXTREM GENAU. Erkenne alle Elemente (Name, Nummer, Logo, Vereinsname, Sponsor etc.), ihre EXAKTEN Positionen und den STIL (gebogen/gerade, Farben, Outline, Schriftart). Ziel: 100%-ige Positionskopie auf ein anderes Trikot.`,
+                  text: `Analysiere dieses ${input.category || "Sportbekleidungs"}-Bild${input.sport ? " (Sportart: " + input.sport + ")" : ""}.
+
+Das Bild hat ein ROTES RASTER (Grid) mit Zellen A1-J10.
+Nutze das Raster um die EXAKTE Position jedes Elements anzugeben.
+
+Für jedes Element:
+1. In welcher Zelle beginnt die OBERE LINKE Ecke? (startCell)
+2. In welcher Zelle endet die UNTERE RECHTE Ecke? (endCell)
+3. Fein-Justierung: Wo genau innerhalb der Start/End-Zelle? (offsetX/Y, endOffsetX/Y in %)
+4. Welche Google Font passt zur Schrift?
+
+Sei EXTREM PRÄZISE mit den Zellen! Schau dir das Raster genau an.
+Liefere NUR Elemente die du SICHER erkennst.`,
                 },
               ],
             },
@@ -1213,7 +1271,7 @@ WICHTIG:
           response_format: {
             type: "json_schema",
             json_schema: {
-              name: "zone_analysis",
+              name: "grid_zone_analysis",
               strict: true,
               schema: {
                 type: "object",
@@ -1223,23 +1281,25 @@ WICHTIG:
                     items: {
                       type: "object",
                       properties: {
-                        name: { type: "string", description: "Beschreibender Name der Zone (z.B. 'Spielername Rücken')" },
-                        purpose: { type: "string", enum: ["playerName", "playerNumber", "clubName", "logo", "sponsor", "abbreviation", "custom"], description: "Zonentyp" },
-                        x: { type: "number", description: "X-Position in Prozent (0-100), linke Kante relativ zum Kleidungsstück" },
-                        y: { type: "number", description: "Y-Position in Prozent (0-100), obere Kante relativ zum Kleidungsstück" },
-                        width: { type: "number", description: "Breite in Prozent (0-100)" },
-                        height: { type: "number", description: "Höhe in Prozent (0-100)" },
-                        side: { type: "string", enum: ["front", "back"], description: "Vorder- oder Rückseite" },
-                        textStyle: { type: "string", enum: ["arc", "straight"], description: "Textstil: arc = gebogen/gewölbt, straight = gerade" },
-                        arcDegree: { type: "number", description: "Bogengrad (0 = gerade, 15-30 = typischer Bogen, negativ = nach unten)" },
-                        fontColor: { type: "string", description: "Hauptfarbe des Textes als HEX (z.B. #FFFFFF)" },
-                        outlineColor: { type: "string", description: "Outline-Farbe als HEX oder 'none' wenn keine Outline" },
-                        outlineWidth: { type: "number", description: "Outline-Breite in % der Schrifthöhe (0 = keine)" },
-                        fontStyle: { type: "string", enum: ["block", "serif", "sans", "script", "outline", "shadow"], description: "Schriftart-Kategorie" },
-                        fontWeight: { type: "string", enum: ["normal", "bold"], description: "Schriftstärke" },
-                        fontSize: { type: "number", description: "Geschätzte Schrifthöhe in % der Zonenhöhe (z.B. 80)" },
+                        name: { type: "string", description: "Deutscher Name der Zone" },
+                        purpose: { type: "string", enum: ["playerName", "playerNumber", "clubName", "logo", "sponsor", "abbreviation", "custom"] },
+                        startCell: { type: "string", description: "Grid-Zelle der oberen linken Ecke (z.B. 'B2')" },
+                        endCell: { type: "string", description: "Grid-Zelle der unteren rechten Ecke (z.B. 'D4')" },
+                        offsetX: { type: "number", description: "Fein-Justierung X in Start-Zelle (0-100%)" },
+                        offsetY: { type: "number", description: "Fein-Justierung Y in Start-Zelle (0-100%)" },
+                        endOffsetX: { type: "number", description: "Fein-Justierung X in End-Zelle (0-100%)" },
+                        endOffsetY: { type: "number", description: "Fein-Justierung Y in End-Zelle (0-100%)" },
+                        side: { type: "string", enum: ["front", "back"] },
+                        textStyle: { type: "string", enum: ["arc", "straight"] },
+                        arcDegree: { type: "number" },
+                        fontColor: { type: "string", description: "HEX Farbe" },
+                        outlineColor: { type: "string", description: "HEX oder 'none'" },
+                        outlineWidth: { type: "number" },
+                        fontFamily: { type: "string", description: "Google Font Name" },
+                        fontWeight: { type: "string", enum: ["normal", "bold"] },
+                        fontSize: { type: "number", description: "Füllung der Zonenhöhe in %" },
                       },
-                      required: ["name", "purpose", "x", "y", "width", "height", "side", "textStyle", "arcDegree", "fontColor", "outlineColor", "outlineWidth", "fontStyle", "fontWeight", "fontSize"],
+                      required: ["name", "purpose", "startCell", "endCell", "offsetX", "offsetY", "endOffsetX", "endOffsetY", "side", "textStyle", "arcDegree", "fontColor", "outlineColor", "outlineWidth", "fontFamily", "fontWeight", "fontSize"],
                       additionalProperties: false,
                     },
                   },
@@ -1258,7 +1318,50 @@ WICHTIG:
 
         try {
           const parsed = JSON.parse(content);
-          return { zones: parsed.zones || [] };
+          const rawZones = parsed.zones || [];
+          
+          // Schritt 3: Grid-Zellen in Prozent-Koordinaten umrechnen
+          const colLabels = "ABCDEFGHIJ";
+          const validatedZones = rawZones.map((z: any) => {
+            // Parse start and end cells
+            const startCol = colLabels.indexOf(z.startCell[0].toUpperCase());
+            const startRow = parseInt(z.startCell.slice(1)) - 1;
+            const endCol = colLabels.indexOf(z.endCell[0].toUpperCase());
+            const endRow = parseInt(z.endCell.slice(1)) - 1;
+            
+            if (startCol < 0 || endCol < 0 || startRow < 0 || endRow < 0) {
+              return null;
+            }
+            
+            // Berechne exakte Prozent-Position mit Fein-Justierung
+            const cellPercent = 10; // Jede Zelle = 10%
+            const x = startCol * cellPercent + (z.offsetX / 100) * cellPercent;
+            const y = startRow * cellPercent + (z.offsetY / 100) * cellPercent;
+            const endX = endCol * cellPercent + (z.endOffsetX / 100) * cellPercent;
+            const endY = endRow * cellPercent + (z.endOffsetY / 100) * cellPercent;
+            const width = endX - x;
+            const height = endY - y;
+            
+            return {
+              name: z.name,
+              purpose: z.purpose,
+              x: Math.round(Math.max(0, Math.min(95, x)) * 10) / 10,
+              y: Math.round(Math.max(0, Math.min(95, y)) * 10) / 10,
+              width: Math.round(Math.max(3, Math.min(100, width)) * 10) / 10,
+              height: Math.round(Math.max(3, Math.min(100, height)) * 10) / 10,
+              side: z.side,
+              textStyle: z.textStyle,
+              arcDegree: z.arcDegree,
+              fontColor: z.fontColor,
+              outlineColor: z.outlineColor,
+              outlineWidth: z.outlineWidth,
+              fontFamily: z.fontFamily,
+              fontWeight: z.fontWeight,
+              fontSize: z.fontSize,
+            };
+          }).filter((z: any) => z !== null && z.width > 0 && z.height > 0);
+          
+          return { zones: validatedZones };
         } catch {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "KI-Antwort konnte nicht verarbeitet werden" });
         }

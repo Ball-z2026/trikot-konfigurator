@@ -264,6 +264,14 @@ export const productZones = mysqlTable("product_zones", {
   fontWeight: varchar("fontWeight", { length: 20 }),
   /** Textausrichtung: left, center, right */
   textAlign: varchar("textAlign", { length: 20 }),
+  /** Textstil: arc (gebogen) oder straight (gerade) */
+  textStyle: mysqlEnum("textStyle", ["arc", "straight"]).default("straight"),
+  /** Bogengrad für Arc-Text (0 = gerade, 15-30 = typischer Bogen) */
+  arcDegree: float("arcDegree").default(0),
+  /** Outline-Farbe (Hex-Wert, z.B. "#000000") oder null wenn keine Outline */
+  outlineColor: varchar("outlineColor", { length: 20 }),
+  /** Outline-Breite in % der Schrifthöhe (0 = keine) */
+  outlineWidth: float("outlineWidth").default(0),
   /** Sortierreihenfolge */
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

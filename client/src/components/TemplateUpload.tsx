@@ -5,10 +5,30 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ArrowRight, ChevronLeft } from "lucide-react";
+import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ChevronLeft } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
+
+// Mapping: KI fontStyle-Kategorie -> konkrete Google Font Familie
+const FONT_STYLE_MAP: Record<string, string> = {
+  block: "Oswald",
+  sans: "Montserrat",
+  serif: "Playfair Display",
+  script: "Dancing Script",
+  outline: "Bebas Neue",
+  shadow: "Anton",
+};
+
+// Reverse-Mapping: Von Google Font Name zur Stil-Kategorie
+function inferFontStyle(fontFamily: string): "block" | "serif" | "sans" | "script" | "outline" | "shadow" {
+  const lower = fontFamily.toLowerCase();
+  if (["oswald", "anton", "bebas neue", "teko", "barlow condensed", "black ops one", "bungee", "russo one", "righteous", "passion one"].some(f => lower.includes(f))) return "block";
+  if (["playfair", "merriweather", "lora", "crimson"].some(f => lower.includes(f))) return "serif";
+  if (["dancing script", "pacifico", "great vibes", "satisfy"].some(f => lower.includes(f))) return "script";
+  if (["montserrat", "poppins", "inter", "roboto", "open sans", "lato"].some(f => lower.includes(f))) return "sans";
+  return "block";
+}
 
 interface Zone {
   id: string;
@@ -19,13 +39,13 @@ interface Zone {
   width: number; // Prozent
   height: number; // Prozent
   side?: "front" | "back";
-  // Stil-Erkennung durch KI
   textStyle?: "arc" | "straight";
   arcDegree?: number;
   fontColor?: string;
   outlineColor?: string;
   outlineWidth?: number;
   fontStyle?: "block" | "serif" | "sans" | "script" | "outline" | "shadow";
+  fontFamily?: string;
   fontWeight?: "normal" | "bold";
   fontSize?: number;
 }
@@ -77,10 +97,22 @@ export function TemplateUpload({
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
 
-  // Drag/Resize State (für rechte Seite – unser Produkt)
-  const [dragging, setDragging] = useState<string | null>(null);
-  const [resizing, setResizing] = useState<string | null>(null);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  // ─── Robuste Pointer-Events Drag & Drop (wie AdminProductEditor) ───
+  const [draggingZone, setDraggingZone] = useState<string | null>(null);
+  const [resizingZone, setResizingZone] = useState<string | null>(null);
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const dragStateRef = useRef<{
+    dragging: string | null;
+    resizing: string | null;
+    startX: number;
+    startY: number;
+    zoneX: number;
+    zoneY: number;
+    zoneW: number;
+    zoneH: number;
+    canvas: "left" | "right";
+  }>({ dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0, canvas: "left" });
+  const rafRef = useRef<number | null>(null);
 
   const leftCanvasRef = useRef<HTMLDivElement>(null);
   const rightCanvasRef = useRef<HTMLDivElement>(null);
@@ -91,7 +123,6 @@ export function TemplateUpload({
 
   // Produkte laden
   const { data: products } = trpc.product.list.useQuery();
-  // Parts des ausgewählten Produkts laden
   const { data: productParts } = trpc.product.getById.useQuery(
     { id: selectedProductId! },
     { enabled: !!selectedProductId }
@@ -105,6 +136,25 @@ export function TemplateUpload({
   }, [productParts, selectedPartId]);
 
   const activePart = productParts?.parts?.find((p: any) => p.id === selectedPartId);
+
+  // Google Fonts für erkannte Schriften laden
+  useEffect(() => {
+    const families = new Set<string>();
+    for (const z of zones) {
+      const family = z.fontFamily || FONT_STYLE_MAP[z.fontStyle || "block"];
+      if (family && family !== "Inter") families.add(family);
+    }
+    if (families.size === 0) return;
+    const existing = document.getElementById("template-upload-fonts");
+    if (existing) existing.remove();
+    const link = document.createElement("link");
+    link.id = "template-upload-fonts";
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?${[...families]
+      .map((f) => `family=${f.replace(/ /g, "+")}:wght@400;700;900`)
+      .join("&")}&display=swap`;
+    document.head.appendChild(link);
+  }, [zones]);
 
   // DPI-Prüfung
   const checkImageDpi = useCallback((file: File): Promise<number | null> => {
@@ -198,24 +248,29 @@ export function TemplateUpload({
       });
 
       if (result.zones && result.zones.length > 0) {
-        const newZones: Zone[] = result.zones.map((z: any, idx: number) => ({
-          id: `ai_zone_${Date.now()}_${idx}`,
-          name: z.name,
-          purpose: z.purpose,
-          x: Math.max(0, Math.min(100, z.x)),
-          y: Math.max(0, Math.min(100, z.y)),
-          width: Math.max(5, Math.min(100 - z.x, z.width)),
-          height: Math.max(5, Math.min(100 - z.y, z.height)),
-          side: z.side,
-          textStyle: z.textStyle || "straight",
-          arcDegree: z.arcDegree || 0,
-          fontColor: z.fontColor || "#000000",
-          outlineColor: z.outlineColor === "none" ? undefined : z.outlineColor,
-          outlineWidth: z.outlineWidth || 0,
-          fontStyle: z.fontStyle || "block",
-          fontWeight: z.fontWeight || "bold",
-          fontSize: z.fontSize || 80,
-        }));
+        const newZones: Zone[] = result.zones.map((z: any, idx: number) => {
+          const fontFamily = z.fontFamily || FONT_STYLE_MAP[z.fontStyle || "block"] || "Oswald";
+          const fontStyle = z.fontStyle || inferFontStyle(fontFamily);
+          return {
+            id: `ai_zone_${Date.now()}_${idx}`,
+            name: z.name,
+            purpose: z.purpose,
+            x: Math.max(0, Math.min(95, z.x)),
+            y: Math.max(0, Math.min(95, z.y)),
+            width: Math.max(3, Math.min(100 - z.x, z.width)),
+            height: Math.max(3, Math.min(100 - z.y, z.height)),
+            side: z.side === 'V' ? 'front' : z.side === 'R' ? 'back' : z.side,
+            textStyle: z.textStyle || "straight",
+            arcDegree: z.arcDegree || 0,
+            fontColor: z.fontColor || "#000000",
+            outlineColor: z.outlineColor === "none" ? undefined : z.outlineColor,
+            outlineWidth: z.outlineWidth || 0,
+            fontStyle,
+            fontFamily,
+            fontWeight: z.fontWeight || "bold",
+            fontSize: z.fontSize || 85,
+          };
+        });
 
         setZones(newZones);
 
@@ -224,7 +279,7 @@ export function TemplateUpload({
         let summary = `${newZones.length} Zonen erkannt`;
         if (arcCount > 0) summary += `, ${arcCount} mit Bogentext`;
         if (outlineCount > 0) summary += `, ${outlineCount} mit Outline`;
-        toast.success(summary + " – Positionen auf Produkt übertragen!");
+        toast.success(summary + " – Positionen per Drag & Drop korrigieren!");
       } else {
         toast.info("Keine Elemente erkannt. Versuchen Sie ein deutlicheres Bild.");
       }
@@ -256,100 +311,113 @@ export function TemplateUpload({
 
   const removeZone = (id: string) => {
     setZones(zones.filter((z) => z.id !== id));
+    if (selectedZoneId === id) setSelectedZoneId(null);
   };
 
-  // ─── Drag & Resize auf der rechten Seite (unser Produkt) ───
-  const handleMouseDown = (e: React.MouseEvent, zoneId: string, type: "drag" | "resize") => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (type === "drag") {
-      setDragging(zoneId);
-    } else {
-      setResizing(zoneId);
-    }
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
+  // ─── Pointer Events Drag & Drop (robust, wie AdminProductEditor) ───
+  const getRelativePosition = useCallback((e: React.PointerEvent | PointerEvent, canvasEl: HTMLDivElement) => {
+    const rect = canvasEl.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    };
+  }, []);
 
-  const handleTouchStart = (e: React.TouchEvent, zoneId: string, type: "drag" | "resize") => {
-    e.stopPropagation();
-    const touch = e.touches[0];
-    if (type === "drag") {
-      setDragging(zoneId);
-    } else {
-      setResizing(zoneId);
-    }
-    setDragStart({ x: touch.clientX, y: touch.clientY });
-  };
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (!rightCanvasRef.current) return;
-      const rect = rightCanvasRef.current.getBoundingClientRect();
-      const dx = ((e.clientX - dragStart.x) / rect.width) * 100;
-      const dy = ((e.clientY - dragStart.y) / rect.height) * 100;
-
-      if (dragging) {
-        setZones((prev) =>
-          prev.map((z) =>
-            z.id === dragging
-              ? { ...z, x: Math.max(0, Math.min(100 - z.width, z.x + dx)), y: Math.max(0, Math.min(100 - z.height, z.y + dy)) }
-              : z
-          )
-        );
-        setDragStart({ x: e.clientX, y: e.clientY });
+  const handleZonePointerDown = useCallback(
+    (e: React.PointerEvent, zoneId: string, isResize = false, canvas: "left" | "right" = "left") => {
+      e.preventDefault();
+      e.stopPropagation();
+      const zone = zones.find((z) => z.id === zoneId);
+      if (!zone) return;
+      // Capture pointer for reliable tracking
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+      // Haptic feedback on touch
+      if (e.pointerType === "touch" && navigator.vibrate) {
+        navigator.vibrate(15);
       }
-
-      if (resizing) {
-        setZones((prev) =>
-          prev.map((z) =>
-            z.id === resizing
-              ? { ...z, width: Math.max(5, z.width + dx), height: Math.max(5, z.height + dy) }
-              : z
-          )
-        );
-        setDragStart({ x: e.clientX, y: e.clientY });
-      }
+      const canvasEl = canvas === "left" ? leftCanvasRef.current : rightCanvasRef.current;
+      if (!canvasEl) return;
+      const pos = getRelativePosition(e, canvasEl);
+      dragStateRef.current = {
+        dragging: isResize ? null : zoneId,
+        resizing: isResize ? zoneId : null,
+        startX: pos.x,
+        startY: pos.y,
+        zoneX: zone.x,
+        zoneY: zone.y,
+        zoneW: zone.width,
+        zoneH: zone.height,
+        canvas,
+      };
+      if (isResize) setResizingZone(zoneId);
+      else setDraggingZone(zoneId);
+      setSelectedZoneId(zoneId);
     },
-    [dragging, resizing, dragStart]
+    [zones, getRelativePosition]
   );
 
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (!rightCanvasRef.current) return;
-      const touch = e.touches[0];
-      const rect = rightCanvasRef.current.getBoundingClientRect();
-      const dx = ((touch.clientX - dragStart.x) / rect.width) * 100;
-      const dy = ((touch.clientY - dragStart.y) / rect.height) * 100;
+  // Window-level pointer move/up für zuverlässiges Tracking
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      const ds = dragStateRef.current;
+      if (ds.dragging === null && ds.resizing === null) return;
+      e.preventDefault();
+      const canvasEl = ds.canvas === "left" ? leftCanvasRef.current : rightCanvasRef.current;
+      if (!canvasEl) return;
+      const rect = canvasEl.getBoundingClientRect();
+      const posX = ((e.clientX - rect.left) / rect.width) * 100;
+      const posY = ((e.clientY - rect.top) / rect.height) * 100;
+      const dx = posX - ds.startX;
+      const dy = posY - ds.startY;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        if (ds.dragging !== null) {
+          setZones((prev) =>
+            prev.map((z) =>
+              z.id === ds.dragging
+                ? {
+                    ...z,
+                    x: Math.max(0, Math.min(100 - z.width, ds.zoneX + dx)),
+                    y: Math.max(0, Math.min(100 - z.height, ds.zoneY + dy)),
+                  }
+                : z
+            )
+          );
+        }
+        if (ds.resizing !== null) {
+          setZones((prev) =>
+            prev.map((z) =>
+              z.id === ds.resizing
+                ? {
+                    ...z,
+                    width: Math.max(3, Math.min(100 - z.x, ds.zoneW + dx)),
+                    height: Math.max(3, Math.min(100 - z.y, ds.zoneH + dy)),
+                  }
+                : z
+            )
+          );
+        }
+      });
+    };
 
-      if (dragging) {
-        setZones((prev) =>
-          prev.map((z) =>
-            z.id === dragging
-              ? { ...z, x: Math.max(0, Math.min(100 - z.width, z.x + dx)), y: Math.max(0, Math.min(100 - z.height, z.y + dy)) }
-              : z
-          )
-        );
-        setDragStart({ x: touch.clientX, y: touch.clientY });
-      }
+    const handlePointerUp = () => {
+      dragStateRef.current = { dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0, canvas: "left" };
+      setDraggingZone(null);
+      setResizingZone(null);
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    };
 
-      if (resizing) {
-        setZones((prev) =>
-          prev.map((z) =>
-            z.id === resizing
-              ? { ...z, width: Math.max(5, z.width + dx), height: Math.max(5, z.height + dy) }
-              : z
-          )
-        );
-        setDragStart({ x: touch.clientX, y: touch.clientY });
-      }
-    },
-    [dragging, resizing, dragStart]
-  );
-
-  const handleMouseUp = () => {
-    setDragging(null);
-    setResizing(null);
-  };
+    if (draggingZone !== null || resizingZone !== null) {
+      window.addEventListener("pointermove", handlePointerMove, { passive: false });
+      window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", handlePointerUp);
+      return () => {
+        window.removeEventListener("pointermove", handlePointerMove);
+        window.removeEventListener("pointerup", handlePointerUp);
+        window.removeEventListener("pointercancel", handlePointerUp);
+      };
+    }
+  }, [draggingZone, resizingZone]);
 
   const handleSave = async () => {
     if (!templateName.trim()) {
@@ -374,7 +442,6 @@ export function TemplateUpload({
         sport: sport as any,
         category: category as any,
         visibility,
-        // Produkt-Zuordnung und Zonen übertragen
         productId: selectedProductId || undefined,
         zones: zones.length > 0 ? zones.map(z => ({
           name: z.name,
@@ -387,6 +454,11 @@ export function TemplateUpload({
           fontColor: z.fontColor,
           fontWeight: z.fontWeight,
           fontSize: z.fontSize,
+          fontFamily: z.fontFamily,
+          textStyle: z.textStyle as "arc" | "straight" | undefined,
+          arcDegree: z.arcDegree,
+          outlineColor: z.outlineColor,
+          outlineWidth: z.outlineWidth,
         })) : undefined,
       });
       toast.success("Vorlage gespeichert! Zonen wurden auf das Produkt übertragen.");
@@ -398,77 +470,177 @@ export function TemplateUpload({
     }
   };
 
-  // ─── Zone-Overlay Renderer (wiederverwendbar für links und rechts) ───
-  const renderZoneOverlay = (zone: Zone, editable: boolean) => (
-    <div
-      key={zone.id}
-      className={`absolute border-2 flex items-center justify-center ${editable ? "cursor-move" : "pointer-events-none"}`}
-      style={{
-        left: `${zone.x}%`,
-        top: `${zone.y}%`,
-        width: `${zone.width}%`,
-        height: `${zone.height}%`,
-        borderColor: zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6",
-        backgroundColor: `${zone.fontColor && zone.fontColor !== "#000000" ? zone.fontColor : "#3b82f6"}22`,
-        touchAction: editable ? 'none' : undefined,
-      }}
-      onMouseDown={editable ? (e) => handleMouseDown(e, zone.id, "drag") : undefined}
-      onTouchStart={editable ? (e) => handleTouchStart(e, zone.id, "drag") : undefined}
-    >
-      {/* Zonenname + Stil-Info */}
-      <div className="flex flex-col items-center gap-0.5">
-        <span className="text-[10px] font-medium text-blue-900 bg-white/90 px-1 rounded truncate max-w-full leading-tight">
-          {zone.name}
-        </span>
-        <div className="flex gap-0.5">
-          {zone.textStyle === "arc" && (
-            <span className="text-[7px] bg-purple-600 text-white px-0.5 rounded leading-tight">
-              ⌒ {zone.arcDegree}°
+  // ─── Zone-Overlay Renderer ───
+  const renderZoneOverlay = (zone: Zone, editable: boolean, canvas: "left" | "right") => {
+    const previewText = zone.purpose === "playerName" ? "MUSTER"
+      : zone.purpose === "playerNumber" ? "10"
+      : zone.purpose === "clubName" ? "FC MUSTER"
+      : zone.purpose === "abbreviation" ? "FCM"
+      : "";
+    const isTextZone = ["playerName", "playerNumber", "clubName", "abbreviation"].includes(zone.purpose);
+    const fontFamily = zone.fontFamily || FONT_STYLE_MAP[zone.fontStyle || "block"] || "Oswald";
+    const isSelected = selectedZoneId === zone.id;
+    
+    const isLightColor = (color: string) => {
+      if (!color) return false;
+      const hex = color.replace('#', '');
+      if (hex.length < 6) return false;
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      return (r * 299 + g * 587 + b * 114) / 1000 > 180;
+    };
+    const needsContrastStroke = isLightColor(zone.fontColor || '#000000') && !zone.outlineColor;
+    const contrastStrokeColor = needsContrastStroke ? '#333333' : undefined;
+
+    const borderColor = isSelected ? "#f59e0b" : (zone.fontColor && zone.fontColor !== "#000000" && !isLightColor(zone.fontColor) ? zone.fontColor : "#3b82f6");
+
+    return (
+      <div
+        key={`${zone.id}_${canvas}`}
+        className={`absolute flex items-center justify-center overflow-hidden ${editable ? "cursor-move" : "pointer-events-none"}`}
+        style={{
+          left: `${zone.x}%`,
+          top: `${zone.y}%`,
+          width: `${zone.width}%`,
+          height: `${zone.height}%`,
+          border: `2px solid ${borderColor}`,
+          backgroundColor: isSelected ? "rgba(245,158,11,0.12)" : "rgba(59,130,246,0.07)",
+          touchAction: editable ? 'none' : undefined,
+          boxShadow: isSelected ? `0 0 0 2px ${borderColor}, 0 2px 8px rgba(0,0,0,0.15)` : undefined,
+          zIndex: isSelected ? 10 : 1,
+        }}
+        onPointerDown={editable ? (e) => handleZonePointerDown(e, zone.id, false, canvas) : undefined}
+      >
+        {/* Text-Vorschau */}
+        {isTextZone && previewText ? (
+          <div className="w-full h-full flex items-center justify-center">
+            {zone.textStyle === "arc" && zone.arcDegree ? (
+              <svg viewBox="0 0 200 80" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <path id={`preview_arc_${zone.id}_${canvas}`} d="M 10 60 A 100 100 0 0 1 190 60" fill="none" />
+                </defs>
+                {(zone.outlineColor && zone.outlineWidth && zone.outlineWidth > 0) || needsContrastStroke ? (
+                  <text fontFamily={fontFamily} fontWeight={zone.fontWeight || "bold"} fontSize="28" fill="none" stroke={zone.outlineColor || contrastStrokeColor} strokeWidth={zone.outlineWidth ? zone.outlineWidth * 0.5 : 1.5} strokeLinejoin="round">
+                    <textPath href={`#preview_arc_${zone.id}_${canvas}`} startOffset="50%" textAnchor="middle">{previewText}</textPath>
+                  </text>
+                ) : null}
+                <text fontFamily={fontFamily} fontWeight={zone.fontWeight || "bold"} fontSize="28" fill={zone.fontColor || "#000000"}>
+                  <textPath href={`#preview_arc_${zone.id}_${canvas}`} startOffset="50%" textAnchor="middle">{previewText}</textPath>
+                </text>
+              </svg>
+            ) : (
+              <svg viewBox={`0 0 ${previewText.length * 30} 50`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                {(zone.outlineColor && zone.outlineWidth && zone.outlineWidth > 0) || needsContrastStroke ? (
+                  <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily={fontFamily} fontWeight={zone.fontWeight || "bold"} fontSize="40" fill="none" stroke={zone.outlineColor || contrastStrokeColor} strokeWidth={zone.outlineWidth ? zone.outlineWidth * 0.5 : 2} strokeLinejoin="round">
+                    {previewText}
+                  </text>
+                ) : null}
+                <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily={fontFamily} fontWeight={zone.fontWeight || "bold"} fontSize="40" fill={zone.fontColor || "#000000"}>
+                  {previewText}
+                </text>
+              </svg>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-[10px] font-medium text-blue-900 bg-white/90 px-1 rounded truncate max-w-full leading-tight">
+              {zone.name}
             </span>
-          )}
-          {zone.outlineColor && zone.outlineColor !== "none" && (
-            <span className="text-[7px] text-white px-0.5 rounded leading-tight" style={{ backgroundColor: zone.outlineColor }}>
-              Outline
-            </span>
-          )}
-        </div>
+            <div className="flex gap-0.5">
+              {zone.textStyle === "arc" && (
+                <span className="text-[7px] bg-purple-600 text-white px-0.5 rounded leading-tight">
+                  ⌒ {zone.arcDegree}°
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Side-Indicator */}
+        {zone.side && (
+          <span className="absolute top-0 left-0 text-[8px] bg-blue-600 text-white px-0.5 rounded-br leading-tight">
+            {zone.side === "front" ? "V" : "R"}
+          </span>
+        )}
+        {/* Farb-Indikatoren */}
+        {zone.fontColor && (
+          <div className="absolute bottom-0 left-0 flex gap-0.5 p-0.5">
+            <div className="w-2.5 h-2.5 rounded-full border border-white" style={{ backgroundColor: zone.fontColor }} />
+            {zone.outlineColor && zone.outlineColor !== "none" && (
+              <div className="w-2.5 h-2.5 rounded-full border border-white" style={{ backgroundColor: zone.outlineColor }} />
+            )}
+          </div>
+        )}
+        {/* Font-Family Badge */}
+        {isTextZone && fontFamily && (
+          <span className="absolute bottom-0 right-0 text-[7px] bg-gray-800 text-white px-0.5 rounded-tl leading-tight">
+            {fontFamily}
+          </span>
+        )}
+        {/* Resize Handle + Delete (nur editierbar) */}
+        {editable && (
+          <>
+            {/* Resize-Handle: größer und deutlicher */}
+            <div
+              className="absolute -bottom-1 -right-1 w-4 h-4 rounded-sm cursor-se-resize flex items-center justify-center"
+              style={{ backgroundColor: borderColor, touchAction: 'none' }}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                handleZonePointerDown(e, zone.id, true, canvas);
+              }}
+            >
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                <path d="M7 1L1 7M7 4L4 7M7 7L7 7" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              {/* Erweiterter Touch-Bereich */}
+              <div
+                className="absolute -top-2 -left-2 -right-0 -bottom-0 w-8 h-8"
+                style={{ touchAction: 'none' }}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  handleZonePointerDown(e, zone.id, true, canvas);
+                }}
+              />
+            </div>
+            {/* Delete-Button */}
+            <button
+              className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 z-20"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeZone(zone.id);
+              }}
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </>
+        )}
       </div>
-      {/* Side-Indicator */}
-      {zone.side && (
-        <span className="absolute top-0 left-0 text-[8px] bg-blue-600 text-white px-0.5 rounded-br leading-tight">
-          {zone.side === "front" ? "V" : "R"}
-        </span>
-      )}
-      {/* Farb-Indikatoren */}
-      {zone.fontColor && (
-        <div className="absolute bottom-0 left-0 flex gap-0.5 p-0.5">
-          <div className="w-2.5 h-2.5 rounded-full border border-white" style={{ backgroundColor: zone.fontColor }} />
-          {zone.outlineColor && zone.outlineColor !== "none" && (
-            <div className="w-2.5 h-2.5 rounded-full border border-white" style={{ backgroundColor: zone.outlineColor }} />
-          )}
+    );
+  };
+
+  // ─── Hilfslinien-Overlay (Crosshair bei Drag) ───
+  const renderGuidelines = (canvasType: "left" | "right") => {
+    if (!selectedZoneId || (draggingZone === null && resizingZone === null)) return null;
+    const zone = zones.find(z => z.id === selectedZoneId);
+    if (!zone) return null;
+    const centerX = zone.x + zone.width / 2;
+    const centerY = zone.y + zone.height / 2;
+    return (
+      <>
+        {/* Vertikale Mittellinie */}
+        <div className="absolute top-0 bottom-0 pointer-events-none" style={{ left: `${centerX}%`, width: '1px', backgroundColor: 'rgba(245,158,11,0.5)' }} />
+        {/* Horizontale Mittellinie */}
+        <div className="absolute left-0 right-0 pointer-events-none" style={{ top: `${centerY}%`, height: '1px', backgroundColor: 'rgba(245,158,11,0.5)' }} />
+        {/* 50%-Markierungen */}
+        <div className="absolute top-0 bottom-0 pointer-events-none" style={{ left: '50%', width: '1px', backgroundColor: 'rgba(100,100,100,0.2)', borderLeft: '1px dashed rgba(100,100,100,0.3)' }} />
+        <div className="absolute left-0 right-0 pointer-events-none" style={{ top: '50%', height: '1px', backgroundColor: 'rgba(100,100,100,0.2)', borderTop: '1px dashed rgba(100,100,100,0.3)' }} />
+        {/* Position-Anzeige */}
+        <div className="absolute top-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded pointer-events-none z-30">
+          {Math.round(zone.x)}%, {Math.round(zone.y)}% | {Math.round(zone.width)}%×{Math.round(zone.height)}%
         </div>
-      )}
-      {/* Resize + Delete nur auf editierbarer Seite */}
-      {editable && (
-        <>
-          <div
-            className="absolute bottom-0 right-0 w-3 h-3 bg-blue-600 cursor-se-resize"
-            onMouseDown={(e) => handleMouseDown(e, zone.id, "resize")}
-            onTouchStart={(e) => handleTouchStart(e, zone.id, "resize")}
-          />
-          <button
-            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-            onClick={(e) => {
-              e.stopPropagation();
-              removeZone(zone.id);
-            }}
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </>
-      )}
-    </div>
-  );
+      </>
+    );
+  };
 
   return (
     <Card className="w-full max-w-none">
@@ -479,6 +651,7 @@ export function TemplateUpload({
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Laden Sie ein Vorlagenbild hoch (links). Die KI erkennt alle Positionen und überträgt sie 1:1 auf Ihr Produkt (rechts).
+          <strong className="text-foreground"> Verschieben und skalieren Sie die Zonen per Drag & Drop für 100% Genauigkeit.</strong>
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -533,14 +706,16 @@ export function TemplateUpload({
         {/* Part-Auswahl (wenn Produkt gewählt) */}
         {productParts?.parts && productParts.parts.length > 1 && (
           <div className="flex gap-2 flex-wrap">
-            {productParts.parts.map((part: any) => (
+            {productParts.parts
+              .filter((part: any) => ['vorderteil', 'rueckteil'].includes(part.key))
+              .map((part: any) => (
               <Button
                 key={part.id}
                 size="sm"
                 variant={selectedPartId === part.id ? "default" : "outline"}
                 onClick={() => setSelectedPartId(part.id)}
               >
-                {part.name}
+                {part.label || part.key}
               </Button>
             ))}
           </div>
@@ -607,29 +782,37 @@ export function TemplateUpload({
                 )}
                 <div
                   ref={leftCanvasRef}
-                  className="relative border rounded-lg overflow-hidden bg-gray-100"
+                  data-canvas="left"
+                  className="relative border rounded-lg overflow-hidden bg-gray-100 select-none"
+                  style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
                   <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
-                  {/* Zonen auf Vorlage anzeigen (nicht editierbar, nur Anzeige) */}
-                  {zones.map((zone) => renderZoneOverlay(zone, false))}
+                  {/* Hilfslinien bei Drag */}
+                  {renderGuidelines("left")}
+                  {/* Zonen auf Vorlage: EDITIERBAR (Drag & Drop + Resize) */}
+                  {zones.map((zone) => renderZoneOverlay(zone, true, "left"))}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setImageUrl(null);
-                    setImageStorageKey(null);
-                    setZones([]);
-                  }}
-                >
-                  Bild ersetzen
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setImageUrl(null);
+                      setImageStorageKey(null);
+                      setZones([]);
+                    }}
+                  >
+                    Bild ersetzen
+                  </Button>
+                  {zones.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      Tipp: Ziehen Sie die Zonen an die richtige Position
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </div>
-
-          {/* ─── PFEIL in der Mitte (nur Desktop) ─── */}
-          {/* Wird durch das Grid-Layout implizit getrennt */}
 
           {/* ─── RECHTE SEITE: Unser Produkt mit kopierten Positionen ─── */}
           <div className="space-y-2">
@@ -654,13 +837,9 @@ export function TemplateUpload({
             ) : (
               <div
                 ref={rightCanvasRef}
-                className="relative border rounded-lg overflow-hidden bg-gray-100"
-                style={{ touchAction: (dragging || resizing) ? 'none' : 'auto' }}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleMouseUp}
+                data-canvas="right"
+                className="relative border rounded-lg overflow-hidden bg-gray-100 select-none"
+                style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
               >
                 {/* Produkt-Bild (Part-Bild) */}
                 {activePart?.imageUrl ? (
@@ -676,19 +855,21 @@ export function TemplateUpload({
                   </div>
                 )}
 
+                {/* Hilfslinien bei Drag */}
+                {renderGuidelines("right")}
+
                 {/* 1:1 kopierte Zonen auf unserem Produkt (editierbar) - gefiltert nach Seite */}
                 {zones
                   .filter((zone) => {
                     if (!zone.side) return true;
-                    // Part-Key bestimmt welche Seite angezeigt wird
                     const partKey = (activePart as any)?.key || '';
                     const isFrontPart = partKey.toLowerCase().includes('vorder') || partKey.toLowerCase().includes('front');
                     const isBackPart = partKey.toLowerCase().includes('rueck') || partKey.toLowerCase().includes('back');
                     if (isFrontPart) return zone.side === 'front';
                     if (isBackPart) return zone.side === 'back';
-                    return true; // Wenn Part-Key unklar, alle Zonen zeigen
+                    return true;
                   })
-                  .map((zone) => renderZoneOverlay(zone, true))}
+                  .map((zone) => renderZoneOverlay(zone, true, "right"))}
 
                 {/* Übertragungspfeil-Overlay wenn Zonen vorhanden */}
                 {zones.length > 0 && imageUrl && (
@@ -707,7 +888,11 @@ export function TemplateUpload({
             <Label>Erkannte Zonen ({zones.length})</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
               {zones.map((zone) => (
-                <div key={zone.id} className="p-2 bg-muted rounded-lg text-sm space-y-1">
+                <div
+                  key={zone.id}
+                  className={`p-2 rounded-lg text-sm space-y-1 cursor-pointer transition-colors ${selectedZoneId === zone.id ? 'bg-amber-50 border border-amber-300' : 'bg-muted hover:bg-muted/80'}`}
+                  onClick={() => setSelectedZoneId(zone.id)}
+                >
                   <div className="flex items-center gap-2">
                     <Move className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="font-medium truncate text-xs">{zone.name}</span>
@@ -720,13 +905,16 @@ export function TemplateUpload({
                       </span>
                     )}
                     <span className="text-muted-foreground text-[10px] ml-auto shrink-0">
-                      {Math.round(zone.x)}%, {Math.round(zone.y)}% | {Math.round(zone.width)}%x{Math.round(zone.height)}%
+                      {Math.round(zone.x)}%, {Math.round(zone.y)}% | {Math.round(zone.width)}%×{Math.round(zone.height)}%
                     </span>
                     <Button
                       size="sm"
                       variant="ghost"
                       className="h-5 w-5 p-0 text-red-500 shrink-0"
-                      onClick={() => removeZone(zone.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeZone(zone.id);
+                      }}
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -751,8 +939,8 @@ export function TemplateUpload({
                           Outline
                         </span>
                       )}
-                      {zone.fontStyle && (
-                        <span className="text-[9px] bg-gray-100 text-gray-600 px-1 py-0.5 rounded">{zone.fontStyle}</span>
+                      {zone.fontFamily && (
+                        <span className="text-[9px] bg-gray-100 text-gray-600 px-1 py-0.5 rounded">{zone.fontFamily}</span>
                       )}
                     </div>
                   )}

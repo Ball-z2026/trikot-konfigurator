@@ -1583,3 +1583,29 @@
 - [x] Touch-Support im AdminProductEditor: Canvas touchAction auf pan-y gesetzt, Zonen haben touch-action:none für setPointerCapture
 - [x] BUG: Bildschirm friert ein wenn man ein neues Produkt erstellen möchte im Produktdesigner → modal={false} + manuelles Overlay
 - [x] FEATURE: KI-Analyse Zonen auf ausgewähltes Produkt übertragen (product_zones) beim Speichern der Vorlage
+
+## KI-Analyse Optimierung: Schriften, Positionen, Bogentext korrekt übertragen
+
+- [ ] DB-Schema: textStyle (arc/straight), arcDegree, outlineColor, outlineWidth Felder zu productZones hinzufügen
+- [ ] Backend: createTemplate Mutation erweitert um textStyle, arcDegree, outlineColor, outlineWidth, fontFamily
+- [ ] Frontend: handleSave in TemplateUpload.tsx erweitert um textStyle, arcDegree, outlineColor, outlineWidth, fontFamily
+- [ ] KI-Analyse: fontStyle -> fontFamily Mapping (block->Oswald, sans->Inter, serif->Playfair Display, script->Dancing Script)
+- [ ] Konfigurator: Bogentext-Rendering (SVG textPath) für Spielernamen mit arcDegree
+- [ ] Konfigurator: Outline-Rendering (stroke + fill) für Nummern mit outlineColor
+- [ ] KI-Analyse: Ergebnis-Vorschau zeigt tatsächliche Schriften und Farben (nicht nur Labels)
+- [ ] Test: Alle 4 Sportarten erneut testen und Screenshots vergleichen
+
+## KI-Analyse Verbesserung: Bounding Box + Schrifterkennung
+
+- [x] KI-Analyse: Grid-Overlay-Ansatz für bessere Positionserkennung (10x10 Raster)
+- [x] KI-Analyse: Schrifterkennung – KI erkennt Schriftart und schlägt Google Font vor (Bebas Neue, Russo One etc.)
+- [x] KI-Analyse: Korrekte deutsche Bezeichnungen für erkannte Zonen
+- [x] KI-Analyse: Positionierung und Größe werden auf Zielprodukt übertragen
+
+## KI-Analyse 100% Genauigkeit (Drag&Drop Nachkorrektur)
+- [x] Frontend: Drag & Drop Nachkorrektur für erkannte Zonen auf Originalbild (Pointer Events)
+- [x] Frontend: Zonen auf Originalbild verschiebbar/skalierbar machen (Resize-Handles, Hilfslinien)
+- [x] Frontend: Window-Level Event-Listener (Drag bricht nicht ab wenn Maus Container verlässt)
+- [x] Frontend: Tipp-Hinweis und Positions-Anzeige in Echtzeit
+- [ ] Testen mit Deutschland-Trikot Vorderseite (Benutzer testet manuell)
+- [ ] Testen mit Deutschland-Trikot Rückseite (Benutzer testet manuell)

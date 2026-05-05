@@ -124,6 +124,10 @@ type ZoneData = {
   fontColor: string | null;
   fontWeight: string | null;
   textAlign: string | null;
+  textStyle: string | null;
+  arcDegree: number | null;
+  outlineColor: string | null;
+  outlineWidth: number | null;
   sortOrder: number;
 };
 
@@ -1167,42 +1171,131 @@ export default function CustomerConfigurator() {
     },
     [activePlayer, clubName, zoneContents, allZones, orgData?.latitude, orgData?.longitude, orgData?.hashtag]
   );
-  // ─── Render Zone Text (volle Feldhöhe) ─────────────────────────────────────────────────────────
-  const renderZoneText = (content: ZoneContent, _scale = 1) => (
-    <span
-      className="text-center leading-none block w-full h-full flex items-center justify-center"
-      style={{
-        fontFamily: content.fontFamily || "Inter",
-        fontSize: "100%",
-        color: content.fontColor || "#000000",
-        fontWeight: (content.fontWeight as any) || "700",
-        textAlign: (content.textAlign as any) || "center",
-        textShadow: "none",
-        wordBreak: "break-word",
-        lineHeight: 1,
-        // SVG-basierte Skalierung: Text füllt die volle Höhe der Zone
-        display: "flex",
-        alignItems: "center",
-        justifyContent: (content.textAlign as any) === "left" ? "flex-start" : (content.textAlign as any) === "right" ? "flex-end" : "center",
-      }}
-    >
-      <svg viewBox={`0 0 ${(content.text?.length || 1) * 60} 100`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-        <text
-          x="50%"
-          y="50%"
-          dominantBaseline="central"
-          textAnchor={content.textAlign === "left" ? "start" : content.textAlign === "right" ? "end" : "middle"}
-          fill={content.fontColor || "#000000"}
-          fontFamily={content.fontFamily || "Inter"}
-          fontWeight={(content.fontWeight as any) || "700"}
-          fontSize="90"
-          style={{ filter: "drop-shadow(1px 1px 2px rgba(0,0,0,0.5))" }}
-        >
-          {content.text}
-        </text>
-      </svg>
-    </span>
-  );
+  // ─── Render Zone Text (volle Feldhöhe) mit Arc-Text und Outline-Support ─────────────────────────
+  const renderZoneText = (content: ZoneContent, _scale = 1, zone?: ZoneData) => {
+    const textStyle = zone?.textStyle || "straight";
+    const arcDegree = zone?.arcDegree || 0;
+    const outlineColor = zone?.outlineColor;
+    const outlineWidth = zone?.outlineWidth || 0;
+    const fontFamily = content.fontFamily || zone?.fontFamily || "Inter";
+    const fontColor = content.fontColor || "#000000";
+    const fontWeight = (content.fontWeight as any) || "700";
+    const text = content.text || "";
+    const textLen = text.length || 1;
+    const svgWidth = textLen * 60;
+    const svgHeight = 100;
+
+    // Arc-Text: Bogentext-Rendering mit SVG textPath
+    if (textStyle === "arc" && arcDegree !== 0) {
+      const radius = Math.abs(svgWidth / (2 * Math.sin((Math.abs(arcDegree) * Math.PI) / 180)));
+      const isPositive = arcDegree > 0;
+      // Pfad für den Bogen berechnen
+      const cx = svgWidth / 2;
+      const cy = isPositive ? radius + 10 : svgHeight - radius - 10;
+      const startAngle = isPositive ? Math.PI + ((Math.PI * arcDegree) / 180) / 2 : -((Math.PI * Math.abs(arcDegree)) / 180) / 2;
+      const endAngle = isPositive ? Math.PI - ((Math.PI * arcDegree) / 180) / 2 : ((Math.PI * Math.abs(arcDegree)) / 180) / 2;
+      const x1 = cx + radius * Math.cos(startAngle);
+      const y1 = cy + radius * Math.sin(startAngle);
+      const x2 = cx + radius * Math.cos(endAngle);
+      const y2 = cy + radius * Math.sin(endAngle);
+      const largeArc = Math.abs(arcDegree) > 180 ? 1 : 0;
+      const sweep = isPositive ? 1 : 0;
+      const pathD = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} ${sweep} ${x2} ${y2}`;
+      const pathId = `arc_${zone?.id || 'default'}_${Date.now()}`;
+
+      return (
+        <span className="text-center leading-none block w-full h-full flex items-center justify-center">
+          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <path id={pathId} d={pathD} fill="none" />
+            </defs>
+            {/* Outline */}
+            {outlineColor && outlineWidth > 0 && (
+              <text
+                fontFamily={fontFamily}
+                fontWeight={fontWeight}
+                fontSize="80"
+                fill="none"
+                stroke={outlineColor}
+                strokeWidth={outlineWidth * 0.8}
+                strokeLinejoin="round"
+              >
+                <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle">
+                  {text}
+                </textPath>
+              </text>
+            )}
+            {/* Haupttext */}
+            <text
+              fontFamily={fontFamily}
+              fontWeight={fontWeight}
+              fontSize="80"
+              fill={fontColor}
+            >
+              <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle">
+                {text}
+              </textPath>
+            </text>
+          </svg>
+        </span>
+      );
+    }
+
+    // Standard: Gerader Text mit optionalem Outline
+    return (
+      <span
+        className="text-center leading-none block w-full h-full flex items-center justify-center"
+        style={{
+          fontFamily,
+          fontSize: "100%",
+          color: fontColor,
+          fontWeight,
+          textAlign: (content.textAlign as any) || "center",
+          textShadow: "none",
+          wordBreak: "break-word",
+          lineHeight: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: (content.textAlign as any) === "left" ? "flex-start" : (content.textAlign as any) === "right" ? "flex-end" : "center",
+        }}
+      >
+        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+          {/* Outline */}
+          {outlineColor && outlineWidth > 0 && (
+            <text
+              x="50%"
+              y="50%"
+              dominantBaseline="central"
+              textAnchor={content.textAlign === "left" ? "start" : content.textAlign === "right" ? "end" : "middle"}
+              fill="none"
+              stroke={outlineColor}
+              strokeWidth={outlineWidth * 0.8}
+              strokeLinejoin="round"
+              fontFamily={fontFamily}
+              fontWeight={fontWeight}
+              fontSize="90"
+            >
+              {text}
+            </text>
+          )}
+          {/* Haupttext */}
+          <text
+            x="50%"
+            y="50%"
+            dominantBaseline="central"
+            textAnchor={content.textAlign === "left" ? "start" : content.textAlign === "right" ? "end" : "middle"}
+            fill={fontColor}
+            fontFamily={fontFamily}
+            fontWeight={fontWeight}
+            fontSize="90"
+            style={{ filter: outlineColor ? "none" : "drop-shadow(1px 1px 2px rgba(0,0,0,0.5))" }}
+          >
+            {text}
+          </text>
+        </svg>
+      </span>
+    );
+  };
   // ─── Save/Load Design ──────────────────────────────────────────────────────
   // Thumbnail-Capture: Canvas als Base64-PNG
   const captureThumbnail = useCallback(async (): Promise<string | undefined> => {
@@ -1483,7 +1576,7 @@ export default function CustomerConfigurator() {
             crossOrigin="anonymous"
           />
         )}
-        {content?.text && !content?.imageDataUrl && !content?.imageUrl && renderZoneText(content, scale)}
+        {content?.text && !content?.imageDataUrl && !content?.imageUrl && renderZoneText(content, scale, zone)}
         {!content?.imageDataUrl && !content?.imageUrl && !content?.text && (
           <div className="text-center opacity-40">
             <PurposeIcon
