@@ -1861,8 +1861,8 @@
 ## Bug: Produktdesigner /designer/products friert auf Laptop ein
 
 - [x] Bug KRITISCH: Fullscreen-Editor (nach KI-Analyse → Bearbeiten) friert auf dem Laptop ein
-  - Root-Cause: Doppeltes Rendering – Split-View (3 Canvases + Zonen) lief im Hintergrund weiter während Fullscreen-Editor per Portal aktiv war
-  - Fix: Split-View wird mit display:none versteckt wenn fullscreenMode aktiv ist
+  - Root-Cause: 1) Doppeltes Rendering (Split-View im Hintergrund), 2) setState bei jedem pointermove Frame, 3) Google Fonts Effect bei jeder Zone-Änderung
+  - Fix: Split-View display:none + DOM-basierte Updates (data-zone-id) statt setState + Google Fonts nur bei Font-Änderung (fontFamiliesKey)
 
 ## Feature: Speichern/Verwerfen im Fullscreen-Editor
 

@@ -8390,3 +8390,6 @@
 [2026-05-06T05:00:09.927Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-06T05:00:10.759Z] Server running on http://localhost:3000/
 [2026-05-06T05:07:41.819Z] 1:07:41 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T05:15:27.849Z] 1:15:27 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T05:15:57.656Z] 1:15:57 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T05:19:32.147Z] 1:19:32 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx

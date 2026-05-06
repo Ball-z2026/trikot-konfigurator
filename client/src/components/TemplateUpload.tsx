@@ -190,7 +190,8 @@ export function TemplateUpload({
 
   const activePart = productParts?.parts?.find((p: any) => p.id === selectedPartId);
 
-  // Google Fonts für erkannte Schriften laden
+  // Google Fonts für erkannte Schriften laden (nur wenn sich Font-Familien ändern)
+  const fontFamiliesKey = zones.map(z => z.fontFamily || FONT_STYLE_MAP[z.fontStyle || "block"] || "").sort().join(",");
   useEffect(() => {
     const families = new Set<string>();
     for (const z of zones) {
@@ -199,15 +200,19 @@ export function TemplateUpload({
     }
     if (families.size === 0) return;
     const existing = document.getElementById("template-upload-fonts");
+    const newHref = `https://fonts.googleapis.com/css2?${[...families]
+      .map((f) => `family=${f.replace(/ /g, "+")}:wght@400;700;900`)
+      .join("&")}&display=swap`;
+    // Nur aktualisieren wenn sich die Fonts geändert haben
+    if (existing && existing.getAttribute("href") === newHref) return;
     if (existing) existing.remove();
     const link = document.createElement("link");
     link.id = "template-upload-fonts";
     link.rel = "stylesheet";
-    link.href = `https://fonts.googleapis.com/css2?${[...families]
-      .map((f) => `family=${f.replace(/ /g, "+")}:wght@400;700;900`)
-      .join("&")}&display=swap`;
+    link.href = newHref;
     document.head.appendChild(link);
-  }, [zones]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fontFamiliesKey]);
 
   // DPI-Prüfung
   const checkImageDpi = useCallback((file: File): Promise<number | null> => {
@@ -410,11 +415,14 @@ export function TemplateUpload({
   );
 
   // Window-level pointer move/up für zuverlässiges Tracking
+  // Ref für live Drag-Position (DOM-Updates ohne React-Rerenders)
+  const liveDragPosRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
+
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       const ds = dragStateRef.current;
       if (ds.dragging === null && ds.resizing === null) return;
-      e.preventDefault();
+      // Nur auf dem Canvas-Element preventDefault, nicht global
       const canvasEl = ds.canvas === "left" ? leftCanvasRef.current : (fullscreenMode ? fullscreenCanvasRef.current : rightCanvasRef.current);
       if (!canvasEl) return;
       const rect = canvasEl.getBoundingClientRect();
@@ -422,38 +430,58 @@ export function TemplateUpload({
       const posY = ((e.clientY - rect.top) / rect.height) * 100;
       const dx = posX - ds.startX;
       const dy = posY - ds.startY;
+
+      // Live-Position in Ref speichern (kein setState = kein Rerender)
+      if (ds.dragging !== null) {
+        liveDragPosRef.current = {
+          x: Math.max(0, Math.min(100 - ds.zoneW, ds.zoneX + dx)),
+          y: Math.max(0, Math.min(100 - ds.zoneH, ds.zoneY + dy)),
+          w: ds.zoneW,
+          h: ds.zoneH,
+        };
+      }
+      if (ds.resizing !== null) {
+        liveDragPosRef.current = {
+          x: ds.zoneX,
+          y: ds.zoneY,
+          w: Math.max(3, Math.min(100 - ds.zoneX, ds.zoneW + dx)),
+          h: Math.max(3, Math.min(100 - ds.zoneY, ds.zoneH + dy)),
+        };
+      }
+
+      // Visuelles Update via DOM (kein React-Rerender)
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
-        if (ds.dragging !== null) {
-          setZones((prev) =>
-            prev.map((z) =>
-              z.id === ds.dragging
-                ? {
-                    ...z,
-                    x: Math.max(0, Math.min(100 - z.width, ds.zoneX + dx)),
-                    y: Math.max(0, Math.min(100 - z.height, ds.zoneY + dy)),
-                  }
-                : z
-            )
-          );
-        }
-        if (ds.resizing !== null) {
-          setZones((prev) =>
-            prev.map((z) =>
-              z.id === ds.resizing
-                ? {
-                    ...z,
-                    width: Math.max(3, Math.min(100 - z.x, ds.zoneW + dx)),
-                    height: Math.max(3, Math.min(100 - z.y, ds.zoneH + dy)),
-                  }
-                : z
-            )
-          );
+        const targetId = ds.dragging || ds.resizing;
+        if (!targetId || !liveDragPosRef.current) return;
+        const el = canvasEl.querySelector(`[data-zone-id="${targetId}"]`) as HTMLElement;
+        if (el) {
+          el.style.left = `${liveDragPosRef.current.x}%`;
+          el.style.top = `${liveDragPosRef.current.y}%`;
+          el.style.width = `${liveDragPosRef.current.w}%`;
+          el.style.height = `${liveDragPosRef.current.h}%`;
         }
       });
     };
 
     const handlePointerUp = () => {
+      const ds = dragStateRef.current;
+      const targetId = ds.dragging || ds.resizing;
+      // Commit: Nur einmal setState bei pointerup
+      if (targetId && liveDragPosRef.current) {
+        const pos = liveDragPosRef.current;
+        if (ds.dragging !== null) {
+          setZones((prev) =>
+            prev.map((z) => z.id === targetId ? { ...z, x: pos.x, y: pos.y } : z)
+          );
+        }
+        if (ds.resizing !== null) {
+          setZones((prev) =>
+            prev.map((z) => z.id === targetId ? { ...z, width: pos.w, height: pos.h } : z)
+          );
+        }
+      }
+      liveDragPosRef.current = null;
       dragStateRef.current = { dragging: null, resizing: null, startX: 0, startY: 0, zoneX: 0, zoneY: 0, zoneW: 0, zoneH: 0, canvas: "left" };
       setDraggingZone(null);
       setResizingZone(null);
@@ -461,13 +489,15 @@ export function TemplateUpload({
     };
 
     if (draggingZone !== null || resizingZone !== null) {
-      window.addEventListener("pointermove", handlePointerMove, { passive: false });
+      window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
       window.addEventListener("pointercancel", handlePointerUp);
+      document.body.style.userSelect = 'none';
       return () => {
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
         window.removeEventListener("pointercancel", handlePointerUp);
+        document.body.style.userSelect = '';
       };
     }
   }, [draggingZone, resizingZone]);
@@ -582,6 +612,7 @@ export function TemplateUpload({
     return (
       <div
         key={`${zone.id}_${canvas}`}
+        data-zone-id={zone.id}
         className={`absolute flex items-center justify-center overflow-hidden ${editable ? "cursor-move" : "pointer-events-none"}`}
         style={{
           left: `${zone.x}%`,
