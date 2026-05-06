@@ -1870,3 +1870,12 @@
 - [x] Speichern-Button: Übernimmt die Änderungen und schließt den Editor
 - [x] Verwerfen-Button: Stellt den Snapshot wieder her und schließt den Editor
 - [x] X-Button: Fragt ob gespeichert oder verworfen werden soll (wenn Änderungen vorhanden)
+
+## Bug: KI-Analyse zeigt Zonen doppelt/dreifach an
+
+- [x] Bug: Wenn KI-Analyse genutzt wird und ein Zielprodukt ausgewählt wird, werden die vorhandenen Zonen des Produkts PLUS die KI-erkannten Zonen angezeigt
+- [x] Fix: Zielprodukt wird jetzt plain dargestellt – Zonen-Overlays nur auf dem rechten Canvas (Zielprodukt), linker Canvas zeigt nur das reine Vorlagenbild
+
+## Zukunft: Native App (nach Beta-Abschluss)
+
+- [ ] Native Wrapper mit Capacitor erstellen (iOS + Android App Store)

@@ -878,10 +878,8 @@ export function TemplateUpload({
                   style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
                   <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
-                  {/* Hilfslinien bei Drag */}
-                  {renderGuidelines("left")}
-                  {/* Zonen auf Vorlage: EDITIERBAR (Drag & Drop + Resize) */}
-                  {zones.map((zone) => renderZoneOverlay(zone, true, "left"))}
+                  {/* Vorlagenbild zeigt nur das Original-Foto ohne Zonen-Overlays.
+                      Zonen werden ausschließlich auf dem rechten Canvas (Zielprodukt) bearbeitet. */}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
