@@ -1968,3 +1968,12 @@
 - [x] Backend: generateAi löst referenceImageUrl Storage-Pfade automatisch zu signierten URLs auf
 - [x] Vereinswappen wird als Referenzbild an KI-Generierung übergeben (nicht nur im Text erwähnt)
 - [x] Prompt verstärkt: Hashtag, Koordinaten, Logo mit "MUST include" und konkreten Platzierungsanweisungen
+
+## KI-Design Fixes & Sponsoren (Mai 2026)
+- [x] Silhouette als Wasserzeichen: Groß, wiederholt, subtil im Hintergrund (NICHT als Vereinswappen verwechseln)
+- [x] Vereinswappen: Immer links auf der Brust als eigenständiges Element (NICHT als Referenzbild für gesamtes Design)
+- [x] Referenzbild-Logik trennen: Silhouette = Wasserzeichen-Muster, Wappen = separates Badge-Element
+- [x] Sponsoren-Upload-Felder: Felder zum Hochladen von Sponsorenlogos (Hauptsponsor, Spartensponsor, Mannschaftssponsor)
+- [x] Straßenkarte als Wasserzeichen: Aus Vereinsadresse Karte generieren und als Wasserzeichen-Option anbieten
+- [x] Wasserzeichen-Deckung: Prozent-Slider für Transparenz (10%-50%)
+- [ ] Karten-Marker: X/Herz an Vereinsadresse (kommt später)

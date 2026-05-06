@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers } from "lucide-react";
+import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers, MapPin, Users } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
@@ -124,6 +125,18 @@ export default function KiDesign() {
   const [extractingColors, setExtractingColors] = useState(false);
   const [usePattern, setUsePattern] = useState(false);
 
+  // ── Sponsoren-Upload State ──
+  const [sponsorLogos, setSponsorLogos] = useState<Array<{ id: string; name: string; imageUrl: string; type: string; enabled: boolean }>>([]);
+  const [uploadingSponsor, setUploadingSponsor] = useState(false);
+
+  // ── Straßenkarte als Wasserzeichen State ──
+  const [useMapWatermark, setUseMapWatermark] = useState(false);
+  const [mapImageUrl, setMapImageUrl] = useState<string | null>(null);
+  const [loadingMap, setLoadingMap] = useState(false);
+
+  // ── Wasserzeichen-Deckung (Transparenz) ──
+  const [watermarkOpacity, setWatermarkOpacity] = useState<number>(20); // Prozent (10-50)
+
   // ── Sublimation-Bereiche State ──
   const [printMethod, setPrintMethod] = useState<"dtf" | "sublimation">("sublimation");
   const [sublimationAreas, setSublimationAreas] = useState<Record<string, boolean>>(
@@ -171,6 +184,51 @@ export default function KiDesign() {
     { departmentId: deptId },
     { enabled: deptId > 0 }
   );
+
+  // Sponsoren des Vereins laden
+  const { data: orgSponsors } = trpc.sponsorTemplate.list.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+
+  // Sponsoren in lokalen State laden wenn sie ankommen
+  useEffect(() => {
+    if (orgSponsors && orgSponsors.length > 0 && sponsorLogos.length === 0) {
+      setSponsorLogos(orgSponsors.map(s => ({
+        id: String(s.id),
+        name: s.name,
+        imageUrl: s.logoUrl,
+        type: s.sponsorType || "hauptsponsor",
+        enabled: s.obligation === "alle_produkte" || s.obligation === "nur_trikot",
+      })));
+    }
+  }, [orgSponsors]);
+
+  // Straßenkarte aus Vereinsadresse generieren
+  const generateMapImage = async () => {
+    if (!orgData?.street || !orgData?.city) {
+      toast.error("Keine Vereinsadresse hinterlegt");
+      return;
+    }
+    setLoadingMap(true);
+    try {
+      const address = `${orgData.street}, ${orgData.zip || ""} ${orgData.city}, ${orgData.country || "Deutschland"}`;
+      // Verwende Google Static Maps API über den Manus Proxy (Frontend-Zugang)
+      const forgeUrl = import.meta.env.VITE_FRONTEND_FORGE_API_URL || "https://forge.butterfly-effect.dev";
+      const apiKey = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
+      const center = orgData.latitude && orgData.longitude
+        ? `${orgData.latitude},${orgData.longitude}`
+        : encodeURIComponent(address);
+      const mapUrl = `${forgeUrl}/v1/maps/proxy/maps/api/staticmap?center=${center}&zoom=15&size=600x600&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0xcccccc&style=feature:water|element:geometry|color:0xe0e0e0&style=feature:landscape|element:geometry|color:0xf5f5f5&key=${apiKey}`;
+      setMapImageUrl(mapUrl);
+      setUseMapWatermark(true);
+      toast.success("Straßenkarte geladen!");
+    } catch (error) {
+      toast.error("Karte konnte nicht geladen werden");
+    } finally {
+      setLoadingMap(false);
+    }
+  };
 
   // ── Vereinsfarben automatisch übernehmen wenn Toggle aktiv ──
   useEffect(() => {
@@ -330,29 +388,58 @@ export default function KiDesign() {
 
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
+      
+      // WAHRZEICHEN-SILHOUETTE = Wasserzeichen (groß, wiederholt, subtil im Hintergrund)
       if (useLandmark && landmarkSilhouette) {
-        extraPrompt += " Incorporate the landmark silhouette from the reference image as a subtle watermark/texture element integrated into the jersey fabric design.";
+        extraPrompt += " MUST incorporate the landmark silhouette from the reference image as a large repeating WATERMARK pattern across the entire jersey fabric. The silhouette should be used as a tonal background texture - repeated multiple times across the jersey surface, slightly transparent/tonal (same color family but lighter/darker shade), creating an elegant all-over pattern effect like a wallpaper. Be creative with the repetition and scale.";
       }
+      
+      // MUSTER-UPLOAD
       if (usePattern && patternColors.length > 0) {
         const colorList = patternColors.map(c => c.replacementHex).join(", ");
         extraPrompt += ` Use a pattern-inspired design with these colors: ${colorList}.`;
       }
+      
+      // SUBLIMATION-BEREICHE
       if (printMethod === "sublimation") {
         const activeAreas = SUBLIMATION_AREAS.filter(a => sublimationAreas[a.id]).map(a => a.label).join(", ");
         extraPrompt += ` Full sublimation print covering: ${activeAreas}.`;
         if (sublimationAreas.collar) extraPrompt += " Include printed collar design.";
         if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
       }
+      
+      // VEREINSWAPPEN = Immer links auf der Brust (SEPARATES Element, NICHT das Referenzbild!)
       if (useClubLogo && defaultLogo?.imageUrl) {
-        extraPrompt += " MUST include a visible club crest/emblem/badge on the heart side (left chest area). The emblem should be clearly visible, approximately 8cm in size, placed on the upper left chest. Use the reference image as the club logo if provided.";
+        extraPrompt += " MUST include a small club crest/emblem/badge on the LEFT CHEST (heart side). The crest should be approximately 8cm in size, clearly visible as a separate badge element on the upper left chest area. This is a standard football/sports club badge placement - NOT a watermark, NOT repeated, just ONE badge on the left chest.";
       }
+      
+      // HASHTAG
       if (useHashtag && orgData?.hashtag) {
         extraPrompt += ` MUST include the text "${orgData.hashtag}" prominently visible on the jersey - place it on the back collar area or lower back as a clearly readable text element in a contrasting color.`;
       }
+      
+      // KOORDINATEN
       if (useCoordinates && orgData?.latitude && orgData?.longitude) {
         const lat = Number(orgData.latitude).toFixed(4);
         const lng = Number(orgData.longitude).toFixed(4);
-        extraPrompt += ` MUST include the geographic coordinates "${lat}\u00b0 N ${lng}\u00b0 E" as a visible text/typography element on the jersey - place it on the inner collar, sleeve, or lower hem area in a stylish font.`;
+        extraPrompt += ` MUST include the geographic coordinates "${lat}° N ${lng}° E" as a visible text/typography element on the jersey - place it on the inner collar, sleeve, or lower hem area in a stylish font.`;
+      }
+
+      // SPONSOREN
+      const enabledSponsors = sponsorLogos.filter(s => s.enabled);
+      if (enabledSponsors.length > 0) {
+        const sponsorNames = enabledSponsors.map(s => s.name).join(", ");
+        extraPrompt += ` The jersey should have designated areas for ${enabledSponsors.length} sponsor logos (${sponsorNames}). Reserve clear rectangular spaces on the chest center, back, and/or sleeves for sponsor placement. These areas should be clean and unobstructed by the design pattern.`;
+      }
+
+      // STRASSENKARTE ALS WASSERZEICHEN
+      if (useMapWatermark && mapImageUrl) {
+        extraPrompt += ` Include a subtle street map pattern as a watermark/texture across the jersey fabric at approximately ${watermarkOpacity}% opacity. The map should show road lines and intersections creating an abstract geometric pattern that blends into the jersey design as a tonal background texture.`;
+      }
+
+      // WASSERZEICHEN-DECKUNG (für Silhouette)
+      if (useLandmark && landmarkSilhouette) {
+        extraPrompt += ` The watermark/silhouette pattern should be at approximately ${watermarkOpacity}% opacity - subtle but recognizable.`;
       }
 
       // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten
@@ -360,17 +447,11 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
 
-      // Referenzbilder zusammenstellen: Silhouette UND/ODER Vereinswappen
-      // Backend löst Storage-Pfade (/manus-storage/...) automatisch zu signierten URLs auf
+      // Referenzbild: NUR die Silhouette als Referenz verwenden (für Wasserzeichen-Muster)
+      // Das Vereinswappen wird NICHT als Referenzbild verwendet - es wird nur im Prompt beschrieben
       let referenceUrl: string | undefined;
-      
-      // 1. Wahrzeichen-Silhouette als Referenzbild (höchste Priorität)
       if (useLandmark && landmarkSilhouette) {
         referenceUrl = landmarkSilhouette; // Backend löst /manus-storage/ Pfade auf
-      }
-      // 2. Vereinswappen als Referenzbild (falls keine Silhouette aktiv)
-      else if (useClubLogo && defaultLogo?.imageUrl) {
-        referenceUrl = defaultLogo.imageUrl; // Backend löst /manus-storage/ Pfade auf
       }
 
       const result = await generateAiMockup.mutateAsync({
@@ -951,6 +1032,115 @@ export default function KiDesign() {
                     </div>
                   )}
                 </div>
+
+                {/* ═══ SPONSOREN ═══ */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold uppercase text-gray-500">Sponsoren</Label>
+                  <p className="text-xs text-muted-foreground">Sponsorenlogos für das Trikot-Design. Verpflichtende Sponsoren sind automatisch aktiviert.</p>
+                  
+                  {sponsorLogos.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {sponsorLogos.map((sponsor) => (
+                        <div key={sponsor.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <img 
+                              src={storageUrl(sponsor.imageUrl) || sponsor.imageUrl} 
+                              alt={sponsor.name} 
+                              className="w-8 h-8 object-contain rounded border bg-gray-50" 
+                            />
+                            <div className="min-w-0">
+                              <span className="text-xs font-medium truncate block">{sponsor.name}</span>
+                              <span className="text-[10px] text-muted-foreground capitalize">{sponsor.type.replace('sponsor', '')}</span>
+                            </div>
+                          </div>
+                          <Switch 
+                            checked={sponsor.enabled} 
+                            onCheckedChange={(checked) => {
+                              setSponsorLogos(prev => prev.map(s => s.id === sponsor.id ? { ...s, enabled: checked } : s));
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">Keine Sponsoren im Verein hinterlegt. Sponsoren können in der Verwaltung angelegt werden.</p>
+                  )}
+
+                  {/* Neuen Sponsor hochladen */}
+                  <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition-all w-fit">
+                    <Users className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-600">Sponsor-Logo hochladen</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingSponsor(true);
+                      try {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const dataUrl = reader.result as string;
+                          const name = file.name.replace(/\.[^.]+$/, '');
+                          setSponsorLogos(prev => [...prev, {
+                            id: `custom_${Date.now()}`,
+                            name,
+                            imageUrl: dataUrl,
+                            type: "mannschaftssponsor",
+                            enabled: true,
+                          }]);
+                          toast.success(`Sponsor "${name}" hinzugefügt`);
+                        };
+                        reader.readAsDataURL(file);
+                      } finally {
+                        setUploadingSponsor(false);
+                      }
+                    }} />
+                    {uploadingSponsor && <Loader2 className="w-4 h-4 animate-spin" />}
+                  </label>
+                </div>
+
+                {/* ═══ STRASSENKARTE ALS WASSERZEICHEN ═══ */}
+                {orgData?.street && orgData?.city && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold uppercase text-gray-500">Straßenkarte (optional)</Label>
+                    <p className="text-xs text-muted-foreground">Verwende eine Straßenkarte des Vereinsstandorts als Wasserzeichen im Trikot.</p>
+                    <div className="flex items-center gap-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={generateMapImage}
+                        disabled={loadingMap}
+                      >
+                        {loadingMap ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <MapPin className="w-4 h-4 mr-1" />}
+                        Karte generieren
+                      </Button>
+                      {mapImageUrl && (
+                        <div className="flex items-center gap-3">
+                          <img src={mapImageUrl} alt="Straßenkarte" className="w-16 h-16 object-cover rounded border" />
+                          <Switch checked={useMapWatermark} onCheckedChange={setUseMapWatermark} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ═══ WASSERZEICHEN-DECKUNG ═══ */}
+                {(useLandmark || useMapWatermark) && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold uppercase text-gray-500">Wasserzeichen-Deckung: {watermarkOpacity}%</Label>
+                    <p className="text-xs text-muted-foreground">Wie stark soll das Wasserzeichen sichtbar sein?</p>
+                    <Slider
+                      value={[watermarkOpacity]}
+                      onValueChange={(v) => setWatermarkOpacity(v[0])}
+                      min={5}
+                      max={50}
+                      step={5}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-gray-400">
+                      <span>5% (kaum sichtbar)</span>
+                      <span>50% (deutlich)</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Vereinsname */}
                 <div className="space-y-2">
