@@ -30,6 +30,8 @@ import { FeedbackTestBar } from "./components/FeedbackTestBar";
 import PrintSheetExport from "./pages/PrintSheetExport";
 import ApprovalReview from "./pages/ApprovalReview";
 import TeamPoll from "./pages/TeamPoll";
+import ZoneEditorPage from "./pages/ZoneEditorPage";
+import { ZoneEditorProvider } from "./contexts/ZoneEditorContext";
 
 function Router() {
   return (
@@ -60,6 +62,7 @@ function Router() {
       {/* ─── Modul 2: Produktdesigner (Produkte erstellen/bearbeiten) ─── */}
       <Route path="/designer/products" component={AdminProducts} />
       <Route path="/designer/products/:id" component={AdminProductEditor} />
+      <Route path="/designer/zone-editor" component={ZoneEditorPage} />
 
       {/* ─── Modul 3: Konfigurator (fertige Produkte konfigurieren) ─── */}
       <Route path="/konfigurator" component={ProductSelect} />
@@ -102,12 +105,14 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <Toaster duration={2500} />
-          <Router />
-          <BetaFeedbackGlobal />
-          <FeedbackTestBar />
-        </TooltipProvider>
+        <ZoneEditorProvider>
+          <TooltipProvider>
+            <Toaster duration={2500} />
+            <Router />
+            <BetaFeedbackGlobal />
+            <FeedbackTestBar />
+          </TooltipProvider>
+        </ZoneEditorProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

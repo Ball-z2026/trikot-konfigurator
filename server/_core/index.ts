@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerLocalAuthRoutes } from "../localAuth";
 import { registerUploadRoute } from "../uploadRoute";
 import { registerStorageProxy } from "./storageProxy";
+import { registerMockupOgRoute } from "../mockupOgRoute";
 import { appRouter } from "../routers";
 import { ensureAdminExists } from "../db";
 import { createContext } from "./context";
@@ -51,6 +52,9 @@ async function startServer() {
       createContext,
     })
   );
+  // OG meta tags for social media crawlers (must be before Vite/static)
+  registerMockupOgRoute(app);
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);

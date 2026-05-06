@@ -5,13 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
-import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ChevronLeft, Maximize2, X, Ruler, Check, Undo2 } from "lucide-react";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
-import { createPortal } from "react-dom";
+import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ChevronLeft, Maximize2, Ruler } from "lucide-react";
+
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
+import { useLocation } from "wouter";
+import { useZoneEditor } from "@/contexts/ZoneEditorContext";
 import { toPng } from "html-to-image";
 import { getJerseyRules, validateZonesAgainstRules } from "@shared/jerseyRules";
 import { TEXTIL_TEMPLATES } from "@shared/templates";
@@ -64,7 +64,6 @@ interface TemplateUploadProps {
   category?: string;
   onSaved?: (templateId: number) => void;
   onCancel?: () => void;
-  onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
 const ZONE_PURPOSES = [
@@ -85,8 +84,9 @@ export function TemplateUpload({
   category,
   onSaved,
   onCancel,
-  onFullscreenChange,
 }: TemplateUploadProps) {
+  const [, setLocation] = useLocation();
+  const { openEditor, registerSaveCallback, registerDiscardCallback } = useZoneEditor();
   // ─── State ───
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageStorageKey, setImageStorageKey] = useState<string | null>(null);
@@ -104,51 +104,28 @@ export function TemplateUpload({
   // Split-View: Ausgewähltes Produkt
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
-  // Fullscreen-Editor
-  const [fullscreenMode, setFullscreenMode] = useState(false);
-  const fullscreenCanvasRef = useRef<HTMLDivElement>(null);
-  const [zonesSnapshot, setZonesSnapshot] = useState<Zone[] | null>(null);
-  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
-
-  // Snapshot erstellen beim Öffnen des Fullscreen-Editors
+  // Fullscreen-Editor: Navigation zur eigenständigen Route
   const openFullscreenEditor = useCallback(() => {
-    setZonesSnapshot(JSON.parse(JSON.stringify(zones)));
-    setFullscreenMode(true);
-  }, [zones]);
-
-  // Speichern: Änderungen übernehmen und Editor schließen
-  const saveAndCloseEditor = useCallback(() => {
-    setZonesSnapshot(null);
-    setFullscreenMode(false);
-    toast.success("Änderungen gespeichert");
-  }, []);
-
-  // Verwerfen: Snapshot wiederherstellen und Editor schließen
-  const discardAndCloseEditor = useCallback(() => {
-    if (zonesSnapshot) {
-      setZones(zonesSnapshot);
-    }
-    setZonesSnapshot(null);
-    setFullscreenMode(false);
-    toast.info("Änderungen verworfen");
-  }, [zonesSnapshot]);
-
-  // X-Button: Prüfen ob Änderungen vorhanden sind
-  const handleCloseEditor = useCallback(() => {
-    const hasChanges = zonesSnapshot && JSON.stringify(zones) !== JSON.stringify(zonesSnapshot);
-    if (hasChanges) {
-      setShowDiscardConfirm(true);
-    } else {
-      // Keine Änderungen – einfach schließen
-      setZonesSnapshot(null);
-      setFullscreenMode(false);
-    }
-  }, [zones, zonesSnapshot]);
-
-  // Kommuniziere Fullscreen-Status nach außen
-  useEffect(() => {
-    onFullscreenChange?.(fullscreenMode);
-  }, [fullscreenMode, onFullscreenChange]);
+    const snapshot = JSON.parse(JSON.stringify(zones));
+    // Registriere Callbacks für Speichern/Verwerfen
+    registerSaveCallback((savedZones) => {
+      setZones(savedZones);
+    });
+    registerDiscardCallback(() => {
+      setZones(snapshot);
+    });
+    // Öffne den Editor als eigene Route
+    openEditor({
+      zones: JSON.parse(JSON.stringify(zones)),
+      selectedProductId,
+      selectedPartId,
+      orgId,
+      sport,
+      category,
+      snapshot,
+    });
+    setLocation('/designer/zone-editor');
+  }, [zones, selectedProductId, selectedPartId, orgId, sport, category, openEditor, registerSaveCallback, registerDiscardCallback, setLocation]);
 
   // ─── Robuste Pointer-Events Drag & Drop (wie AdminProductEditor) ───
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
@@ -393,7 +370,7 @@ export function TemplateUpload({
       if (e.pointerType === "touch" && navigator.vibrate) {
         navigator.vibrate(15);
       }
-      const canvasEl = canvas === "left" ? leftCanvasRef.current : (fullscreenMode ? fullscreenCanvasRef.current : rightCanvasRef.current);
+      const canvasEl = canvas === "left" ? leftCanvasRef.current : rightCanvasRef.current;
       if (!canvasEl) return;
       const pos = getRelativePosition(e, canvasEl);
       dragStateRef.current = {
@@ -423,7 +400,7 @@ export function TemplateUpload({
       const ds = dragStateRef.current;
       if (ds.dragging === null && ds.resizing === null) return;
       // Nur auf dem Canvas-Element preventDefault, nicht global
-      const canvasEl = ds.canvas === "left" ? leftCanvasRef.current : (fullscreenMode ? fullscreenCanvasRef.current : rightCanvasRef.current);
+      const canvasEl = ds.canvas === "left" ? leftCanvasRef.current : rightCanvasRef.current;
       if (!canvasEl) return;
       const rect = canvasEl.getBoundingClientRect();
       const posX = ((e.clientX - rect.left) / rect.width) * 100;
@@ -517,7 +494,7 @@ export function TemplateUpload({
       // Screenshot des Produkt-Bereichs (rechte Seite) als Vorlagen-Bild generieren
       let templateImageUrl = imageUrl;
       let templateStorageKey = imageStorageKey || undefined;
-      const canvasEl = fullscreenMode ? fullscreenCanvasRef.current : rightCanvasRef.current;
+      const canvasEl = rightCanvasRef.current;
       if (canvasEl && selectedProductId && zones.length > 0) {
         try {
           const dataUrl = await toPng(canvasEl, {
@@ -838,13 +815,7 @@ export function TemplateUpload({
         )}
 
         {/* ═══ SPLIT VIEW: Links Vorlage, Rechts unser Produkt ═══ */}
-        {fullscreenMode && (
-          <div className="p-8 text-center bg-indigo-50 border border-indigo-200 rounded-lg">
-            <p className="text-sm text-indigo-700 font-medium">Fullscreen-Editor ist geöffnet</p>
-            <p className="text-xs text-indigo-500 mt-1">Schließen Sie den Editor um zurückzukehren</p>
-          </div>
-        )}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ display: fullscreenMode ? 'none' : undefined }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* ─── LINKE SEITE: Vorlagenbild ─── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -1135,380 +1106,7 @@ export function TemplateUpload({
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        {/* ═══ FULLSCREEN EDITOR DIALOG (Portal: außerhalb des Radix-Dialogs) ═══ */}
-        {fullscreenMode && createPortal(
-          <div className="fixed inset-0 z-[9999] bg-white flex">
-            {/* Header */}
-            <div className="absolute top-0 left-0 right-0 h-14 bg-gray-900 text-white flex items-center justify-between px-4 z-10">
-              <div className="flex items-center gap-3">
-                <h2 className="font-semibold text-lg">Vorlagen-Editor</h2>
-                {productParts?.parts && productParts.parts.length > 1 && (
-                  <div className="flex gap-1">
-                    {productParts.parts
-                      .filter((part: any) => ['vorderteil', 'rueckteil'].includes(part.key))
-                      .map((part: any) => (
-                        <Button
-                          key={part.id}
-                          size="sm"
-                          variant={selectedPartId === part.id ? "default" : "secondary"}
-                          onClick={() => setSelectedPartId(part.id)}
-                          className="h-7 text-xs"
-                        >
-                          {part.label || part.key}
-                        </Button>
-                      ))}
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="secondary" onClick={() => setAddingZone(true)}>
-                  <Plus className="w-4 h-4 mr-1" />
-                  Zone
-                </Button>
-                <Button size="sm" variant="ghost" className="text-red-300 hover:text-red-100 hover:bg-red-900/50" onClick={discardAndCloseEditor}>
-                  <Undo2 className="w-4 h-4 mr-1" />
-                  Verwerfen
-                </Button>
-                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={saveAndCloseEditor}>
-                  <Check className="w-4 h-4 mr-1" />
-                  Speichern
-                </Button>
-                <Button size="sm" variant="ghost" className="text-white hover:bg-gray-700" onClick={handleCloseEditor}>
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
 
-            {/* Main Content: Canvas links, Sidebar rechts */}
-            <div className="flex w-full pt-14 flex-col lg:flex-row">
-              {/* ─── Canvas (großes Trikot-Bild) ─── */}
-              <div className="flex-1 flex items-center justify-center bg-gray-100 p-4 lg:p-8 overflow-auto">
-                <div
-                  ref={fullscreenCanvasRef}
-                  data-canvas="right"
-                  className="relative bg-gray-100 select-none shadow-xl rounded-lg overflow-hidden"
-                  style={{ maxWidth: '900px', width: '100%', touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
-                >
-                  {activePart?.imageUrl ? (
-                    <img
-                      src={storageUrl(activePart.imageUrl)}
-                      alt={activePart?.label || "Produkt"}
-                      className="w-full h-auto"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="w-full aspect-[3/4] bg-white flex items-center justify-center">
-                      <p className="text-sm text-muted-foreground">Kein Bild</p>
-                    </div>
-                  )}
-                  {/* Hilfslinien */}
-                  {renderGuidelines("right")}
-                  {/* Zonen */}
-                  {zones
-                    .filter((zone) => {
-                      if (!zone.side) return true;
-                      const partKey = (activePart as any)?.key || '';
-                      const isFrontPart = partKey.toLowerCase().includes('vorder') || partKey.toLowerCase().includes('front');
-                      const isBackPart = partKey.toLowerCase().includes('rueck') || partKey.toLowerCase().includes('back');
-                      if (isFrontPart) return zone.side === 'front';
-                      if (isBackPart) return zone.side === 'back';
-                      return true;
-                    })
-                    .map((zone) => renderZoneOverlay(zone, true, "right"))}
-                </div>
-              </div>
-
-              {/* ─── Sidebar: Zone-Eigenschaften ─── */}
-              <div className="hidden lg:block w-80 border-l bg-white overflow-y-auto p-4 space-y-3">
-                <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wide">Zonen</h3>
-                
-                {/* Verbandsregeln-Warnungen */}
-                {(() => {
-                  const effectiveSport = sport || 'fussball';
-                  const rules = getJerseyRules(effectiveSport as any);
-                  if (!rules) return null;
-                  const baseWidthCm = (activePart as any)?.realWidthCm || 49;
-                  const baseHeightCm = (activePart as any)?.realHeightCm || 68;
-                  const partKey = (activePart as any)?.key || 'vorderteil';
-                  const partName = partKey.includes('vorder') ? 'front' : partKey.includes('rueck') ? 'back' : 'front';
-                  const warnings = validateZonesAgainstRules(
-                    zones.map(z => ({
-                      purpose: z.purpose,
-                      widthCm: z.width / 100 * baseWidthCm,
-                      heightCm: z.height / 100 * baseHeightCm,
-                      part: z.side || partName,
-                    })),
-                    rules
-                  );
-                  if (warnings.length === 0) return null;
-                  return (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 space-y-1">
-                      <div className="flex items-center gap-1 text-amber-700 font-medium text-xs">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        Verbandsvorgaben
-                      </div>
-                      {warnings.map((w, i) => (
-                        <p key={i} className="text-[11px] text-amber-600">{w.message}</p>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                {/* Zone-Liste */}
-                {zones
-                  .filter((zone) => {
-                    if (!zone.side) return true;
-                    const partKey = (activePart as any)?.key || '';
-                    const isFrontPart = partKey.toLowerCase().includes('vorder') || partKey.toLowerCase().includes('front');
-                    const isBackPart = partKey.toLowerCase().includes('rueck') || partKey.toLowerCase().includes('back');
-                    if (isFrontPart) return zone.side === 'front';
-                    if (isBackPart) return zone.side === 'back';
-                    return true;
-                  })
-                  .map((zone) => {
-                    const isSelected = selectedZoneId === zone.id;
-                    const baseWidthCm = (activePart as any)?.realWidthCm || 49;
-                    const baseHeightCm = (activePart as any)?.realHeightCm || 68;
-                    const widthCm = (zone.width / 100 * baseWidthCm).toFixed(1);
-                    const heightCm = (zone.height / 100 * baseHeightCm).toFixed(1);
-                    const areaCm2 = (parseFloat(widthCm) * parseFloat(heightCm)).toFixed(1);
-
-                    return (
-                      <div
-                        key={zone.id}
-                        className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                          isSelected ? 'border-amber-400 bg-amber-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setSelectedZoneId(isSelected ? null : zone.id)}
-                      >
-                        {/* Zone Header */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{zone.name}</span>
-                            <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{zone.purpose}</span>
-                          </div>
-                          <button
-                            className="text-red-400 hover:text-red-600 p-1"
-                            onClick={(e) => { e.stopPropagation(); removeZone(zone.id); }}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        {/* cm-Maße */}
-                        <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
-                          <Ruler className="w-3 h-3" />
-                          <span>{widthCm} × {heightCm} cm</span>
-                          <span className="text-gray-400">|</span>
-                          <span>{areaCm2} cm²</span>
-                        </div>
-
-                        {/* Erweiterte Einstellungen bei Auswahl */}
-                        {isSelected && (
-                          <div className="mt-3 space-y-3 border-t pt-3">
-                            {/* Größe (Breite x Höhe in cm) */}
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <Label className="text-[11px] text-gray-500">Breite (cm)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.1"
-                                  value={widthCm}
-                                  onChange={(e) => {
-                                    const newWidthCm = parseFloat(e.target.value) || 0;
-                                    const newWidthPct = (newWidthCm / baseWidthCm) * 100;
-                                    setZones(zones.map(z => z.id === zone.id ? { ...z, width: Math.min(100, Math.max(1, newWidthPct)) } : z));
-                                  }}
-                                  className="h-7 text-xs"
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-[11px] text-gray-500">Höhe (cm)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.1"
-                                  value={heightCm}
-                                  onChange={(e) => {
-                                    const newHeightCm = parseFloat(e.target.value) || 0;
-                                    const newHeightPct = (newHeightCm / baseHeightCm) * 100;
-                                    setZones(zones.map(z => z.id === zone.id ? { ...z, height: Math.min(100, Math.max(1, newHeightPct)) } : z));
-                                  }}
-                                  className="h-7 text-xs"
-                                />
-                              </div>
-                            </div>
-
-                            {/* Rotation */}
-                            <div>
-                              <Label className="text-[11px] text-gray-500">Rotation ({zone.rotation || 0}°)</Label>
-                              <Slider
-                                value={[zone.rotation || 0]}
-                                min={-180}
-                                max={180}
-                                step={1}
-                                onValueChange={([val]) => {
-                                  setZones(zones.map(z => z.id === zone.id ? { ...z, rotation: val } : z));
-                                }}
-                                className="mt-1"
-                              />
-                            </div>
-
-                            {/* Schriftfarbe */}
-                            <div>
-                              <Label className="text-[11px] text-gray-500">Schriftfarbe</Label>
-                              <div className="flex items-center gap-2 mt-1">
-                                <input
-                                  type="color"
-                                  value={zone.fontColor || '#000000'}
-                                  onChange={(e) => setZones(zones.map(z => z.id === zone.id ? { ...z, fontColor: e.target.value } : z))}
-                                  className="w-8 h-8 rounded border cursor-pointer"
-                                />
-                                <Input
-                                  value={zone.fontColor || '#000000'}
-                                  onChange={(e) => setZones(zones.map(z => z.id === zone.id ? { ...z, fontColor: e.target.value } : z))}
-                                  className="h-7 text-xs flex-1"
-                                />
-                              </div>
-                            </div>
-
-                            {/* Outline-Farbe */}
-                            <div>
-                              <Label className="text-[11px] text-gray-500">Outline-Farbe</Label>
-                              <div className="flex items-center gap-2 mt-1">
-                                <input
-                                  type="color"
-                                  value={zone.outlineColor || '#ffffff'}
-                                  onChange={(e) => setZones(zones.map(z => z.id === zone.id ? { ...z, outlineColor: e.target.value } : z))}
-                                  className="w-8 h-8 rounded border cursor-pointer"
-                                />
-                                <Input
-                                  value={zone.outlineColor || ''}
-                                  onChange={(e) => setZones(zones.map(z => z.id === zone.id ? { ...z, outlineColor: e.target.value } : z))}
-                                  className="h-7 text-xs flex-1"
-                                  placeholder="keine"
-                                />
-                                <Input
-                                  type="number"
-                                  value={zone.outlineWidth || 0}
-                                  onChange={(e) => setZones(zones.map(z => z.id === zone.id ? { ...z, outlineWidth: parseFloat(e.target.value) || 0 } : z))}
-                                  className="h-7 text-xs w-14"
-                                  placeholder="px"
-                                />
-                              </div>
-                            </div>
-
-                            {/* Schriftart */}
-                            {["playerName", "playerNumber", "clubName", "abbreviation"].includes(zone.purpose) && (
-                              <div>
-                                <Label className="text-[11px] text-gray-500">Schriftart</Label>
-                                <Select
-                                  value={zone.fontFamily || FONT_STYLE_MAP[zone.fontStyle || "block"]}
-                                  onValueChange={(val) => {
-                                    const style = inferFontStyle(val);
-                                    setZones(zones.map(z => z.id === zone.id ? { ...z, fontFamily: val, fontStyle: style } : z));
-                                  }}
-                                >
-                                  <SelectTrigger className="h-7 text-xs mt-1">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {Object.entries(FONT_STYLE_MAP).map(([style, family]) => (
-                                      <SelectItem key={style} value={family}>
-                                        <span style={{ fontFamily: family }}>{family}</span>
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            )}
-
-                            {/* Bogentext */}
-                            {["playerName", "clubName", "abbreviation"].includes(zone.purpose) && (
-                              <div className="flex items-center gap-2">
-                                <Label className="text-[11px] text-gray-500">Bogentext</Label>
-                                <Button
-                                  size="sm"
-                                  variant={zone.textStyle === 'arc' ? 'default' : 'outline'}
-                                  className="h-6 text-[10px] px-2"
-                                  onClick={() => {
-                                    setZones(zones.map(z => z.id === zone.id ? {
-                                      ...z,
-                                      textStyle: z.textStyle === 'arc' ? 'straight' : 'arc',
-                                      arcDegree: z.textStyle === 'arc' ? undefined : 30,
-                                    } : z));
-                                  }}
-                                >
-                                  ⌒ Bogen
-                                </Button>
-                                {zone.textStyle === 'arc' && (
-                                  <Input
-                                    type="number"
-                                    value={zone.arcDegree || 30}
-                                    onChange={(e) => setZones(zones.map(z => z.id === zone.id ? { ...z, arcDegree: parseInt(e.target.value) || 30 } : z))}
-                                    className="h-6 text-xs w-16"
-                                    min={5}
-                                    max={180}
-                                  />
-                                )}
-                              </div>
-                            )}
-
-                            {/* Schriftstärke */}
-                            <div className="flex items-center gap-2">
-                              <Label className="text-[11px] text-gray-500">Fett</Label>
-                              <Button
-                                size="sm"
-                                variant={zone.fontWeight === 'bold' ? 'default' : 'outline'}
-                                className="h-6 text-[10px] px-2"
-                                onClick={() => {
-                                  setZones(zones.map(z => z.id === zone.id ? { ...z, fontWeight: z.fontWeight === 'bold' ? 'normal' : 'bold' } : z));
-                                }}
-                              >
-                                B
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-        {/* AlertDialog: Bestätigung beim Schließen mit ungespeicherten Änderungen */}
-        <AlertDialog open={showDiscardConfirm} onOpenChange={setShowDiscardConfirm}>
-          <AlertDialogContent className="z-[99999]">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Ungespeicherte Änderungen</AlertDialogTitle>
-              <AlertDialogDescription>
-                Sie haben Änderungen an den Zonen vorgenommen. Möchten Sie diese speichern oder verwerfen?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setShowDiscardConfirm(false)}>Zurück zum Editor</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-red-600 hover:bg-red-700"
-                onClick={() => {
-                  setShowDiscardConfirm(false);
-                  discardAndCloseEditor();
-                }}
-              >
-                Verwerfen
-              </AlertDialogAction>
-              <AlertDialogAction
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  setShowDiscardConfirm(false);
-                  saveAndCloseEditor();
-                }}
-              >
-                Speichern
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </CardContent>
     </Card>
   );

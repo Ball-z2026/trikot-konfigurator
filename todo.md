@@ -1879,3 +1879,27 @@
 ## Zukunft: Native App (nach Beta-Abschluss)
 
 - [ ] Native Wrapper mit Capacitor erstellen (iOS + Android App Store)
+
+## Feature: Social-Media-Teilen für KI-Mockups
+
+- [ ] Backend: Öffentliche Share-URL für Mockups erstellen (Token-basiert, ohne Login zugänglich)
+- [ ] Backend: Share-Endpunkt der Mockup-Bild + Metadaten zurückgibt
+- [ ] Frontend: Share-Buttons (WhatsApp + Link kopieren) bei Mockup-Anzeige
+- [ ] Öffentliche Mockup-Vorschau-Seite mit OG-Tags (für WhatsApp-Vorschau)
+- [ ] Erweiterbar für weitere Social-Media-Kanäle (Facebook, Instagram, Twitter/X)
+
+## Zukunft: Vereinsverwaltung als eigenständiges Tool
+
+- [ ] Vereinsverwaltung (inkl. Mitgliederverwaltung) als eigenständiges Tool/Modul extrahieren
+- [ ] Unabhängig vom Trikot-Konfigurator nutzbar machen
+- [ ] Klärung: Eigene Web-App vs. eigenständiges Modul innerhalb des Projekts
+- [ ] Funktionsumfang definieren (Stammdaten, Logos, Abteilungen, Mitglieder, Sponsoren, Ausstatter, Kollektionen)
+
+## Refactoring: Fullscreen-Editor als eigenständige Route
+
+- [x] ZoneEditorContext erstellt (shared state zwischen TemplateUpload und ZoneEditorPage)
+- [x] ZoneEditorPage als eigenständige Route /designer/zone-editor implementiert
+- [x] Portal-Code aus TemplateUpload.tsx entfernt (kein createPortal mehr)
+- [x] AdminProducts.tsx: isEditorFullscreen State entfernt
+- [x] Route in App.tsx registriert, ZoneEditorProvider in App-Tree eingebunden
+- [x] Vitest: 7 Tests für ZoneEditor-Datenlogik bestanden

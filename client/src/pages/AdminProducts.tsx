@@ -84,7 +84,6 @@ export default function AdminProducts() {
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
   const [createMode, setCreateMode] = useState<CreateMode>("choose");
   const [selectedSport, setSelectedSport] = useState<SportType | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
@@ -190,8 +189,6 @@ export default function AdminProducts() {
           <Dialog
             open={dialogOpen}
             onOpenChange={(open) => {
-              // Verhindere Schließen wenn Fullscreen-Editor aktiv ist
-              if (!open && isEditorFullscreen) return;
               setDialogOpen(open);
               if (!open) resetDialog();
             }}
@@ -298,14 +295,12 @@ export default function AdminProducts() {
                     orgId={userOrgIds[0] || 0}
                     onSaved={() => {
                       setDialogOpen(false);
-                      setIsEditorFullscreen(false);
                       resetDialog();
                       utils.product.list.invalidate();
                     }}
                     onCancel={() => {
                       setCreateMode("choose");
                     }}
-                    onFullscreenChange={setIsEditorFullscreen}
                   />
                 </div>
               )}
