@@ -1963,3 +1963,8 @@
 - [x] Wahrzeichen-Silhouette: Nach Upload muss die Silhouette sichtbar in der UI angezeigt werden (Vorschau)
 - [x] Sportart-spezifische Trikots: Basketball=Basketball-Jersey+Shorts, Handball=Handball-Trikot, Volleyball=Volleyball-Trikot etc.
 - [x] Zurück-Button: State beibehalten, nicht alles neu eingeben müssen
+- [x] Upload-Feldnamen korrigiert: file→data, filename→fileName, mimeType→contentType (Wahrzeichen-Upload)
+- [x] Backend: removeBackground löst Storage-Pfade automatisch zu signierten URLs auf
+- [x] Backend: generateAi löst referenceImageUrl Storage-Pfade automatisch zu signierten URLs auf
+- [x] Vereinswappen wird als Referenzbild an KI-Generierung übergeben (nicht nur im Text erwähnt)
+- [x] Prompt verstärkt: Hashtag, Koordinaten, Logo mit "MUST include" und konkreten Platzierungsanweisungen

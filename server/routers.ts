@@ -3433,8 +3433,17 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           });
         }
         if (input.referenceImageUrl) {
+          let refUrl = input.referenceImageUrl;
+          // Wenn die URL ein Storage-Pfad ist, eine signierte URL holen
+          if (refUrl.includes("/manus-storage/") || refUrl.includes("/api/storage-proxy/")) {
+            const keyMatch = refUrl.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+            if (keyMatch) {
+              const { storageGetSignedUrl } = await import("./storage");
+              refUrl = await storageGetSignedUrl(keyMatch[1]);
+            }
+          }
           originalImages.push({
-            url: input.referenceImageUrl,
+            url: refUrl,
             mimeType: "image/png",
           });
         }
@@ -3486,7 +3495,17 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         imageUrl: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const result = await removeBackground({ url: input.imageUrl });
+        let imageUrl = input.imageUrl;
+        // Wenn die URL ein Storage-Pfad ist, eine signierte URL holen
+        if (imageUrl.includes("/manus-storage/") || imageUrl.includes("/api/storage-proxy/")) {
+          // Extrahiere den Storage-Key aus der URL
+          const keyMatch = imageUrl.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+          if (keyMatch) {
+            const { storageGetSignedUrl } = await import("./storage");
+            imageUrl = await storageGetSignedUrl(keyMatch[1]);
+          }
+        }
+        const result = await removeBackground({ url: imageUrl });
         return { url: result.url, key: result.key };
       }),
 

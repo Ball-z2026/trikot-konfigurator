@@ -209,12 +209,12 @@ export default function KiDesign() {
         const uploadRes = await fetch("/api/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ file: base64, filename: file.name, mimeType: file.type }),
+          body: JSON.stringify({ data: base64, fileName: file.name, contentType: file.type }),
         });
         const uploadData = await uploadRes.json();
         if (uploadData.url) {
-          const fullUrl = uploadData.url.startsWith("http") ? uploadData.url : `${window.location.origin}${storageUrl(uploadData.url) || uploadData.url}`;
-          const result = await removeBackgroundMut.mutateAsync({ imageUrl: fullUrl });
+          // Backend löst Storage-Pfade automatisch zu signierten URLs auf
+          const result = await removeBackgroundMut.mutateAsync({ imageUrl: uploadData.url });
           setLandmarkSilhouette(result.url);
           toast.success("Silhouette erkannt!");
         }
@@ -343,14 +343,16 @@ export default function KiDesign() {
         if (sublimationAreas.collar) extraPrompt += " Include printed collar design.";
         if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
       }
-      if (useClubLogo && defaultLogo) {
-        extraPrompt += " Include a club crest/emblem on the heart side (left chest).";
+      if (useClubLogo && defaultLogo?.imageUrl) {
+        extraPrompt += " MUST include a visible club crest/emblem/badge on the heart side (left chest area). The emblem should be clearly visible, approximately 8cm in size, placed on the upper left chest. Use the reference image as the club logo if provided.";
       }
       if (useHashtag && orgData?.hashtag) {
-        extraPrompt += ` Include the hashtag "${orgData.hashtag}" subtly in the design.`;
+        extraPrompt += ` MUST include the text "${orgData.hashtag}" prominently visible on the jersey - place it on the back collar area or lower back as a clearly readable text element in a contrasting color.`;
       }
       if (useCoordinates && orgData?.latitude && orgData?.longitude) {
-        extraPrompt += ` Include subtle geographic coordinates (${orgData.latitude}, ${orgData.longitude}) as a design element.`;
+        const lat = Number(orgData.latitude).toFixed(4);
+        const lng = Number(orgData.longitude).toFixed(4);
+        extraPrompt += ` MUST include the geographic coordinates "${lat}\u00b0 N ${lng}\u00b0 E" as a visible text/typography element on the jersey - place it on the inner collar, sleeve, or lower hem area in a stylish font.`;
       }
 
       // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten
@@ -358,10 +360,18 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
 
-      // Wahrzeichen-Silhouette als Referenzbild übergeben
-      const silhouetteUrl = (useLandmark && landmarkSilhouette) 
-        ? (landmarkSilhouette.startsWith("http") ? landmarkSilhouette : `${window.location.origin}${storageUrl(landmarkSilhouette) || landmarkSilhouette}`)
-        : undefined;
+      // Referenzbilder zusammenstellen: Silhouette UND/ODER Vereinswappen
+      // Backend löst Storage-Pfade (/manus-storage/...) automatisch zu signierten URLs auf
+      let referenceUrl: string | undefined;
+      
+      // 1. Wahrzeichen-Silhouette als Referenzbild (höchste Priorität)
+      if (useLandmark && landmarkSilhouette) {
+        referenceUrl = landmarkSilhouette; // Backend löst /manus-storage/ Pfade auf
+      }
+      // 2. Vereinswappen als Referenzbild (falls keine Silhouette aktiv)
+      else if (useClubLogo && defaultLogo?.imageUrl) {
+        referenceUrl = defaultLogo.imageUrl; // Backend löst /manus-storage/ Pfade auf
+      }
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
@@ -369,7 +379,7 @@ export default function KiDesign() {
         colorDescription: `Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}`,
         side: "front",
         customPrompt: prompt,
-        referenceImageUrl: silhouetteUrl,
+        referenceImageUrl: referenceUrl,
       });
 
       if (result.url) {
