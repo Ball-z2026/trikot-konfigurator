@@ -1977,3 +1977,11 @@
 - [x] Straßenkarte als Wasserzeichen: Aus Vereinsadresse Karte generieren und als Wasserzeichen-Option anbieten
 - [x] Wasserzeichen-Deckung: Prozent-Slider für Transparenz (10%-50%)
 - [ ] Karten-Marker: X/Herz an Vereinsadresse (kommt später)
+
+## KI-Design Prompt-Fixes (Mai 2026)
+- [x] Straßenkarte: Muss die tatsächliche Vereinsadresse verwenden (street, city, zip aus orgData)
+- [x] Sponsor: Muss im generierten Design sichtbar sein (Sponsorenlogos klar platziert)
+- [x] Vereinswappen: ZWINGEND links Brust (kein Toggle, MUSS immer drauf, Verbandsregel)
+- [x] Vereinsname: Hinten auf dem Rücken, über der Nummer
+- [x] Koordinaten: Im Kragen oder Ärmel (links/rechts)
+- [x] Hashtag: Im Nacken des Trikots

@@ -207,22 +207,33 @@ export default function KiDesign() {
   // Straßenkarte aus Vereinsadresse generieren
   const generateMapImage = async () => {
     if (!orgData?.street || !orgData?.city) {
-      toast.error("Keine Vereinsadresse hinterlegt");
+      toast.error("Keine Vereinsadresse hinterlegt. Bitte zuerst in der Verwaltung die Vereinsadresse eintragen.");
       return;
     }
     setLoadingMap(true);
     try {
-      const address = `${orgData.street}, ${orgData.zip || ""} ${orgData.city}, ${orgData.country || "Deutschland"}`;
+      // Vollständige Adresse aus den Vereinsdaten zusammenbauen
+      const fullAddress = `${orgData.street}, ${orgData.zip || ""} ${orgData.city}, ${orgData.country || "Deutschland"}`;
+      
       // Verwende Google Static Maps API über den Manus Proxy (Frontend-Zugang)
       const forgeUrl = import.meta.env.VITE_FRONTEND_FORGE_API_URL || "https://forge.butterfly-effect.dev";
       const apiKey = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
-      const center = orgData.latitude && orgData.longitude
-        ? `${orgData.latitude},${orgData.longitude}`
-        : encodeURIComponent(address);
-      const mapUrl = `${forgeUrl}/v1/maps/proxy/maps/api/staticmap?center=${center}&zoom=15&size=600x600&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0xcccccc&style=feature:water|element:geometry|color:0xe0e0e0&style=feature:landscape|element:geometry|color:0xf5f5f5&key=${apiKey}`;
+      
+      // PRIORITÄT: Wenn Koordinaten im Verein hinterlegt sind, diese verwenden (präziser)
+      // Ansonsten die vollständige Adresse als Geocoding-Fallback
+      let center: string;
+      if (orgData.latitude && orgData.longitude && orgData.latitude !== 0 && orgData.longitude !== 0) {
+        center = `${orgData.latitude},${orgData.longitude}`;
+      } else {
+        // Adresse URL-encodiert als Fallback
+        center = encodeURIComponent(fullAddress);
+      }
+      
+      // Karte mit minimalistischem Stil (nur Straßen, keine Labels) für Wasserzeichen-Effekt
+      const mapUrl = `${forgeUrl}/v1/maps/proxy/maps/api/staticmap?center=${center}&zoom=15&size=600x600&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0x333333&style=feature:road.local|element:geometry|color:0x555555&style=feature:water|element:geometry|color:0x111111&style=feature:landscape|element:geometry|color:0x000000&style=feature:poi|visibility:off&style=feature:transit|visibility:off&key=${apiKey}`;
       setMapImageUrl(mapUrl);
       setUseMapWatermark(true);
-      toast.success("Straßenkarte geladen!");
+      toast.success(`Straßenkarte für "${fullAddress}" geladen!`);
     } catch (error) {
       toast.error("Karte konnte nicht geladen werden");
     } finally {
@@ -408,28 +419,43 @@ export default function KiDesign() {
         if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
       }
       
-      // VEREINSWAPPEN = Immer links auf der Brust (SEPARATES Element, NICHT das Referenzbild!)
-      if (useClubLogo && defaultLogo?.imageUrl) {
-        extraPrompt += " MUST include a small club crest/emblem/badge on the LEFT CHEST (heart side). The crest should be approximately 8cm in size, clearly visible as a separate badge element on the upper left chest area. This is a standard football/sports club badge placement - NOT a watermark, NOT repeated, just ONE badge on the left chest.";
+      // VEREINSWAPPEN = ZWINGEND links auf der Brust (Verbandsregel, kein Interpretationsspielraum!)
+      // Wird IMMER gesetzt wenn ein Vereinswappen existiert - kein Toggle!
+      if (defaultLogo?.imageUrl) {
+        extraPrompt += " MANDATORY FEDERATION RULE: The jersey MUST have a club crest/emblem/badge on the LEFT CHEST (heart side). This is a non-negotiable federation requirement. The crest must be approximately 8cm in size, clearly visible as a separate badge/patch element on the upper left chest area (heart side). ONE single badge, NOT repeated, NOT as watermark. This is the most important placement rule.";
+      }
+
+      // VEREINSNAME = Immer hinten auf dem Rücken, über der Nummer
+      if (clubName) {
+        extraPrompt += ` MUST include the club name "${clubName}" on the BACK of the jersey, positioned ABOVE where the player number would be. The club name should be in an arc/curved text or straight horizontal text, clearly readable in a contrasting color.`;
       }
       
-      // HASHTAG
+      // HASHTAG = Im Nacken des Trikots
       if (useHashtag && orgData?.hashtag) {
-        extraPrompt += ` MUST include the text "${orgData.hashtag}" prominently visible on the jersey - place it on the back collar area or lower back as a clearly readable text element in a contrasting color.`;
+        extraPrompt += ` MUST include the text "${orgData.hashtag}" on the BACK NECK / NAPE area of the jersey (inside or outside of the collar at the back). It should be clearly readable in a small but visible font, similar to how brands place their name on the back collar. Use a contrasting color so it stands out.`;
       }
       
-      // KOORDINATEN
+      // KOORDINATEN = Im Kragen oder Ärmel (links/rechts)
       if (useCoordinates && orgData?.latitude && orgData?.longitude) {
         const lat = Number(orgData.latitude).toFixed(4);
         const lng = Number(orgData.longitude).toFixed(4);
-        extraPrompt += ` MUST include the geographic coordinates "${lat}° N ${lng}° E" as a visible text/typography element on the jersey - place it on the inner collar, sleeve, or lower hem area in a stylish font.`;
+        extraPrompt += ` MUST include the geographic coordinates "${lat}° N ${lng}° E" as a visible text/typography element on the jersey - place it on the COLLAR INSIDE or on one of the SLEEVES (left or right sleeve hem/cuff area). Use a stylish, small monospace or sans-serif font.`;
       }
 
-      // SPONSOREN
+      // SPONSOREN = Müssen sichtbar im Design sein
       const enabledSponsors = sponsorLogos.filter(s => s.enabled);
       if (enabledSponsors.length > 0) {
-        const sponsorNames = enabledSponsors.map(s => s.name).join(", ");
-        extraPrompt += ` The jersey should have designated areas for ${enabledSponsors.length} sponsor logos (${sponsorNames}). Reserve clear rectangular spaces on the chest center, back, and/or sleeves for sponsor placement. These areas should be clean and unobstructed by the design pattern.`;
+        const sponsorPlacements: string[] = [];
+        enabledSponsors.forEach((s, i) => {
+          if (s.type === "hauptsponsor" || i === 0) {
+            sponsorPlacements.push(`"${s.name}" prominently on the FRONT CHEST CENTER (largest sponsor area)`);
+          } else if (s.type === "spartensponsor" || i === 1) {
+            sponsorPlacements.push(`"${s.name}" on the BACK below the player name area`);
+          } else {
+            sponsorPlacements.push(`"${s.name}" on the SLEEVE or lower front`);
+          }
+        });
+        extraPrompt += ` MUST include visible sponsor text/logo areas on the jersey: ${sponsorPlacements.join("; ")}. Each sponsor area should be a clearly visible rectangular white/light space with the sponsor name text readable inside it. Sponsors are mandatory elements that must be clearly visible on the final design.`;
       }
 
       // STRASSENKARTE ALS WASSERZEICHEN
@@ -805,14 +831,17 @@ export default function KiDesign() {
                         <Switch checked={useClubColors} onCheckedChange={setUseClubColors} />
                       </div>
 
-                      {/* Vereinswappen Toggle */}
+                      {/* Vereinswappen = ZWINGEND (Verbandsregel, kein Toggle) */}
                       {defaultLogo && (
-                        <div className="flex items-center justify-between p-2 bg-white rounded border">
+                        <div className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
                           <div className="flex items-center gap-2">
-                            <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-5 h-5 object-contain" />
-                            <span className="text-sm">Vereinswappen</span>
+                            <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-6 h-6 object-contain" />
+                            <div>
+                              <span className="text-sm font-medium">Vereinswappen</span>
+                              <span className="text-[10px] text-green-700 block">Pflicht (Verbandsregel: Herzseite)</span>
+                            </div>
                           </div>
-                          <Switch checked={useClubLogo} onCheckedChange={setUseClubLogo} />
+                          <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">PFLICHT</span>
                         </div>
                       )}
 
@@ -1101,7 +1130,7 @@ export default function KiDesign() {
                 {orgData?.street && orgData?.city && (
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold uppercase text-gray-500">Straßenkarte (optional)</Label>
-                    <p className="text-xs text-muted-foreground">Verwende eine Straßenkarte des Vereinsstandorts als Wasserzeichen im Trikot.</p>
+                    <p className="text-xs text-muted-foreground">Straßenkarte von: <strong>{orgData.street}, {orgData.zip} {orgData.city}</strong></p>
                     <div className="flex items-center gap-3">
                       <Button 
                         variant="outline" 
