@@ -1925,3 +1925,8 @@
 - [x] Farbauswahl integrieren: User kann Trikotfarbe frei wählen (Multiply Blend Mode Overlay)
 - [x] Layout vereinfachen: Nur ein Canvas (das weiße Template mit Zonen), kein Split-View mehr
 - [x] handleSave angepasst: Kein Produkt-Bezug mehr, jerseyColor wird mitgespeichert
+
+## Bug-Fixes: DTF-Trikot-Designer
+- [x] Bug 1: makeWhiteTemplate funktioniert nicht – CORS-Fix (storageUrl-Proxy), Upload statt Data-URL
+- [x] Bug 2: Beim Speichern verschwindet das Trikot-Bild – toPng entfernt, Template-Bild direkt gespeichert
+- [x] Bug 3: KI-Zonen-Positionen ungenau – Prompt verbessert mit typischen Positionen und Genauigkeits-Regeln

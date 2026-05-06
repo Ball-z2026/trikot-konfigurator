@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { useZoneEditor } from "@/contexts/ZoneEditorContext";
-import { toPng } from "html-to-image";
+// toPng nicht mehr benötigt – Template-Bild wird direkt gespeichert
 import { getJerseyRules, validateZonesAgainstRules } from "@shared/jerseyRules";
 import { TEXTIL_TEMPLATES, SPORT_TYPES } from "@shared/templates";
 
@@ -79,16 +79,21 @@ const ZONE_PURPOSES = [
 /**
  * Macht alle nicht-transparenten Pixel eines freigestellten Bildes weiß.
  * Der Alpha-Kanal bleibt erhalten (Silhouette bleibt sichtbar).
- * Gibt eine Data-URL des weißen Templates zurück.
+ * Lädt das Ergebnis auf den Server hoch und gibt die Storage-URL zurück.
  */
-async function makeWhiteTemplate(imageUrl: string): Promise<string | null> {
+async function makeWhiteTemplate(imageUrl: string): Promise<{ url: string; key: string } | null> {
   try {
+    // Bild über die korrekte Proxy-URL laden
+    const resolvedUrl = imageUrl.startsWith("/manus-storage/")
+      ? imageUrl.replace("/manus-storage/", "/api/storage-proxy/")
+      : imageUrl;
+
     const img = new Image();
     img.crossOrigin = "anonymous";
     await new Promise<void>((resolve, reject) => {
       img.onload = () => resolve();
-      img.onerror = () => reject(new Error("Bild konnte nicht geladen werden"));
-      img.src = imageUrl.startsWith("/") ? imageUrl : imageUrl;
+      img.onerror = () => reject(new Error("Bild konnte nicht geladen werden für Weiß-Konvertierung"));
+      img.src = resolvedUrl;
     });
 
     const canvas = document.createElement("canvas");
@@ -112,7 +117,29 @@ async function makeWhiteTemplate(imageUrl: string): Promise<string | null> {
     }
 
     ctx.putImageData(imageData, 0, 0);
-    return canvas.toDataURL("image/png");
+    
+    // Canvas als PNG exportieren und auf Server hochladen
+    const dataUrl = canvas.toDataURL("image/png");
+    const base64 = dataUrl.split(",")[1];
+    
+    const uploadRes = await fetch("/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: `template-weiss-${Date.now()}.png`,
+        data: base64,
+        contentType: "image/png",
+      }),
+    });
+    
+    if (uploadRes.ok) {
+      const { url, key } = await uploadRes.json();
+      return { url, key };
+    }
+    
+    // Fallback: Data-URL zurückgeben wenn Upload fehlschlägt
+    console.warn("Upload des weißen Templates fehlgeschlagen, verwende Data-URL");
+    return null;
   } catch (err) {
     console.warn("makeWhiteTemplate fehlgeschlagen:", err);
     return null;
@@ -376,17 +403,23 @@ export function TemplateUpload({
           });
           // Schritt 3: Trikot-Innenfläche weiß machen (Silhouette erhalten, Farbe entfernen)
           // Alle nicht-transparenten Pixel werden weiß gefärbt, der Alpha-Kanal bleibt erhalten
-          const whiteTemplateUrl = await makeWhiteTemplate(bgResult.url);
+          const whiteResult = await makeWhiteTemplate(bgResult.url);
           
-          setCutoutImageUrl(whiteTemplateUrl || bgResult.url);
-          setImageUrl(whiteTemplateUrl || bgResult.url);
-          if (bgResult.key) {
-            setImageStorageKey(bgResult.key);
+          if (whiteResult) {
+            // Weißes Template erfolgreich erstellt und hochgeladen
+            setCutoutImageUrl(whiteResult.url);
+            setImageUrl(whiteResult.url);
+            setImageStorageKey(whiteResult.key);
+            toast.success("Trikot freigestellt & weiß gemacht! Wählen Sie jetzt eine Farbe.");
+          } else {
+            // Fallback: Freigestelltes Bild ohne Weiß-Konvertierung verwenden
+            setCutoutImageUrl(bgResult.url);
+            setImageUrl(bgResult.url);
+            if (bgResult.key) {
+              setImageStorageKey(bgResult.key);
+            }
+            toast.success("Trikot freigestellt! Das freigestellte Bild ist jetzt euer Template.");
           }
-          toast.success(whiteTemplateUrl 
-            ? "Trikot freigestellt & weiß gemacht! Wählen Sie jetzt eine Farbe." 
-            : "Trikot freigestellt! Das freigestellte Bild ist jetzt euer Template."
-          );
         } catch (bgError: any) {
           // Freistellung fehlgeschlagen – trotzdem mit Original-Bild weiterarbeiten
           toast.warning(
@@ -572,36 +605,10 @@ export function TemplateUpload({
 
     setSaving(true);
     try {
-      // Screenshot des Template-Canvas als Vorlagen-Bild generieren
-      let templateImageUrl = imageUrl;
-      let templateStorageKey = imageStorageKey || undefined;
-      const canvasEl = leftCanvasRef.current;
-      if (canvasEl && zones.length > 0) {
-        try {
-          const dataUrl = await toPng(canvasEl, {
-            backgroundColor: '#f3f4f6',
-            pixelRatio: 2,
-          });
-          // Upload des Screenshots
-          const base64 = dataUrl.split(',')[1];
-          const uploadRes = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fileName: `vorlage-${templateName.replace(/\s+/g, '-')}.png`,
-              data: base64,
-              contentType: 'image/png',
-            }),
-          });
-          if (uploadRes.ok) {
-            const { url, key } = await uploadRes.json();
-            templateImageUrl = url;
-            templateStorageKey = key;
-          }
-        } catch (screenshotErr) {
-          console.warn('Screenshot fehlgeschlagen, verwende Original-Bild:', screenshotErr);
-        }
-      }
+      // Das weiße Template-Bild (Silhouette) wird direkt als Vorlagen-Bild verwendet
+      // KEIN Screenshot mit toPng – das würde die Zonen-Overlays mitrendern
+      const templateImageUrl = imageUrl;
+      const templateStorageKey = imageStorageKey || undefined;
 
       const result = await createTemplate.mutateAsync({
         name: templateName,

@@ -1325,7 +1325,7 @@ export const appRouter = router({
           imageHeight = 1000;
         }
 
-        const systemPrompt = `Du bist ein PIXEL-GENAUER Computer-Vision-Analyst für Sportbekleidung.
+        const systemPrompt = `Du bist ein PIXEL-GENAUER Computer-Vision-Analyst für Sportbekleidung (DTF-Druck).
 
 ## GRID-SYSTEM
 
@@ -1334,6 +1334,13 @@ Das Bild hat ein ROTES RASTER mit Beschriftungen:
 - Zeilen: 1 bis 10 (von oben nach unten, je 10% der Bildhöhe)
 
 Jede Zelle ist z.B. "A1" (oben links), "J10" (unten rechts), "E5" (Mitte).
+
+## WICHTIG: GENAUIGKEIT
+
+- Schau dir das RASTER GENAU an und zähle die Linien!
+- Die Zonen müssen EXAKT das Element umschließen – nicht größer, nicht kleiner.
+- Berücksichtige: Das Bild zeigt ein TRIKOT (oft mit Hintergrund). Die Zonen beziehen sich auf die Position AUF DEM TRIKOT, nicht auf dem gesamten Bild.
+- Wenn das Trikot nicht das gesamte Bild ausfüllt, passe die Koordinaten entsprechend an.
 
 ## DEINE AUFGABE
 
@@ -1349,6 +1356,17 @@ Da jede Zelle 10% des Bildes ist, brauchst du eine Fein-Justierung:
 - offsetY: Wie weit ist die obere Kante des Elements INNERHALB der Start-Zelle? (0% = oberer Rand, 50% = Mitte, 100% = unterer Rand)
 - endOffsetX: Wie weit reicht das Element INNERHALB der End-Zelle? (0% = linker Rand, 50% = Mitte, 100% = rechter Rand)
 - endOffsetY: Wie weit reicht das Element INNERHALB der End-Zelle? (0% = oberer Rand, 50% = Mitte, 100% = unterer Rand)
+
+## TYPISCHE TRIKOT-POSITIONEN (als Orientierung)
+
+- Vereinswappen: Linke Brust (Herzseite), ca. 6-8cm, typisch in Spalte C-D, Zeile 3-4
+- Herstellerlogo: Rechte Brust, ca. 5-7cm, typisch in Spalte G-H, Zeile 3-4
+- Sponsor Brust: Mittig auf der Brust, größtes Element, typisch Spalte D-G, Zeile 4-6
+- Rückennummer: Groß mittig auf dem Rücken, typisch Spalte D-G, Zeile 4-7
+- Spielername: Über oder unter der Rückennummer, typisch Spalte C-H, Zeile 3-4 oder 7-8
+- Brustnummer: Klein auf der Brust (oft rechts), typisch Spalte G-H, Zeile 4-5
+- Sponsor Bauch: Unterhalb des Brust-Sponsors, typisch Spalte D-G, Zeile 6-7
+- Ärmel-Patches: An den Ärmeln, typisch Spalte A-B oder I-J
 
 ## SCHRIFTERKENNUNG
 
@@ -1377,12 +1395,23 @@ Für jeden Text: Welche **Google Font** passt am besten?
 
 ## BEISPIEL
 
-Ein Logo auf der linken Brust, das bei Zelle B2 beginnt und bei C3 endet:
-- startCell: "B2", endCell: "C3"
-- offsetX: 30 (beginnt 30% innerhalb von Spalte B)
-- offsetY: 20 (beginnt 20% innerhalb von Zeile 2)
-- endOffsetX: 70 (endet 70% innerhalb von Spalte C)
-- endOffsetY: 80 (endet 80% innerhalb von Zeile 3)`;
+Ein Vereinswappen auf der linken Brust, das bei Zelle C3 beginnt und bei D4 endet:
+- startCell: "C3", endCell: "D4"
+- offsetX: 20 (beginnt 20% innerhalb von Spalte C)
+- offsetY: 10 (beginnt 10% innerhalb von Zeile 3)
+- endOffsetX: 60 (endet 60% innerhalb von Spalte D)
+- endOffsetY: 70 (endet 70% innerhalb von Zeile 4)
+
+Ein großer Sponsor-Text "SPONSOR" mittig auf der Brust:
+- startCell: "D4", endCell: "G5"
+- offsetX: 10, offsetY: 30, endOffsetX: 90, endOffsetY: 80
+
+## REGELN
+
+1. Erkenne NUR Elemente die KLAR sichtbar sind
+2. Die Zonen müssen das Element GENAU umschließen (tight bounding box)
+3. Lieber etwas zu klein als zu groß
+4. Ignoriere dekorative Muster, Nähte, Streifen – nur bedruckte/aufgedruckte Elemente`;
 
         // Schritt 2: LLM mit Grid-Overlay-Bild aufrufen
         const response = await invokeLLM({
