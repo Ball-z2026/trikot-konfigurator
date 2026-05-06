@@ -287,6 +287,24 @@ export default function KiDesign() {
     reader.readAsDataURL(file);
   };
 
+  // ── Sportart-spezifische Kleidungsstücke für den Prompt ──
+  const getGarmentDescription = (sportId: string): string => {
+    const map: Record<string, string> = {
+      fussball: "soccer jersey with shorts",
+      handball: "handball jersey (tight-fit, short sleeves) with shorts",
+      volleyball: "volleyball jersey (lightweight, sleeveless or short-sleeve) with shorts",
+      basketball: "basketball jersey (sleeveless tank top) with basketball shorts",
+      hockey: "field hockey jersey with skirt/shorts",
+      rugby: "rugby jersey (reinforced, long-sleeve) with shorts",
+      american_football: "american football jersey (mesh, oversized) with pants",
+      eishockey: "ice hockey jersey (long-sleeve, loose-fit)",
+      tischtennis: "table tennis polo shirt with shorts",
+      badminton: "badminton jersey (lightweight, breathable) with shorts",
+      tennis: "tennis polo shirt with tennis skirt/shorts",
+    };
+    return map[sportId] || "sports jersey";
+  };
+
   // ── KI-Design generieren ──
   const handleGenerate = async () => {
     if (!selectedSport) { toast.error("Bitte eine Sportart wählen"); return; }
@@ -295,6 +313,7 @@ export default function KiDesign() {
     try {
       const sportInfo = SPORT_TYPES.find(s => s.id === selectedSport);
       const styleInfo = DESIGN_STYLES.find(s => s.value === designStyle);
+      const garmentDesc = getGarmentDescription(selectedSport);
       
       // Verbandsregeln in den Prompt einbauen
       let rulesContext = "";
@@ -312,7 +331,7 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       if (useLandmark && landmarkSilhouette) {
-        extraPrompt += " Incorporate a subtle landmark silhouette pattern into the jersey design as a watermark or texture element.";
+        extraPrompt += " Incorporate the landmark silhouette from the reference image as a subtle watermark/texture element integrated into the jersey fabric design.";
       }
       if (usePattern && patternColors.length > 0) {
         const colorList = patternColors.map(c => c.replacementHex).join(", ");
@@ -334,13 +353,23 @@ export default function KiDesign() {
         extraPrompt += ` Include subtle geographic coordinates (${orgData.latitude}, ${orgData.longitude}) as a design element.`;
       }
 
-      const prompt = `Professional product photography of a ${sportInfo?.name || selectedSport} jersey (${sportInfo?.description || "sports jersey"}), flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt} The jersey should look like a real professional sports jersey, clean design with proper proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
+      // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten
+      const brandProtection = " IMPORTANT: Do NOT include any trademarked patterns, brand logos, or recognizable brand elements such as three stripes (Adidas), swoosh (Nike), puma cat, Under Armour logo, or any other brand-identifiable design elements. The design must be completely original and free of any trademark infringement.";
+
+      const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
+
+      // Wahrzeichen-Silhouette als Referenzbild übergeben
+      const silhouetteUrl = (useLandmark && landmarkSilhouette) 
+        ? (landmarkSilhouette.startsWith("http") ? landmarkSilhouette : `${window.location.origin}${storageUrl(landmarkSilhouette) || landmarkSilhouette}`)
+        : undefined;
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
         productType: "trikot",
         colorDescription: `Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}`,
         side: "front",
+        customPrompt: prompt,
+        referenceImageUrl: silhouetteUrl,
       });
 
       if (result.url) {
@@ -628,24 +657,33 @@ export default function KiDesign() {
             { key: "generate", label: "2. Generieren" },
             { key: "edit", label: "3. Zonen setzen" },
             { key: "save", label: "4. Speichern" },
-          ].map((s, i) => (
-            <div key={s.key} className="flex items-center gap-2">
-              <div className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
-                step === s.key ? "bg-purple-600 text-white" :
-                ["configure", "generate", "edit", "save"].indexOf(step) > i ? "bg-green-100 text-green-700" :
-                "bg-gray-100 text-gray-500"
-              }`}>
-                {s.label}
+          ].map((s, i) => {
+            const steps = ["configure", "generate", "edit", "save"];
+            const currentIdx = steps.indexOf(step);
+            const canNavigate = i < currentIdx; // Nur zu vorherigen Steps navigieren
+            return (
+              <div key={s.key} className="flex items-center gap-2">
+                <button
+                  onClick={() => canNavigate && setStep(s.key as any)}
+                  disabled={!canNavigate && step !== s.key}
+                  className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                    step === s.key ? "bg-purple-600 text-white" :
+                    currentIdx > i ? "bg-green-100 text-green-700 hover:bg-green-200 cursor-pointer" :
+                    "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {s.label}
+                </button>
+                {i < 3 && <div className="w-4 h-px bg-gray-300" />}
               </div>
-              {i < 3 && <div className="w-4 h-px bg-gray-300" />}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Linke Spalte: Vorschau / Generiertes Bild */}
           <div className="lg:col-span-2 space-y-4">
-            {!generatedImageUrl ? (
+            {step === "configure" ? (
               /* Konfigurations-Panel */
               <div className="bg-white rounded-xl border p-6 space-y-6">
                 <div className="text-center mb-4">
@@ -832,14 +870,29 @@ export default function KiDesign() {
                       <input type="file" accept="image/*" className="hidden" onChange={handleLandmarkUpload} />
                     </label>
                     {landmarkImage && (
-                      <div className="flex items-center gap-2">
-                        <img src={landmarkImage} alt="Wahrzeichen" className="w-12 h-12 object-cover rounded border" />
-                        {extractingSilhouette && <Loader2 className="w-4 h-4 animate-spin text-purple-500" />}
+                      <div className="flex items-center gap-3">
+                        <img src={landmarkImage} alt="Wahrzeichen Original" className="w-12 h-12 object-cover rounded border" />
+                        {extractingSilhouette && (
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
+                            <span className="text-xs text-purple-600">Silhouette wird erkannt...</span>
+                          </div>
+                        )}
                         {landmarkSilhouette && (
-                          <>
-                            <span className="text-xs text-green-600">Silhouette erkannt</span>
-                            <Switch checked={useLandmark} onCheckedChange={setUseLandmark} />
-                          </>
+                          <div className="flex items-center gap-3">
+                            <div className="relative w-16 h-16 rounded border-2 border-green-300 bg-gray-900 p-1">
+                              <img 
+                                src={storageUrl(landmarkSilhouette) || landmarkSilhouette} 
+                                alt="Silhouette" 
+                                className="w-full h-full object-contain invert" 
+                              />
+                              <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[8px] px-1 rounded">Silhouette</span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs text-green-600 font-medium">Als Wasserzeichen ins Trikot</span>
+                              <Switch checked={useLandmark} onCheckedChange={setUseLandmark} />
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}
@@ -944,9 +997,13 @@ export default function KiDesign() {
                 <div className="flex items-center justify-between">
                   <Label className="text-base font-semibold">Generiertes Design</Label>
                   <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setStep("configure")}>
+                      <ChevronLeft className="w-3 h-3 mr-1" />
+                      Zurück zur Konfiguration
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => { setGeneratedImageUrl(null); setZones([]); setStep("configure"); }}>
                       <RefreshCw className="w-3 h-3 mr-1" />
-                      Neu generieren
+                      Komplett neu
                     </Button>
                     {step === "generate" && (
                       <Button size="sm" variant="outline" onClick={handleAnalyzeGenerated} disabled={generating}>

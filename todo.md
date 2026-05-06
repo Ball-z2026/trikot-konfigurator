@@ -1957,3 +1957,9 @@
 - [x] Sublimation: Ärmelbündchen und Kragen als bedruckbare Bereiche hinzufügen
 - [x] Zonen-Toggle: Gesetzte Zonen mit Koordinaten als Auswahl-Buttons (mit/ohne verwenden)
 - [x] Koordinaten-Zone: Vereins-Koordinaten als optionale Zone im Design verfügbar
+
+## KI-Design Bug-Fixes (Mai 2026)
+- [x] Markenrecht-Schutz: Keine bekannten Muster (drei Streifen, Swoosh etc.) oder Markennamen bei Sublimation
+- [x] Wahrzeichen-Silhouette: Nach Upload muss die Silhouette sichtbar in der UI angezeigt werden (Vorschau)
+- [x] Sportart-spezifische Trikots: Basketball=Basketball-Jersey+Shorts, Handball=Handball-Trikot, Volleyball=Volleyball-Trikot etc.
+- [x] Zurück-Button: State beibehalten, nicht alles neu eingeben müssen

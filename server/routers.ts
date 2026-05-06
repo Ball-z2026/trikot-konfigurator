@@ -3395,6 +3395,10 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         zoneDescriptions: z.string().optional(),
         /** Welche Seite: front oder back */
         side: z.enum(["front", "back"]).optional().default("front"),
+        /** Custom Prompt – überschreibt den automatisch generierten Prompt komplett */
+        customPrompt: z.string().optional(),
+        /** URL eines Referenzbildes (z.B. Wahrzeichen-Silhouette als Wasserzeichen) */
+        referenceImageUrl: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const sideLabel = input.side === "back" ? "back" : "front";
@@ -3408,7 +3412,10 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           : "sportswear garment";
 
         let prompt: string;
-        if (input.designImageBase64) {
+        if (input.customPrompt) {
+          // Custom Prompt vom Frontend (KI-Design Tool)
+          prompt = input.customPrompt;
+        } else if (input.designImageBase64) {
           // Image-to-Image: Fotorealistisches Mockup mit Person
           prompt = `Professional fashion photography of a young athletic man wearing this exact ${garmentType} shown in the reference image. The ${sideLabel} of the garment must match the reference EXACTLY - preserve all logos, text, numbers, colors, and graphic placements precisely as shown. Full body shot, model standing naturally on an urban sidewalk with blurred city background. Natural daylight, shallow depth of field, shot on Canon EOS R5 85mm f/1.4. High-end commercial fashion photography style.`;
         } else {
@@ -3417,15 +3424,22 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           prompt = `Professional fashion photography of a young athletic man wearing a ${garmentType}${colorDesc}. ${sideLabel} view. Full body shot, model standing naturally on an urban sidewalk with blurred city background. Natural daylight, shallow depth of field, shot on Canon EOS R5 85mm f/1.4. High-end commercial fashion photography.`;
         }
 
-        // Wenn ein Design-Bild vorhanden ist, als Referenz übergeben
-        const originalImages = input.designImageBase64
-          ? [{
-              b64Json: input.designImageBase64.replace(/^data:image\/\w+;base64,/, ""),
-              mimeType: "image/png",
-            }]
-          : undefined;
+        // Referenzbilder zusammenstellen
+        const originalImages: Array<{b64Json?: string; url?: string; mimeType: string}> = [];
+        if (input.designImageBase64) {
+          originalImages.push({
+            b64Json: input.designImageBase64.replace(/^data:image\/\w+;base64,/, ""),
+            mimeType: "image/png",
+          });
+        }
+        if (input.referenceImageUrl) {
+          originalImages.push({
+            url: input.referenceImageUrl,
+            mimeType: "image/png",
+          });
+        }
 
-        const result = await generateImage({ prompt, originalImages });
+        const result = await generateImage({ prompt, originalImages: originalImages.length > 0 ? originalImages : undefined });
 
         return { url: result.url };
       }),
