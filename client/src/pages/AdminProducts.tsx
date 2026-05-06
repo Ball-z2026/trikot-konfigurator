@@ -84,6 +84,7 @@ export default function AdminProducts() {
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
   const [createMode, setCreateMode] = useState<CreateMode>("choose");
   const [selectedSport, setSelectedSport] = useState<SportType | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
@@ -189,6 +190,8 @@ export default function AdminProducts() {
           <Dialog
             open={dialogOpen}
             onOpenChange={(open) => {
+              // Verhindere Schließen wenn Fullscreen-Editor aktiv ist
+              if (!open && isEditorFullscreen) return;
               setDialogOpen(open);
               if (!open) resetDialog();
             }}
@@ -200,7 +203,21 @@ export default function AdminProducts() {
                 <span className="sm:hidden">Neu</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto">
+            <DialogContent
+              className="max-w-2xl max-h-[90dvh] overflow-y-auto"
+              onInteractOutside={(e) => {
+                // Auf Mobile: Verhindere dass Scroll-Gesten oder Touch-Events den Dialog schließen
+                if (createMode === "ai-analyze") {
+                  e.preventDefault();
+                }
+              }}
+              onPointerDownOutside={(e) => {
+                // Verhindere Dialog-Schließung bei Pointer-Events außerhalb (Mobile Touch)
+                if (createMode === "ai-analyze") {
+                  e.preventDefault();
+                }
+              }}
+            >
               <DialogHeader>
                 <DialogTitle>
                   {createMode === "choose" && "Neues Produkt erstellen"}
@@ -281,12 +298,14 @@ export default function AdminProducts() {
                     orgId={userOrgIds[0] || 0}
                     onSaved={() => {
                       setDialogOpen(false);
+                      setIsEditorFullscreen(false);
                       resetDialog();
                       utils.product.list.invalidate();
                     }}
                     onCancel={() => {
                       setCreateMode("choose");
                     }}
+                    onFullscreenChange={setIsEditorFullscreen}
                   />
                 </div>
               )}

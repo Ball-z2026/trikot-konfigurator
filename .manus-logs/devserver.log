@@ -7892,3 +7892,12 @@
 [2026-05-05T22:25:48.316Z] 6:25:48 PM [vite] (client) hmr update /src/index.css, /src/components/BetaFeedbackWidget.tsx
 [2026-05-05T22:26:07.492Z] 6:26:07 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
 [2026-05-05T22:26:22.166Z] 6:26:22 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-05T23:56:57.284Z] 7:56:57 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-05T23:57:10.089Z] 7:57:10 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-05T23:58:42.650Z] 7:58:42 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T00:04:31.169Z] 8:04:31 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-06T00:04:58.089Z] 8:04:58 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T00:05:10.824Z] 8:05:10 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T00:05:26.828Z] 8:05:26 PM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T00:05:50.625Z] 8:05:50 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-06T00:06:03.887Z] 8:06:03 PM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css

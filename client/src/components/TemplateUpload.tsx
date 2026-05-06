@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ChevronLeft, Maximize2, X, Ruler } from "lucide-react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
@@ -62,6 +63,7 @@ interface TemplateUploadProps {
   category?: string;
   onSaved?: (templateId: number) => void;
   onCancel?: () => void;
+  onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
 const ZONE_PURPOSES = [
@@ -82,6 +84,7 @@ export function TemplateUpload({
   category,
   onSaved,
   onCancel,
+  onFullscreenChange,
 }: TemplateUploadProps) {
   // ─── State ───
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -103,6 +106,11 @@ export function TemplateUpload({
   // Fullscreen-Editor
   const [fullscreenMode, setFullscreenMode] = useState(false);
   const fullscreenCanvasRef = useRef<HTMLDivElement>(null);
+
+  // Kommuniziere Fullscreen-Status nach außen
+  useEffect(() => {
+    onFullscreenChange?.(fullscreenMode);
+  }, [fullscreenMode, onFullscreenChange]);
 
   // ─── Robuste Pointer-Events Drag & Drop (wie AdminProductEditor) ───
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
@@ -1054,9 +1062,9 @@ export function TemplateUpload({
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        {/* ═══ FULLSCREEN EDITOR DIALOG ═══ */}
-        {fullscreenMode && (
-          <div className="fixed inset-0 z-50 bg-white flex">
+        {/* ═══ FULLSCREEN EDITOR DIALOG (Portal: außerhalb des Radix-Dialogs) ═══ */}
+        {fullscreenMode && createPortal(
+          <div className="fixed inset-0 z-[9999] bg-white flex">
             {/* Header */}
             <div className="absolute top-0 left-0 right-0 h-14 bg-gray-900 text-white flex items-center justify-between px-4 z-10">
               <div className="flex items-center gap-3">
@@ -1385,7 +1393,8 @@ export function TemplateUpload({
                   })}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </CardContent>
     </Card>

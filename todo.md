@@ -1851,3 +1851,9 @@
 - [x] Bug KRITISCH: Feedback-Widget Screenshot lässt Seite verschwinden auf Mobile – Fix: html-to-image auf Mobile deaktiviert, nativer Screenshot-Hinweis
 - [x] Bug: AdminProductEditor Trikot-Bild auf Laptop nicht groß genug – Fix: maxHeight erhöht (100vh-100px), Fullscreen-Editor auf 900px
 - [x] Root-Cause: iOS Touch-Hit-Test ignoriert pointer-events:none bei fixed inset-0 Overlays; html-to-image crasht Mobile-DOM
+
+## Bug: Bearbeiten-Button nach KI-Analyse schließt Dialog statt zum Editor zu navigieren
+
+- [x] Bug: Nach KI-Analyse → Bearbeiten klicken → Dialog schließt sich, statt zum Editor zu navigieren
+  - Root-Cause: Fullscreen-Editor war innerhalb des Radix-Dialog DOM-Baums, Dialog-Schließung entfernte den Editor
+  - Fix: createPortal in document.body (z-[9999]) + onInteractOutside/onPointerDownOutside preventDefault + onOpenChange blockiert wenn Fullscreen aktiv
