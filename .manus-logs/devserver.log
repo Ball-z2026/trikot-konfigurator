@@ -8464,3 +8464,18 @@
 [2026-05-06T08:34:17.864Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-06T08:34:19.921Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-06T08:34:20.679Z] Server running on http://localhost:3000/
+[2026-05-06T08:54:44.861Z] 4:54:44 AM [vite] (client) hmr update /src/components/TemplateUpload.tsx, /src/index.css
+[2026-05-06T08:55:06.960Z] 4:55:06 AM [vite] (client) hmr update /src/components/TemplateUpload.tsx, /src/index.css
+[2026-05-06T08:55:37.469Z] 4:55:37 AM [vite] (client) hmr update /src/components/TemplateUpload.tsx, /src/index.css
+[2026-05-06T08:56:06.958Z] 4:56:06 AM [vite] (client) hmr update /src/components/TemplateUpload.tsx, /src/index.css
+[2026-05-06T08:57:22.828Z] Dev server process group stopped
+[2026-05-06T08:57:22.903Z] Dev server exited with code -15
+[2026-05-06T08:57:25.843Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-06T08:57:27.866Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-06T08:57:28.609Z] Server running on http://localhost:3000/
+[2026-05-06T09:08:05.655Z] 5:08:05 AM [vite] (client) hmr update /src/components/TemplateUpload.tsx, /src/index.css
+[2026-05-06T09:08:52.286Z] Dev server process group stopped
+[2026-05-06T09:08:52.344Z] Dev server exited with code -15
+[2026-05-06T09:08:55.341Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-06T09:08:57.418Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-06T09:08:58.110Z] Server running on http://localhost:3000/

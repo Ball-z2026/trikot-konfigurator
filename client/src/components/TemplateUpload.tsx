@@ -83,7 +83,6 @@ const ZONE_PURPOSES = [
  */
 async function makeWhiteTemplate(imageUrl: string): Promise<{ url: string; key: string } | null> {
   try {
-    // Bild über die korrekte Proxy-URL laden
     const resolvedUrl = imageUrl.startsWith("/manus-storage/")
       ? imageUrl.replace("/manus-storage/", "/api/storage-proxy/")
       : imageUrl;
@@ -106,19 +105,15 @@ async function makeWhiteTemplate(imageUrl: string): Promise<{ url: string; key: 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    // Alle Pixel mit Alpha > 0 werden weiß gefärbt, Alpha bleibt erhalten
     for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] > 0) { // Pixel ist nicht komplett transparent
-        data[i] = 255;     // R = weiß
-        data[i + 1] = 255; // G = weiß
-        data[i + 2] = 255; // B = weiß
-        // data[i + 3] bleibt unverändert (Alpha-Kanal = Silhouette)
+      if (data[i + 3] > 0) {
+        data[i] = 255;
+        data[i + 1] = 255;
+        data[i + 2] = 255;
       }
     }
 
     ctx.putImageData(imageData, 0, 0);
-    
-    // Canvas als PNG exportieren und auf Server hochladen
     const dataUrl = canvas.toDataURL("image/png");
     const base64 = dataUrl.split(",")[1];
     
@@ -136,12 +131,71 @@ async function makeWhiteTemplate(imageUrl: string): Promise<{ url: string; key: 
       const { url, key } = await uploadRes.json();
       return { url, key };
     }
-    
-    // Fallback: Data-URL zurückgeben wenn Upload fehlschlägt
-    console.warn("Upload des weißen Templates fehlgeschlagen, verwende Data-URL");
+    console.warn("Upload des weißen Templates fehlgeschlagen");
     return null;
   } catch (err) {
     console.warn("makeWhiteTemplate fehlgeschlagen:", err);
+    return null;
+  }
+}
+
+/**
+ * Erzeugt ein eingefärbtes Bild: Alle nicht-transparenten Pixel werden mit der gewählten Farbe eingefärbt.
+ * Der Alpha-Kanal bleibt erhalten. Gibt eine Data-URL zurück für die Vorschau.
+ */
+// Cache für geladene Bilder (verhindert wiederholtes Laden bei Farbänderung)
+const imageCache = new Map<string, HTMLImageElement>();
+
+async function colorizeTemplate(imageUrl: string, hexColor: string): Promise<string | null> {
+  try {
+    const resolvedUrl = imageUrl.startsWith("/manus-storage/")
+      ? imageUrl.replace("/manus-storage/", "/api/storage-proxy/")
+      : imageUrl;
+
+    // Bild aus Cache laden oder neu laden
+    let img = imageCache.get(resolvedUrl);
+    if (!img) {
+      img = new Image();
+      img.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        img!.onload = () => resolve();
+        img!.onerror = () => reject(new Error("Bild konnte nicht geladen werden"));
+        img!.src = resolvedUrl;
+      });
+      imageCache.set(resolvedUrl, img);
+    }
+
+    // Canvas-Größe auf max 800px begrenzen (Performance auf Mobile)
+    const MAX_SIZE = 800;
+    let w = img.naturalWidth;
+    let h = img.naturalHeight;
+    if (w > MAX_SIZE || h > MAX_SIZE) {
+      const scale = MAX_SIZE / Math.max(w, h);
+      w = Math.round(w * scale);
+      h = Math.round(h * scale);
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Erst das Original-Bild zeichnen (skaliert)
+    ctx.drawImage(img, 0, 0, w, h);
+    
+    // Dann die Farbe mit multiply drüberlegen (nur auf nicht-transparente Pixel)
+    ctx.globalCompositeOperation = "multiply";
+    ctx.fillStyle = hexColor;
+    ctx.fillRect(0, 0, w, h);
+    
+    // Alpha-Kanal vom Original wiederherstellen (damit der Hintergrund transparent bleibt)
+    ctx.globalCompositeOperation = "destination-in";
+    ctx.drawImage(img, 0, 0, w, h);
+    
+    return canvas.toDataURL("image/png");
+  } catch (err) {
+    console.warn("colorizeTemplate fehlgeschlagen:", err);
     return null;
   }
 }
@@ -180,6 +234,8 @@ export function TemplateUpload({
   const [selectedSport, setSelectedSport] = useState<string>(sport || "");
   // Trikotfarbe (frei wählbar auf weißem Template)
   const [jerseyColor, setJerseyColor] = useState<string>("#ffffff");
+  // Eingefärbtes Vorschau-Bild (Canvas-basiert, Data-URL)
+  const [colorizedPreviewUrl, setColorizedPreviewUrl] = useState<string | null>(null);
 
   // Split-View: Ausgewähltes Produkt
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
@@ -245,6 +301,21 @@ export function TemplateUpload({
       setSelectedPartId(productParts.parts[0].id);
     }
   }, [productParts, selectedPartId]);
+
+  // Eingefärbtes Vorschau-Bild generieren wenn Farbe geändert wird (mit Debounce für Mobile-Performance)
+  useEffect(() => {
+    if (!cutoutImageUrl || jerseyColor === "#ffffff") {
+      setColorizedPreviewUrl(null);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      colorizeTemplate(cutoutImageUrl, jerseyColor).then((result) => {
+        if (!cancelled) setColorizedPreviewUrl(result);
+      });
+    }, 150); // 150ms Debounce
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [cutoutImageUrl, jerseyColor]);
 
   const activePart = productParts?.parts?.find((p: any) => p.id === selectedPartId);
 
@@ -968,24 +1039,13 @@ export function TemplateUpload({
                   className={`relative border rounded-lg overflow-hidden select-none ${cutoutImageUrl ? 'bg-[url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2720%27%20height%3D%2720%27%3E%3Crect%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23f0f0f0%27/%3E%3Crect%20x%3D%2710%27%20y%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23f0f0f0%27/%3E%3Crect%20x%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23fff%27/%3E%3Crect%20y%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23fff%27/%3E%3C/svg%3E")]' : 'bg-gray-100'}`}
                   style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
-                  <img src={storageUrl(cutoutImageUrl || imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
-                  {/* Farb-Overlay: Trikotfarbe NUR auf Trikot-Silhouette (CSS mask mit dem freigestellten Bild) */}
-                  {cutoutImageUrl && jerseyColor !== "#ffffff" && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        backgroundColor: jerseyColor,
-                        mixBlendMode: "multiply",
-                        opacity: 0.7,
-                        WebkitMaskImage: `url(${storageUrl(cutoutImageUrl)})`,
-                        WebkitMaskSize: "100% 100%",
-                        WebkitMaskRepeat: "no-repeat",
-                        maskImage: `url(${storageUrl(cutoutImageUrl)})`,
-                        maskSize: "100% 100%",
-                        maskRepeat: "no-repeat",
-                      }}
-                    />
-                  )}
+                  {/* Bild: Eingefärbte Vorschau ODER freigestelltes Original ODER hochgeladenes Bild */}
+                  <img 
+                    src={colorizedPreviewUrl || storageUrl(cutoutImageUrl || imageUrl)} 
+                    alt="Vorlage" 
+                    className="w-full h-auto" 
+                    draggable={false} 
+                  />
                   {/* Hilfslinien bei Drag */}
                   {renderGuidelines("left")}
 
