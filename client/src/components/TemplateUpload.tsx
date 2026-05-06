@@ -171,8 +171,11 @@ export function TemplateUpload({
   const [newZonePurpose, setNewZonePurpose] = useState("logo");
   const [analyzing, setAnalyzing] = useState(false);
   const [removingBg, setRemovingBg] = useState(false);
-  // Freigestelltes Bild (nach KI-Analyse + Hintergrund-Entfernung)
+  // Freigestelltes Bild (nach KI-Analyse + Hintergrund-Entfernung) - wird im Canvas ANGEZEIGT
   const [cutoutImageUrl, setCutoutImageUrl] = useState<string | null>(null);
+  // Weißes Template (für DTF-Druck/Speichern) - wird NICHT angezeigt, nur beim Speichern verwendet
+  const [whiteTemplateUrl, setWhiteTemplateUrl] = useState<string | null>(null);
+  const [whiteTemplateKey, setWhiteTemplateKey] = useState<string | null>(null);
   // Sportart-Auswahl (für Verbandsregeln)
   const [selectedSport, setSelectedSport] = useState<string>(sport || "");
   // Trikotfarbe (frei wählbar auf weißem Template)
@@ -405,19 +408,19 @@ export function TemplateUpload({
           // Alle nicht-transparenten Pixel werden weiß gefärbt, der Alpha-Kanal bleibt erhalten
           const whiteResult = await makeWhiteTemplate(bgResult.url);
           
+          // Freigestelltes Original-Bild im Canvas ANZEIGEN (sichtbar mit Farben)
+          setCutoutImageUrl(bgResult.url);
+          setImageUrl(bgResult.url);
+          if (bgResult.key) {
+            setImageStorageKey(bgResult.key);
+          }
+          
           if (whiteResult) {
-            // Weißes Template erfolgreich erstellt und hochgeladen
-            setCutoutImageUrl(whiteResult.url);
-            setImageUrl(whiteResult.url);
-            setImageStorageKey(whiteResult.key);
-            toast.success("Trikot freigestellt & weiß gemacht! Wählen Sie jetzt eine Farbe.");
+            // Weißes Template zum SPEICHERN (für DTF-Druck)
+            setWhiteTemplateUrl(whiteResult.url);
+            setWhiteTemplateKey(whiteResult.key);
+            toast.success("Trikot freigestellt! Wählen Sie jetzt eine Trikotfarbe.");
           } else {
-            // Fallback: Freigestelltes Bild ohne Weiß-Konvertierung verwenden
-            setCutoutImageUrl(bgResult.url);
-            setImageUrl(bgResult.url);
-            if (bgResult.key) {
-              setImageStorageKey(bgResult.key);
-            }
             toast.success("Trikot freigestellt! Das freigestellte Bild ist jetzt euer Template.");
           }
         } catch (bgError: any) {
@@ -605,10 +608,10 @@ export function TemplateUpload({
 
     setSaving(true);
     try {
-      // Das weiße Template-Bild (Silhouette) wird direkt als Vorlagen-Bild verwendet
-      // KEIN Screenshot mit toPng – das würde die Zonen-Overlays mitrendern
-      const templateImageUrl = imageUrl;
-      const templateStorageKey = imageStorageKey || undefined;
+      // Beim Speichern: Weißes Template verwenden (für DTF-Druck) falls vorhanden,
+      // ansonsten das freigestellte Bild
+      const templateImageUrl = whiteTemplateUrl || imageUrl;
+      const templateStorageKey = whiteTemplateKey || imageStorageKey || undefined;
 
       const result = await createTemplate.mutateAsync({
         name: templateName,
@@ -965,7 +968,7 @@ export function TemplateUpload({
                   className={`relative border rounded-lg overflow-hidden select-none ${cutoutImageUrl ? 'bg-[url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2720%27%20height%3D%2720%27%3E%3Crect%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23f0f0f0%27/%3E%3Crect%20x%3D%2710%27%20y%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23f0f0f0%27/%3E%3Crect%20x%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23fff%27/%3E%3Crect%20y%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23fff%27/%3E%3C/svg%3E")]' : 'bg-gray-100'}`}
                   style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
-                  <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
+                  <img src={storageUrl(cutoutImageUrl || imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
                   {/* Farb-Overlay: Trikotfarbe NUR auf Trikot-Silhouette (CSS mask mit dem freigestellten Bild) */}
                   {cutoutImageUrl && jerseyColor !== "#ffffff" && (
                     <div
@@ -973,7 +976,7 @@ export function TemplateUpload({
                       style={{
                         backgroundColor: jerseyColor,
                         mixBlendMode: "multiply",
-                        opacity: 0.85,
+                        opacity: 0.7,
                         WebkitMaskImage: `url(${storageUrl(cutoutImageUrl)})`,
                         WebkitMaskSize: "100% 100%",
                         WebkitMaskRepeat: "no-repeat",
@@ -993,7 +996,7 @@ export function TemplateUpload({
                   <div className="space-y-2 mt-2">
                     <div className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">
                       <span>✓</span>
-                      <span>Freigestellt & weiß – Wählen Sie die Trikotfarbe</span>
+                      <span>Freigestellt – Wählen Sie die Trikotfarbe</span>
                     </div>
                     {/* Farbauswahl für Trikot */}
                     <div className="flex items-center gap-3">
