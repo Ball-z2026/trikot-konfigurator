@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
-import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ChevronLeft, Maximize2, X, Ruler } from "lucide-react";
+import { Upload, Plus, Trash2, Move, Save, Image as ImageIcon, AlertTriangle, Sparkles, Loader2, ChevronLeft, Maximize2, X, Ruler, Check, Undo2 } from "lucide-react";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -106,6 +107,43 @@ export function TemplateUpload({
   // Fullscreen-Editor
   const [fullscreenMode, setFullscreenMode] = useState(false);
   const fullscreenCanvasRef = useRef<HTMLDivElement>(null);
+  const [zonesSnapshot, setZonesSnapshot] = useState<Zone[] | null>(null);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+
+  // Snapshot erstellen beim Öffnen des Fullscreen-Editors
+  const openFullscreenEditor = useCallback(() => {
+    setZonesSnapshot(JSON.parse(JSON.stringify(zones)));
+    setFullscreenMode(true);
+  }, [zones]);
+
+  // Speichern: Änderungen übernehmen und Editor schließen
+  const saveAndCloseEditor = useCallback(() => {
+    setZonesSnapshot(null);
+    setFullscreenMode(false);
+    toast.success("Änderungen gespeichert");
+  }, []);
+
+  // Verwerfen: Snapshot wiederherstellen und Editor schließen
+  const discardAndCloseEditor = useCallback(() => {
+    if (zonesSnapshot) {
+      setZones(zonesSnapshot);
+    }
+    setZonesSnapshot(null);
+    setFullscreenMode(false);
+    toast.info("Änderungen verworfen");
+  }, [zonesSnapshot]);
+
+  // X-Button: Prüfen ob Änderungen vorhanden sind
+  const handleCloseEditor = useCallback(() => {
+    const hasChanges = zonesSnapshot && JSON.stringify(zones) !== JSON.stringify(zonesSnapshot);
+    if (hasChanges) {
+      setShowDiscardConfirm(true);
+    } else {
+      // Keine Änderungen – einfach schließen
+      setZonesSnapshot(null);
+      setFullscreenMode(false);
+    }
+  }, [zones, zonesSnapshot]);
 
   // Kommuniziere Fullscreen-Status nach außen
   useEffect(() => {
@@ -873,7 +911,7 @@ export function TemplateUpload({
               <Label className="text-base font-semibold">Unser Produkt (Ergebnis)</Label>
               <div className="flex gap-1">
                 {selectedProductId && zones.length > 0 && (
-                  <Button size="sm" variant="default" onClick={() => setFullscreenMode(true)} className="bg-indigo-600 hover:bg-indigo-700 min-h-[44px] min-w-[44px] touch-manipulation">
+                  <Button size="sm" variant="default" onClick={openFullscreenEditor} className="bg-indigo-600 hover:bg-indigo-700 min-h-[44px] min-w-[44px] touch-manipulation">
                     <Maximize2 className="w-4 h-4 mr-1" />
                     Bearbeiten
                   </Button>
@@ -1098,7 +1136,15 @@ export function TemplateUpload({
                   <Plus className="w-4 h-4 mr-1" />
                   Zone
                 </Button>
-                <Button size="sm" variant="ghost" className="text-white hover:bg-gray-700" onClick={() => setFullscreenMode(false)}>
+                <Button size="sm" variant="ghost" className="text-red-300 hover:text-red-100 hover:bg-red-900/50" onClick={discardAndCloseEditor}>
+                  <Undo2 className="w-4 h-4 mr-1" />
+                  Verwerfen
+                </Button>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={saveAndCloseEditor}>
+                  <Check className="w-4 h-4 mr-1" />
+                  Speichern
+                </Button>
+                <Button size="sm" variant="ghost" className="text-white hover:bg-gray-700" onClick={handleCloseEditor}>
                   <X className="w-5 h-5" />
                 </Button>
               </div>
@@ -1402,6 +1448,38 @@ export function TemplateUpload({
           </div>,
           document.body
         )}
+        {/* AlertDialog: Bestätigung beim Schließen mit ungespeicherten Änderungen */}
+        <AlertDialog open={showDiscardConfirm} onOpenChange={setShowDiscardConfirm}>
+          <AlertDialogContent className="z-[99999]">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ungespeicherte Änderungen</AlertDialogTitle>
+              <AlertDialogDescription>
+                Sie haben Änderungen an den Zonen vorgenommen. Möchten Sie diese speichern oder verwerfen?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setShowDiscardConfirm(false)}>Zurück zum Editor</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => {
+                  setShowDiscardConfirm(false);
+                  discardAndCloseEditor();
+                }}
+              >
+                Verwerfen
+              </AlertDialogAction>
+              <AlertDialogAction
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  setShowDiscardConfirm(false);
+                  saveAndCloseEditor();
+                }}
+              >
+                Speichern
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

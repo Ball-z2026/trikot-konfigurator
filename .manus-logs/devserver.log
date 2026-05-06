@@ -8379,3 +8379,13 @@
 [2026-05-06T04:53:03.155Z] at Readable.push (node:internal/streams/readable:392:5)
 [2026-05-06T04:53:03.156Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
 [2026-05-06T04:53:10.415Z] 12:53:10 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T04:58:18.964Z] 12:58:18 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T04:58:34.674Z] 12:58:34 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T04:58:49.228Z] 12:58:49 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T04:59:07.849Z] 12:59:07 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T04:59:25.981Z] 12:59:25 AM [vite] (client) hmr update /src/index.css, /src/components/TemplateUpload.tsx
+[2026-05-06T05:00:04.488Z] Dev server process group stopped
+[2026-05-06T05:00:04.610Z] Dev server exited with code -15
+[2026-05-06T05:00:07.540Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-06T05:00:09.927Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-06T05:00:10.759Z] Server running on http://localhost:3000/

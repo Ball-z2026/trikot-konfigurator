@@ -1863,3 +1863,10 @@
 - [x] Bug KRITISCH: Fullscreen-Editor (nach KI-Analyse → Bearbeiten) friert auf dem Laptop ein
   - Root-Cause: Doppeltes Rendering – Split-View (3 Canvases + Zonen) lief im Hintergrund weiter während Fullscreen-Editor per Portal aktiv war
   - Fix: Split-View wird mit display:none versteckt wenn fullscreenMode aktiv ist
+
+## Feature: Speichern/Verwerfen im Fullscreen-Editor
+
+- [x] Beim Öffnen des Fullscreen-Editors: Snapshot des aktuellen Zonen-Zustands speichern
+- [x] Speichern-Button: Übernimmt die Änderungen und schließt den Editor
+- [x] Verwerfen-Button: Stellt den Snapshot wieder her und schließt den Editor
+- [x] X-Button: Fragt ob gespeichert oder verworfen werden soll (wenn Änderungen vorhanden)
