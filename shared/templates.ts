@@ -62,7 +62,7 @@ export interface TemplatePart {
   zones: TemplateZone[];
 }
 
-export type SportType = "fussball" | "handball" | "volleyball" | "basketball";
+export type SportType = "fussball" | "handball" | "volleyball" | "basketball" | "hockey" | "rugby" | "american_football" | "eishockey" | "tischtennis" | "badminton" | "tennis" | "leichtathletik" | "schwimmen" | "radsport" | "turnen" | "kampfsport" | "tanzen" | "esport" | "cricket" | "baseball" | "lacrosse" | "wasserball" | "floorball" | "futsal" | "sonstiges";
 
 export interface SportTypeInfo {
   id: SportType;
@@ -76,25 +76,151 @@ export const SPORT_TYPES: SportTypeInfo[] = [
     id: "fussball",
     name: "Fußball",
     description: "Fußballtrikots mit klassischem Schnitt",
-    icon: "\u26BD",
+    icon: "⚽",
   },
   {
     id: "handball",
     name: "Handball",
     description: "Handballtrikots mit engem Schnitt und kurzen Ärmeln",
-    icon: "\u{1F93E}",
+    icon: "🤾",
   },
   {
     id: "volleyball",
     name: "Volleyball",
     description: "Volleyballtrikots – leicht und atmungsaktiv",
-    icon: "\u{1F3D0}",
+    icon: "🏐",
   },
   {
     id: "basketball",
     name: "Basketball",
     description: "Basketballtrikots – ärmellos mit weitem Schnitt",
-    icon: "\u{1F3C0}",
+    icon: "🏀",
+  },
+  {
+    id: "hockey",
+    name: "Hockey",
+    description: "Feldhockey-Trikots",
+    icon: "🏑",
+  },
+  {
+    id: "rugby",
+    name: "Rugby",
+    description: "Rugby-Trikots mit verstärktem Material",
+    icon: "🏉",
+  },
+  {
+    id: "american_football",
+    name: "American Football",
+    description: "Football-Jerseys",
+    icon: "🏈",
+  },
+  {
+    id: "eishockey",
+    name: "Eishockey",
+    description: "Eishockey-Trikots mit langen Ärmeln",
+    icon: "🏒",
+  },
+  {
+    id: "tischtennis",
+    name: "Tischtennis",
+    description: "Tischtennis-Trikots – leicht und beweglich",
+    icon: "🏓",
+  },
+  {
+    id: "badminton",
+    name: "Badminton",
+    description: "Badminton-Trikots – atmungsaktiv",
+    icon: "🏸",
+  },
+  {
+    id: "tennis",
+    name: "Tennis",
+    description: "Tennis-Shirts und Polos",
+    icon: "🎾",
+  },
+  {
+    id: "leichtathletik",
+    name: "Leichtathletik",
+    description: "Lauf- und Wettkampf-Singlets",
+    icon: "🏃",
+  },
+  {
+    id: "schwimmen",
+    name: "Schwimmen",
+    description: "Vereins-Shirts und Mannschaftskleidung",
+    icon: "🏊",
+  },
+  {
+    id: "radsport",
+    name: "Radsport",
+    description: "Radsport-Trikots und Teamwear",
+    icon: "🚴",
+  },
+  {
+    id: "turnen",
+    name: "Turnen",
+    description: "Turn- und Gymnastik-Trikots",
+    icon: "🤸",
+  },
+  {
+    id: "kampfsport",
+    name: "Kampfsport",
+    description: "Kampfsport-Vereinskleidung (Judo, Karate, Taekwondo)",
+    icon: "🥋",
+  },
+  {
+    id: "tanzen",
+    name: "Tanzen",
+    description: "Tanz-Vereinskleidung und Auftrittskostüme",
+    icon: "💃",
+  },
+  {
+    id: "esport",
+    name: "E-Sport",
+    description: "E-Sport Team-Jerseys",
+    icon: "🎮",
+  },
+  {
+    id: "cricket",
+    name: "Cricket",
+    description: "Cricket-Trikots",
+    icon: "🏏",
+  },
+  {
+    id: "baseball",
+    name: "Baseball",
+    description: "Baseball-Jerseys",
+    icon: "⚾",
+  },
+  {
+    id: "lacrosse",
+    name: "Lacrosse",
+    description: "Lacrosse-Trikots",
+    icon: "🥍",
+  },
+  {
+    id: "wasserball",
+    name: "Wasserball",
+    description: "Wasserball-Caps und Vereinskleidung",
+    icon: "🤽",
+  },
+  {
+    id: "floorball",
+    name: "Floorball / Unihockey",
+    description: "Floorball-Trikots",
+    icon: "🏑",
+  },
+  {
+    id: "futsal",
+    name: "Futsal",
+    description: "Futsal-Trikots (Hallenfussball)",
+    icon: "⚽",
+  },
+  {
+    id: "sonstiges",
+    name: "Sonstige Sportart",
+    description: "Andere Sportarten ohne spezifische Verbandsregeln",
+    icon: "🏅",
   },
 ];
 

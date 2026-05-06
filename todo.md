@@ -1915,3 +1915,13 @@
 - [x] Fallback: Bei Freistellungs-Fehler Original-Bild beibehalten
 - [ ] Produkt mit freigestelltem Bild + Zonen in einem Schritt erstellen
 - [x] Rückfallpunkt: Checkpoint 7e1a177c falls Ansatz nicht funktioniert
+
+## Umbau: Produkt-Designer ohne Zielprodukt + weißes Template
+
+- [x] Zielprodukt-Auswahl (rechter Canvas + Dropdown) komplett entfernen
+- [x] Nur noch Sportart-Auswahl beibehalten (für Verbandsregeln) - alle gängigen Sportarten hinzugefügt
+- [x] Nach Freistellung: Trikot-Innenfläche weiß machen (makeWhiteTemplate: alle Pixel innerhalb der Silhouette → weiß, Alpha bleibt)
+- [x] Ergebnis: Weißes Trikot-Template mit korrekt platzierten Zonen
+- [x] Farbauswahl integrieren: User kann Trikotfarbe frei wählen (Multiply Blend Mode Overlay)
+- [x] Layout vereinfachen: Nur ein Canvas (das weiße Template mit Zonen), kein Split-View mehr
+- [x] handleSave angepasst: Kein Produkt-Bezug mehr, jerseyColor wird mitgespeichert

@@ -14,7 +14,7 @@ import { useLocation } from "wouter";
 import { useZoneEditor } from "@/contexts/ZoneEditorContext";
 import { toPng } from "html-to-image";
 import { getJerseyRules, validateZonesAgainstRules } from "@shared/jerseyRules";
-import { TEXTIL_TEMPLATES } from "@shared/templates";
+import { TEXTIL_TEMPLATES, SPORT_TYPES } from "@shared/templates";
 
 // Mapping: KI fontStyle-Kategorie -> konkrete Google Font Familie
 const FONT_STYLE_MAP: Record<string, string> = {
@@ -76,6 +76,49 @@ const ZONE_PURPOSES = [
   { value: "custom", label: "Freitext" },
 ];
 
+/**
+ * Macht alle nicht-transparenten Pixel eines freigestellten Bildes weiß.
+ * Der Alpha-Kanal bleibt erhalten (Silhouette bleibt sichtbar).
+ * Gibt eine Data-URL des weißen Templates zurück.
+ */
+async function makeWhiteTemplate(imageUrl: string): Promise<string | null> {
+  try {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error("Bild konnte nicht geladen werden"));
+      img.src = imageUrl.startsWith("/") ? imageUrl : imageUrl;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Alle Pixel mit Alpha > 0 werden weiß gefärbt, Alpha bleibt erhalten
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 0) { // Pixel ist nicht komplett transparent
+        data[i] = 255;     // R = weiß
+        data[i + 1] = 255; // G = weiß
+        data[i + 2] = 255; // B = weiß
+        // data[i + 3] bleibt unverändert (Alpha-Kanal = Silhouette)
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    return canvas.toDataURL("image/png");
+  } catch (err) {
+    console.warn("makeWhiteTemplate fehlgeschlagen:", err);
+    return null;
+  }
+}
+
 export function TemplateUpload({
   orgId,
   departmentId,
@@ -103,6 +146,10 @@ export function TemplateUpload({
   const [removingBg, setRemovingBg] = useState(false);
   // Freigestelltes Bild (nach KI-Analyse + Hintergrund-Entfernung)
   const [cutoutImageUrl, setCutoutImageUrl] = useState<string | null>(null);
+  // Sportart-Auswahl (für Verbandsregeln)
+  const [selectedSport, setSelectedSport] = useState<string>(sport || "");
+  // Trikotfarbe (frei wählbar auf weißem Template)
+  const [jerseyColor, setJerseyColor] = useState<string>("#ffffff");
 
   // Split-View: Ausgewähltes Produkt
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
@@ -327,13 +374,19 @@ export function TemplateUpload({
           const bgResult = await removeBackgroundMutation.mutateAsync({
             imageUrl: fullImageUrl,
           });
-          // Freigestelltes Bild als neues Template-Bild verwenden
-          setCutoutImageUrl(bgResult.url);
-          setImageUrl(bgResult.url);
+          // Schritt 3: Trikot-Innenfläche weiß machen (Silhouette erhalten, Farbe entfernen)
+          // Alle nicht-transparenten Pixel werden weiß gefärbt, der Alpha-Kanal bleibt erhalten
+          const whiteTemplateUrl = await makeWhiteTemplate(bgResult.url);
+          
+          setCutoutImageUrl(whiteTemplateUrl || bgResult.url);
+          setImageUrl(whiteTemplateUrl || bgResult.url);
           if (bgResult.key) {
             setImageStorageKey(bgResult.key);
           }
-          toast.success("Trikot freigestellt! Das freigestellte Bild ist jetzt euer Template.");
+          toast.success(whiteTemplateUrl 
+            ? "Trikot freigestellt & weiß gemacht! Wählen Sie jetzt eine Farbe." 
+            : "Trikot freigestellt! Das freigestellte Bild ist jetzt euer Template."
+          );
         } catch (bgError: any) {
           // Freistellung fehlgeschlagen – trotzdem mit Original-Bild weiterarbeiten
           toast.warning(
@@ -519,11 +572,11 @@ export function TemplateUpload({
 
     setSaving(true);
     try {
-      // Screenshot des Produkt-Bereichs (rechte Seite) als Vorlagen-Bild generieren
+      // Screenshot des Template-Canvas als Vorlagen-Bild generieren
       let templateImageUrl = imageUrl;
       let templateStorageKey = imageStorageKey || undefined;
-      const canvasEl = rightCanvasRef.current;
-      if (canvasEl && selectedProductId && zones.length > 0) {
+      const canvasEl = leftCanvasRef.current;
+      if (canvasEl && zones.length > 0) {
         try {
           const dataUrl = await toPng(canvasEl, {
             backgroundColor: '#f3f4f6',
@@ -554,14 +607,14 @@ export function TemplateUpload({
         name: templateName,
         imageUrl: templateImageUrl,
         storageKey: templateStorageKey,
-        positionsConfig: zones.length > 0 ? { productId: selectedProductId || null, zones } : undefined,
+        positionsConfig: zones.length > 0 ? { productId: null, zones, jerseyColor } : undefined,
         orgId,
         departmentId,
         teamId,
-        sport: sport as any,
+        sport: selectedSport as any || sport as any,
         category: category as any,
         visibility,
-        productId: selectedProductId || undefined,
+        productId: undefined,
         zones: zones.length > 0 ? zones.map(z => ({
           name: z.name,
           purpose: z.purpose,
@@ -788,21 +841,18 @@ export function TemplateUpload({
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Zielprodukt auswählen *</Label>
+            <Label>Sportart (für Verbandsregeln) *</Label>
             <Select
-              value={selectedProductId?.toString() || ""}
-              onValueChange={(v) => {
-                setSelectedProductId(Number(v));
-                setSelectedPartId(null);
-              }}
+              value={selectedSport}
+              onValueChange={(v) => setSelectedSport(v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Produkt wählen..." />
+                <SelectValue placeholder="Sportart wählen..." />
               </SelectTrigger>
-              <SelectContent>
-                {products?.map((p: any) => (
-                  <SelectItem key={p.id} value={p.id.toString()}>
-                    {p.name}
+              <SelectContent className="max-h-60">
+                {SPORT_TYPES.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.icon} {s.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -824,37 +874,32 @@ export function TemplateUpload({
           </div>
         </div>
 
-        {/* Part-Auswahl (wenn Produkt gewählt) */}
-        {productParts?.parts && productParts.parts.length > 1 && (
-          <div className="flex gap-2 flex-wrap">
-            {productParts.parts
-              .filter((part: any) => ['vorderteil', 'rueckteil'].includes(part.key))
-              .map((part: any) => (
-              <Button
-                key={part.id}
-                size="sm"
-                variant={selectedPartId === part.id ? "default" : "outline"}
-                onClick={() => setSelectedPartId(part.id)}
-              >
-                {part.label || part.key}
-              </Button>
-            ))}
-          </div>
-        )}
-
-        {/* ═══ SPLIT VIEW: Links Vorlage, Rechts unser Produkt ═══ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* ═══ TRIKOT-CANVAS: Freigestelltes Template mit Zonen ═══ */}
+        <div className="grid grid-cols-1 gap-4">
           {/* ─── LINKE SEITE: Vorlagenbild ─── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Vorlage (Original)</Label>
-              {imageUrl && (
-                <Button
-                  size="sm"
-                  onClick={handleAiAnalyze}
-                  disabled={analyzing || removingBg}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
+              <Label className="text-base font-semibold">
+                {cutoutImageUrl ? "Trikot-Template (freigestellt)" : "Trikot hochladen"}
+              </Label>
+              <div className="flex gap-2">
+                {imageUrl && zones.length > 0 && (
+                  <Button size="sm" variant="default" onClick={openFullscreenEditor} className="bg-indigo-600 hover:bg-indigo-700 min-h-[44px] min-w-[44px] touch-manipulation">
+                    <Maximize2 className="w-4 h-4 mr-1" />
+                    Bearbeiten
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={() => setAddingZone(true)}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  Zone
+                </Button>
+                {imageUrl && (
+                  <Button
+                    size="sm"
+                    onClick={handleAiAnalyze}
+                    disabled={analyzing || removingBg}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
                   {analyzing ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -873,6 +918,7 @@ export function TemplateUpload({
                   )}
                 </Button>
               )}
+              </div>
             </div>
 
             {!imageUrl ? (
@@ -913,28 +959,49 @@ export function TemplateUpload({
                   style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
                   <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
-                  {/* Zonen-Overlays auf dem Vorlagenbild (nur Visualisierung, nicht editierbar) */}
-                  {cutoutImageUrl && zones.map((zone) => (
+                  {/* Farb-Overlay: Trikotfarbe über weißem Template (multiply blend mode) */}
+                  {cutoutImageUrl && jerseyColor !== "#ffffff" && (
                     <div
-                      key={`left-${zone.id}`}
-                      className="absolute border border-dashed border-purple-400/60 bg-purple-200/20 pointer-events-none"
+                      className="absolute inset-0 pointer-events-none"
                       style={{
-                        left: `${zone.x}%`,
-                        top: `${zone.y}%`,
-                        width: `${zone.width}%`,
-                        height: `${zone.height}%`,
+                        backgroundColor: jerseyColor,
+                        mixBlendMode: "multiply",
+                        opacity: 0.85,
                       }}
-                    >
-                      <span className="absolute -top-4 left-0 text-[9px] text-purple-600 font-medium bg-white/80 px-1 rounded">
-                        {zone.name}
-                      </span>
-                    </div>
-                  ))}
+                    />
+                  )}
+                  {/* Hilfslinien bei Drag */}
+                  {renderGuidelines("left")}
+
+                  {/* Zonen-Overlays (editierbar per Drag & Drop) */}
+                  {zones.map((zone) => renderZoneOverlay(zone, true, "left"))}
                 </div>
                 {cutoutImageUrl && (
-                  <div className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1 mt-1">
-                    <span>✓</span>
-                    <span>Freigestellt – Dieses Bild wird als Template verwendet</span>
+                  <div className="space-y-2 mt-2">
+                    <div className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">
+                      <span>✓</span>
+                      <span>Freigestellt & weiß – Wählen Sie die Trikotfarbe</span>
+                    </div>
+                    {/* Farbauswahl für Trikot */}
+                    <div className="flex items-center gap-3">
+                      <Label className="text-sm font-medium whitespace-nowrap">Trikotfarbe:</Label>
+                      <input
+                        type="color"
+                        value={jerseyColor}
+                        onChange={(e) => setJerseyColor(e.target.value)}
+                        className="w-10 h-10 rounded cursor-pointer border border-gray-300"
+                      />
+                      <div className="flex gap-1 flex-wrap">
+                        {["#ffffff", "#000000", "#dc2626", "#2563eb", "#16a34a", "#eab308", "#7c3aed", "#f97316", "#ec4899", "#06b6d4"].map((color) => (
+                          <button
+                            key={color}
+                            className={`w-7 h-7 rounded-full border-2 transition-transform ${jerseyColor === color ? 'border-gray-900 scale-110' : 'border-gray-300 hover:scale-105'}`}
+                            style={{ backgroundColor: color }}
+                            onClick={() => setJerseyColor(color)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
@@ -959,80 +1026,7 @@ export function TemplateUpload({
             )}
           </div>
 
-          {/* ─── RECHTE SEITE: Unser Produkt mit kopierten Positionen ─── */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Unser Produkt (Ergebnis)</Label>
-              <div className="flex gap-1">
-                {selectedProductId && zones.length > 0 && (
-                  <Button size="sm" variant="default" onClick={openFullscreenEditor} className="bg-indigo-600 hover:bg-indigo-700 min-h-[44px] min-w-[44px] touch-manipulation">
-                    <Maximize2 className="w-4 h-4 mr-1" />
-                    Bearbeiten
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" onClick={() => setAddingZone(true)}>
-                  <Plus className="w-4 h-4 mr-1" />
-                  Zone hinzufügen
-                </Button>
-              </div>
-            </div>
 
-            {!selectedProductId ? (
-              <div className="border-2 border-dashed rounded-lg p-8 text-center bg-gray-50 min-h-[300px] flex flex-col items-center justify-center">
-                <ImageIcon className="w-10 h-10 mb-3 text-gray-300" />
-                <p className="text-sm font-medium text-gray-500">
-                  Bitte wählen Sie oben ein Zielprodukt aus
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Die erkannten Positionen werden auf dieses Produkt übertragen
-                </p>
-              </div>
-            ) : (
-              <div
-                ref={rightCanvasRef}
-                data-canvas="right"
-                className="relative border rounded-lg overflow-hidden bg-gray-100 select-none"
-                style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
-              >
-                {/* Produkt-Bild (Part-Bild) */}
-                {activePart?.imageUrl ? (
-                  <img
-                    src={storageUrl(activePart.imageUrl)}
-                    alt={activePart?.label || "Produkt"}
-                    className="w-full h-auto"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="w-full aspect-[3/4] bg-white flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Kein Bild für dieses Teil</p>
-                  </div>
-                )}
-
-                {/* Hilfslinien bei Drag */}
-                {renderGuidelines("right")}
-
-                {/* 1:1 kopierte Zonen auf unserem Produkt (editierbar) - gefiltert nach Seite */}
-                {zones
-                  .filter((zone) => {
-                    if (!zone.side) return true;
-                    const partKey = (activePart as any)?.key || '';
-                    const isFrontPart = partKey.toLowerCase().includes('vorder') || partKey.toLowerCase().includes('front');
-                    const isBackPart = partKey.toLowerCase().includes('rueck') || partKey.toLowerCase().includes('back');
-                    if (isFrontPart) return zone.side === 'front';
-                    if (isBackPart) return zone.side === 'back';
-                    return true;
-                  })
-                  .map((zone) => renderZoneOverlay(zone, true, "right"))}
-
-                {/* Übertragungspfeil-Overlay wenn Zonen vorhanden */}
-                {zones.length > 0 && imageUrl && (
-                  <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] px-2 py-1 rounded font-medium">
-                    {zones.length} Zonen übertragen
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ─── Zonen-Liste (unter dem Split-View) ─── */}
@@ -1113,7 +1107,7 @@ export function TemplateUpload({
           )}
           <Button
             onClick={handleSave}
-            disabled={saving || !imageUrl || !templateName.trim() || !selectedProductId}
+            disabled={saving || !imageUrl || !templateName.trim()}
             className="ml-auto"
           >
             <Save className="w-4 h-4 mr-2" />

@@ -55,7 +55,7 @@ export const UNIVERSAL_SEAM_MARGIN_CM = 2;
 /**
  * Verbandsregeln pro Sportart
  */
-export const SPORT_RULES: Record<SportType, SportRuleSet> = {
+export const SPORT_RULES: Partial<Record<SportType, SportRuleSet>> = {
   fussball: {
     sport: "fussball",
     federation: "DFB / FIFA",
