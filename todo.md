@@ -1932,3 +1932,9 @@
 - [x] Bug 3: KI-Zonen-Positionen ungenau – Prompt verbessert mit typischen Positionen und Genauigkeits-Regeln
 
 - [x] Bug: Farb-Overlay färbt gesamten Canvas statt nur die Trikot-Silhouette – CSS mask mit freigestelltem Bild
+
+## Bug-Fixes (Mai 2026)
+- [x] ZoneEditorPage zeigt kein Trikot: activePart?.imageUrl durch editorData.templateImageUrl ersetzt
+- [x] ZoneEditorContext um templateImageUrl und jerseyColor erweitert
+- [x] TemplateUpload übergibt das angezeigte Bild (eingefärbt/freigestellt/Original) an den Editor
+- [x] Unnötige trpc.product.getById Query aus ZoneEditorPage entfernt

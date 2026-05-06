@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, X, Ruler, Check, Undo2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { trpc } from "@/lib/trpc";
 import { storageUrl } from "@/lib/utils";
 import { useZoneEditor, type Zone } from "@/contexts/ZoneEditorContext";
 import { getJerseyRules, validateZonesAgainstRules } from "@shared/jerseyRules";
@@ -73,11 +72,8 @@ export default function ZoneEditorPage() {
   const rafRef = useRef<number | null>(null);
   const liveDragPosRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
-  // Produkt-Daten laden
-  const { data: productParts } = trpc.product.getById.useQuery(
-    { id: editorData?.selectedProductId! },
-    { enabled: !!editorData?.selectedProductId }
-  );
+  // Template-Bild aus editorData (freigestelltes/eingefärbtes Trikot)
+  const templateImageUrl = editorData?.templateImageUrl || null;
 
   // Initialisierung: Zonen aus Context laden
   useEffect(() => {
@@ -117,7 +113,7 @@ export default function ZoneEditorPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fontFamiliesKey]);
 
-  const activePart = productParts?.parts?.find((p: any) => p.id === selectedPartId);
+  // activePart wird nicht mehr benötigt - Bild kommt direkt aus editorData.templateImageUrl
 
   // ─── Speichern / Verwerfen / Schließen ───
   const handleSave = useCallback(() => {
@@ -462,16 +458,8 @@ export default function ZoneEditorPage() {
     );
   }
 
-  // Zonen nach Part filtern
-  const filteredZones = zones.filter((zone) => {
-    if (!zone.side) return true;
-    const partKey = (activePart as any)?.key || '';
-    const isFrontPart = partKey.toLowerCase().includes('vorder') || partKey.toLowerCase().includes('front');
-    const isBackPart = partKey.toLowerCase().includes('rueck') || partKey.toLowerCase().includes('back');
-    if (isFrontPart) return zone.side === 'front';
-    if (isBackPart) return zone.side === 'back';
-    return true;
-  });
+  // Alle Zonen anzeigen (kein Part-Filter mehr nötig, da nur ein Bild)
+  const filteredZones = zones;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-white flex flex-col">
@@ -479,22 +467,8 @@ export default function ZoneEditorPage() {
       <div className="h-14 bg-gray-900 text-white flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-3">
           <h2 className="font-semibold text-lg">Vorlagen-Editor</h2>
-          {productParts?.parts && productParts.parts.length > 1 && (
-            <div className="flex gap-1">
-              {productParts.parts
-                .filter((part: any) => ['vorderteil', 'rueckteil'].includes(part.key))
-                .map((part: any) => (
-                  <Button
-                    key={part.id}
-                    size="sm"
-                    variant={selectedPartId === part.id ? "default" : "secondary"}
-                    onClick={() => setSelectedPartId(part.id)}
-                    className="h-7 text-xs"
-                  >
-                    {part.label || part.key}
-                  </Button>
-                ))}
-            </div>
+          {editorData?.sport && (
+            <span className="text-xs bg-gray-700 px-2 py-1 rounded">{editorData.sport}</span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -525,16 +499,16 @@ export default function ZoneEditorPage() {
             className="relative bg-gray-100 select-none shadow-xl rounded-lg overflow-hidden"
             style={{ maxWidth: '900px', width: '100%', touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
           >
-            {activePart?.imageUrl ? (
+            {templateImageUrl ? (
               <img
-                src={storageUrl(activePart.imageUrl)}
-                alt={activePart?.label || "Produkt"}
+                src={templateImageUrl.startsWith('data:') ? templateImageUrl : storageUrl(templateImageUrl)}
+                alt="Trikot-Vorlage"
                 className="w-full h-auto"
                 draggable={false}
               />
             ) : (
               <div className="w-full aspect-[3/4] bg-white flex items-center justify-center">
-                <p className="text-sm text-muted-foreground">Kein Bild</p>
+                <p className="text-sm text-muted-foreground">Kein Bild vorhanden</p>
               </div>
             )}
             {/* Hilfslinien */}
@@ -553,10 +527,9 @@ export default function ZoneEditorPage() {
             const effectiveSport = editorData.sport || 'fussball';
             const rules = getJerseyRules(effectiveSport as any);
             if (!rules) return null;
-            const baseWidthCm = (activePart as any)?.realWidthCm || 49;
-            const baseHeightCm = (activePart as any)?.realHeightCm || 68;
-            const partKey = (activePart as any)?.key || 'vorderteil';
-            const partName = partKey.includes('vorder') ? 'front' : partKey.includes('rueck') ? 'back' : 'front';
+            const baseWidthCm = 49;
+            const baseHeightCm = 68;
+            const partName = 'front';
             const warnings = validateZonesAgainstRules(
               zones.map(z => ({
                 purpose: z.purpose,
@@ -583,8 +556,8 @@ export default function ZoneEditorPage() {
           {/* Zone-Liste */}
           {filteredZones.map((zone) => {
             const isSelected = selectedZoneId === zone.id;
-            const baseWidthCm = (activePart as any)?.realWidthCm || 49;
-            const baseHeightCm = (activePart as any)?.realHeightCm || 68;
+            const baseWidthCm = 49;
+            const baseHeightCm = 68;
             const widthCm = (zone.width / 100 * baseWidthCm).toFixed(1);
             const heightCm = (zone.height / 100 * baseHeightCm).toFixed(1);
             const areaCm2 = (parseFloat(widthCm) * parseFloat(heightCm)).toFixed(1);

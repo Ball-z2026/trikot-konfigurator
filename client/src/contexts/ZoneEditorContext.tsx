@@ -29,6 +29,8 @@ interface ZoneEditorData {
   sport?: string;
   category?: string;
   snapshot: Zone[]; // Snapshot beim Öffnen für Verwerfen
+  templateImageUrl?: string; // URL des freigestellten/weißen Trikot-Bildes
+  jerseyColor?: string; // Gewählte Trikotfarbe
 }
 
 interface ZoneEditorContextType {

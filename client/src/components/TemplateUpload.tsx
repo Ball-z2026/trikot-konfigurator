@@ -251,17 +251,21 @@ export function TemplateUpload({
       setZones(snapshot);
     });
     // Öffne den Editor als eigene Route
+    // Bestimme das anzuzeigende Bild: eingefärbte Vorschau > freigestelltes Bild > Original
+    const displayImageUrl = colorizedPreviewUrl || cutoutImageUrl || imageUrl;
     openEditor({
       zones: JSON.parse(JSON.stringify(zones)),
       selectedProductId,
       selectedPartId,
       orgId,
-      sport,
+      sport: selectedSport || sport,
       category,
       snapshot,
+      templateImageUrl: displayImageUrl || undefined,
+      jerseyColor,
     });
     setLocation('/designer/zone-editor');
-  }, [zones, selectedProductId, selectedPartId, orgId, sport, category, openEditor, registerSaveCallback, registerDiscardCallback, setLocation]);
+  }, [zones, selectedProductId, selectedPartId, orgId, sport, selectedSport, category, openEditor, registerSaveCallback, registerDiscardCallback, setLocation, colorizedPreviewUrl, cutoutImageUrl, imageUrl, jerseyColor]);
 
   // ─── Robuste Pointer-Events Drag & Drop (wie AdminProductEditor) ───
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
