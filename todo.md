@@ -1857,3 +1857,9 @@
 - [x] Bug: Nach KI-Analyse → Bearbeiten klicken → Dialog schließt sich, statt zum Editor zu navigieren
   - Root-Cause: Fullscreen-Editor war innerhalb des Radix-Dialog DOM-Baums, Dialog-Schließung entfernte den Editor
   - Fix: createPortal in document.body (z-[9999]) + onInteractOutside/onPointerDownOutside preventDefault + onOpenChange blockiert wenn Fullscreen aktiv
+
+## Bug: Produktdesigner /designer/products friert auf Laptop ein
+
+- [x] Bug KRITISCH: Fullscreen-Editor (nach KI-Analyse → Bearbeiten) friert auf dem Laptop ein
+  - Root-Cause: Doppeltes Rendering – Split-View (3 Canvases + Zonen) lief im Hintergrund weiter während Fullscreen-Editor per Portal aktiv war
+  - Fix: Split-View wird mit display:none versteckt wenn fullscreenMode aktiv ist

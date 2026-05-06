@@ -769,7 +769,13 @@ export function TemplateUpload({
         )}
 
         {/* ═══ SPLIT VIEW: Links Vorlage, Rechts unser Produkt ═══ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {fullscreenMode && (
+          <div className="p-8 text-center bg-indigo-50 border border-indigo-200 rounded-lg">
+            <p className="text-sm text-indigo-700 font-medium">Fullscreen-Editor ist geöffnet</p>
+            <p className="text-xs text-indigo-500 mt-1">Schließen Sie den Editor um zurückzukehren</p>
+          </div>
+        )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ display: fullscreenMode ? 'none' : undefined }}>
           {/* ─── LINKE SEITE: Vorlagenbild ─── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
