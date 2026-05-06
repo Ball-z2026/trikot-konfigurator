@@ -1946,3 +1946,14 @@
 - [x] Neues-Produkt-Dialog aktualisieren: Links zu den drei neuen Tools
 - [x] Bisherigen KI-Analyse-Flow im Dialog durch Verlinkung auf neue Seiten ersetzen
 - [ ] Shared Komponenten extrahieren (Zonen-Editor, Bild-Upload, Freistellen)
+
+## KI-Design Erweiterungen (Mai 2026)
+- [x] Vereins-Integration: Wappen automatisch übernehmen wenn Verein angemeldet
+- [x] Vereins-Integration: Vorgegebene Schriften (vom Spartenleiter) automatisch übernehmen
+- [x] Vereinsfarben-Toggle: Optionaler Button ob Vereinsfarben übernommen werden (nicht verpflichtend)
+- [x] Hashtag-Toggle: Optionaler Button ob Vereins-Hashtag ins Design übernommen wird (nicht verpflichtend)
+- [x] Foto-Upload Wahrzeichen: Silhouetten-Erkennung und ins Trikot einbauen
+- [x] Muster-Upload: Foto hochladen, jede Farbe einzeln anklickbar/änderbar machen
+- [x] Sublimation: Ärmelbündchen und Kragen als bedruckbare Bereiche hinzufügen
+- [x] Zonen-Toggle: Gesetzte Zonen mit Koordinaten als Auswahl-Buttons (mit/ohne verwenden)
+- [x] Koordinaten-Zone: Vereins-Koordinaten als optionale Zone im Design verfügbar

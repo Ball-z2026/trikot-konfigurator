@@ -8488,3 +8488,5 @@
 [2026-05-06T09:25:31.365Z] 5:25:31 AM [vite] (client) hmr update /src/pages/ZoneEditorPage.tsx, /src/index.css
 [2026-05-06T13:47:36.965Z] 9:47:36 AM [vite] (client) hmr update /src/App.tsx, /src/index.css
 [2026-05-06T13:48:28.797Z] 9:48:28 AM [vite] (client) hmr update /src/pages/AdminProducts.tsx, /src/index.css
+[2026-05-06T15:31:49.473Z] 11:31:49 AM [vite] (client) hmr update /src/index.css, /src/pages/KiDesign.tsx
+[2026-05-06T15:32:45.612Z] 11:32:45 AM [vite] (client) hmr update /src/index.css, /src/pages/KiDesign.tsx

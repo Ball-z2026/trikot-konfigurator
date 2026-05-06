@@ -1,11 +1,12 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
@@ -34,6 +35,14 @@ interface Zone {
   fontFamily?: string;
   fontWeight?: "normal" | "bold";
   fontSize?: number;
+  enabled?: boolean; // Toggle: Zone mit verwenden oder nicht
+}
+
+// ── Extrahierte Farbe aus Muster ──
+interface ExtractedColor {
+  hex: string;
+  percentage: number;
+  replacementHex: string; // Kann vom User geändert werden
 }
 
 const ZONE_PURPOSES = [
@@ -43,6 +52,8 @@ const ZONE_PURPOSES = [
   { value: "clubName", label: "Vereinsname" },
   { value: "sponsor", label: "Sponsor" },
   { value: "abbreviation", label: "Kürzel" },
+  { value: "coordinates", label: "Koordinaten" },
+  { value: "hashtag", label: "Hashtag" },
   { value: "custom", label: "Freitext" },
 ];
 
@@ -55,6 +66,17 @@ const DESIGN_STYLES = [
   { value: "geometric", label: "Geometrisch" },
   { value: "stripes", label: "Streifen" },
   { value: "retro", label: "Retro / Vintage" },
+];
+
+// ── Sublimation-Bereiche ──
+const SUBLIMATION_AREAS = [
+  { id: "body_front", label: "Körper Vorne", defaultEnabled: true },
+  { id: "body_back", label: "Körper Hinten", defaultEnabled: true },
+  { id: "sleeve_left", label: "Ärmel Links", defaultEnabled: true },
+  { id: "sleeve_right", label: "Ärmel Rechts", defaultEnabled: true },
+  { id: "collar", label: "Kragen", defaultEnabled: false },
+  { id: "cuff_left", label: "Bündchen Links", defaultEnabled: false },
+  { id: "cuff_right", label: "Bündchen Rechts", defaultEnabled: false },
 ];
 
 export default function KiDesign() {
@@ -83,6 +105,31 @@ export default function KiDesign() {
   const [newZonePurpose, setNewZonePurpose] = useState("logo");
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
 
+  // ── Vereins-Integration State ──
+  const [useClubColors, setUseClubColors] = useState(false);
+  const [useClubLogo, setUseClubLogo] = useState(true);
+  const [useClubFont, setUseClubFont] = useState(true);
+  const [useHashtag, setUseHashtag] = useState(false);
+  const [useCoordinates, setUseCoordinates] = useState(false);
+
+  // ── Wahrzeichen-Upload State ──
+  const [landmarkImage, setLandmarkImage] = useState<string | null>(null);
+  const [landmarkSilhouette, setLandmarkSilhouette] = useState<string | null>(null);
+  const [extractingSilhouette, setExtractingSilhouette] = useState(false);
+  const [useLandmark, setUseLandmark] = useState(false);
+
+  // ── Muster-Upload State ──
+  const [patternImage, setPatternImage] = useState<string | null>(null);
+  const [patternColors, setPatternColors] = useState<ExtractedColor[]>([]);
+  const [extractingColors, setExtractingColors] = useState(false);
+  const [usePattern, setUsePattern] = useState(false);
+
+  // ── Sublimation-Bereiche State ──
+  const [printMethod, setPrintMethod] = useState<"dtf" | "sublimation">("sublimation");
+  const [sublimationAreas, setSublimationAreas] = useState<Record<string, boolean>>(
+    Object.fromEntries(SUBLIMATION_AREAS.map(a => [a.id, a.defaultEnabled]))
+  );
+
   // Drag & Drop State
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
   const [resizingZone, setResizingZone] = useState<string | null>(null);
@@ -100,17 +147,145 @@ export default function KiDesign() {
   const rafRef = useRef<number | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // tRPC Mutations
+  // tRPC Mutations & Queries
   const analyzeImage = trpc.designTemplate.analyzeImage.useMutation();
   const createTemplate = trpc.designTemplate.create.useMutation();
   const generateAiMockup = trpc.mockup.generateAi.useMutation();
+  const removeBackgroundMut = trpc.mockup.removeBackground.useMutation();
 
-  // Membership für orgId
+  // Membership für orgId / deptId
   const { data: memberships } = trpc.membership.mine.useQuery();
   const orgId = memberships?.[0]?.orgId || 0;
+  const deptId = memberships?.[0]?.departmentId || 0;
+
+  // Vereinsdaten laden
+  const { data: orgData } = trpc.org.getById.useQuery(
+    { id: orgId },
+    { enabled: orgId > 0 }
+  );
+  const { data: defaultLogo } = trpc.orgLogo.getDefault.useQuery(
+    { orgId },
+    { enabled: orgId > 0 }
+  );
+  const { data: defaultFont } = trpc.deptFont.getDefault.useQuery(
+    { departmentId: deptId },
+    { enabled: deptId > 0 }
+  );
+
+  // ── Vereinsfarben automatisch übernehmen wenn Toggle aktiv ──
+  useEffect(() => {
+    if (useClubColors && orgData) {
+      if (orgData.primaryColor) setPrimaryColor(orgData.primaryColor);
+      if (orgData.secondaryColor) setSecondaryColor(orgData.secondaryColor);
+    }
+  }, [useClubColors, orgData]);
+
+  // ── Vereinsname automatisch setzen ──
+  useEffect(() => {
+    if (orgData?.jerseyName && !clubName) {
+      setClubName(orgData.jerseyName);
+    } else if (orgData?.name && !clubName) {
+      setClubName(orgData.name);
+    }
+  }, [orgData]);
 
   // ── Verbandsregeln für Prompt ──
   const rules = selectedSport ? getJerseyRules(selectedSport as any, "amateur") : null;
+
+  // ── Wahrzeichen-Upload Handler ──
+  const handleLandmarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setLandmarkImage(dataUrl);
+      setUseLandmark(true);
+      // Automatisch Silhouette extrahieren
+      setExtractingSilhouette(true);
+      try {
+        // Upload und Freistellen
+        const base64 = dataUrl.split(",")[1];
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ file: base64, filename: file.name, mimeType: file.type }),
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadData.url) {
+          const fullUrl = uploadData.url.startsWith("http") ? uploadData.url : `${window.location.origin}${storageUrl(uploadData.url) || uploadData.url}`;
+          const result = await removeBackgroundMut.mutateAsync({ imageUrl: fullUrl });
+          setLandmarkSilhouette(result.url);
+          toast.success("Silhouette erkannt!");
+        }
+      } catch (err: any) {
+        toast.error("Silhouetten-Erkennung fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
+      } finally {
+        setExtractingSilhouette(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ── Muster-Upload Handler mit Farbextraktion ──
+  const handlePatternUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPatternImage(dataUrl);
+      setUsePattern(true);
+      setExtractingColors(true);
+      try {
+        // Farben aus dem Bild extrahieren via Canvas
+        const img = new window.Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+          canvas.width = Math.min(img.width, 200);
+          canvas.height = Math.min(img.height, 200);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const pixels = imageData.data;
+          
+          // Farben zählen (quantisiert auf 16er-Schritte)
+          const colorMap = new Map<string, number>();
+          const totalPixels = pixels.length / 4;
+          for (let i = 0; i < pixels.length; i += 4) {
+            const r = Math.round(pixels[i] / 16) * 16;
+            const g = Math.round(pixels[i + 1] / 16) * 16;
+            const b = Math.round(pixels[i + 2] / 16) * 16;
+            const hex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+            colorMap.set(hex, (colorMap.get(hex) || 0) + 1);
+          }
+          
+          // Top-Farben sortieren und filtern (mind. 3% Anteil)
+          const sorted = [...colorMap.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .filter(([, count]) => count / totalPixels > 0.03)
+            .slice(0, 8);
+          
+          const extracted: ExtractedColor[] = sorted.map(([hex, count]) => ({
+            hex,
+            percentage: Math.round((count / totalPixels) * 100),
+            replacementHex: hex, // Initial gleich
+          }));
+          
+          setPatternColors(extracted);
+          setExtractingColors(false);
+          toast.success(`${extracted.length} Farben im Muster erkannt!`);
+        };
+        img.src = dataUrl;
+      } catch (err: any) {
+        toast.error("Farbextraktion fehlgeschlagen");
+        setExtractingColors(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // ── KI-Design generieren ──
   const handleGenerate = async () => {
@@ -118,7 +293,6 @@ export default function KiDesign() {
 
     setGenerating(true);
     try {
-      // Baue einen detaillierten Prompt unter Beachtung der Verbandsregeln
       const sportInfo = SPORT_TYPES.find(s => s.id === selectedSport);
       const styleInfo = DESIGN_STYLES.find(s => s.value === designStyle);
       
@@ -135,7 +309,32 @@ export default function KiDesign() {
         }
       }
 
-      const prompt = `Professional product photography of a ${sportInfo?.name || selectedSport} jersey (${sportInfo?.description || "sports jersey"}), flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext} The jersey should look like a real professional sports jersey, clean design with proper proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
+      // Zusätzliche Prompt-Teile basierend auf Optionen
+      let extraPrompt = "";
+      if (useLandmark && landmarkSilhouette) {
+        extraPrompt += " Incorporate a subtle landmark silhouette pattern into the jersey design as a watermark or texture element.";
+      }
+      if (usePattern && patternColors.length > 0) {
+        const colorList = patternColors.map(c => c.replacementHex).join(", ");
+        extraPrompt += ` Use a pattern-inspired design with these colors: ${colorList}.`;
+      }
+      if (printMethod === "sublimation") {
+        const activeAreas = SUBLIMATION_AREAS.filter(a => sublimationAreas[a.id]).map(a => a.label).join(", ");
+        extraPrompt += ` Full sublimation print covering: ${activeAreas}.`;
+        if (sublimationAreas.collar) extraPrompt += " Include printed collar design.";
+        if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
+      }
+      if (useClubLogo && defaultLogo) {
+        extraPrompt += " Include a club crest/emblem on the heart side (left chest).";
+      }
+      if (useHashtag && orgData?.hashtag) {
+        extraPrompt += ` Include the hashtag "${orgData.hashtag}" subtly in the design.`;
+      }
+      if (useCoordinates && orgData?.latitude && orgData?.longitude) {
+        extraPrompt += ` Include subtle geographic coordinates (${orgData.latitude}, ${orgData.longitude}) as a design element.`;
+      }
+
+      const prompt = `Professional product photography of a ${sportInfo?.name || selectedSport} jersey (${sportInfo?.description || "sports jersey"}), flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt} The jersey should look like a real professional sports jersey, clean design with proper proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
@@ -178,9 +377,10 @@ export default function KiDesign() {
           height: Math.max(3, Math.min(100 - z.y, z.height)),
           side: z.side === 'V' ? 'front' as const : z.side === 'R' ? 'back' as const : z.side,
           fontColor: z.fontColor || "#000000",
-          fontFamily: z.fontFamily || "Oswald",
+          fontFamily: useClubFont && defaultFont?.fontFamily ? defaultFont.fontFamily : (z.fontFamily || "Oswald"),
           fontWeight: z.fontWeight || "bold",
           fontSize: z.fontSize || 85,
+          enabled: true,
         }));
         setZones(newZones);
         toast.success(`${newZones.length} Zonen erkannt!`);
@@ -199,12 +399,13 @@ export default function KiDesign() {
 
   // ── Fullscreen-Editor öffnen ──
   const openFullscreenEditor = useCallback(() => {
-    const snapshot = JSON.parse(JSON.stringify(zones));
+    const enabledZones = zones.filter(z => z.enabled !== false);
+    const snapshot = JSON.parse(JSON.stringify(enabledZones));
     registerSaveCallback((savedZones) => setZones(savedZones));
     registerDiscardCallback(() => setZones(snapshot));
     const displayImageUrl = generatedImageUrl ? (generatedImageUrl.startsWith("http") ? generatedImageUrl : (storageUrl(generatedImageUrl) || generatedImageUrl)) : undefined;
     openEditor({
-      zones: JSON.parse(JSON.stringify(zones)),
+      zones: JSON.parse(JSON.stringify(enabledZones)),
       selectedProductId: null,
       selectedPartId: null,
       orgId,
@@ -223,13 +424,14 @@ export default function KiDesign() {
     if (!generatedImageUrl) { toast.error("Bitte zuerst ein Design generieren"); return; }
     if (!selectedSport) { toast.error("Bitte eine Sportart wählen"); return; }
 
+    const enabledZones = zones.filter(z => z.enabled !== false);
     setSaving(true);
     try {
-      const result = await createTemplate.mutateAsync({
+      await createTemplate.mutateAsync({
         name: templateName,
         imageUrl: generatedImageUrl,
         storageKey: undefined,
-        positionsConfig: zones.length > 0 ? { productId: null, zones, jerseyColor: primaryColor } : undefined,
+        positionsConfig: enabledZones.length > 0 ? { productId: null, zones: enabledZones, jerseyColor: primaryColor } : undefined,
         orgId,
         departmentId: undefined,
         teamId: undefined,
@@ -237,7 +439,7 @@ export default function KiDesign() {
         category: "trikot" as any,
         visibility,
         productId: undefined,
-        zones: zones.length > 0 ? zones.map(z => ({
+        zones: enabledZones.length > 0 ? enabledZones.map(z => ({
           name: z.name,
           purpose: z.purpose,
           x: z.x,
@@ -273,6 +475,8 @@ export default function KiDesign() {
       name: newZoneName,
       purpose: newZonePurpose,
       x: 30, y: 30, width: 20, height: 15,
+      fontFamily: useClubFont && defaultFont?.fontFamily ? defaultFont.fontFamily : "Oswald",
+      enabled: true,
     }]);
     setNewZoneName("");
     setAddingZone(false);
@@ -400,7 +604,7 @@ export default function KiDesign() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {(step === "edit" || step === "save") && zones.length > 0 && (
+            {(step === "edit" || step === "save") && zones.filter(z => z.enabled !== false).length > 0 && (
               <Button size="sm" variant="outline" onClick={openFullscreenEditor}>
                 <Maximize2 className="w-4 h-4 mr-1" />
                 Vollbild-Editor
@@ -418,7 +622,7 @@ export default function KiDesign() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Stepper */}
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto">
           {[
             { key: "configure", label: "1. Konfigurieren" },
             { key: "generate", label: "2. Generieren" },
@@ -426,7 +630,7 @@ export default function KiDesign() {
             { key: "save", label: "4. Speichern" },
           ].map((s, i) => (
             <div key={s.key} className="flex items-center gap-2">
-              <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+              <div className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
                 step === s.key ? "bg-purple-600 text-white" :
                 ["configure", "generate", "edit", "save"].indexOf(step) > i ? "bg-green-100 text-green-700" :
                 "bg-gray-100 text-gray-500"
@@ -448,25 +652,142 @@ export default function KiDesign() {
                   <Wand2 className="w-10 h-10 mx-auto mb-3 text-purple-500" />
                   <h2 className="text-xl font-semibold">Neues Trikot-Design erstellen</h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Konfigurieren Sie Ihr Wunschtrikot und lassen Sie die KI ein Design generieren – unter Beachtung der Verbandsregeln.
+                    Konfigurieren Sie Ihr Wunschtrikot und lassen Sie die KI ein Design generieren.
                   </p>
                 </div>
 
-                {/* Farben */}
+                {/* ═══ VEREINS-INTEGRATION ═══ */}
+                {orgData && (
+                  <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                        <Sparkles className="w-3 h-3 text-blue-600" />
+                      </div>
+                      <h3 className="text-sm font-semibold text-blue-800">Vereinsdaten: {orgData.name}</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Vereinsfarben Toggle */}
+                      <div className="flex items-center justify-between p-2 bg-white rounded border">
+                        <div className="flex items-center gap-2">
+                          <Palette className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm">Vereinsfarben übernehmen</span>
+                        </div>
+                        <Switch checked={useClubColors} onCheckedChange={setUseClubColors} />
+                      </div>
+
+                      {/* Vereinswappen Toggle */}
+                      {defaultLogo && (
+                        <div className="flex items-center justify-between p-2 bg-white rounded border">
+                          <div className="flex items-center gap-2">
+                            <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-5 h-5 object-contain" />
+                            <span className="text-sm">Vereinswappen</span>
+                          </div>
+                          <Switch checked={useClubLogo} onCheckedChange={setUseClubLogo} />
+                        </div>
+                      )}
+
+                      {/* Schrift Toggle */}
+                      {defaultFont && (
+                        <div className="flex items-center justify-between p-2 bg-white rounded border">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-blue-600">Aa</span>
+                            <span className="text-sm">Schrift: {defaultFont.fontFamily}</span>
+                          </div>
+                          <Switch checked={useClubFont} onCheckedChange={setUseClubFont} />
+                        </div>
+                      )}
+
+                      {/* Hashtag Toggle */}
+                      {orgData.hashtag && (
+                        <div className="flex items-center justify-between p-2 bg-white rounded border">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-blue-600">#</span>
+                            <span className="text-sm truncate">{orgData.hashtag}</span>
+                          </div>
+                          <Switch checked={useHashtag} onCheckedChange={setUseHashtag} />
+                        </div>
+                      )}
+
+                      {/* Koordinaten Toggle */}
+                      {orgData.latitude && orgData.longitude && (
+                        <div className="flex items-center justify-between p-2 bg-white rounded border">
+                          <div className="flex items-center gap-2">
+                            <Mountain className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm">Koordinaten</span>
+                          </div>
+                          <Switch checked={useCoordinates} onCheckedChange={setUseCoordinates} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ═══ DRUCKVERFAHREN ═══ */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold uppercase text-gray-500">Druckverfahren</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setPrintMethod("sublimation")}
+                      className={`p-3 rounded-lg border text-center transition-all ${
+                        printMethod === "sublimation"
+                          ? "border-blue-500 bg-blue-50 text-blue-700 font-medium"
+                          : "border-gray-200 hover:border-gray-300 text-gray-600"
+                      }`}
+                    >
+                      <Layers className="w-5 h-5 mx-auto mb-1" />
+                      <span className="text-sm">Sublimation</span>
+                    </button>
+                    <button
+                      onClick={() => setPrintMethod("dtf")}
+                      className={`p-3 rounded-lg border text-center transition-all ${
+                        printMethod === "dtf"
+                          ? "border-orange-500 bg-orange-50 text-orange-700 font-medium"
+                          : "border-gray-200 hover:border-gray-300 text-gray-600"
+                      }`}
+                    >
+                      <Image className="w-5 h-5 mx-auto mb-1" />
+                      <span className="text-sm">DTF</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* ═══ SUBLIMATION-BEREICHE ═══ */}
+                {printMethod === "sublimation" && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold uppercase text-gray-500">Bedruckbare Bereiche</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {SUBLIMATION_AREAS.map((area) => (
+                        <div key={area.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                          <span className="text-xs">{area.label}</span>
+                          <Switch
+                            checked={sublimationAreas[area.id]}
+                            onCheckedChange={(checked) => setSublimationAreas(prev => ({ ...prev, [area.id]: checked }))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ═══ FARBEN ═══ */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold uppercase text-gray-500">Farbschema</Label>
+                  {useClubColors && orgData?.primaryColor && (
+                    <p className="text-xs text-blue-600">Vereinsfarben aktiv – Farben werden automatisch übernommen</p>
+                  )}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs">Hauptfarbe</Label>
                       <div className="flex items-center gap-2">
-                        <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer border" />
+                        <input type="color" value={primaryColor} onChange={(e) => { setPrimaryColor(e.target.value); if (useClubColors) setUseClubColors(false); }} className="w-10 h-10 rounded cursor-pointer border" />
                         <span className="text-xs text-muted-foreground">{primaryColor}</span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs">Zweitfarbe</Label>
                       <div className="flex items-center gap-2">
-                        <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer border" />
+                        <input type="color" value={secondaryColor} onChange={(e) => { setSecondaryColor(e.target.value); if (useClubColors) setUseClubColors(false); }} className="w-10 h-10 rounded cursor-pointer border" />
                         <span className="text-xs text-muted-foreground">{secondaryColor}</span>
                       </div>
                     </div>
@@ -480,7 +801,7 @@ export default function KiDesign() {
                   </div>
                 </div>
 
-                {/* Design-Stil */}
+                {/* ═══ DESIGN-STIL ═══ */}
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold uppercase text-gray-500">Design-Stil</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -498,6 +819,74 @@ export default function KiDesign() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* ═══ WAHRZEICHEN-UPLOAD ═══ */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold uppercase text-gray-500">Wahrzeichen (optional)</Label>
+                  <p className="text-xs text-muted-foreground">Laden Sie ein Foto eines Wahrzeichens hoch – die Silhouette wird automatisch erkannt und ins Design eingebaut.</p>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-all">
+                      <Mountain className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">Foto hochladen</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleLandmarkUpload} />
+                    </label>
+                    {landmarkImage && (
+                      <div className="flex items-center gap-2">
+                        <img src={landmarkImage} alt="Wahrzeichen" className="w-12 h-12 object-cover rounded border" />
+                        {extractingSilhouette && <Loader2 className="w-4 h-4 animate-spin text-purple-500" />}
+                        {landmarkSilhouette && (
+                          <>
+                            <span className="text-xs text-green-600">Silhouette erkannt</span>
+                            <Switch checked={useLandmark} onCheckedChange={setUseLandmark} />
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ═══ MUSTER-UPLOAD ═══ */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold uppercase text-gray-500">Muster-Vorlage (optional)</Label>
+                  <p className="text-xs text-muted-foreground">Laden Sie ein Foto mit einem Muster hoch – jede Farbe wird erkannt und kann einzeln geändert werden.</p>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-all">
+                      <Palette className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">Muster hochladen</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handlePatternUpload} />
+                    </label>
+                    {patternImage && (
+                      <div className="flex items-center gap-2">
+                        <img src={patternImage} alt="Muster" className="w-12 h-12 object-cover rounded border" />
+                        {extractingColors && <Loader2 className="w-4 h-4 animate-spin text-purple-500" />}
+                        {patternColors.length > 0 && <Switch checked={usePattern} onCheckedChange={setUsePattern} />}
+                      </div>
+                    )}
+                  </div>
+                  {/* Farb-Picker pro extrahierte Farbe */}
+                  {patternColors.length > 0 && usePattern && (
+                    <div className="bg-white rounded-lg border p-3 space-y-2">
+                      <p className="text-xs font-medium text-gray-600">Farben im Muster (klicken zum Ändern):</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {patternColors.map((color, idx) => (
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded border bg-gray-50">
+                            <div className="w-6 h-6 rounded border" style={{ backgroundColor: color.hex }} title={`Original: ${color.hex}`} />
+                            <span className="text-xs text-gray-400">→</span>
+                            <input
+                              type="color"
+                              value={color.replacementHex}
+                              onChange={(e) => {
+                                setPatternColors(prev => prev.map((c, i) => i === idx ? { ...c, replacementHex: e.target.value } : c));
+                              }}
+                              className="w-6 h-6 rounded cursor-pointer border-0"
+                            />
+                            <span className="text-[10px] text-gray-500">{color.percentage}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Vereinsname */}
@@ -585,7 +974,7 @@ export default function KiDesign() {
                     draggable={false}
                   />
                   {/* Zonen-Overlays */}
-                  {zones.map((zone) => {
+                  {zones.filter(z => z.enabled !== false).map((zone) => {
                     const isSelected = selectedZoneId === zone.id;
                     const purposeColors: Record<string, string> = {
                       logo: "border-blue-500 bg-blue-500/20",
@@ -594,6 +983,8 @@ export default function KiDesign() {
                       clubName: "border-purple-500 bg-purple-500/20",
                       sponsor: "border-yellow-500 bg-yellow-500/20",
                       abbreviation: "border-pink-500 bg-pink-500/20",
+                      coordinates: "border-teal-500 bg-teal-500/20",
+                      hashtag: "border-indigo-500 bg-indigo-500/20",
                       custom: "border-gray-500 bg-gray-500/20",
                     };
                     return (
@@ -678,11 +1069,11 @@ export default function KiDesign() {
               </div>
             )}
 
-            {/* Zonen-Liste */}
+            {/* ═══ ZONEN-LISTE MIT TOGGLE ═══ */}
             {zones.length > 0 && (
               <div className="bg-white rounded-xl border p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm uppercase text-gray-500">Zonen ({zones.length})</h3>
+                  <h3 className="font-semibold text-sm uppercase text-gray-500">Zonen ({zones.filter(z => z.enabled !== false).length}/{zones.length})</h3>
                   <Button size="sm" variant="outline" onClick={() => setAddingZone(true)}>
                     <Plus className="w-3 h-3 mr-1" />
                     Zone
@@ -692,23 +1083,34 @@ export default function KiDesign() {
                   {zones.map((zone) => (
                     <div
                       key={zone.id}
-                      className={`flex items-center justify-between p-2 rounded text-sm cursor-pointer hover:bg-gray-50 ${selectedZoneId === zone.id ? "bg-purple-50 border border-purple-200" : ""}`}
+                      className={`flex items-center justify-between p-2 rounded text-sm cursor-pointer hover:bg-gray-50 ${selectedZoneId === zone.id ? "bg-purple-50 border border-purple-200" : ""} ${zone.enabled === false ? "opacity-50" : ""}`}
                       onClick={() => setSelectedZoneId(zone.id)}
                     >
                       <div className="flex items-center gap-2">
+                        {/* Toggle pro Zone */}
+                        <Switch
+                          checked={zone.enabled !== false}
+                          onCheckedChange={(checked) => setZones(prev => prev.map(z => z.id === zone.id ? { ...z, enabled: checked } : z))}
+                          className="scale-75"
+                        />
                         <div className={`w-2 h-2 rounded-full ${
                           zone.purpose === "logo" ? "bg-blue-500" :
                           zone.purpose === "playerNumber" ? "bg-red-500" :
                           zone.purpose === "playerName" ? "bg-green-500" :
                           zone.purpose === "clubName" ? "bg-purple-500" :
                           zone.purpose === "sponsor" ? "bg-yellow-500" :
+                          zone.purpose === "coordinates" ? "bg-teal-500" :
+                          zone.purpose === "hashtag" ? "bg-indigo-500" :
                           "bg-gray-500"
                         }`} />
-                        <span className="truncate">{zone.name}</span>
+                        <span className="truncate text-xs">{zone.name}</span>
                       </div>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); setZones(zones.filter(z => z.id !== zone.id)); }}>
-                        <Trash2 className="w-3 h-3 text-red-500" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-gray-400">{Math.round(zone.x)},{Math.round(zone.y)}</span>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0" onClick={(e) => { e.stopPropagation(); setZones(zones.filter(z => z.id !== zone.id)); }}>
+                          <Trash2 className="w-3 h-3 text-red-500" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -721,9 +1123,11 @@ export default function KiDesign() {
               <ul className="text-xs text-purple-700 space-y-1">
                 <li>• Komplett neues Trikot-Design per KI</li>
                 <li>• Verbandsregeln werden automatisch beachtet</li>
-                <li>• Farben, Stil und Sportart frei wählbar</li>
-                <li>• Zonen können manuell oder per KI gesetzt werden</li>
-                <li>• Mehrfach generieren bis das Design passt</li>
+                <li>• Vereinsdaten (Wappen, Farben, Schrift) optional</li>
+                <li>• Wahrzeichen-Silhouette als Design-Element</li>
+                <li>• Muster-Upload mit Farb-Anpassung</li>
+                <li>• Sublimation: Kragen & Bündchen bedruckbar</li>
+                <li>• Zonen einzeln ein-/ausschaltbar</li>
               </ul>
             </div>
           </div>
