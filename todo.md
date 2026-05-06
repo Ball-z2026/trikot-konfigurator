@@ -1930,3 +1930,5 @@
 - [x] Bug 1: makeWhiteTemplate funktioniert nicht – CORS-Fix (storageUrl-Proxy), Upload statt Data-URL
 - [x] Bug 2: Beim Speichern verschwindet das Trikot-Bild – toPng entfernt, Template-Bild direkt gespeichert
 - [x] Bug 3: KI-Zonen-Positionen ungenau – Prompt verbessert mit typischen Positionen und Genauigkeits-Regeln
+
+- [x] Bug: Farb-Overlay färbt gesamten Canvas statt nur die Trikot-Silhouette – CSS mask mit freigestelltem Bild

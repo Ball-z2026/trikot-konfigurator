@@ -966,7 +966,7 @@ export function TemplateUpload({
                   style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
                   <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
-                  {/* Farb-Overlay: Trikotfarbe über weißem Template (multiply blend mode) */}
+                  {/* Farb-Overlay: Trikotfarbe NUR auf Trikot-Silhouette (CSS mask mit dem freigestellten Bild) */}
                   {cutoutImageUrl && jerseyColor !== "#ffffff" && (
                     <div
                       className="absolute inset-0 pointer-events-none"
@@ -974,6 +974,12 @@ export function TemplateUpload({
                         backgroundColor: jerseyColor,
                         mixBlendMode: "multiply",
                         opacity: 0.85,
+                        WebkitMaskImage: `url(${storageUrl(cutoutImageUrl)})`,
+                        WebkitMaskSize: "100% 100%",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskImage: `url(${storageUrl(cutoutImageUrl)})`,
+                        maskSize: "100% 100%",
+                        maskRepeat: "no-repeat",
                       }}
                     />
                   )}

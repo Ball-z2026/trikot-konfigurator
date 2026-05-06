@@ -8453,3 +8453,4 @@
 [2026-05-06T07:26:27.435Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-06T07:26:29.155Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-06T07:26:29.788Z] Server running on http://localhost:3000/
+[2026-05-06T07:34:03.961Z] 3:34:03 AM [vite] (client) hmr update /src/components/TemplateUpload.tsx, /src/index.css
