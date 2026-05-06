@@ -1938,3 +1938,11 @@
 - [x] ZoneEditorContext um templateImageUrl und jerseyColor erweitert
 - [x] TemplateUpload übergibt das angezeigte Bild (eingefärbt/freigestellt/Original) an den Editor
 - [x] Unnötige trpc.product.getById Query aus ZoneEditorPage entfernt
+
+## KI-Tools Refactoring (Mai 2026)
+- [x] KI-Analyse DTF als eigene Seite (/designer/ki-dtf)
+- [x] KI-Analyse Sublimation als eigene Seite (/designer/ki-sublimation)
+- [x] KI-Design als eigene Seite (/designer/ki-design) – Neues Trikot generieren mit Verbandsregeln
+- [x] Neues-Produkt-Dialog aktualisieren: Links zu den drei neuen Tools
+- [x] Bisherigen KI-Analyse-Flow im Dialog durch Verlinkung auf neue Seiten ersetzen
+- [ ] Shared Komponenten extrahieren (Zonen-Editor, Bild-Upload, Freistellen)

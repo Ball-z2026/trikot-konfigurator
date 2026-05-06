@@ -262,16 +262,48 @@ export default function AdminProducts() {
                   </button>
 
                   <button
+                    className="group relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-dashed border-orange-300 hover:border-orange-500 hover:bg-orange-50 transition-all text-left"
+                    onClick={() => { setDialogOpen(false); setLocation('/designer/ki-dtf'); }}
+                  >
+                    <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                      <Sparkles className="w-7 h-7 text-orange-600" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold text-base">KI-Analyse DTF</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Trikot-Bild hochladen, Freistellen, Zonen per KI erkennen (DTF-Druck)
+                      </p>
+                    </div>
+                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+                  </button>
+
+                  <button
+                    className="group relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-dashed border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all text-left"
+                    onClick={() => { setDialogOpen(false); setLocation('/designer/ki-sublimation'); }}
+                  >
+                    <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                      <Sparkles className="w-7 h-7 text-blue-600" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold text-base">KI-Analyse Sublimation</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Sublimations-Trikot analysieren – Ganzkörper-Design mit Zonen
+                      </p>
+                    </div>
+                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-blue-500 transition-colors" />
+                  </button>
+
+                  <button
                     className="group relative flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-dashed border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all text-left sm:col-span-2"
-                    onClick={() => setCreateMode("ai-analyze")}
+                    onClick={() => { setDialogOpen(false); setLocation('/designer/ki-design'); }}
                   >
                     <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
                       <Sparkles className="w-7 h-7 text-purple-600" />
                     </div>
                     <div className="text-center">
-                      <h3 className="font-semibold text-base">KI-Bild-Analyse</h3>
+                      <h3 className="font-semibold text-base">KI-Design</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Lade ein Trikot-Bild hoch – die KI erkennt automatisch Positionen, Farben und Stil
+                        Komplett neues Trikot-Design per KI generieren (Verbandsregeln beachtet)
                       </p>
                     </div>
                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-hover:text-purple-500 transition-colors" />

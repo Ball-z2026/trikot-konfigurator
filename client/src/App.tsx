@@ -31,6 +31,9 @@ import PrintSheetExport from "./pages/PrintSheetExport";
 import ApprovalReview from "./pages/ApprovalReview";
 import TeamPoll from "./pages/TeamPoll";
 import ZoneEditorPage from "./pages/ZoneEditorPage";
+import KiAnalyseDtf from "./pages/KiAnalyseDtf";
+import KiAnalyseSublimation from "./pages/KiAnalyseSublimation";
+import KiDesign from "./pages/KiDesign";
 import { ZoneEditorProvider } from "./contexts/ZoneEditorContext";
 
 function Router() {
@@ -63,6 +66,9 @@ function Router() {
       <Route path="/designer/products" component={AdminProducts} />
       <Route path="/designer/products/:id" component={AdminProductEditor} />
       <Route path="/designer/zone-editor" component={ZoneEditorPage} />
+      <Route path="/designer/ki-dtf" component={KiAnalyseDtf} />
+      <Route path="/designer/ki-sublimation" component={KiAnalyseSublimation} />
+      <Route path="/designer/ki-design" component={KiDesign} />
 
       {/* ─── Modul 3: Konfigurator (fertige Produkte konfigurieren) ─── */}
       <Route path="/konfigurator" component={ProductSelect} />
