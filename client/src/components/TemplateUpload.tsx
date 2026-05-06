@@ -100,6 +100,9 @@ export function TemplateUpload({
   const [newZoneName, setNewZoneName] = useState("");
   const [newZonePurpose, setNewZonePurpose] = useState("logo");
   const [analyzing, setAnalyzing] = useState(false);
+  const [removingBg, setRemovingBg] = useState(false);
+  // Freigestelltes Bild (nach KI-Analyse + Hintergrund-Entfernung)
+  const [cutoutImageUrl, setCutoutImageUrl] = useState<string | null>(null);
 
   // Split-View: Ausgewähltes Produkt
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
@@ -150,6 +153,7 @@ export function TemplateUpload({
 
   const createTemplate = trpc.designTemplate.create.useMutation();
   const analyzeImage = trpc.designTemplate.analyzeImage.useMutation();
+  const removeBackgroundMutation = trpc.mockup.removeBackground.useMutation();
 
   // Produkte laden
   const { data: products } = trpc.product.list.useQuery();
@@ -276,6 +280,7 @@ export function TemplateUpload({
         ? imageUrl
         : `${window.location.origin}${storageUrl(imageUrl)}`;
 
+      // Schritt 1: KI-Analyse – Zonen erkennen
       const result = await analyzeImage.mutateAsync({
         imageUrl: fullImageUrl,
         sport: sport as any,
@@ -314,7 +319,30 @@ export function TemplateUpload({
         let summary = `${newZones.length} Zonen erkannt`;
         if (arcCount > 0) summary += `, ${arcCount} mit Bogentext`;
         if (outlineCount > 0) summary += `, ${outlineCount} mit Outline`;
-        toast.success(summary + " – Positionen per Drag & Drop korrigieren!");
+        toast.success(summary + " – Freistellung wird gestartet...");
+
+        // Schritt 2: Hintergrund entfernen (Freistellung)
+        setRemovingBg(true);
+        try {
+          const bgResult = await removeBackgroundMutation.mutateAsync({
+            imageUrl: fullImageUrl,
+          });
+          // Freigestelltes Bild als neues Template-Bild verwenden
+          setCutoutImageUrl(bgResult.url);
+          setImageUrl(bgResult.url);
+          if (bgResult.key) {
+            setImageStorageKey(bgResult.key);
+          }
+          toast.success("Trikot freigestellt! Das freigestellte Bild ist jetzt euer Template.");
+        } catch (bgError: any) {
+          // Freistellung fehlgeschlagen – trotzdem mit Original-Bild weiterarbeiten
+          toast.warning(
+            "Freistellung fehlgeschlagen – Original-Bild wird verwendet. " +
+            (bgError.message || "")
+          );
+        } finally {
+          setRemovingBg(false);
+        }
       } else {
         toast.info("Keine Elemente erkannt. Versuchen Sie ein deutlicheres Bild.");
       }
@@ -824,13 +852,18 @@ export function TemplateUpload({
                 <Button
                   size="sm"
                   onClick={handleAiAnalyze}
-                  disabled={analyzing}
+                  disabled={analyzing || removingBg}
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {analyzing ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      Analysiert...
+                      Zonen erkennen...
+                    </>
+                  ) : removingBg ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      Freistellen...
                     </>
                   ) : (
                     <>
@@ -876,13 +909,34 @@ export function TemplateUpload({
                 <div
                   ref={leftCanvasRef}
                   data-canvas="left"
-                  className="relative border rounded-lg overflow-hidden bg-gray-100 select-none"
+                  className={`relative border rounded-lg overflow-hidden select-none ${cutoutImageUrl ? 'bg-[url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2720%27%20height%3D%2720%27%3E%3Crect%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23f0f0f0%27/%3E%3Crect%20x%3D%2710%27%20y%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23f0f0f0%27/%3E%3Crect%20x%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23fff%27/%3E%3Crect%20y%3D%2710%27%20width%3D%2710%27%20height%3D%2710%27%20fill%3D%27%23fff%27/%3E%3C/svg%3E")]' : 'bg-gray-100'}`}
                   style={{ touchAction: (draggingZone || resizingZone) ? 'none' : 'auto' }}
                 >
                   <img src={storageUrl(imageUrl)} alt="Vorlage" className="w-full h-auto" draggable={false} />
-                  {/* Vorlagenbild zeigt nur das Original-Foto ohne Zonen-Overlays.
-                      Zonen werden ausschließlich auf dem rechten Canvas (Zielprodukt) bearbeitet. */}
+                  {/* Zonen-Overlays auf dem Vorlagenbild (nur Visualisierung, nicht editierbar) */}
+                  {cutoutImageUrl && zones.map((zone) => (
+                    <div
+                      key={`left-${zone.id}`}
+                      className="absolute border border-dashed border-purple-400/60 bg-purple-200/20 pointer-events-none"
+                      style={{
+                        left: `${zone.x}%`,
+                        top: `${zone.y}%`,
+                        width: `${zone.width}%`,
+                        height: `${zone.height}%`,
+                      }}
+                    >
+                      <span className="absolute -top-4 left-0 text-[9px] text-purple-600 font-medium bg-white/80 px-1 rounded">
+                        {zone.name}
+                      </span>
+                    </div>
+                  ))}
                 </div>
+                {cutoutImageUrl && (
+                  <div className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1 mt-1">
+                    <span>✓</span>
+                    <span>Freigestellt – Dieses Bild wird als Template verwendet</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"

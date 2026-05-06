@@ -5,7 +5,7 @@ import { publicProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { generateImage } from "./_core/imageGeneration";
 import { makeRequest, type GeocodingResult } from "./_core/map";
-import { generatePhotoroomMockup, isPhotoroomConfigured } from "./photoroom";
+import { generatePhotoroomMockup, isPhotoroomConfigured, removeBackground } from "./photoroom";
 import { z } from "zod";
 import { TEXTIL_TEMPLATES } from "../shared/templates";
 import { getJerseyRules, validateZonesAgainstRules, type ZoneForValidation, type SportartCode } from "../shared/jerseyRules";
@@ -3435,6 +3435,16 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         });
 
         return { url: result.url };
+      }),
+
+    /** Hintergrund eines Bildes entfernen (Freistellung) */
+    removeBackground: protectedProcedure
+      .input(z.object({
+        imageUrl: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await removeBackground({ url: input.imageUrl });
+        return { url: result.url, key: result.key };
       }),
 
     /** Prüfe ob Photoroom API konfiguriert ist */

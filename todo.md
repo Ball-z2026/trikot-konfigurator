@@ -1903,3 +1903,15 @@
 - [x] AdminProducts.tsx: isEditorFullscreen State entfernt
 - [x] Route in App.tsx registriert, ZoneEditorProvider in App-Tree eingebunden
 - [x] Vitest: 7 Tests für ZoneEditor-Datenlogik bestanden
+
+## Feature: KI-Analyse → Freistellung → Direktes Template
+
+- [x] Backend: Freistellungs-Endpunkt mit PhotoRoom API (Hintergrund entfernen)
+- [x] TemplateUpload: Nach KI-Analyse automatisch Trikot freistellen
+- [x] Freigestelltes Trikot-Bild als fertiges Template-Bild verwenden (statt separatem Template-Matching)
+- [x] KI-erkannte Zonen direkt auf dem freigestellten Bild positionieren
+- [x] Zonen-Overlays auf linkem Canvas (Visualisierung der erkannten Positionen)
+- [x] Schachbrett-Hintergrund für Transparenz-Darstellung
+- [x] Fallback: Bei Freistellungs-Fehler Original-Bild beibehalten
+- [ ] Produkt mit freigestelltem Bild + Zonen in einem Schritt erstellen
+- [x] Rückfallpunkt: Checkpoint 7e1a177c falls Ansatz nicht funktioniert

@@ -142,6 +142,101 @@ export async function generatePhotoroomMockup(
   return { url };
 }
 
+/**
+ * Remove background from an image using PhotoRoom API.
+ * Returns a PNG with transparent background, stored in S3.
+ * 
+ * Uses the Remove Background API (Basic Plan endpoint) for fastest response.
+ * Docs: https://docs.photoroom.com/remove-background-api-basic-plan/quickstart-guide
+ */
+export async function removeBackground(
+  imageInput: { url?: string; base64?: string }
+): Promise<{ url: string; key: string }> {
+  if (!ENV.photoroomApiKey) {
+    throw new Error(
+      "PHOTOROOM_API_KEY ist nicht konfiguriert. Bitte den API Key in den Einstellungen hinterlegen."
+    );
+  }
+
+  let imageBuffer: Buffer;
+
+  if (imageInput.base64) {
+    const cleanBase64 = imageInput.base64.replace(/^data:image\/\w+;base64,/, "");
+    imageBuffer = Buffer.from(cleanBase64, "base64");
+  } else if (imageInput.url) {
+    // Download image from URL
+    const response = await fetch(imageInput.url);
+    if (!response.ok) {
+      throw new Error(`Bild konnte nicht heruntergeladen werden: ${response.status}`);
+    }
+    imageBuffer = Buffer.from(await response.arrayBuffer());
+  } else {
+    throw new Error("Entweder url oder base64 muss angegeben werden");
+  }
+
+  // Build multipart form data for Remove Background API
+  const boundary = `----FormBoundary${Date.now()}`;
+  const parts: Buffer[] = [];
+
+  // Add the image file
+  parts.push(
+    Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="image_file"; filename="input.png"\r\nContent-Type: image/png\r\n\r\n`
+    )
+  );
+  parts.push(imageBuffer);
+  parts.push(Buffer.from("\r\n"));
+
+  // Request PNG format with transparency
+  parts.push(
+    Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="format"\r\n\r\npng\r\n`
+    )
+  );
+
+  // Request transparent channels
+  parts.push(
+    Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="channels"\r\n\r\nrgba\r\n`
+    )
+  );
+
+  // Close boundary
+  parts.push(Buffer.from(`--${boundary}--\r\n`));
+
+  const body = Buffer.concat(parts);
+
+  const response = await fetch("https://sdk.photoroom.com/v1/segment", {
+    method: "POST",
+    headers: {
+      "x-api-key": ENV.photoroomApiKey,
+      "Content-Type": `multipart/form-data; boundary=${boundary}`,
+      Accept: "image/png",
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      `PhotoRoom Freistellung fehlgeschlagen (${response.status}): ${errorText || response.statusText}`
+    );
+  }
+
+  // Response is the image binary (PNG with transparent background)
+  const resultBuffer = Buffer.from(await response.arrayBuffer());
+
+  // Save to S3
+  const storageKey = `templates/freigestellt-${Date.now()}.png`;
+  const { url, key } = await storagePut(
+    storageKey,
+    resultBuffer,
+    "image/png"
+  );
+
+  return { url, key };
+}
+
 /** Check if Photoroom API is configured */
 export function isPhotoroomConfigured(): boolean {
   return !!ENV.photoroomApiKey;
