@@ -8567,3 +8567,16 @@
 [2026-05-07T08:55:23.191Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-07T08:55:23.196Z] [Auth] Missing session cookie
 [2026-05-07T08:55:23.205Z] [Auth] Missing session cookie
+[2026-05-07T08:58:20.897Z] [Auth] Missing session cookie
+[2026-05-07T08:58:20.914Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.722Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.741Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.751Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.765Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.770Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.779Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.790Z] [Auth] Missing session cookie
+[2026-05-07T08:58:21.798Z] [Auth] Missing session cookie
+[2026-05-07T08:58:28.883Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-07T08:58:28.887Z] [Auth] Missing session cookie
+[2026-05-07T08:58:28.893Z] [Auth] Missing session cookie
