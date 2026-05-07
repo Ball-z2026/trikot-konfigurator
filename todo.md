@@ -2106,3 +2106,6 @@
 - [x] Bug: Vorderseite Nummer und Wappen vertauscht – Prompt korrigiert: VIEWER'S RIGHT/LEFT explizit
 - [x] Bug: Wappen-in-Nummer – Neuer KI-Prompt: Wappen 50% der Nummern-Breite, zentriert in jede Ziffer (kein Post-Processing)
 - [x] Bug: Vorlage speichern – Button nicht mehr disabled, Auto-Name wenn leer
+
+## Bug: Wappen als Wasserzeichen auf Rückseite funktioniert nicht (07.05.2026)
+- [ ] Wappen-Wasserzeichen auf Rückseite: Prompt/Toggle prüfen und fixen

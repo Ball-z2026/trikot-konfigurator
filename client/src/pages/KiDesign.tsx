@@ -437,13 +437,26 @@ export default function KiDesign() {
       }
 
       // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
-      // Schriftgröße der Rückennummer: 25-35cm Höhe (Verbandsregel)
-      // Wappen verkleinert auf 50% der Nummern-Breite, zentriert in jede Ziffer
+      // Regel: Breite der Ziffer auslesen → Wappen = 50% dieser Breite → gleicher Abstand nach unten, links, rechts
+      // Bei jeder Schriftgröße bleibt das Verhältnis gleich (proportional)
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        // Rückennummer-Größe: 25-35cm auf 75cm Trikot = ca. 33-47% der Trikothöhe
-        // Eine Ziffer ist ca. 15-20cm breit bei dieser Höhe
-        // Wappen = 50% davon = ca. 7.5-10cm breit
-        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER: The back number has a font size of 25-35cm height (this is 33-47% of the jersey height of 75cm). Each number digit is approximately 15-20cm wide at this height. The club crest/badge (EXACT SAME as on the front chest, provided as reference image) MUST be placed INSIDE each number digit. Scale the crest to exactly 50% of the digit width (approximately 7.5-10cm). Center the crest vertically and horizontally inside each digit. The number digit acts as a frame around the crest - draw the digit outline/border in a contrasting color so it remains readable, with the small crest sitting centered inside like a window. The crest must be pixel-perfect identical to the front chest version - same colors, same proportions, same details, just scaled down to 50% of digit width. Do NOT stretch or distort the crest. Do NOT make the crest fill the entire digit - leave visible number-colored border around it.`;
+        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER - PROPORTIONAL RULE:
+
+Step 1: MEASURE the width (W) of each back number digit at the chosen font size.
+Step 2: SCALE the club crest (EXACT SAME as on front chest) to exactly 50% of W (= 0.5 * W).
+Step 3: CALCULATE the remaining space: padding = (W - 0.5*W) / 2 = 25% of W on each side.
+Step 4: PLACE the scaled crest CENTERED inside each digit with EQUAL padding on all sides (left = right = bottom = top = 25% of W).
+
+This means:
+- Crest width = 50% of digit width
+- Left margin = 25% of digit width
+- Right margin = 25% of digit width  
+- Top margin = 25% of digit width
+- Bottom margin = 25% of digit width
+
+The crest sits perfectly centered with equal spacing all around it. The digit outline/border remains visible as a frame around the crest in a contrasting color. This proportional rule ensures that regardless of the font size (whether 25cm or 35cm height), the crest always maintains the same relative size and spacing within the digit.
+
+The crest must be PIXEL-PERFECT identical to the front chest version - same colors, same proportions, same details. Do NOT stretch, distort, or reinterpret the crest. Keep its original aspect ratio when scaling down.`;
       }
 
       // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
