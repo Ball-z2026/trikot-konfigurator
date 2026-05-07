@@ -2298,6 +2298,22 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         return { id };
       }),
 
+    /** Mannschaft nach ID (öffentlich – nur Name + Spieler + OrgName, kein Auth nötig) */
+    getByIdPublic: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const team = await getTeamById(input.id);
+        if (!team) return null;
+        const playersList = await listPlayersByTeam(team.id);
+        // Org-Name laden für Vereinsname-Anzeige
+        let orgName: string | null = null;
+        if (team.orgId) {
+          const org = await getOrganizationById(team.orgId);
+          orgName = org?.name || null;
+        }
+        return { id: team.id, name: team.name, orgName, players: playersList };
+      }),
+
     /** Mannschaft nach ID */
     getById: protectedProcedure
       .input(z.object({ id: z.number(), orgId: z.number() }))

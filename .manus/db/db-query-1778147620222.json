@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, name, officialName FROM organizations WHERE id = 390001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name, officialName FROM organizations WHERE id = 390001;",
+  "rows": [
+    {
+      "id": "390001",
+      "name": "HSV ",
+      "officialName": "hsv fanclub"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tofficialName\n390001\tHSV \thsv fanclub\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

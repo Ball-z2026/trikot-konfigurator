@@ -2016,3 +2016,17 @@
 - [x] KI-Prompt: KEINE Logos generieren lassen, nur saubere Platzhalter-Bereiche freilassen
 - [x] Backend: Nach KI-Generierung echte Logos (Vereinswappen, Sponsoren) als Overlay/Compositing auf das Bild legen
 - [x] Hersteller-Logo: Komplett aus dem Prompt entfernen wenn kein Logo hochgeladen
+
+
+## Bug: Trikots werden nicht korrekt angezeigt
+
+- [x] Zonen-Konfiguration korrigieren: Positionen, Größen und Purpose-Zuordnungen für Fußballtrikot
+- [x] Spielername korrekt auf Rückseite platzieren (zentriert, richtige Größe)
+- [x] Spielernummer korrekt platzieren (Rücken groß, Brust klein)
+- [x] Farb-Logik im Konfigurator prüfen: Vereinsfarben sollen anwendbar sein
+- [x] Logo-Platzierung: Vereinswappen auf Herzseite automatisch setzen
+
+## Bug: Vereinsname fehlt + KI-Vorlage nicht generiert
+
+- [x] Vereinsname muss auf dem Trikot angezeigt werden (aus Org-Daten automatisch übernehmen)
+- [x] KI-Mockup Vorlage generieren und als Design-Vorlage nutzen

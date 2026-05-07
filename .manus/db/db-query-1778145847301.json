@@ -1,0 +1,29 @@
+{
+  "query": "SELECT id, name FROM organizations LIMIT 5; SELECT id, name, role FROM users LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name FROM organizations LIMIT 5; SELECT id, name, role FROM users LIMIT 5;",
+  "rows": [
+    {
+      "id": "390001",
+      "name": "HSV "
+    },
+    {
+      "id": "420001",
+      "name": "Testverein"
+    },
+    {
+      "id": "450001",
+      "name": "Sc Harmstorf "
+    }
+  ],
+  "messages": [
+    "id\tname\trole",
+    "540037\tAssemacher Test\tadmin",
+    "2010057\tMarkus Assemacher\tadmin",
+    "2070005\ttt\tuser",
+    "2100017\trechnung\tuser",
+    "2220010\tTest User\tuser"
+  ],
+  "stdout": "id\tname\n390001\tHSV \n420001\tTestverein\n450001\tSc Harmstorf \nid\tname\trole\n540037\tAssemacher Test\tadmin\n2010057\tMarkus Assemacher\tadmin\n2070005\ttt\tuser\n2100017\trechnung\tuser\n2220010\tTest User\tuser\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

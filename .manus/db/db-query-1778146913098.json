@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, label, `key`, sortOrder FROM product_parts WHERE productId = 1380003 ORDER BY sortOrder;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, label, `key`, sortOrder FROM product_parts WHERE productId = 1380003 ORDER BY sortOrder;",
+  "rows": [
+    {
+      "id": "1320010",
+      "label": "Vorderteil",
+      "key": "vorderteil",
+      "sortOrder": "1"
+    },
+    {
+      "id": "1320011",
+      "label": "Rückteil",
+      "key": "rueckteil",
+      "sortOrder": "2"
+    },
+    {
+      "id": "1320012",
+      "label": "Ärmel Links",
+      "key": "aermel_links",
+      "sortOrder": "3"
+    },
+    {
+      "id": "1320013",
+      "label": "Ärmel Rechts",
+      "key": "aermel_rechts",
+      "sortOrder": "4"
+    },
+    {
+      "id": "1320014",
+      "label": "Kragen",
+      "key": "kragen",
+      "sortOrder": "5"
+    },
+    {
+      "id": "1320015",
+      "label": "Bündchen Links",
+      "key": "buendchen_links",
+      "sortOrder": "6"
+    },
+    {
+      "id": "1320016",
+      "label": "Bündchen Rechts",
+      "key": "buendchen_rechts",
+      "sortOrder": "7"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlabel\tkey\tsortOrder\n1320010\tVorderteil\tvorderteil\t1\n1320011\tRückteil\trueckteil\t2\n1320012\tÄrmel Links\taermel_links\t3\n1320013\tÄrmel Rechts\taermel_rechts\t4\n1320014\tKragen\tkragen\t5\n1320015\tBündchen Links\tbuendchen_links\t6\n1320016\tBündchen Rechts\tbuendchen_rechts\t7\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

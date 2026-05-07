@@ -965,6 +965,8 @@ export default function CustomerConfigurator() {
     setClubName(primaryMembership.orgName);
   }, [primaryMembership?.orgName]);
 
+
+
   // ─── Auto-Zuweisung: Org-Logo in alle Vereinswappen-Zonen (clubLogo) setzen ───
   useEffect(() => {
     if (autoLogoApplied || !orgDefaultLogo?.imageUrl || allZones.length === 0) return;
@@ -1030,21 +1032,38 @@ export default function CustomerConfigurator() {
   }, [designTemplateData, productData, templateApplied]);
 
   // ─── Auto-Ladung: Spieler aus Team laden (wenn teamId-Parameter vorhanden) ───
+  // Authentifizierte Variante (mit orgId)
   const { data: teamData } = trpc.team.getById.useQuery(
     { id: teamIdParam!, orgId: userOrgId! },
     { enabled: !!teamIdParam && !!userOrgId && !teamPlayersLoaded }
   );
+  // Öffentliche Variante (ohne Login, nur teamId nötig)
+  const { data: teamDataPublic } = trpc.team.getByIdPublic.useQuery(
+    { id: teamIdParam! },
+    { enabled: !!teamIdParam && !userOrgId && !teamPlayersLoaded }
+  );
+  const effectiveTeamData = teamData ?? teamDataPublic;
+
+  // ─── Fallback: Vereinsname aus öffentlicher Team-API (ohne Login) ───
   useEffect(() => {
-    if (teamPlayersLoaded || !teamData?.players || teamData.players.length === 0) return;
-    const loadedPlayers: Player[] = teamData.players.map((p: any) => ({
+    if (clubName) return; // Bereits gesetzt (z.B. durch Login)
+    const orgNameFromTeam = (effectiveTeamData as any)?.orgName;
+    if (orgNameFromTeam) {
+      setClubName(orgNameFromTeam);
+    }
+  }, [effectiveTeamData, clubName]);
+
+  useEffect(() => {
+    if (teamPlayersLoaded || !effectiveTeamData?.players || effectiveTeamData.players.length === 0) return;
+    const loadedPlayers: Player[] = effectiveTeamData.players.map((p: any) => ({
       number: p.number || "",
       name: p.name,
       size: p.size || undefined,
     }));
     setPlayers(loadedPlayers);
     setTeamPlayersLoaded(true);
-    toast.success(`${loadedPlayers.length} Spieler aus "${teamData.name}" geladen`);
-  }, [teamData, teamPlayersLoaded]);
+    toast.success(`${loadedPlayers.length} Spieler aus "${effectiveTeamData.name}" geladen`);
+  }, [effectiveTeamData, teamPlayersLoaded]);
 
   // Auto-select first parttt
   useEffect(() => {

@@ -8582,3 +8582,15 @@
 [2026-05-07T08:58:28.893Z] [Auth] Missing session cookie
 [2026-05-07T09:00:55.931Z] 5:00:55 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-07T09:11:14.213Z] 5:11:14 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T09:28:12.052Z] 5:28:12 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-07T09:28:14.613Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T09:28:15.476Z] Server running on http://localhost:3000/
+[2026-05-07T09:28:36.557Z] 5:28:36 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T09:54:45.307Z] 5:54:45 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-07T09:54:48.383Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T09:54:49.539Z] Server running on http://localhost:3000/
+[2026-05-07T09:55:56.661Z] 5:55:56 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-07T09:55:58.601Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T09:55:59.286Z] Server running on http://localhost:3000/
+[2026-05-07T09:56:34.734Z] 5:56:34 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T09:57:42.824Z] 5:57:42 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
