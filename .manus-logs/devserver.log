@@ -8826,3 +8826,4 @@
 [2026-05-07T21:48:23.972Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-07T21:48:26.044Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-07T21:48:26.951Z] Server running on http://localhost:3000/
+[2026-05-07T21:49:44.789Z] 5:49:44 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx

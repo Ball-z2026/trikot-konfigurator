@@ -2099,8 +2099,8 @@
 - [x] KI-Prompt für "Wappen Wasserzeichen": Wappen als BACKGROUND-Layer, Nummer + Text im FOREGROUND
 
 ## Bug: PDF-Upload für Sponsoren-Logos (07.05.2026)
-- [ ] Sponsoren-Logo Upload: PDF als erlaubtes Format hinzufügen
-- [ ] Bug: Vereinswappen in Rückennummer integrieren funktioniert nicht (Post-Processing schlägt fehl)
+- [x] Sponsoren-Logo Upload: PDF-Anzeige gefixt (PdfPreview lädt per fetch als ArrayBuffer statt direkte URL)
+- [x] Bug: Vereinswappen in Rückennummer – jetzt per KI-Prompt gelöst (Schriftgröße 25-35cm, Wappen 50% Nummern-Breite)
 
 ## Bugs gemeldet 07.05.2026 (Screenshot)
 - [x] Bug: Vorderseite Nummer und Wappen vertauscht – Prompt korrigiert: VIEWER'S RIGHT/LEFT explizit
