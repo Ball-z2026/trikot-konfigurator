@@ -2085,3 +2085,7 @@
 - [x] Prompt umbauen: NUR Trikots generieren, KEINE Hosen im Bild (verschiebt Positionen)
 - [x] Prompt explizit: "Do NOT include shorts/pants in the image"
 - [x] Upselling: Nach 'Gefällt mir'-Button automatisch passende Hose generieren und anzeigen
+
+## KI-Designer: Wappen-Wasserzeichen Rückseite (07.05.2026)
+- [ ] Vereinswappen als Wasserzeichen auf Rückseite: HINTER der Nummer (Hintergrund), Nummer im Vordergrund
+- [ ] Prompt klarstellen: Wappen-Wasserzeichen ≠ Wappen IN der Nummer (zwei verschiedene Features)
