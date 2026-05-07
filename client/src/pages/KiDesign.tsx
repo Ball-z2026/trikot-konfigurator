@@ -548,12 +548,10 @@ export default function KiDesign() {
         });
       }
 
-      // NUR Silhouette/Wasserzeichen als Referenzbild an KI senden (keine Logos!)
+      // Keine Logo-Referenzbilder mehr an KI senden.
+      // Die Straßenkarte wird NUR als Prompt-Beschreibung verwendet (nicht als Referenzbild),
+      // da die Google Maps Proxy-URL vom Bildgenerator nicht geladen werden kann (401).
       const additionalRefs: string[] = [];
-      // Strassenkarte als Referenz (für Wasserzeichen-Textur)
-      if (useMapWatermark && mapImageUrl) {
-        additionalRefs.push(mapImageUrl);
-      }
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
