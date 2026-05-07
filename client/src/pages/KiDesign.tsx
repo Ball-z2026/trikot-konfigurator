@@ -433,7 +433,7 @@ export default function KiDesign() {
 
       // WAPPEN IN RÜCKENNUMMER = KI baut das Wappen als Wasserzeichen in die Nummer ein
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST IN NUMBER: Place the club crest (from reference image) as a subtle WATERMARK/GHOST IMAGE inside/behind the back number digits. The crest should be semi-transparent (about 15-20% opacity), centered within the number area, and clearly recognizable but not overpowering the number itself.`;
+        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE NUMBER: The club crest (from reference image) must be placed DIRECTLY BEHIND/INSIDE the back number digits as a watermark. IMPORTANT: The crest must be CENTERED in the exact same area where the number is - NOT below it, NOT beside it, but OVERLAPPING with the number digits. The crest should fill the same space as the number (approximately 25cm tall), be semi-transparent (15-20% opacity), and appear as a ghost/watermark BEHIND the number digits. Think of it like a background texture that shows through the number. The number digits are drawn ON TOP of the crest watermark.`;
       }
 
       // BRUSTNUMMER = Vorderseite, rechte Brust (links im Bild), Position gemäß Verbandsregel
