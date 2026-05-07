@@ -2080,3 +2080,8 @@
 - [x] Alle Prozent-Werte an Dual-Trikot-Layout angepasst (x/2 für Vorderseite, 50+x/2 für Rückseite)
 - [x] Referenzgröße L = 75 cm im KI-Prompt ergänzt
 - [x] Prompt: 'Show FRONT and BACK view side by side' explizit angegeben
+
+## KI-Designer: Nur Trikots, Hosen als Upselling (07.05.2026)
+- [x] Prompt umbauen: NUR Trikots generieren, KEINE Hosen im Bild (verschiebt Positionen)
+- [x] Prompt explizit: "Do NOT include shorts/pants in the image"
+- [x] Upselling: Nach 'Gefällt mir'-Button automatisch passende Hose generieren und anzeigen

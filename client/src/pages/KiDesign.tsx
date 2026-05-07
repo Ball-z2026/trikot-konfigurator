@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers, MapPin, Users, Shield } from "lucide-react";
+import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers, MapPin, Users, Shield, ThumbsUp } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -145,6 +145,10 @@ export default function KiDesign() {
   const [sublimationAreas, setSublimationAreas] = useState<Record<string, boolean>>(
     Object.fromEntries(SUBLIMATION_AREAS.map(a => [a.id, a.defaultEnabled]))
   );
+
+  // Passende Hose (Upselling)
+  const [matchingShortsUrl, setMatchingShortsUrl] = useState<string | null>(null);
+  const [generatingShorts, setGeneratingShorts] = useState(false);
 
   // Drag & Drop State
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
@@ -485,7 +489,7 @@ export default function KiDesign() {
       // Alle Logos werden per Post-Processing hinzugefügt.
       const brandProtection = " ABSOLUTE CRITICAL RULE - NO LOGOS OF ANY KIND: The jersey must have ZERO logos, ZERO brand marks, ZERO emblems, ZERO badges, ZERO crests anywhere on the entire garment. This means: NO manufacturer logos (no three stripes, no swoosh, no puma cat, no Hummel, no Erima, no Jako, no Mizuno), NO club crests/emblems, NO sponsor logos, NO text logos, NO brand-like graphics of any kind. The jersey is a COMPLETELY BLANK custom garment with ONLY the pattern/design, colors, and text elements (club name, number, hashtag, coordinates if specified). Every area where a logo would typically appear must be LEFT COMPLETELY EMPTY. This is the MOST IMPORTANT rule - absolutely NO logos or emblems whatsoever. They will be added separately after generation.";
 
-      const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). High-end product photography, studio lighting, no wrinkles.`;
+      const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
       // Referenzbild: Silhouette als Haupt-Referenz (für Wasserzeichen-Muster)
       let referenceUrl: string | undefined;
@@ -722,6 +726,36 @@ export default function KiDesign() {
       toast.error(error.message || "Speichern fehlgeschlagen");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ── Passende Hose automatisch generieren (Upselling) ──
+  const generateMatchingShorts = async () => {
+    if (!generatedImageUrl) return;
+    setGeneratingShorts(true);
+    try {
+      const currentSportInfo = SPORT_TYPES.find(s => s.id === selectedSport);
+      const currentStyleInfo = DESIGN_STYLES.find(s => s.value === designStyle);
+      const shortsPrompt = `Professional product photography of matching sports shorts/pants for ${currentSportInfo?.name || selectedSport}, flat lay on white background. The shorts must match this jersey design exactly: Primary color: ${primaryColor}, Secondary color: ${secondaryColor}, Accent color: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. The shorts should complement the jersey with the same color scheme, similar design elements and patterns. Show FRONT view only. CRITICAL: Show ONLY the shorts - no jersey, no socks, no other items. SIZE L. High-end product photography, studio lighting, no wrinkles. NO logos, NO brand marks, NO emblems of any kind.`;
+
+      const result = await generateAiMockup.mutateAsync({
+        productName: `${currentSportInfo?.name || selectedSport} Hose`,
+        productType: "hose",
+        colorDescription: `Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}`,
+        side: "front",
+        customPrompt: shortsPrompt,
+        referenceImageUrl: generatedImageUrl.startsWith("http") ? generatedImageUrl : `${window.location.origin}${generatedImageUrl}`,
+      });
+
+      if (result.url) {
+        setMatchingShortsUrl(result.url);
+        toast.success("Passende Hose generiert!");
+      }
+    } catch (error: any) {
+      console.error("Hosen-Generierung fehlgeschlagen:", error);
+      // Kein Fehler-Toast - Upselling soll nicht stören
+    } finally {
+      setGeneratingShorts(false);
     }
   };
 
@@ -1493,6 +1527,48 @@ export default function KiDesign() {
                     );
                   })}
                 </div>
+
+                {/* ═══ GEFÄLLT MIR + HOSEN-UPSELLING ═══ */}
+                {generatedImageUrl && !matchingShortsUrl && (
+                  <div className="flex items-center gap-3 mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <span className="text-sm text-green-800 font-medium">Gefällt dir das Design?</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-green-500 text-green-700 hover:bg-green-100"
+                      onClick={generateMatchingShorts}
+                      disabled={generatingShorts}
+                    >
+                      {generatingShorts ? (
+                        <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Hose wird generiert...</>
+                      ) : (
+                        <><ThumbsUp className="w-3 h-3 mr-1" />Ja, passende Hose generieren</>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Generierte Hose anzeigen */}
+                {matchingShortsUrl && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-blue-800">Passende Hose (Vorschlag)</h4>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={() => setMatchingShortsUrl(null)}
+                      >
+                        Ausblenden
+                      </Button>
+                    </div>
+                    <img
+                      src={storageUrl(matchingShortsUrl) || matchingShortsUrl}
+                      alt="Passende Hose"
+                      className="w-full max-w-[300px] mx-auto rounded-lg border bg-white"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
