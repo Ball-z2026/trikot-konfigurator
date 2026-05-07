@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { storageUrl } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { useZoneEditor } from "@/contexts/ZoneEditorContext";
-import { getJerseyRules, validateZonesAgainstRules } from "@shared/jerseyRules";
+import { getJerseyRules, validateZonesAgainstRules, BACK_LAYOUT_OPTIONS, type BackLayoutType, DEFAULT_BACK_LAYOUT, getPositionRulesForAI } from "@shared/jerseyRules";
 import { SPORT_TYPES } from "@shared/templates";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -149,6 +149,7 @@ export default function KiDesign() {
   // Passende Hose (Upselling)
   const [matchingShortsUrl, setMatchingShortsUrl] = useState<string | null>(null);
   const [generatingShorts, setGeneratingShorts] = useState(false);
+  const [backLayout, setBackLayout] = useState<BackLayoutType>(DEFAULT_BACK_LAYOUT);
 
   // Drag & Drop State
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
@@ -445,8 +446,23 @@ export default function KiDesign() {
       // Auf gleicher Höhe wie Vereinswappen (Y=32%)
       extraPrompt += ` FRONT VIEW (left jersey) - FRONT NUMBER: MUST include a player number on the FRONT LEFT CHEST area (viewer's left side = wearer's right chest, opposite side from the crest). The front number should be approximately 10cm tall (12% of jersey height), positioned at 32% from top of the jersey (same vertical height as the club crest on the opposite side). Use the same font style as the back number but smaller. The front number must be clearly visible and readable.`;
 
-      // VEREINSNAME = Immer hinten auf dem Rücken, über der Nummer
-      if (clubName) {
+      // RÜCKSEITEN-LAYOUT = Dynamische Positionierung basierend auf gewähltem Layout
+      const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
+      if (layoutOption) {
+        const orderDesc = layoutOption.order.map((el, i) => {
+          const labels: Record<string, string> = {
+            clubName: `Club name "${clubName || 'CLUB'}"`,
+            playerName: "Player name",
+            playerNumber: "Back number (large, 25-35cm)",
+          };
+          return `${i + 1}. ${labels[el]}`;
+        }).join(", then ");
+        extraPrompt += ` BACK VIEW (right jersey) - LAYOUT ORDER from top to bottom: ${orderDesc}. `;
+        if (layoutOption.hasClubName && clubName) {
+          extraPrompt += `The club name "${clubName}" MUST appear on the back in its designated position (arc/curved or straight horizontal text, clearly readable in contrasting color). `;
+        }
+        extraPrompt += `The player name should be clearly readable (max 7.5cm height). The back number must be large (25-35cm height). All elements centered horizontally.`;
+      } else if (clubName) {
         extraPrompt += ` MUST include the club name "${clubName}" on the BACK of the jersey, positioned ABOVE where the player number would be. The club name should be in an arc/curved text or straight horizontal text, clearly readable in a contrasting color.`;
       }
       
@@ -1026,6 +1042,26 @@ export default function KiDesign() {
                     </div>
                   </div>
                 )}
+
+                {/* ═══ RÜCKSEITEN-LAYOUT ═══ */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold uppercase text-gray-500">Rückseiten-Layout</Label>
+                  <Select value={backLayout} onValueChange={(v) => setBackLayout(v as BackLayoutType)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Layout wählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BACK_LAYOUT_OPTIONS.map(opt => (
+                        <SelectItem key={opt.type} value={opt.type}>
+                          <div className="flex flex-col">
+                            <span>{opt.label}</span>
+                            <span className="text-xs text-muted-foreground">{opt.description}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* ═══ DRUCKVERFAHREN ═══ */}
                 <div className="space-y-3">

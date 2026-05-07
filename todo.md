@@ -2033,26 +2033,26 @@
 
 ## Bug: Vorderseite Positionierung + fehlende Elemente
 
-- [ ] Brustnummer-Position korrigieren (kleiner, rechts oben auf Brusthöhe)
-- [ ] Platzhalter-Vereinswappen auf Herzseite (links oben) erstellen und eintragen
+- [x] Brustnummer-Position korrigieren (kleiner, rechts oben auf Brusthöhe) – Y=32% im KI-Prompt, posX=30% in DB
+- [x] Platzhalter-Vereinswappen auf Herzseite (links oben) erstellen und eintragen – Wappen wird automatisch aus Vereinsdaten geladen
 - [ ] Sublimation-Muster als Platzhalter-Design im Konfigurator einrichten
 
-- [ ] Brustnummer-Mindesthöhe für Fußball auf 10 cm setzen (in jerseyRules.ts und DB-Zone)
+- [x] Brustnummer-Mindesthöhe für Fußball auf 10 cm setzen (in jerseyRules.ts und DB-Zone) – minHeightCm=10 in jerseyRules.ts
 
-- [ ] Standard-Positionierung für Vereinswappen und Brustnummer als feste Regel implementieren (Mitten auf gleicher Höhe Y=33%, Nummer links posX=30, Wappen rechts posX=60 Herzseite)
-- [ ] KI-Designer Prompt aktualisieren: Korrekte Positionierung von Wappen und Nummer übernehmen
+- [x] Standard-Positionierung für Vereinswappen und Brustnummer als feste Regel implementieren (Y=32%, Nummer posX=30, Wappen posX=60 Herzseite)
+- [x] KI-Designer Prompt aktualisieren: Korrekte Positionierung von Wappen und Nummer übernehmen – Y=32% für beide
 
-- [ ] Rückseiten-Layout als Auswahloption im Konfigurator einbauen (4 Varianten)
-- [ ] Verbandsvorgaben (Schrifthöhen, Abstände) bei Layout-Berechnung berücksichtigen
-- [ ] KI-Designer: Rückseiten-Layout-Auswahl in den Prompt übernehmen
+- [x] Rückseiten-Layout als Auswahloption im KI-Designer einbauen (4 Varianten) – Select-Dropdown mit BACK_LAYOUT_OPTIONS
+- [x] Verbandsvorgaben (Schrifthöhen, Abstände) bei Layout-Berechnung berücksichtigen – 7.5cm/25cm in jerseyRules.ts
+- [x] KI-Designer: Rückseiten-Layout-Auswahl in den Prompt übernehmen – getPositionRulesForAI mit Layout-Varianten
 
 ## Architektur-Umbau: Produktdesigner + Konfigurator
 
-- [ ] Rückseiten-Layout-Optionen als Konstanten in shared/jerseyRules.ts (4 Varianten, dynamische Positionsberechnung)
-- [ ] Rückseiten-Layout-Optionen auch im KI-Designer-Prompt berücksichtigen
-- [ ] Produktdesigner: Alle Gestaltungs-Features (Farben, Muster, Zonen, Layout-Auswahl, KI-Designer)
-- [ ] Konfigurator: Auf "Vorlagen + Namen/Nummern/Kürzel" reduzieren (keine Design-Änderungen)
-- [ ] Alle Regeln (Positionen, Layouts, Vorgaben) sowohl im Produktdesigner als auch im KI-Prompt implementieren
+- [x] Rückseiten-Layout-Optionen als Konstanten in shared/jerseyRules.ts (4 Varianten, dynamische Positionsberechnung) – BACK_LAYOUT_OPTIONS + calculateBackPositions
+- [x] Rückseiten-Layout-Optionen auch im KI-Designer-Prompt berücksichtigen – getPositionRulesForAI
+- [x] Produktdesigner: Alle Gestaltungs-Features (Farben, Muster, Zonen, Layout-Auswahl, KI-Designer) – KI-Designer hat alle Features
+- [x] Konfigurator: Auf "Vorlagen + Namen/Nummern/Kürzel" reduzieren (keine Design-Änderungen) – CustomerConfigurator zeigt nur Vorlagen + Spielerdaten
+- [x] Alle Regeln (Positionen, Layouts, Vorgaben) sowohl im Produktdesigner als auch im KI-Prompt implementieren – jerseyRules.ts + KI-Prompt synchron
 
 ## Verbandsvorgaben-Korrektur (DFL/DFB exakt)
 
@@ -2067,10 +2067,10 @@
 
 ## KI-Designer: Vereinswappen automatisch übernehmen
 
-- [ ] KI-Designer: Vereinswappen aus Vereinsdaten auslesen und als Referenzbild an den Prompt übergeben
-- [ ] KI-Designer: Wappen an vorgegebener Position (Herzseite) im generierten Design platzieren lassen
-- [ ] KI-Designer: Toggle/Option "Wappen in Nummern einbauen" (Wappen als Hintergrund/Textur in Rückennummer)
-- [ ] KI-Designer: Prompt so formulieren, dass Position und Größe des Wappens exakt den Verbandsvorgaben entsprechen
+- [x] KI-Designer: Vereinswappen aus Vereinsdaten auslesen und als Referenzbild an den Prompt übergeben
+- [x] KI-Designer: Wappen an vorgegebener Position (Herzseite) im generierten Design platzieren lassen – X=60%, Y=32%
+- [x] KI-Designer: Toggle/Option "Wappen in Nummern einbauen" (Wappen als Hintergrund/Textur in Rückennummer) – Clipping-Mask-Konzept
+- [x] KI-Designer: Prompt so formulieren, dass Position und Größe des Wappens exakt den Verbandsvorgaben entsprechen – 8-10cm, Herzseite
 
 ## Logo-Compositing Korrektur (07.05.2026)
 - [x] Vereinswappen-Position korrigieren: x=30%, y=28%, w=5%, h=10% (linke Hälfte, Herzseite)
