@@ -2097,3 +2097,7 @@
 - [x] Frontend: Neuer Toggle "Wappen als Wasserzeichen (Rücken)" – groß, halbtransparent, HINTER der Nummer
 - [x] KI-Prompt für "Wappen in Nummer": Nummer muss einfarbig + kontrastreich sein (für Masken-Erkennung)
 - [x] KI-Prompt für "Wappen Wasserzeichen": Wappen als BACKGROUND-Layer, Nummer + Text im FOREGROUND
+
+## Bug: PDF-Upload für Sponsoren-Logos (07.05.2026)
+- [ ] Sponsoren-Logo Upload: PDF als erlaubtes Format hinzufügen
+- [ ] Bug: Vereinswappen in Rückennummer integrieren funktioniert nicht (Post-Processing schlägt fehl)
