@@ -1996,3 +1996,9 @@
 - [x] Hersteller-Logo im Prompt explizit verbieten (nur wenn vom Benutzer vorgegeben)
 - [x] Sponsoren-Logo aus Verwaltung: Bild-URL als Referenzbild an KI übergeben (nicht nur Name)
 - [x] Manueller Sponsor-Upload: Base64-Fehler fixen, korrekt ans Backend hochladen
+
+## KI-Design Kritische Fixes (Mai 2026)
+- [x] Wappen NUR EINMAL links Brust (Prompt verstärkt: ONLY ONCE, NON-NEGOTIABLE)
+- [x] Sponsor: Klare Platzhalter-Bereiche mit Namen als Text (KI kann keine echten Logos platzieren)
+- [x] Koordinaten als GPS-Koordinaten (korrekte Formatierung 53.5°N 10.0°E)
+- [x] Vorlage-Button: category "Trikot" statt "trikot" (Backend-Enum-Match)

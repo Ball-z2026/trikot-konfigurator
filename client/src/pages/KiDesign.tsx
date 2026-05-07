@@ -423,9 +423,9 @@ export default function KiDesign() {
       // VEREINSWAPPEN = ZWINGEND links auf der Brust (Verbandsregel, kein Interpretationsspielraum!)
       // Wird IMMER gesetzt wenn ein Vereinswappen existiert - kein Toggle!
       if (defaultLogo?.imageUrl) {
-        extraPrompt += " MANDATORY FEDERATION RULE: The jersey MUST have the EXACT club crest/emblem/badge from the reference image on the LEFT CHEST (heart side). Do NOT invent or generate a new crest - use the EXACT crest provided in the reference images. The crest must be approximately 8cm in size, clearly visible as a separate badge/patch element on the upper left chest area (heart side). ONE single badge, NOT repeated, NOT as watermark. Copy the reference crest EXACTLY as provided.";
+        extraPrompt += " MANDATORY FEDERATION RULE - CLUB CREST PLACEMENT: The jersey MUST display the club crest/emblem EXACTLY ONCE on the FRONT LEFT CHEST (heart side, upper left area). CRITICAL: The crest appears ONLY ONCE on the entire front of the jersey - do NOT place it anywhere else on the front (not on the right side, not on the stomach, not repeated). Use the EXACT crest from the reference images, do NOT invent a new one. Size approximately 8cm, clearly visible as a badge/patch. ONLY ONE CREST ON THE FRONT - THIS IS NON-NEGOTIABLE.";
         if (useWappenInNumber) {
-          extraPrompt += " Additionally, place a SMALLER version of the same club crest BELOW the player number on the BACK of the jersey (optional decorative placement).";
+          extraPrompt += " Additionally, place a SMALLER version (about 4cm) of the same club crest on the SHORTS (front left thigh area) as a secondary placement. This is the ONLY other location where the crest may appear.";
         }
       }
 
@@ -443,23 +443,29 @@ export default function KiDesign() {
       if (useCoordinates && orgData?.latitude && orgData?.longitude) {
         const lat = Number(orgData.latitude).toFixed(4);
         const lng = Number(orgData.longitude).toFixed(4);
-        extraPrompt += ` MUST include the geographic coordinates "${lat}° N ${lng}° E" as a visible text/typography element on the jersey - place it on the COLLAR INSIDE or on one of the SLEEVES (left or right sleeve hem/cuff area). Use a stylish, small monospace or sans-serif font.`;
+        const latDir = Number(orgData.latitude) >= 0 ? "N" : "S";
+        const lngDir = Number(orgData.longitude) >= 0 ? "E" : "W";
+        const coordText = `${Math.abs(Number(lat))}°${latDir} ${Math.abs(Number(lng))}°${lngDir}`;
+        extraPrompt += ` MUST include the geographic coordinates "${coordText}" as visible printed text on the jersey. Place this text on the INSIDE OF THE COLLAR or on the SLEEVE CUFF area. The text should read exactly "${coordText}" in a small, clean monospace font (like on luxury/premium sportswear). Make sure the text is clearly readable and correctly formatted as GPS coordinates.`;
       }
 
       // SPONSOREN = Müssen sichtbar im Design sein
+      // HINWEIS: KI-Bildgenerierung kann keine echten Logos pixelgenau platzieren.
+      // Stattdessen: Klar definierte Sponsor-BEREICHE mit dem Sponsor-NAMEN als Text reservieren.
+      // Die echten Logos werden nachträglich als Overlay platziert.
       const enabledSponsors = sponsorLogos.filter(s => s.enabled);
       if (enabledSponsors.length > 0) {
         const sponsorPlacements: string[] = [];
         enabledSponsors.forEach((s, i) => {
           if (s.type === "hauptsponsor" || i === 0) {
-            sponsorPlacements.push(`"${s.name}" prominently on the FRONT CHEST CENTER (largest sponsor area)`);
+            sponsorPlacements.push(`Main sponsor "${s.name}" - reserve a prominent rectangular area (approx 20x8cm) on the FRONT CENTER CHEST for the sponsor logo. Fill this area with a clean white or light-colored rectangle/banner with the text "${s.name}" in bold dark letters inside it`);
           } else if (s.type === "spartensponsor" || i === 1) {
-            sponsorPlacements.push(`"${s.name}" on the BACK below the player name area`);
+            sponsorPlacements.push(`Secondary sponsor "${s.name}" - reserve a rectangular area (approx 15x6cm) on the UPPER BACK (below collar, above player name) with the text "${s.name}"`);
           } else {
-            sponsorPlacements.push(`"${s.name}" on the SLEEVE or lower front`);
+            sponsorPlacements.push(`Additional sponsor "${s.name}" - reserve a small area (approx 8x4cm) on the SLEEVE with the text "${s.name}"`);
           }
         });
-        extraPrompt += ` MUST include visible sponsor text/logo areas on the jersey: ${sponsorPlacements.join("; ")}. Each sponsor area should be a clearly visible rectangular white/light space with the sponsor name text readable inside it. Sponsors are mandatory elements that must be clearly visible on the final design.`;
+        extraPrompt += ` SPONSOR PLACEMENT (MANDATORY): ${sponsorPlacements.join(". ")}. These sponsor areas MUST be clearly visible, well-defined rectangular zones with the sponsor name text clearly readable. The sponsor text must be large enough to read easily. Do NOT skip or hide sponsor areas - they are contractual obligations.`;
       }
 
       // STRASSENKARTE ALS WASSERZEICHEN
@@ -598,7 +604,7 @@ export default function KiDesign() {
         departmentId: undefined,
         teamId: undefined,
         sport: selectedSport as any,
-        category: "trikot" as any,
+        category: "Trikot" as any,
         visibility,
         productId: undefined,
         zones: enabledZones.length > 0 ? enabledZones.map(z => ({
