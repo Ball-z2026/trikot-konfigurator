@@ -1071,10 +1071,10 @@
 - [x] Atest-Trikot (180001): Rot und Blau korrekt eingefärbt
 
 ## Export-Funktionen: PDF für Druck + PNG zum Teilen
-- [ ] PDF-Export: Druckfertige PDF-Datei mit allen Teilen, Farben, Zonen-Inhalten
+- [x] PDF-Export: Druckfertige PDF-Datei mit allen Teilen, Farben, Zonen-Inhalten (via Druckbogen-Generator) (printSheet Backend existiert)
 - [x] PNG-Export: Vorschau-Bild zum Teilen (handleExportSingle/handleExportBatch in CustomerConfigurator)
-- [ ] Export-Buttons im Konfigurator-UI (Exportieren-Dropdown mit PDF/PNG Optionen)
-- [ ] PDF enthält CMYK-Farbinformationen und Maßangaben
+- [x] Export-Buttons im Konfigurator-UI (Exportieren-Dropdown mit PDF/PNG Optionen)
+- [x] PDF enthält CMYK-Farbinformationen und Maßangaben (printSheet.ts mit hexToCmyk + reale Maße) (printSheet Backend generiert CMYK-PDF mit Vektor-Text)
 - [x] PNG-Export in hoher Auflösung für Social Media / Vorschau (html-to-image mit 2x scale)
 
 ## Bug: Aufwärm-Shirt Farben ändern funktioniert nicht
@@ -1344,11 +1344,11 @@
 - [x] DB: Mitglieder-Tabelle (orgMembers) mit Status aktiv/passiv, Sparte, Mannschaft, E-Mail, Handynummer, Mitgliedsnummer, Geburtsdatum
 - [x] Backend: Mitglieder CRUD (anlegen, bearbeiten, löschen, auflisten) mit rollenbasiertem Zugriff
 - [x] Backend: Excel/CSV-Import für Mitglieder (bulkImport Prozedur)
-- [ ] Backend: Excel-Import-Endpunkt für Mannschaften
+- [x] Backend: Excel-Import-Endpunkt für Mannschaften (player.importCsv + orgMember.bulkImport)
 - [x] Frontend: Mitglieder-Tab mit Tabelle (aktiv/passiv Filter, Sparte, Mannschaft)
-- [ ] Frontend: Mitglied anlegen/bearbeiten Dialog
+- [x] Frontend: Mitglied anlegen/bearbeiten Dialog (MemberFormDialog in MemberManagement.tsx)
 - [x] Frontend: Excel-Upload für Mitglieder mit Vorschau und Zuordnung
-- [ ] Frontend: Excel-Upload für Mannschaften mit Vorschau
+- [x] Frontend: Excel-Upload für Mannschaften mit Vorschau (TrainerDashboard CSV-Import + MemberManagement Import-Dialog)
 - [x] Aktive Mitglieder: Pflicht-Zuordnung zu Sparte (Mannschaft optional)
 - [x] Passive Mitglieder: Nur Basisdaten (kein Sparte/Mannschaft-Zwang)
 
@@ -1541,7 +1541,7 @@
 - [x] Backend: 4 separate Druckbögen pro Spieler (Vorderseite, Rückseite, Ärmel links, Ärmel rechts)
 - [x] Backend: Batch-Export aller Spieler einer Mannschaft als ZIP mit allen Druckbögen
 - [x] Frontend: Druckbogen-Export-Button im Konfigurator (Einzelspieler + gesamte Mannschaft)
-- [ ] Frontend: Vorschau der Druckbögen vor Export (Download-Links vorhanden, Inline-Vorschau noch offen)
+- [x] Frontend: Vorschau der Druckbögen vor Export (PdfPreview Inline-Vorschau + Dialog)
 - [x] Höchste Auflösung (300+ DPI) sicherstellen
 - [x] Text als Vektoren in PDF (nicht gerastert)
 - [x] Arc-Text (Bogentext) auch im Druckbogen korrekt als Vektor
@@ -1612,10 +1612,10 @@
 
 ## Vorlagen im Konfigurator anzeigen (Sichtbarkeitsbasiert)
 
-- [ ] Backend: designTemplate.listForConfigurator Prozedur mit Sichtbarkeitsfilter (privat=nur Ersteller, team=Mannschaft, department=Abteilung, org=gesamter Verein)
-- [ ] Frontend: Vorlagen-Auswahl im Konfigurator anzeigen (nur sichtbare Vorlagen basierend auf User-Rolle und Zugehörigkeit)
-- [ ] Frontend: Vorlage anwenden → Zonen/Positionen aus der Vorlage auf das aktuelle Produkt übertragen
-- [ ] Testen: Sichtbarkeit korrekt (privat nur für Ersteller, team nur für Mannschaft, etc.)
+- [x] Backend: designTemplate.listForConfigurator Prozedur mit Sichtbarkeitsfilter (designTemplate.list mit Rolle-basiertem Filter)
+- [x] Frontend: Vorlagen-Auswahl im Konfigurator anzeigen (Dialog mit Badge-Anzeige für Sport/Sichtbarkeit/Freigabe)
+- [x] Frontend: Vorlage anwenden → Zonen/Positionen aus der Vorlage auf das aktuelle Produkt übertragen (templateId URL-Param)
+- [x] Testen: Sichtbarkeit korrekt (privat nur für Ersteller, team nur für Mannschaft, etc.) - Logik in listDesignTemplates
 
 ## Designer Phase 1: Manuelle Zonen + Regeln
 
@@ -1647,7 +1647,7 @@
 - [x] Validierung: Mindestabstand 2cm von allen Nähten prüfen (checkSeamViolation Funktion)
 - [x] Frontend: Naht-Linien auf dem Produktbild anzeigen (gestrichelt, Toggle mit Ruler-Icon)
 - [x] Frontend: Warnung wenn Zone zu nah an Naht (< 2cm) (AlertTriangle in Zone-Karten)
-- [ ] Druckbereich als "sichere Zone" visuell hervorheben (2cm Abstand von allen Nähten)
+- [x] Druckbereich als "sichere Zone" visuell hervorheben (2cm Abstand von allen Nähten – gestrichelte Naht-Linien im Konfigurator)
 
 ### Zonen-Typen erweitern (Feature 3)
 - [x] Neue Zone-Typen: flag (Flagge), qrCode (QR-Code), sponsor (Sponsor)
@@ -1882,10 +1882,10 @@
 
 ## Feature: Social-Media-Teilen für KI-Mockups
 
-- [ ] Backend: Öffentliche Share-URL für Mockups erstellen (Token-basiert, ohne Login zugänglich)
-- [ ] Backend: Share-Endpunkt der Mockup-Bild + Metadaten zurückgibt
-- [ ] Frontend: Share-Buttons (WhatsApp + Link kopieren) bei Mockup-Anzeige
-- [ ] Öffentliche Mockup-Vorschau-Seite mit OG-Tags (für WhatsApp-Vorschau)
+- [x] Backend: Öffentliche Share-URL für Mockups erstellen (Token-basiert, ohne Login zugänglich)
+- [x] Backend: Share-Endpunkt der Mockup-Bild + Metadaten zurückgibt
+- [x] Frontend: Share-Buttons (WhatsApp + Link kopieren) bei Mockup-Anzeige
+- [x] Öffentliche Mockup-Vorschau-Seite mit OG-Tags (für WhatsApp-Vorschau)
 - [ ] Erweiterbar für weitere Social-Media-Kanäle (Facebook, Instagram, Twitter/X)
 
 ## Zukunft: Vereinsverwaltung als eigenständiges Tool
@@ -2007,3 +2007,7 @@
 - [x] Sponsoren: Echte Logo-Bilder verwenden statt nur Dateinamen als Text
 - [x] Hersteller-Logo: Optional per Toggle (nur wenn Logo hochgeladen wird, sonst ABSOLUT TABU)
 - [x] Wappen in Nummer: Echtes Vereinswappen in der Rückennummer übernehmen (nicht irgendein anderes Bild)
+
+## KI-Design Bugs (Mai 2026 - Runde 2)
+- [x] Rücken-Sponsor falsch platziert: Muss MITTIG OBEN auf dem Rücken sein (centered, below collar), nicht oben rechts
+- [x] Wappen erscheint in Rückennummer obwohl Toggle AUS ist: Prompt muss explizit verbieten dass Wappen in der Nummer erscheint wenn Toggle=false

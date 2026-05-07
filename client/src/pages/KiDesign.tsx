@@ -428,6 +428,8 @@ export default function KiDesign() {
         extraPrompt += " MANDATORY FEDERATION RULE - CLUB CREST PLACEMENT: The jersey MUST display the club crest/emblem EXACTLY ONCE on the FRONT LEFT CHEST (heart side, upper left area). CRITICAL: The crest appears ONLY ONCE on the entire front of the jersey - do NOT place it anywhere else on the front (not on the right side, not on the stomach, not repeated). Use the EXACT crest from the reference images, do NOT invent a new one. Size approximately 8cm, clearly visible as a badge/patch. ONLY ONE CREST ON THE FRONT - THIS IS NON-NEGOTIABLE.";
         if (useWappenInNumber) {
           extraPrompt += " CREST IN BACK NUMBER: On the BACK of the jersey, place the EXACT same club crest/emblem as a semi-transparent WATERMARK/BACKGROUND INSIDE the large back number. The crest should be centered within the number digits, slightly transparent (about 30-40% opacity), creating an elegant effect where the number is overlaid on top of the club crest. Use the EXACT crest from the reference images - do NOT invent or modify it. The crest should fill approximately 70-80% of the number area.";
+        } else {
+          extraPrompt += " CRITICAL: The club crest/emblem must ONLY appear on the FRONT LEFT CHEST. Do NOT place the crest inside, behind, or overlapping the back number in any way. The back number must be CLEAN with NO crest, NO watermark, NO emblem inside or behind it. The number area must contain ONLY the number digits and nothing else.";
         }
       }
 
@@ -461,7 +463,7 @@ export default function KiDesign() {
           if (s.type === "hauptsponsor" || i === 0) {
             sponsorPlacements.push(`Main sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the FRONT CENTER CHEST area (approx 20x8cm). Use the ACTUAL logo graphic from the reference image, do NOT write any text instead`);
           } else if (s.type === "spartensponsor" || i === 1) {
-            sponsorPlacements.push(`Secondary sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the UPPER BACK (below collar, approx 15x6cm). Use the ACTUAL logo graphic, do NOT write text`);
+            sponsorPlacements.push(`Secondary sponsor (reference image #${i + 2}) - place the EXACT logo image from reference CENTERED HORIZONTALLY on the UPPER BACK, positioned BELOW the collar and ABOVE the club name text (approx 15x6cm, centered left-to-right). It must be in the CENTER of the back, NOT on the left or right side. Use the ACTUAL logo graphic, do NOT write text`);
           } else {
             sponsorPlacements.push(`Additional sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the SLEEVE (approx 8x4cm). Use the ACTUAL logo graphic, do NOT write text`);
           }

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -295,6 +295,7 @@ export default function CustomerConfigurator() {
   const [duplicateSourceId, setDuplicateSourceId] = useState<number | null>(null);
   const [duplicateTargetTeamId, setDuplicateTargetTeamId] = useState<number | null>(null);
   const [duplicateName, setDuplicateName] = useState("");
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   
   // ─── Saved Designs tRPC ─────────────────────────────────────────────────
   const { data: savedDesigns, refetch: refetchDesigns } = trpc.savedDesign.list.useQuery(
@@ -343,6 +344,12 @@ export default function CustomerConfigurator() {
       toast.error("Duplizieren fehlgeschlagen");
     },
   });
+  // ─── Design-Vorlagen (Templates) für Konfigurator ──────────────────────────
+  const { data: availableTemplates } = trpc.designTemplate.list.useQuery(
+    { orgId: userOrgId!, departmentId: userDeptId ?? undefined, teamId: teamIdParam ?? undefined },
+    { enabled: !!userOrgId && templateDialogOpen }
+  );
+
   const [partColors, setPartColors] = useState<Record<number, string>>({});
   const [dtfBaseColor, setDtfBaseColor] = useState<string | null>(null);
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
@@ -1862,52 +1869,60 @@ export default function CustomerConfigurator() {
                       <FolderOpen className="w-4 h-4 mr-2" />
                       Design laden
                     </DropdownMenuItem>
+                    {userOrgId && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setTemplateDialogOpen(true)}>
+                          <LayoutGrid className="w-4 h-4 mr-2" />
+                          Vorlage anwenden
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs sm:text-sm"
-              onClick={handleExportSingle}
-              disabled={exporting}
-            >
-              {exporting ? (
-                <Loader2 className="w-3.5 h-3.5 sm:mr-1.5 animate-spin" />
-              ) : (
-                <Download className="w-3.5 h-3.5 sm:mr-1.5" />
-              )}
-              <span className="hidden sm:inline">Exportieren</span>
-            </Button>
-            {players.length > 0 && (
-              <Button
-                size="sm"
-                className="h-8 text-xs sm:text-sm"
-                onClick={handleExportBatch}
-                disabled={exporting}
-              >
-                {exporting ? (
-                  <Loader2 className="w-3.5 h-3.5 sm:mr-1.5 animate-spin" />
-                ) : (
-                  <FileDown className="w-3.5 h-3.5 sm:mr-1.5" />
+            {/* Export-Dropdown mit allen Optionen */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs sm:text-sm"
+                  disabled={exporting}
+                >
+                  {exporting ? (
+                    <Loader2 className="w-3.5 h-3.5 sm:mr-1.5 animate-spin" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5 sm:mr-1.5" />
+                  )}
+                  <span className="hidden sm:inline">Exportieren</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">PNG-Vorschau</DropdownMenuLabel>
+                <DropdownMenuItem onClick={handleExportSingle}>
+                  <FileImage className="w-4 h-4 mr-2" />
+                  Aktuelle Ansicht als PNG
+                </DropdownMenuItem>
+                {players.length > 0 && (
+                  <DropdownMenuItem onClick={handleExportBatch}>
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Alle Spieler als ZIP ({players.length})
+                  </DropdownMenuItem>
                 )}
-                <span className="hidden sm:inline">Alle exportieren ({players.length})</span>
-                <span className="sm:hidden">{players.length}</span>
-              </Button>
-            )}
-            {/* Druckbogen-Export Button – erscheint wenn Design gespeichert + Mannschaftsliste vorhanden */}
-            {currentDesignId && teamIdParam && userOrgId && players.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 text-xs sm:text-sm border-red-200 text-red-700 hover:bg-red-50"
-                onClick={() => window.open(`/druckbogen/${userOrgId}/${currentDesignId}/${teamIdParam}`, '_blank')}
-              >
-                <Printer className="w-3.5 h-3.5 sm:mr-1.5" />
-                <span className="hidden sm:inline">Druckbögen</span>
-              </Button>
-            )}
+                {currentDesignId && teamIdParam && userOrgId && players.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Druckfertige PDF (CMYK)</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => window.open(`/druckbogen/${userOrgId}/${currentDesignId}/${teamIdParam}`, '_blank')}>
+                      <Printer className="w-4 h-4 mr-2" />
+                      Druckbögen generieren
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -3807,6 +3822,64 @@ export default function CustomerConfigurator() {
                     <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate({ id: design.id }); }}>
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Vorlagen-Auswahl Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Vorlage anwenden</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-4 max-h-96 overflow-y-auto">
+            {!availableTemplates || availableTemplates.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Keine Vorlagen verfügbar</p>
+            ) : (
+              availableTemplates.map((tpl: any) => (
+                <div
+                  key={tpl.id}
+                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 cursor-pointer"
+                  onClick={() => {
+                    // Vorlage anwenden: Navigiere zum Konfigurator mit templateId
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("templateId", tpl.id.toString());
+                    window.location.href = url.toString();
+                  }}
+                >
+                  {tpl.imageUrl ? (
+                    <div className="w-16 h-16 rounded-md overflow-hidden bg-muted shrink-0 border">
+                      <img src={storageUrl(tpl.imageUrl)} alt={tpl.name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-md bg-muted shrink-0 border flex items-center justify-center">
+                      <Shirt className="w-6 h-6 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{tpl.name}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {tpl.sport && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {tpl.sport === "fussball" ? "Fußball" : tpl.sport === "handball" ? "Handball" : tpl.sport === "volleyball" ? "Volleyball" : "Basketball"}
+                        </Badge>
+                      )}
+                      {tpl.visibility && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          {tpl.visibility === "org" ? "Verein" : tpl.visibility === "department" ? "Abteilung" : tpl.visibility === "team" ? "Mannschaft" : "Privat"}
+                        </Badge>
+                      )}
+                      {tpl.approvalStatus === "approved" && (
+                        <Badge className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700">Freigegeben</Badge>
+                      )}
+                    </div>
+                    {tpl.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{tpl.description}</p>
+                    )}
                   </div>
                 </div>
               ))
