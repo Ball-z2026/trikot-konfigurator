@@ -1991,3 +1991,8 @@
 - [x] Echtes Vereinswappen als Referenzbild an KI übergeben (KI soll es 1:1 übernehmen, nicht selbst generieren)
 - [x] Wappen optional auch unter der Rückennummer platzieren (Toggle)
 - [x] Speichern-Button hinzufügen (Vorlage speichern) - war vorhanden, jetzt auch im generate-Step sichtbar
+
+## KI-Design Hersteller & Sponsor Fixes (Mai 2026)
+- [x] Hersteller-Logo im Prompt explizit verbieten (nur wenn vom Benutzer vorgegeben)
+- [x] Sponsoren-Logo aus Verwaltung: Bild-URL als Referenzbild an KI übergeben (nicht nur Name)
+- [x] Manueller Sponsor-Upload: Base64-Fehler fixen, korrekt ans Backend hochladen

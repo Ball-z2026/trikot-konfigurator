@@ -472,8 +472,8 @@ export default function KiDesign() {
         extraPrompt += ` The watermark/silhouette pattern should be at approximately ${watermarkOpacity}% opacity - subtle but recognizable.`;
       }
 
-      // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten
-      const brandProtection = " IMPORTANT: Do NOT include any trademarked patterns, brand logos, or recognizable brand elements such as three stripes (Adidas), swoosh (Nike), puma cat, Under Armour logo, or any other brand-identifiable design elements. The design must be completely original and free of any trademark infringement.";
+      // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten + KEIN Hersteller-Logo
+      const brandProtection = " CRITICAL RULES: 1) Do NOT include ANY manufacturer/brand logo or brand area on the jersey - no three stripes, no swoosh, no puma cat, no Under Armour logo, no Hummel chevrons, no Erima, no Kempa, no Jako, no Mizuno, no Asics, no generic brand placeholder. There must be ZERO brand/manufacturer logos unless the user explicitly provides one. 2) Do NOT invent or generate any fictional brand logos or brand-like graphics. 3) The jersey must look like a custom/unbranded jersey with ONLY the club crest, sponsor logos, and text elements specified above. No other logos or brand marks of any kind.";
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
 
@@ -1130,19 +1130,34 @@ export default function KiDesign() {
                       setUploadingSponsor(true);
                       try {
                         const reader = new FileReader();
-                        reader.onload = () => {
+                        reader.onload = async () => {
                           const dataUrl = reader.result as string;
+                          const base64 = dataUrl.split(',')[1];
                           const name = file.name.replace(/\.[^.]+$/, '');
+                          // Upload ans Backend
+                          const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              data: base64,
+                              fileName: `sponsor_${Date.now()}_${file.name}`,
+                              contentType: file.type,
+                            }),
+                          });
+                          if (!res.ok) throw new Error('Upload fehlgeschlagen');
+                          const { url } = await res.json();
                           setSponsorLogos(prev => [...prev, {
                             id: `custom_${Date.now()}`,
                             name,
-                            imageUrl: dataUrl,
+                            imageUrl: url,
                             type: "mannschaftssponsor",
                             enabled: true,
                           }]);
                           toast.success(`Sponsor "${name}" hinzugefügt`);
                         };
                         reader.readAsDataURL(file);
+                      } catch (err: any) {
+                        toast.error(err.message || 'Sponsor-Upload fehlgeschlagen');
                       } finally {
                         setUploadingSponsor(false);
                       }
