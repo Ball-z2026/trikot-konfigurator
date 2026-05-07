@@ -423,10 +423,10 @@ export default function KiDesign() {
         
         if (landmarkStyle === "large") {
           // Groß als Wasserzeichen
-          extraPrompt += ` MUST incorporate the landmark silhouette from the reference image as a SINGLE LARGE WATERMARK ${placementText}. The silhouette should be a big, centered background element covering approximately 50-60% of the jersey surface area. It should be rendered as a subtle tonal element (same color family but slightly lighter/darker shade) at ${landmarkOpacity}% opacity. The silhouette is a background layer - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
+          extraPrompt += ` LANDMARK SILHOUETTE WATERMARK: Use EXCLUSIVELY the silhouette shape from the provided reference image (the landmark/building outline). Do NOT invent, guess, or substitute any other shapes, icons, or symbols. The EXACT silhouette outline from the reference must be used as a SINGLE LARGE WATERMARK ${placementText}. Place it as a big, centered background element covering approximately 50-60% of the jersey surface area. Render it as a subtle tonal element (same color family but slightly lighter/darker shade) at ${landmarkOpacity}% opacity. CRITICAL: Use ONLY the exact shape from the reference image - do NOT use generic sports icons, trophies, balls, stars, or any other symbols. The silhouette is a background layer - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
         } else {
           // Kleine zufällige als Muster
-          extraPrompt += ` MUST incorporate the landmark silhouette from the reference image as a REPEATING PATTERN of SMALL silhouettes ${placementText}. Scatter many small copies of the silhouette randomly across the jersey fabric at various sizes (2-5cm each) and slight rotations, creating an elegant all-over pattern effect like a wallpaper texture. The silhouettes should be rendered as subtle tonal elements (same color family but slightly lighter/darker shade) at ${landmarkOpacity}% opacity. The pattern is a background texture - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
+          extraPrompt += ` LANDMARK SILHOUETTE PATTERN: Use EXCLUSIVELY the silhouette shape from the provided reference image (the landmark/building outline). Do NOT invent, guess, or substitute any other shapes, icons, or symbols. Take the EXACT silhouette outline from the reference and repeat it as a PATTERN of SMALL copies ${placementText}. Scatter many small copies of THIS EXACT SAME silhouette shape randomly across the jersey fabric at various sizes (2-5cm each) and slight rotations, creating an all-over pattern. CRITICAL: Every single shape in the pattern must be the SAME silhouette from the reference image - do NOT use generic sports icons, trophies, balls, stars, shields, or any other symbols. Render at ${landmarkOpacity}% opacity as subtle tonal elements. The pattern is a background texture - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
         }
       }
       
@@ -448,43 +448,25 @@ export default function KiDesign() {
       // Herzseite = linke Brust des Trägers = RECHTE Seite im Bild (Betrachter-Perspektive)
       // Auf gleicher Höhe wie Brustnummer (Y=32% = etwas unterhalb Kragen)
       if (defaultLogo?.imageUrl) {
-        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST PLACEMENT: Place the club crest/badge (provided as reference image) on the VIEWER'S RIGHT SIDE of the front jersey chest area (this is the wearer's left chest / heart side). Position: approximately 60-65% from the LEFT edge of the jersey and 32% from the top. Size: approximately 8-10cm (10% of jersey height). IMPORTANT: The crest goes on the RIGHT side as seen by the viewer, the number goes on the LEFT side as seen by the viewer. The crest must be reproduced PIXEL-PERFECT as provided in the reference image - do NOT modify, redraw, reinterpret, simplify, or change any colors.`;
+        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST PLACEMENT [FIXED POSITION - DO NOT MOVE]: Place the club crest/badge (provided as reference image) on the VIEWER'S RIGHT SIDE of the front jersey chest area (this is the wearer's left chest / heart side). Position: approximately 60-65% from the LEFT edge of the jersey and 32% from the top. Size: approximately 8-10cm (10% of jersey height). IMPORTANT: The crest goes on the RIGHT side as seen by the viewer, the number goes on the LEFT side as seen by the viewer. These positions are FIXED and must NOT be affected by any watermark, pattern, or background element. The crest must be reproduced PIXEL-PERFECT as provided in the reference image - do NOT modify, redraw, reinterpret, simplify, or change any colors.`;
       }
 
       // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
       // Regel: Wappen-Höhe = 7% der Nummernhöhe, Mitte des unteren Bereichs, gleiche Höhe bei zweistellig
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER - EXACT PLACEMENT RULE:
+        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER [MANDATORY - MUST BE VISIBLE]:
+The club crest (same as front chest) MUST appear as a TINY emblem INSIDE each digit of the back number. This is a REQUIRED element that must be clearly visible in the final image.
 
-STEP 1: DETERMINE the total HEIGHT of the back number digits. Call this value H.
+SIZE: The crest height = 7% of the total number height (very small, like a watermark stamp inside the digit).
+POSITION: Centered horizontally within each digit, placed in the lower third of the digit vertically.
+FOR TWO-DIGIT NUMBERS: Both crests at the EXACT SAME vertical height.
 
-STEP 2: SCALE the club crest HEIGHT to EXACTLY 7% of H.
-- Example: If number height = 25cm → crest height = 1.75cm
-- Example: If number height = 30cm → crest height = 2.1cm
-- The crest width follows from maintaining the original aspect ratio.
-
-STEP 3: POSITION the crest:
-- Vertically: Place the crest at the CENTER OF THE LOWER THIRD of each digit.
-  (Divide the digit into 3 equal vertical sections. Place the crest centered in the bottom section.)
-  CRITICAL: For two-digit numbers (e.g. 10, 23, 99), BOTH crests MUST be at the EXACT SAME vertical height.
-  Calculate the position once and apply it identically to both digits.
-- Horizontally: CENTERED within the lower portion of each digit (equal space left and right)
-
-The crest MUST:
-- Have a height of EXACTLY 7% of the total number height
-- Be positioned at the center of the lower third of the digit
-- Be at the SAME vertical position in ALL digits (critical for two-digit numbers)
-- Be horizontally centered within each digit
-- Maintain its original aspect ratio
-- Be IDENTICAL to the front chest crest (same colors, details, proportions)
-- Appear inside EVERY digit of the back number
-
-The digit outline remains fully visible as a frame/border around the crest in a contrasting color.`;
+The crest is rendered in full color (identical to the front chest crest) and sits INSIDE the digit shape. The digit outline/fill remains visible as a frame around the tiny crest. This is NOT optional - the crest MUST be visible inside each number digit.`;
       }
 
       // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
       // Auf gleicher Höhe wie Vereinswappen (Y=32%)
-      extraPrompt += ` FRONT VIEW (left jersey) - FRONT NUMBER PLACEMENT: Place a player number on the VIEWER'S LEFT SIDE of the front jersey chest area (this is the wearer's right chest, opposite side from the crest). Position: approximately 30-35% from the LEFT edge of the jersey and 32% from the top (same height as the crest on the opposite side). Size: approximately 10cm tall (12% of jersey height). IMPORTANT: The number goes on the LEFT side as seen by the viewer, the crest goes on the RIGHT side as seen by the viewer. Use the same font style as the back number but smaller.`;
+      extraPrompt += ` FRONT VIEW (left jersey) - FRONT NUMBER PLACEMENT [FIXED POSITION - DO NOT MOVE]: Place a player number on the VIEWER'S LEFT SIDE of the front jersey chest area (this is the wearer's right chest, opposite side from the crest). Position: approximately 30-35% from the LEFT edge of the jersey and 32% from the top (same height as the crest on the opposite side). Size: approximately 10cm tall (12% of jersey height). IMPORTANT: The number goes on the LEFT side as seen by the viewer, the crest goes on the RIGHT side as seen by the viewer. These positions are FIXED and must NOT be affected by any watermark, pattern, or background element. Use the same font style as the back number but smaller.`;
 
       // RÜCKSEITEN-LAYOUT = Dynamische Positionierung basierend auf gewähltem Layout
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);

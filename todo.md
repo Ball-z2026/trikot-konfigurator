@@ -2132,3 +2132,8 @@
 - [x] Ausschluss-Logik: Wenn Wahrzeichen auf Rückseite → Vereinswappen-Wasserzeichen (Rücken) automatisch deaktivieren
 - [x] Prompt-Anpassung: Wahrzeichen-Prompt je nach Darstellungsart und Platzierung generieren
 
+## Bug-Fixes KI-Prompt (08.05.2026)
+- [x] BUG: Silhouette-Muster zeigt falsche Symbole – Prompt verstärkt: STRIKT nur Referenzbild verwenden, NICHT raten
+- [x] BUG: Frontnummer/Wappen-Position – [FIXED POSITION - DO NOT MOVE] Tag hinzugefügt, Positionen unverändert
+- [x] BUG: Wappen in Rückennummer – Prompt vereinfacht und als [MANDATORY] markiert
+
