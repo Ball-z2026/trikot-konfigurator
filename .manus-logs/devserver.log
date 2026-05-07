@@ -8795,3 +8795,20 @@
 [2026-05-07T18:11:39.634Z] 2:11:39 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-07T18:12:06.490Z] 2:12:06 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-07T18:12:39.320Z] 2:12:39 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T20:00:49.426Z] [Auth] Missing session cookie
+[2026-05-07T20:00:50.888Z] [Auth] Missing session cookie
+[2026-05-07T20:00:52.002Z] [Auth] Missing session cookie
+[2026-05-07T20:02:35.258Z] 4:02:35 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-07T20:02:41.110Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T20:02:43.901Z] Server running on http://localhost:3000/
+[2026-05-07T20:03:02.628Z] 4:03:02 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T20:03:19.260Z] 4:03:19 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T20:04:35.155Z] 4:04:35 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T20:05:04.641Z] 4:05:04 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T20:05:55.300Z] 4:05:55 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T20:06:16.667Z] 4:06:16 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T20:07:17.641Z] Dev server process group stopped
+[2026-05-07T20:07:17.698Z] Dev server exited with code -15
+[2026-05-07T20:07:20.697Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-07T20:07:22.890Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T20:07:23.861Z] Server running on http://localhost:3000/

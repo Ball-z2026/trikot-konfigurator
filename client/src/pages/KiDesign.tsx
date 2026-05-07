@@ -150,6 +150,7 @@ export default function KiDesign() {
   const [matchingShortsUrl, setMatchingShortsUrl] = useState<string | null>(null);
   const [generatingShorts, setGeneratingShorts] = useState(false);
   const [backLayout, setBackLayout] = useState<BackLayoutType>(DEFAULT_BACK_LAYOUT);
+  const [useBackCrestWatermark, setUseBackCrestWatermark] = useState(false); // Wappen als großes Wasserzeichen auf Rücken
 
   // Drag & Drop State
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
@@ -173,6 +174,7 @@ export default function KiDesign() {
   const createTemplate = trpc.designTemplate.create.useMutation();
   const generateAiMockup = trpc.mockup.generateAi.useMutation();
   const removeBackgroundMut = trpc.mockup.removeBackground.useMutation();
+  const compositeCrestInNumberMutation = trpc.mockup.compositeCrestInNumber.useMutation();
 
   // Membership für orgId / deptId
   const { data: memberships } = trpc.membership.mine.useQuery();
@@ -435,10 +437,13 @@ export default function KiDesign() {
       }
 
       // WAPPEN AUF RÜCKSEITE = Zwei Optionen:
-      // Option A: "Wasserzeichen groß" = Wappen groß über den gesamten Rücken als Wasserzeichen
-      // Option B: "Wappen in Nummer" = Wappen NUR innerhalb der Nummern-Ziffern
+      // Option A: "Wasserzeichen groß" = Wappen groß über den gesamten Rücken als Wasserzeichen (HINTER der Nummer)
+      // Option B: "Wappen in Nummer" = Post-Processing compositet Wappen IN die Nummern-Ziffern (nach Generierung)
+      // Für Option B: KI generiert eine normale, einfarbige, gut sichtbare Rückennummer.
+      // Das Wappen wird NACH der Generierung per Sharp/Compositing in die Nummer eingesetzt.
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE NUMBER DIGITS ONLY: The club crest (from reference image) must appear ONLY INSIDE the area of the number digits themselves. Imagine the number digits are a window/mask - the crest is visible ONLY through the number shapes. The crest should NOT appear anywhere else on the back - ONLY within the outlines of the digit shapes. The number digits act as a clipping mask for the crest image. The crest fills the digit shapes at about 40-50% opacity. Outside the digit shapes, the jersey shows only the normal design pattern with no crest visible.`;
+        // Hinweis an KI: Nummer muss gut erkennbar und einfarbig sein (für späteres Compositing)
+        extraPrompt += ` BACK VIEW (right jersey) - BACK NUMBER STYLE: The back number MUST be a single SOLID COLOR with CLEAR, SHARP EDGES and HIGH CONTRAST against the jersey background. Do NOT add any texture, gradient, pattern, or crest inside the number. The number must be completely flat/solid colored for post-processing. Make the number large (25-35cm) and clearly visible.`;
       }
 
       // BRUSTNUMMER = Vorderseite, rechte Brust (links im Bild), Position gemäß Verbandsregel
@@ -495,6 +500,11 @@ export default function KiDesign() {
         });
       }
 
+      // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE (groß, halbtransparent, HINTER der Nummer)
+      if (useBackCrestWatermark && defaultLogo?.imageUrl) {
+        extraPrompt += ` BACK VIEW (right jersey) - CREST WATERMARK: Place the club crest (from reference image) as a LARGE WATERMARK on the BACK of the jersey. The crest should be centered on the back, approximately 60-70% of the jersey width, and rendered at ${watermarkOpacity}% opacity as a subtle tonal background element. CRITICAL: The crest watermark must be BEHIND/UNDERNEATH all other elements (number, player name, club name). The back number and text must be clearly visible IN FRONT OF the watermark. The watermark is a background layer - all text and numbers are foreground layers on top of it. Think of it as a faded background print with the number printed over it.`;
+      }
+
       // STRASSENKARTE ALS WASSERZEICHEN
       if (useMapWatermark && mapImageUrl) {
         extraPrompt += ` Include a subtle street map pattern as a watermark/texture across the jersey fabric at approximately ${watermarkOpacity}% opacity. The map should show road lines and intersections creating an abstract geometric pattern that blends into the jersey design as a tonal background texture.`;
@@ -548,7 +558,28 @@ export default function KiDesign() {
       });
 
       if (result.url) {
-        setGeneratedImageUrl(result.url);
+        let finalUrl = result.url;
+        
+        // Post-Processing: Wappen IN die Rückennummer compositen
+        if (useWappenInNumber && defaultLogo?.imageUrl) {
+          try {
+            toast.info("Vereinswappen wird in die Rückennummer eingearbeitet...");
+            const crestResult = await compositeCrestInNumberMutation.mutateAsync({
+              imageUrl: result.url,
+              crestImageUrl: defaultLogo.imageUrl,
+              opacity: 0.7,
+            });
+            if (crestResult.url) {
+              finalUrl = crestResult.url;
+              toast.success("Vereinswappen erfolgreich in Rückennummer eingearbeitet!");
+            }
+          } catch (err: any) {
+            console.error("Crest-in-number compositing failed:", err);
+            toast.warning("Wappen-in-Nummer konnte nicht angewendet werden. Original wird verwendet.");
+          }
+        }
+        
+        setGeneratedImageUrl(finalUrl);
         toast.success("Trikot-Design generiert! Sie können jetzt Zonen hinzufügen.");
         setStep("generate");
       }
@@ -935,7 +966,10 @@ export default function KiDesign() {
                           <div className="flex items-center justify-between p-2 bg-white rounded border">
                             <div className="flex items-center gap-2">
                               <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-60" />
-                              <span className="text-sm">Wappen in Rückennummer</span>
+                              <div>
+                                <span className="text-sm">Wappen in Rückennummer</span>
+                                <span className="text-[10px] text-muted-foreground block">Wappen als Textur in den Ziffern (Clipping-Mask)</span>
+                              </div>
                             </div>
                             <Switch checked={useWappenInNumber} onCheckedChange={setUseWappenInNumber} />
                           </div>
@@ -1061,6 +1095,19 @@ export default function KiDesign() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {/* Wappen als Wasserzeichen auf Rücken */}
+                  {defaultLogo && (
+                    <div className="flex items-center justify-between p-2 mt-2 bg-white rounded border">
+                      <div className="flex items-center gap-2">
+                        <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-40" />
+                        <div>
+                          <span className="text-sm">Wappen als Wasserzeichen (Rücken)</span>
+                          <span className="text-[10px] text-muted-foreground block">Groß, halbtransparent HINTER der Nummer</span>
+                        </div>
+                      </div>
+                      <Switch checked={useBackCrestWatermark} onCheckedChange={setUseBackCrestWatermark} />
+                    </div>
+                  )}
                 </div>
 
                 {/* ═══ DRUCKVERFAHREN ═══ */}

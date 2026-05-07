@@ -2087,5 +2087,13 @@
 - [x] Upselling: Nach 'Gefällt mir'-Button automatisch passende Hose generieren und anzeigen
 
 ## KI-Designer: Wappen-Wasserzeichen Rückseite (07.05.2026)
-- [ ] Vereinswappen als Wasserzeichen auf Rückseite: HINTER der Nummer (Hintergrund), Nummer im Vordergrund
-- [ ] Prompt klarstellen: Wappen-Wasserzeichen ≠ Wappen IN der Nummer (zwei verschiedene Features)
+- [x] Vereinswappen als Wasserzeichen auf Rückseite: HINTER der Nummer (Hintergrund), Nummer im Vordergrund – Prompt mit CREST WATERMARK + BEHIND/UNDERNEATH
+- [x] Prompt klarstellen: Wappen-Wasserzeichen ≠ Wappen IN der Nummer (zwei verschiedene Features) – Zwei separate Toggles + Post-Processing für Wappen-in-Nummer
+
+## Post-Processing: Wappen-in-Nummer (Ansatz 2, 07.05.2026)
+- [x] Backend: crestInNumber.ts – LLM-Vision erkennt Nummer-BBox, Sharp erstellt Maske, compositet Wappen als Clipping-Mask
+- [x] Backend: compositeCrestInNumber tRPC-Endpunkt in routers.ts
+- [x] Frontend: Nach KI-Generierung automatisch Post-Processing aufrufen wenn "Wappen in Rückennummer" aktiv
+- [x] Frontend: Neuer Toggle "Wappen als Wasserzeichen (Rücken)" – groß, halbtransparent, HINTER der Nummer
+- [x] KI-Prompt für "Wappen in Nummer": Nummer muss einfarbig + kontrastreich sein (für Masken-Erkennung)
+- [x] KI-Prompt für "Wappen Wasserzeichen": Wappen als BACKGROUND-Layer, Nummer + Text im FOREGROUND

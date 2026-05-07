@@ -3547,6 +3547,47 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         return { url: result.url };
       }),
 
+    /** Post-Processing: Vereinswappen IN die Rückennummer compositen (Clipping-Mask-Effekt) */
+    compositeCrestInNumber: protectedProcedure
+      .input(z.object({
+        /** URL des KI-generierten Trikot-Bildes */
+        imageUrl: z.string(),
+        /** URL des Vereinswappens */
+        crestImageUrl: z.string(),
+        /** Opacity des Wappens in der Nummer (0-1, default 0.7) */
+        opacity: z.number().min(0).max(1).optional().default(0.7),
+      }))
+      .mutation(async ({ input }) => {
+        const { compositeCrestInNumber } = await import("./crestInNumber");
+        const { storageGetSignedUrl, storagePut } = await import("./storage");
+
+        // URLs auflösen
+        let baseUrl = input.imageUrl;
+        if (baseUrl.includes("/manus-storage/") || baseUrl.includes("/api/storage-proxy/")) {
+          const keyMatch = baseUrl.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+          if (keyMatch) {
+            baseUrl = await storageGetSignedUrl(keyMatch[1]);
+          }
+        }
+
+        let crestUrl = input.crestImageUrl;
+        if (crestUrl.includes("/manus-storage/") || crestUrl.includes("/api/storage-proxy/")) {
+          const keyMatch = crestUrl.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+          if (keyMatch) {
+            crestUrl = await storageGetSignedUrl(keyMatch[1]);
+          }
+        }
+
+        // Compositing durchführen
+        const resultBuffer = await compositeCrestInNumber(baseUrl, crestUrl, input.opacity);
+
+        // Ergebnis speichern
+        const fileName = `ki-designs/crest-in-number_${Date.now()}.png`;
+        const { url } = await storagePut(fileName, resultBuffer, "image/png");
+
+        return { url };
+      }),
+
     /** Photoroom Virtual Model Mockup generieren */
     generatePhotoroom: protectedProcedure
       .input(z.object({
