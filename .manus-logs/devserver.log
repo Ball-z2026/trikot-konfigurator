@@ -8661,3 +8661,18 @@
 [2026-05-07T14:41:24.419Z] 10:41:24 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
 [2026-05-07T14:41:26.228Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-07T14:41:27.024Z] Server running on http://localhost:3000/
+[2026-05-07T15:50:43.112Z] 11:50:43 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T15:52:02.919Z] [Auth] Missing session cookie
+[2026-05-07T15:52:02.922Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.645Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.720Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.726Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.738Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.744Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.753Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.761Z] [Auth] Missing session cookie
+[2026-05-07T15:52:03.767Z] [Auth] Missing session cookie
+[2026-05-07T15:52:10.302Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-07T15:52:10.307Z] [Auth] Missing session cookie
+[2026-05-07T15:52:10.311Z] [Auth] Missing session cookie
+[2026-05-07T15:52:35.924Z] 11:52:35 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css

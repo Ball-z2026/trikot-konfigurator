@@ -426,7 +426,12 @@ export default function KiDesign() {
       // Stattdessen werden sie NACH der Generierung als Overlay auf das Bild gelegt (Post-Processing).
       // Der KI wird gesagt, diese Bereiche LEER zu lassen.
       if (defaultLogo?.imageUrl) {
-        extraPrompt += " CRITICAL LOGO AREAS - LEAVE BLANK: The FRONT LEFT CHEST area (upper left, heart side, approx 8x8cm) must be LEFT COMPLETELY EMPTY/BLANK - no logo, no emblem, no graphic, no badge there. This area will be filled later. Do NOT draw any crest, emblem, or badge anywhere on the jersey.";
+        extraPrompt += " CRITICAL LOGO AREAS - LEAVE BLANK: The FRONT RIGHT area of the image (heart side / wearer's left chest, approx 10x8cm at X=60% Y=28%) must be LEFT COMPLETELY EMPTY/BLANK - no logo, no emblem, no graphic, no badge there. The real club crest will be placed there after generation. Do NOT draw any crest, emblem, or badge anywhere on the jersey.";
+      }
+
+      // Wappen in Rückennummer: Prompt-Hinweis für die KI
+      if (useWappenInNumber && defaultLogo?.imageUrl) {
+        extraPrompt += " BACK NUMBER AREA: The back number area (center of the back, approx 25cm height) should have a SOLID, UNIFORM color background within the number digits to allow a club crest watermark to be composited behind/inside the number after generation. Keep the number area clean and simple.";
       }
 
       // VEREINSNAME = Immer hinten auf dem Rücken, über der Nummer
@@ -492,14 +497,30 @@ export default function KiDesign() {
       // Stattdessen: logoOverlays für Post-Processing aufbauen
       const logoOverlays: Array<{imageUrl: string; xPercent: number; yPercent: number; widthPercent: number; heightPercent: number; opacity?: number}> = [];
       
-      // Vereinswappen: Links oben auf der Brust (Herzseite)
+      // Vereinswappen: Herzseite (RECHTS im Bild = links am Träger)
+      // Position gemäß Verbandsvorgabe: X=60%, Y=28%, Größe 12%×10%
       if (defaultLogo?.imageUrl) {
         logoOverlays.push({
           imageUrl: defaultLogo.imageUrl,
-          xPercent: 28,
-          yPercent: 18,
-          widthPercent: 10,
+          xPercent: 60,
+          yPercent: 28,
+          widthPercent: 12,
           heightPercent: 10,
+        });
+      }
+
+      // Wappen in Rückennummer (optional, wenn Toggle aktiv)
+      // Das gleiche unveränderte Wappen wird halbtransparent in der Nummern-Zone platziert
+      if (useWappenInNumber && defaultLogo?.imageUrl) {
+        // Rückennummer-Position: zentriert, Y abhängig vom Layout
+        // Standard-Layout "clubName_number_playerName": Nummer bei ca. Y=30%, Höhe=29%
+        logoOverlays.push({
+          imageUrl: defaultLogo.imageUrl,
+          xPercent: 35,
+          yPercent: 32,
+          widthPercent: 30,
+          heightPercent: 28,
+          opacity: 0.15, // Subtil im Hintergrund der Nummer
         });
       }
       
@@ -561,10 +582,9 @@ export default function KiDesign() {
         customPrompt: prompt,
         referenceImageUrl: referenceUrl,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
-        // Logo-Compositing DEAKTIVIERT: Feste Prozent-Positionen funktionieren nicht
-        // auf KI-generierten Bildern (Trikot hat unterschiedliche Größen/Positionen).
-        // Logos werden stattdessen im Konfigurator/Druckbogen korrekt platziert.
-        // logoOverlays: logoOverlays.length > 0 ? logoOverlays : undefined,
+        // Logo-Compositing: Echte Logos werden NACH der KI-Generierung
+        // unverändert auf das Bild composited (Post-Processing via Sharp).
+        logoOverlays: logoOverlays.length > 0 ? logoOverlays : undefined,
       });
 
       if (result.url) {

@@ -3,11 +3,12 @@ import { getStandardPlacement } from "./logoCompositing";
 
 describe("logoCompositing", () => {
   describe("getStandardPlacement", () => {
-    it("returns correct placement for clubCrest on front", () => {
+    it("returns correct placement for clubCrest on front (Herzseite)", () => {
       const placement = getStandardPlacement("clubCrest", "front");
-      expect(placement.xPercent).toBe(28);
-      expect(placement.yPercent).toBe(18);
-      expect(placement.widthPercent).toBe(10);
+      // Gemäß Verbandsvorgabe: Herzseite = RECHTS im Bild (X=60%), Y=28%, 12%×10%
+      expect(placement.xPercent).toBe(60);
+      expect(placement.yPercent).toBe(28);
+      expect(placement.widthPercent).toBe(12);
       expect(placement.heightPercent).toBe(10);
     });
 

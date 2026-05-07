@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, openId FROM users WHERE openId IS NOT NULL LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name, openId FROM users WHERE openId IS NOT NULL LIMIT 5;",
+  "rows": [
+    {
+      "id": "540037",
+      "name": "Assemacher Test",
+      "openId": "local_686SbysppNzP2Mhk"
+    },
+    {
+      "id": "2010057",
+      "name": "Markus Assemacher",
+      "openId": "C94jPwoYLC49vBpnDAT5L4"
+    },
+    {
+      "id": "2070005",
+      "name": "tt",
+      "openId": "local_FDZOUCj7LlHHUVal"
+    },
+    {
+      "id": "2100017",
+      "name": "rechnung",
+      "openId": "5siM44nSmfWQ9nVVtk4eCQ"
+    },
+    {
+      "id": "2220010",
+      "name": "Test User",
+      "openId": "local_n7F3XK1gXQObIAqm"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\topenId\n540037\tAssemacher Test\tlocal_686SbysppNzP2Mhk\n2010057\tMarkus Assemacher\tC94jPwoYLC49vBpnDAT5L4\n2070005\ttt\tlocal_FDZOUCj7LlHHUVal\n2100017\trechnung\t5siM44nSmfWQ9nVVtk4eCQ\n2220010\tTest User\tlocal_n7F3XK1gXQObIAqm\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}

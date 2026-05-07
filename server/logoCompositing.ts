@@ -115,8 +115,9 @@ export async function compositeLogosOnImage(
 export function getStandardPlacement(type: "clubCrest" | "mainSponsor" | "secondarySponsor" | "sleeveSponsor" | "manufacturer", side: "front" | "back"): Omit<LogoPlacement, "imageUrl"> {
   switch (type) {
     case "clubCrest":
-      // Linke Brust (Herzseite)
-      return { xPercent: 28, yPercent: 18, widthPercent: 10, heightPercent: 10 };
+      // Herzseite (RECHTS im Bild = links am Träger)
+      // Gemäß Verbandsvorgabe: X=60%, Y=28%, Größe 12%×10%
+      return { xPercent: 60, yPercent: 28, widthPercent: 12, heightPercent: 10 };
     case "mainSponsor":
       // Vorne mittig auf der Brust
       return { xPercent: 30, yPercent: 35, widthPercent: 25, heightPercent: 12 };

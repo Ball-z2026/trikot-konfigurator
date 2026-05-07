@@ -2064,3 +2064,10 @@
 - [x] calculateBackPositions: Zonen auf korrekte cm-Werte (7.5cm Höhe, 25cm Breite)
 - [x] DB-Zonen aktualisieren: Spielername/Vereinsname Höhe und Breite korrigieren
 - [x] getPositionRulesForAI: KI-Prompt mit exakter Standardregel und Referenzgröße L=75cm aktualisiert
+
+## KI-Designer: Vereinswappen automatisch übernehmen
+
+- [ ] KI-Designer: Vereinswappen aus Vereinsdaten auslesen und als Referenzbild an den Prompt übergeben
+- [ ] KI-Designer: Wappen an vorgegebener Position (Herzseite) im generierten Design platzieren lassen
+- [ ] KI-Designer: Toggle/Option "Wappen in Nummern einbauen" (Wappen als Hintergrund/Textur in Rückennummer)
+- [ ] KI-Designer: Prompt so formulieren, dass Position und Größe des Wappens exakt den Verbandsvorgaben entsprechen
