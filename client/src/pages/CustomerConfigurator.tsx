@@ -344,12 +344,6 @@ export default function CustomerConfigurator() {
       toast.error("Duplizieren fehlgeschlagen");
     },
   });
-  // ─── Design-Vorlagen (Templates) für Konfigurator ──────────────────────────
-  const { data: availableTemplates } = trpc.designTemplate.list.useQuery(
-    { orgId: userOrgId!, departmentId: userDeptId ?? undefined, teamId: teamIdParam ?? undefined },
-    { enabled: !!userOrgId && templateDialogOpen }
-  );
-
   const [partColors, setPartColors] = useState<Record<number, string>>({});
   const [dtfBaseColor, setDtfBaseColor] = useState<string | null>(null);
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
@@ -368,6 +362,12 @@ export default function CustomerConfigurator() {
   const userOrgId = primaryMembership?.orgId ?? null;
   const userDeptId = primaryMembership?.departmentId ?? null;
   const userRole = primaryMembership?.role ?? null;
+
+  // ─── Design-Vorlagen (Templates) für Konfigurator ──────────────────────────
+  const { data: availableTemplates } = trpc.designTemplate.list.useQuery(
+    { orgId: userOrgId!, departmentId: userDeptId ?? undefined, teamId: teamIdParam ?? undefined },
+    { enabled: !!userOrgId && templateDialogOpen }
+  );
   const isTrainer = userRole === "trainer";
   const hasMultipleMemberships = (myMemberships?.length ?? 0) > 1;
 
@@ -3581,8 +3581,8 @@ export default function CustomerConfigurator() {
                                   >
                                     <GripVertical className="absolute top-0.5 right-0.5 w-3 h-3 text-muted-foreground/40 group-hover:text-muted-foreground/70" />
                                     {tpl.logoUrl ? (
-                                      (tpl.logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
-                                        <PdfPreview url={storageUrl(tpl.logoUrl)} width={40} height={40} />
+                                      ((tpl as any).logoMimeType === 'application/pdf' || tpl.logoUrl?.toLowerCase().endsWith('.pdf')) ? (
+                                        <PdfPreview url={storageUrl(tpl.logoUrl)!} width={40} height={40} />
                                       ) : (
                                         <img
                                           src={storageUrl(tpl.logoUrl)}

@@ -3401,6 +3401,15 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         referenceImageUrl: z.string().optional(),
         /** Array von Referenzbild-URLs (Vereinswappen, Sponsor-Logos, Silhouette etc.) */
         referenceImageUrls: z.array(z.string()).optional(),
+        /** Logo-Overlays die NACH der Generierung auf das Bild composited werden */
+        logoOverlays: z.array(z.object({
+          imageUrl: z.string(),
+          xPercent: z.number(),
+          yPercent: z.number(),
+          widthPercent: z.number(),
+          heightPercent: z.number(),
+          opacity: z.number().optional(),
+        })).optional(),
       }))
       .mutation(async ({ input }) => {
         const sideLabel = input.side === "back" ? "back" : "front";
@@ -3468,6 +3477,50 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         }
 
         const result = await generateImage({ prompt, originalImages: originalImages.length > 0 ? originalImages : undefined });
+
+        // Post-Processing: Echte Logos auf das generierte Bild compositen
+        if (input.logoOverlays && input.logoOverlays.length > 0 && result.url) {
+          try {
+            const { compositeLogosOnImage } = await import("./logoCompositing");
+            const { storageGetSignedUrl } = await import("./storage");
+            
+            // Logo-URLs auflösen (Storage-Pfade → signierte URLs)
+            const resolvedOverlays = await Promise.all(
+              input.logoOverlays.map(async (overlay) => {
+                let resolvedUrl = overlay.imageUrl;
+                if (resolvedUrl.includes("/manus-storage/") || resolvedUrl.includes("/api/storage-proxy/")) {
+                  const keyMatch = resolvedUrl.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+                  if (keyMatch) {
+                    resolvedUrl = await storageGetSignedUrl(keyMatch[1]);
+                  }
+                }
+                return { ...overlay, imageUrl: resolvedUrl };
+              })
+            );
+
+            // Generiertes Bild-URL auflösen
+            let baseUrl = result.url;
+            if (baseUrl.includes("/manus-storage/")) {
+              const keyMatch = baseUrl.match(/\/manus-storage\/(.+)/);
+              if (keyMatch) {
+                baseUrl = await storageGetSignedUrl(keyMatch[1]);
+              }
+            }
+
+            // Compositing durchführen
+            const compositedBuffer = await compositeLogosOnImage(baseUrl, resolvedOverlays);
+            
+            // Ergebnis in Storage speichern
+            const { storagePut } = await import("./storage");
+            const fileName = `ki-designs/composited_${Date.now()}.png`;
+            const { url: compositedUrl } = await storagePut(fileName, compositedBuffer, "image/png");
+            
+            return { url: compositedUrl };
+          } catch (err) {
+            console.error("Logo compositing failed, returning original:", err);
+            return { url: result.url };
+          }
+        }
 
         return { url: result.url };
       }),

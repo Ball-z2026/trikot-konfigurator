@@ -12,6 +12,11 @@ function createUserContext(userId = 1): TrpcContext {
     name: `User ${userId}`,
     loginMethod: "manus",
     role: "user",
+    passwordHash: null,
+    mustChangePassword: false,
+    totpSecret: null,
+    totpEnabled: false,
+    backupCodes: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -25,7 +30,7 @@ function createUserContext(userId = 1): TrpcContext {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 }
 
@@ -38,7 +43,7 @@ function createPublicContext(): TrpcContext {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 }
 
@@ -136,6 +141,7 @@ describe("Organization role-based access", () => {
         caller.membership.addTrainer({
           orgId: 1,
           departmentId: 1,
+          userName: "Trainer Test",
           userEmail: "trainer@example.com",
         })
       ).rejects.toThrow();
@@ -147,6 +153,7 @@ describe("Organization role-based access", () => {
         caller.membership.addTrainer({
           orgId: 1,
           departmentId: 1,
+          userName: "Trainer Test",
           userEmail: "trainer@example.com",
         })
       ).rejects.toThrow();
@@ -396,7 +403,7 @@ describe("Organization role-based access", () => {
     it("requires authentication", async () => {
       const caller = appRouter.createCaller(createPublicContext());
       await expect(
-        caller.player.list({ teamId: 1, orgId: 1 })
+        caller.player.listByTeam({ teamId: 1, orgId: 1 })
       ).rejects.toThrow();
     });
   });
@@ -489,6 +496,7 @@ describe("Organization role-based access", () => {
         caller.membership.addTrainer({
           orgId: 1,
           departmentId: 1,
+          userName: "Trainer Test",
           userEmail: "trainer@example.com",
         })
       ).rejects.toThrow();
@@ -518,6 +526,7 @@ describe("Organization role-based access", () => {
         caller.membership.addTrainer({
           orgId: 999,
           departmentId: 999,
+          userName: "Trainer Test",
           userEmail: "trainer@example.com",
         })
       ).rejects.toThrow();

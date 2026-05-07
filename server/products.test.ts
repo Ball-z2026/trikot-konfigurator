@@ -12,6 +12,11 @@ function createAdminContext(): TrpcContext {
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
+    passwordHash: null,
+    mustChangePassword: false,
+    totpSecret: null,
+    totpEnabled: false,
+    backupCodes: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -25,7 +30,7 @@ function createAdminContext(): TrpcContext {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 }
 
@@ -38,7 +43,7 @@ function createPublicContext(): TrpcContext {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 }
 
@@ -50,6 +55,11 @@ function createUserContext(): TrpcContext {
     name: "Regular User",
     loginMethod: "manus",
     role: "user",
+    passwordHash: null,
+    mustChangePassword: false,
+    totpSecret: null,
+    totpEnabled: false,
+    backupCodes: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -63,7 +73,7 @@ function createUserContext(): TrpcContext {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 }
 

@@ -422,15 +422,11 @@ export default function KiDesign() {
         if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
       }
       
-      // VEREINSWAPPEN = ZWINGEND links auf der Brust (Verbandsregel, kein Interpretationsspielraum!)
-      // Wird IMMER gesetzt wenn ein Vereinswappen existiert - kein Toggle!
+      // VEREINSWAPPEN + LOGOS = Werden NICHT von der KI generiert!
+      // Stattdessen werden sie NACH der Generierung als Overlay auf das Bild gelegt (Post-Processing).
+      // Der KI wird gesagt, diese Bereiche LEER zu lassen.
       if (defaultLogo?.imageUrl) {
-        extraPrompt += " MANDATORY FEDERATION RULE - CLUB CREST PLACEMENT: The jersey MUST display the club crest/emblem EXACTLY ONCE on the FRONT LEFT CHEST (heart side, upper left area). CRITICAL: The crest appears ONLY ONCE on the entire front of the jersey - do NOT place it anywhere else on the front (not on the right side, not on the stomach, not repeated). Use the EXACT crest from the reference images, do NOT invent a new one. Size approximately 8cm, clearly visible as a badge/patch. ONLY ONE CREST ON THE FRONT - THIS IS NON-NEGOTIABLE.";
-        if (useWappenInNumber) {
-          extraPrompt += " CREST IN BACK NUMBER: On the BACK of the jersey, place the EXACT same club crest/emblem as a semi-transparent WATERMARK/BACKGROUND INSIDE the large back number. The crest should be centered within the number digits, slightly transparent (about 30-40% opacity), creating an elegant effect where the number is overlaid on top of the club crest. Use the EXACT crest from the reference images - do NOT invent or modify it. The crest should fill approximately 70-80% of the number area.";
-        } else {
-          extraPrompt += " CRITICAL: The club crest/emblem must ONLY appear on the FRONT LEFT CHEST. Do NOT place the crest inside, behind, or overlapping the back number in any way. The back number must be CLEAN with NO crest, NO watermark, NO emblem inside or behind it. The number area must contain ONLY the number digits and nothing else.";
-        }
+        extraPrompt += " CRITICAL LOGO AREAS - LEAVE BLANK: The FRONT LEFT CHEST area (upper left, heart side, approx 8x8cm) must be LEFT COMPLETELY EMPTY/BLANK - no logo, no emblem, no graphic, no badge there. This area will be filled later. Do NOT draw any crest, emblem, or badge anywhere on the jersey.";
       }
 
       // VEREINSNAME = Immer hinten auf dem Rücken, über der Nummer
@@ -453,22 +449,21 @@ export default function KiDesign() {
         extraPrompt += ` MUST include the geographic coordinates "${coordText}" as visible printed text on the jersey. Place this text on the INSIDE OF THE COLLAR or on the SLEEVE CUFF area. The text should read exactly "${coordText}" in a small, clean monospace font (like on luxury/premium sportswear). Make sure the text is clearly readable and correctly formatted as GPS coordinates.`;
       }
 
-      // SPONSOREN = Müssen als echte Logos im Design sichtbar sein
-      // Die Sponsor-Logo-Bilder werden als Referenzbilder mitgeliefert.
-      // Die KI soll die EXAKTEN Logos aus den Referenzbildern 1:1 übernehmen, NICHT den Namen als Text schreiben!
+      // SPONSOREN = Werden NICHT von der KI generiert!
+      // Stattdessen werden sie NACH der Generierung als Overlay auf das Bild gelegt.
       const enabledSponsors = sponsorLogos.filter(s => s.enabled);
       if (enabledSponsors.length > 0) {
-        const sponsorPlacements: string[] = [];
+        const sponsorAreas: string[] = [];
         enabledSponsors.forEach((s, i) => {
           if (s.type === "hauptsponsor" || i === 0) {
-            sponsorPlacements.push(`Main sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the FRONT CENTER CHEST area (approx 20x8cm). Use the ACTUAL logo graphic from the reference image, do NOT write any text instead`);
+            sponsorAreas.push("FRONT CENTER CHEST area (approx 20x8cm)");
           } else if (s.type === "spartensponsor" || i === 1) {
-            sponsorPlacements.push(`Secondary sponsor (reference image #${i + 2}) - place the EXACT logo image from reference CENTERED HORIZONTALLY on the UPPER BACK, positioned BELOW the collar and ABOVE the club name text (approx 15x6cm, centered left-to-right). It must be in the CENTER of the back, NOT on the left or right side. Use the ACTUAL logo graphic, do NOT write text`);
+            sponsorAreas.push("UPPER BACK center area (below collar, approx 15x6cm)");
           } else {
-            sponsorPlacements.push(`Additional sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the SLEEVE (approx 8x4cm). Use the ACTUAL logo graphic, do NOT write text`);
+            sponsorAreas.push("SLEEVE area (approx 8x4cm)");
           }
         });
-        extraPrompt += ` SPONSOR LOGO PLACEMENT (MANDATORY - USE REFERENCE IMAGES): ${sponsorPlacements.join(". ")}. CRITICAL: Each sponsor must show the EXACT LOGO IMAGE from the provided reference images - do NOT write sponsor names as text, do NOT invent logos. The logos from the reference images must appear EXACTLY as provided, just scaled to fit the designated area. If you cannot reproduce the exact logo, leave a clean solid-colored rectangular placeholder area instead of writing text.`;
+        extraPrompt += ` CRITICAL SPONSOR AREAS - LEAVE BLANK: The following areas must be LEFT COMPLETELY EMPTY with no text, no graphics, no logos: ${sponsorAreas.join("; ")}. These areas will be filled with real logos later. Do NOT write any sponsor names, do NOT draw any logos in these areas.`;
       }
 
       // STRASSENKARTE ALS WASSERZEICHEN
@@ -481,16 +476,9 @@ export default function KiDesign() {
         extraPrompt += ` The watermark/silhouette pattern should be at approximately ${watermarkOpacity}% opacity - subtle but recognizable.`;
       }
 
-      // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten
-      // Hersteller-Logo NUR wenn der User explizit eines hochgeladen hat!
-      let brandProtection: string;
-      if (useManufacturerLogo && manufacturerLogoUrl) {
-        // User hat ein eigenes Hersteller-Logo hochgeladen → dieses verwenden
-        brandProtection = " MANUFACTURER LOGO: The user has provided a custom manufacturer/brand logo as one of the reference images. Place this manufacturer logo SMALL (approx 3-4cm) on the RIGHT CHEST area (opposite to the club crest). Use the EXACT logo from the reference image. Do NOT use any other brand logos (no three stripes, no swoosh, no puma cat, no Hummel chevrons). ONLY the user-provided manufacturer logo is allowed.";
-      } else {
-        // KEIN Hersteller-Logo → ABSOLUT VERBOTEN
-        brandProtection = " ABSOLUTE CRITICAL RULE - NO MANUFACTURER/BRAND LOGOS: The jersey must have ZERO manufacturer logos, ZERO brand marks, ZERO brand areas anywhere on the entire garment. This means: NO three stripes, NO swoosh, NO puma cat, NO Under Armour logo, NO Hummel chevrons, NO Erima butterfly, NO Kempa, NO Jako, NO Mizuno, NO Asics, NO generic brand placeholder, NO fictional brand logos, NO brand-like graphics of any kind. The jersey is a CUSTOM UNBRANDED garment with ONLY the club crest and sponsor logos specified above. Any area that would typically show a manufacturer logo must be LEFT COMPLETELY BLANK/EMPTY. This is NON-NEGOTIABLE - absolutely NO brand marks whatsoever.";
-      }
+      // Markenrecht-Schutz: KEINE Logos, KEINE Marken, NICHTS!
+      // Alle Logos werden per Post-Processing hinzugefügt.
+      const brandProtection = " ABSOLUTE CRITICAL RULE - NO LOGOS OF ANY KIND: The jersey must have ZERO logos, ZERO brand marks, ZERO emblems, ZERO badges, ZERO crests anywhere on the entire garment. This means: NO manufacturer logos (no three stripes, no swoosh, no puma cat, no Hummel, no Erima, no Jako, no Mizuno), NO club crests/emblems, NO sponsor logos, NO text logos, NO brand-like graphics of any kind. The jersey is a COMPLETELY BLANK custom garment with ONLY the pattern/design, colors, and text elements (club name, number, hashtag, coordinates if specified). Every area where a logo would typically appear must be LEFT COMPLETELY EMPTY. This is the MOST IMPORTANT rule - absolutely NO logos or emblems whatsoever. They will be added separately after generation.";
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
 
@@ -500,20 +488,71 @@ export default function KiDesign() {
         referenceUrl = landmarkSilhouette; // Backend löst /manus-storage/ Pfade auf
       }
 
-      // Zusätzliche Referenzbilder: Vereinswappen + Sponsor-Logos + Hersteller-Logo
-      const additionalRefs: string[] = [];
-      // Referenzbild #1: Vereinswappen als Referenzbild (damit KI das echte Wappen 1:1 übernimmt)
+      // Logo-Referenzbilder werden NICHT mehr an die KI gesendet!
+      // Stattdessen: logoOverlays für Post-Processing aufbauen
+      const logoOverlays: Array<{imageUrl: string; xPercent: number; yPercent: number; widthPercent: number; heightPercent: number; opacity?: number}> = [];
+      
+      // Vereinswappen: Links oben auf der Brust (Herzseite)
       if (defaultLogo?.imageUrl) {
-        additionalRefs.push(defaultLogo.imageUrl);
+        logoOverlays.push({
+          imageUrl: defaultLogo.imageUrl,
+          xPercent: 28,
+          yPercent: 18,
+          widthPercent: 10,
+          heightPercent: 10,
+        });
       }
-      // Referenzbild #2+: Sponsor-Logos als Referenzbilder (in der Reihenfolge wie im Prompt referenziert)
-      const enabledSponsorsForRef = sponsorLogos.filter(s => s.enabled && s.imageUrl);
-      enabledSponsorsForRef.forEach(s => {
-        if (s.imageUrl) additionalRefs.push(s.imageUrl);
+      
+      // Sponsor-Logos
+      const enabledSponsorsForOverlay = sponsorLogos.filter(s => s.enabled && s.imageUrl);
+      enabledSponsorsForOverlay.forEach((s, i) => {
+        if (!s.imageUrl) return;
+        if (s.type === "hauptsponsor" || i === 0) {
+          // Hauptsponsor: Vorne mittig auf der Brust
+          logoOverlays.push({
+            imageUrl: s.imageUrl,
+            xPercent: 25,
+            yPercent: 38,
+            widthPercent: 30,
+            heightPercent: 12,
+          });
+        } else if (s.type === "spartensponsor" || i === 1) {
+          // Spartensponsor: Rücken oben mittig
+          logoOverlays.push({
+            imageUrl: s.imageUrl,
+            xPercent: 30,
+            yPercent: 12,
+            widthPercent: 22,
+            heightPercent: 8,
+          });
+        } else {
+          // Weitere Sponsoren: Ärmel
+          logoOverlays.push({
+            imageUrl: s.imageUrl,
+            xPercent: 5,
+            yPercent: 25,
+            widthPercent: 12,
+            heightPercent: 8,
+          });
+        }
       });
-      // Hersteller-Logo als letztes Referenzbild (wenn aktiviert)
+      
+      // Hersteller-Logo (nur wenn explizit hochgeladen)
       if (useManufacturerLogo && manufacturerLogoUrl) {
-        additionalRefs.push(manufacturerLogoUrl);
+        logoOverlays.push({
+          imageUrl: manufacturerLogoUrl,
+          xPercent: 55,
+          yPercent: 18,
+          widthPercent: 6,
+          heightPercent: 6,
+        });
+      }
+
+      // NUR Silhouette/Wasserzeichen als Referenzbild an KI senden (keine Logos!)
+      const additionalRefs: string[] = [];
+      // Strassenkarte als Referenz (für Wasserzeichen-Textur)
+      if (useMapWatermark && mapImageUrl) {
+        additionalRefs.push(mapImageUrl);
       }
 
       const result = await generateAiMockup.mutateAsync({
@@ -524,6 +563,7 @@ export default function KiDesign() {
         customPrompt: prompt,
         referenceImageUrl: referenceUrl,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
+        logoOverlays: logoOverlays.length > 0 ? logoOverlays : undefined,
       });
 
       if (result.url) {

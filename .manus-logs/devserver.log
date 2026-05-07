@@ -8547,3 +8547,23 @@
 [2026-05-07T08:39:29.063Z] 4:39:29 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-07T08:39:58.856Z] 4:39:58 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-07T08:42:49.096Z] 4:42:49 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T08:50:17.124Z] 4:50:17 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T08:51:27.301Z] 4:51:27 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-07T08:51:29.740Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T08:51:30.670Z] Server running on http://localhost:3000/
+[2026-05-07T08:52:57.369Z] 4:52:57 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T08:53:32.655Z] 4:53:32 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T08:54:05.497Z] 4:54:05 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T08:55:15.385Z] [Auth] Missing session cookie
+[2026-05-07T08:55:15.392Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.232Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.296Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.305Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.313Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.319Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.326Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.332Z] [Auth] Missing session cookie
+[2026-05-07T08:55:16.337Z] [Auth] Missing session cookie
+[2026-05-07T08:55:23.191Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-07T08:55:23.196Z] [Auth] Missing session cookie
+[2026-05-07T08:55:23.205Z] [Auth] Missing session cookie

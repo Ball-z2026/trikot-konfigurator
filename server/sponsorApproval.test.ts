@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock the database module
 vi.mock("./db", () => ({
-  createSponsorProductAssignment: vi.fn().mockResolvedValue({ id: 1 }),
+  assignSponsorToProduct: vi.fn().mockResolvedValue({ id: 1 }),
   deleteSponsorProductAssignment: vi.fn().mockResolvedValue(undefined),
   listSponsorProductAssignments: vi.fn().mockResolvedValue([
     { id: 1, sponsorId: 10, productId: 20, createdAt: new Date() },
@@ -19,7 +19,7 @@ vi.mock("./db", () => ({
     submittedByUserId: 1,
     createdAt: new Date(),
   }),
-  updateMockupApprovalStatus: vi.fn().mockResolvedValue(undefined),
+  reviewMockupApproval: vi.fn().mockResolvedValue(undefined),
   listMockupApprovalsBySponsor: vi.fn().mockResolvedValue([]),
   listMockupApprovalsByMockup: vi.fn().mockResolvedValue([]),
   getMockupById: vi.fn().mockResolvedValue({
@@ -39,14 +39,14 @@ vi.mock("./db", () => ({
 
 describe("Sponsor-Produkt-Zuweisungen", () => {
   it("sollte eine Zuweisung erstellen können", async () => {
-    const { createSponsorProductAssignment } = await import("./db");
-    const result = await createSponsorProductAssignment({
+    const { assignSponsorToProduct } = await import("./db");
+    const result = await assignSponsorToProduct({
       sponsorId: 10,
       productId: 20,
       assignedByUserId: 1,
-    });
+    } as any);
     expect(result).toEqual({ id: 1 });
-    expect(createSponsorProductAssignment).toHaveBeenCalledWith({
+    expect(assignSponsorToProduct).toHaveBeenCalledWith({
       sponsorId: 10,
       productId: 20,
       assignedByUserId: 1,
@@ -88,9 +88,9 @@ describe("Mockup-Freigabe", () => {
   });
 
   it("sollte den Status aktualisieren können", async () => {
-    const { updateMockupApprovalStatus } = await import("./db");
-    await updateMockupApprovalStatus(1, "approved", "Max Mustermann", "Sieht gut aus");
-    expect(updateMockupApprovalStatus).toHaveBeenCalledWith(
+    const { reviewMockupApproval } = await import("./db");
+    await reviewMockupApproval(1, "approved", "Max Mustermann", "Sieht gut aus");
+    expect(reviewMockupApproval).toHaveBeenCalledWith(
       1,
       "approved",
       "Max Mustermann",
@@ -119,7 +119,7 @@ describe("Freigabe-Workflow", () => {
     const {
       createMockupApproval,
       getMockupApprovalByToken,
-      updateMockupApprovalStatus,
+      reviewMockupApproval,
     } = await import("./db");
 
     // 1. Freigabe erstellen
@@ -138,8 +138,8 @@ describe("Freigabe-Workflow", () => {
     expect(loaded?.status).toBe("pending");
 
     // 3. Freigabe erteilen
-    await updateMockupApprovalStatus(1, "approved", "Sponsor-Kontakt", "Alles in Ordnung");
-    expect(updateMockupApprovalStatus).toHaveBeenCalledWith(
+    await reviewMockupApproval(1, "approved", "Sponsor-Kontakt", "Alles in Ordnung");
+    expect(reviewMockupApproval).toHaveBeenCalledWith(
       1,
       "approved",
       "Sponsor-Kontakt",

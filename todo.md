@@ -1711,7 +1711,7 @@
 - [x] Backend: Abstimmung erstellen und Stimmen abgeben (templatePoll.create, .vote, .results, .hasVoted, .close)
 - [x] Frontend: Freigabe-Button im Produktdesigner (Dialog mit Genehmiger-Auswahl)
 - [x] Frontend: Freigabe-Ansicht für Spartenleiter/Owner (ApprovalReview.tsx - /freigabe/:orgId)
-- [ ] Frontend: Sponsor-Freigabe (Mockup-Vorschau für Sponsoren)
+- [x] Frontend: Sponsor-Freigabe (Mockup-Vorschau für Sponsoren – MockupApprovalStatus + Freigabe-Dialog im TrainerDashboard)
 - [x] Frontend: Teilen-Button für Mannschafts-Abstimmung/Umfrage (Dialog mit Titel/Beschreibung)
 - [x] Frontend: Abstimmungs-Ansicht für Mannschaftsmitglieder (TeamPoll.tsx - /abstimmung/:pollId)
 - [x] Sichtbarkeits-Logik: Nur freigegebene Vorlagen im Konfigurator (wenn Trainer angemeldet) - listDesignTemplates filtert nach approvalStatus
@@ -2011,3 +2011,8 @@
 ## KI-Design Bugs (Mai 2026 - Runde 2)
 - [x] Rücken-Sponsor falsch platziert: Muss MITTIG OBEN auf dem Rücken sein (centered, below collar), nicht oben rechts
 - [x] Wappen erscheint in Rückennummer obwohl Toggle AUS ist: Prompt muss explizit verbieten dass Wappen in der Nummer erscheint wenn Toggle=false
+
+## KRITISCH: KI-Design Logo-Probleme dauerhaft lösen (Post-Processing)
+- [x] KI-Prompt: KEINE Logos generieren lassen, nur saubere Platzhalter-Bereiche freilassen
+- [x] Backend: Nach KI-Generierung echte Logos (Vereinswappen, Sponsoren) als Overlay/Compositing auf das Bild legen
+- [x] Hersteller-Logo: Komplett aus dem Prompt entfernen wenn kein Logo hochgeladen

@@ -12,6 +12,11 @@ function createUserContext(userId = 1): TrpcContext {
     name: `User ${userId}`,
     loginMethod: "manus",
     role: "user",
+    passwordHash: null,
+    mustChangePassword: false,
+    totpSecret: null,
+    totpEnabled: false,
+    backupCodes: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -24,7 +29,7 @@ function createUserContext(userId = 1): TrpcContext {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 }
 
@@ -37,7 +42,7 @@ function createPublicContext(): TrpcContext {
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 }
 
