@@ -440,26 +440,30 @@ export default function KiDesign() {
       // Regel: Breite der Ziffer auslesen → Wappen = 50% dieser Breite → gleicher Abstand nach unten, links, rechts
       // Bei jeder Schriftgröße bleibt das Verhältnis gleich (proportional)
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER - STRICT PROPORTIONAL RULE:
+        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER - EXACT PLACEMENT RULE:
 
-IMPORTANT: Read the ACTUAL WIDTH of each back number digit (the stroke width of the numeral shape at its widest horizontal point). Call this measured value W.
+STEP 1: MEASURE the width of each back number digit AT ITS BOTTOM EDGE (the widest point at the very bottom of the numeral shape). Call this value W.
 
-SCALING FORMULA:
-- Crest display size = EXACTLY 50% of W (half the digit stroke width)
-- Horizontal centering: equal left and right gap = 25% of W each
-- Vertical centering: equal top and bottom gap = 25% of W each
+STEP 2: SCALE the club crest to EXACTLY 50% of W.
+- Example: If digit bottom width = 4cm → crest width = 2cm
+- Example: If digit bottom width = 6cm → crest width = 3cm
+- Example: If digit bottom width = 10cm → crest width = 5cm
 
-EXAMPLE: If a digit is 12cm wide at its widest stroke → crest = 6cm wide, with 3cm gap on each side.
-EXAMPLE: If a digit is 8cm wide at its widest stroke → crest = 4cm wide, with 2cm gap on each side.
+STEP 3: POSITION the crest:
+- Horizontally: CENTERED within the digit (equal space left and right)
+  Example: 4cm digit, 2cm crest → 1cm gap left, 1cm gap right
+- Vertically: Place the crest exactly 1cm ABOVE the bottom edge of the digit
+  (NOT centered vertically - always 1cm from the bottom, regardless of digit height)
 
 The crest MUST:
-- Be EXACTLY 50% of the measured digit width (not bigger, not smaller)
-- Be perfectly centered horizontally AND vertically within each digit
-- Maintain its original aspect ratio (scale height proportionally to width)
+- Be EXACTLY half the width of the digit measured at its bottom edge
+- Sit 1cm above the bottom of the digit (fixed distance, not proportional)
+- Be horizontally centered (equal left/right spacing)
+- Maintain its original aspect ratio
 - Be IDENTICAL to the front chest crest (same colors, details, proportions)
-- Appear inside EVERY digit of the back number (if number is 10, crest appears in both 1 and 0)
+- Appear inside EVERY digit of the back number
 
-The digit itself acts as a FRAME/BORDER around the crest. The digit outline remains fully visible in a contrasting color. Do NOT fill the digit solid - the crest IS the fill, surrounded by equal spacing on all four sides.`;
+The digit outline remains fully visible as a frame/border around the crest in a contrasting color.`;
       }
 
       // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
