@@ -440,23 +440,26 @@ export default function KiDesign() {
       // Regel: Breite der Ziffer auslesen → Wappen = 50% dieser Breite → gleicher Abstand nach unten, links, rechts
       // Bei jeder Schriftgröße bleibt das Verhältnis gleich (proportional)
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER - PROPORTIONAL RULE:
+        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER - STRICT PROPORTIONAL RULE:
 
-Step 1: MEASURE the width (W) of each back number digit at the chosen font size.
-Step 2: SCALE the club crest (EXACT SAME as on front chest) to exactly 50% of W (= 0.5 * W).
-Step 3: CALCULATE the remaining space: padding = (W - 0.5*W) / 2 = 25% of W on each side.
-Step 4: PLACE the scaled crest CENTERED inside each digit with EQUAL padding on all sides (left = right = bottom = top = 25% of W).
+IMPORTANT: Read the ACTUAL WIDTH of each back number digit (the stroke width of the numeral shape at its widest horizontal point). Call this measured value W.
 
-This means:
-- Crest width = 50% of digit width
-- Left margin = 25% of digit width
-- Right margin = 25% of digit width  
-- Top margin = 25% of digit width
-- Bottom margin = 25% of digit width
+SCALING FORMULA:
+- Crest display size = EXACTLY 50% of W (half the digit stroke width)
+- Horizontal centering: equal left and right gap = 25% of W each
+- Vertical centering: equal top and bottom gap = 25% of W each
 
-The crest sits perfectly centered with equal spacing all around it. The digit outline/border remains visible as a frame around the crest in a contrasting color. This proportional rule ensures that regardless of the font size (whether 25cm or 35cm height), the crest always maintains the same relative size and spacing within the digit.
+EXAMPLE: If a digit is 12cm wide at its widest stroke → crest = 6cm wide, with 3cm gap on each side.
+EXAMPLE: If a digit is 8cm wide at its widest stroke → crest = 4cm wide, with 2cm gap on each side.
 
-The crest must be PIXEL-PERFECT identical to the front chest version - same colors, same proportions, same details. Do NOT stretch, distort, or reinterpret the crest. Keep its original aspect ratio when scaling down.`;
+The crest MUST:
+- Be EXACTLY 50% of the measured digit width (not bigger, not smaller)
+- Be perfectly centered horizontally AND vertically within each digit
+- Maintain its original aspect ratio (scale height proportionally to width)
+- Be IDENTICAL to the front chest crest (same colors, details, proportions)
+- Appear inside EVERY digit of the back number (if number is 10, crest appears in both 1 and 0)
+
+The digit itself acts as a FRAME/BORDER around the crest. The digit outline remains fully visible in a contrasting color. Do NOT fill the digit solid - the crest IS the fill, surrounded by equal spacing on all four sides.`;
       }
 
       // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
