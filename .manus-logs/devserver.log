@@ -8840,3 +8840,9 @@
 [2026-05-07T22:26:02.463Z] Server running on http://localhost:3000/
 [2026-05-07T22:28:36.229Z] 6:28:36 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-07T22:41:23.153Z] 6:41:23 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T22:50:32.792Z] 6:50:32 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T22:51:30.294Z] Dev server process group stopped
+[2026-05-07T22:51:30.343Z] Dev server exited with code -15
+[2026-05-07T22:51:33.331Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-07T22:51:35.150Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T22:51:35.940Z] Server running on http://localhost:3000/

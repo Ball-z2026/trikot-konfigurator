@@ -16,6 +16,7 @@ import { useZoneEditor } from "@/contexts/ZoneEditorContext";
 import { getJerseyRules, validateZonesAgainstRules, BACK_LAYOUT_OPTIONS, type BackLayoutType, DEFAULT_BACK_LAYOUT, getPositionRulesForAI } from "@shared/jerseyRules";
 import { SPORT_TYPES } from "@shared/templates";
 import { useAuth } from "@/_core/hooks/useAuth";
+import CrestInNumberPreview from "@/components/CrestInNumberPreview";
 
 // ── Zone-Typ ──
 interface Zone {
@@ -978,6 +979,16 @@ The digit outline remains fully visible as a frame/border around the crest in a 
                             </div>
                             <Switch checked={useWappenInNumber} onCheckedChange={setUseWappenInNumber} />
                           </div>
+                          {/* Live-Vorschau: Wappen in Nummer */}
+                          {useWappenInNumber && defaultLogo?.imageUrl && (
+                            <CrestInNumberPreview
+                              crestImageUrl={defaultLogo.imageUrl}
+                              number="10"
+                              fontFamily={defaultFont?.fontFamily || "Oswald"}
+                              fontColor={primaryColor}
+                              outlineColor={secondaryColor}
+                            />
+                          )}
                         </>
                       )}
 

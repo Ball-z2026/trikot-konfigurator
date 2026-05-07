@@ -2115,3 +2115,7 @@
 - [x] DB: thumbnailUrl-Feld existiert bereits (logoThumbnailUrl)
 - [x] Frontend: PdfPreview rendert PDF als Canvas-Bild, Original bleibt in S3 für Produktion
 - [x] Bei Produkterstellung: Original-PDF in bester Qualität aus S3 (logoUrl)
+
+## Live-Vorschau: Wappen in Nummer (08.05.2026)
+- [x] CrestInNumberPreview-Komponente: Zeigt visuell wie das Wappen in der Nummer positioniert wird (50% der Breite am unteren Ende, 1cm vom Boden, horizontal zentriert)
+- [x] Einbindung in KiDesign.tsx: Nur sichtbar wenn useWappenInNumber && defaultLogo?.imageUrl
