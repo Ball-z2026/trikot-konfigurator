@@ -561,7 +561,10 @@ export default function KiDesign() {
         customPrompt: prompt,
         referenceImageUrl: referenceUrl,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
-        logoOverlays: logoOverlays.length > 0 ? logoOverlays : undefined,
+        // Logo-Compositing DEAKTIVIERT: Feste Prozent-Positionen funktionieren nicht
+        // auf KI-generierten Bildern (Trikot hat unterschiedliche Größen/Positionen).
+        // Logos werden stattdessen im Konfigurator/Druckbogen korrekt platziert.
+        // logoOverlays: logoOverlays.length > 0 ? logoOverlays : undefined,
       });
 
       if (result.url) {
