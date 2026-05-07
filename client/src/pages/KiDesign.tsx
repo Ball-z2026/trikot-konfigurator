@@ -427,18 +427,23 @@ export default function KiDesign() {
       }
       
       // VEREINSWAPPEN = KI platziert das echte Wappen auf der Herzseite (wie Vereinsname auf Rückseite)
+      // Position gemäß DB: posX=60%, posY=28% auf dem Einzelteil, Größe 10%×10%
+      // Auf gleicher Höhe wie Brustnummer (Y=32% = etwas unterhalb Kragen)
       if (defaultLogo?.imageUrl) {
-        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST: MUST place the club crest/badge (provided as reference image) on the HEART SIDE of the front jersey. The heart side is the LEFT CHEST of the wearer = RIGHT SIDE when viewing the front jersey. Position: upper right area of the front jersey (approximately at 60% from left, 28% from top of the jersey). Size: approximately 8-10cm (10% of jersey height). The crest must be placed EXACTLY as provided in the reference image - do NOT modify, redraw, or reinterpret it. Use the EXACT original image.`;
+        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST: MUST place the club crest/badge (provided as reference image) on the HEART SIDE of the front jersey. The heart side is the LEFT CHEST of the wearer = RIGHT SIDE when viewing the front jersey. Position: at approximately 60% from left and 32% from top of the jersey (same vertical height as the front number on the opposite side). Size: approximately 8-10cm (10% of jersey height). The crest must be reproduced PIXEL-PERFECT as provided in the reference image - do NOT modify, redraw, reinterpret, simplify, or change any colors. Use the EXACT original image without ANY alterations.`;
       }
 
-      // WAPPEN IN RÜCKENNUMMER = KI baut das Wappen als Wasserzeichen in die Nummer ein
+      // WAPPEN AUF RÜCKSEITE = Zwei Optionen:
+      // Option A: "Wasserzeichen groß" = Wappen groß über den gesamten Rücken als Wasserzeichen
+      // Option B: "Wappen in Nummer" = Wappen NUR innerhalb der Nummern-Ziffern
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE NUMBER: The club crest (from reference image) must be placed DIRECTLY BEHIND/INSIDE the back number digits as a watermark. IMPORTANT: The crest must be CENTERED in the exact same area where the number is - NOT below it, NOT beside it, but OVERLAPPING with the number digits. The crest should fill the same space as the number (approximately 25cm tall), be semi-transparent (15-20% opacity), and appear as a ghost/watermark BEHIND the number digits. Think of it like a background texture that shows through the number. The number digits are drawn ON TOP of the crest watermark.`;
+        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE NUMBER DIGITS ONLY: The club crest (from reference image) must appear ONLY INSIDE the area of the number digits themselves. Imagine the number digits are a window/mask - the crest is visible ONLY through the number shapes. The crest should NOT appear anywhere else on the back - ONLY within the outlines of the digit shapes. The number digits act as a clipping mask for the crest image. The crest fills the digit shapes at about 40-50% opacity. Outside the digit shapes, the jersey shows only the normal design pattern with no crest visible.`;
       }
 
       // BRUSTNUMMER = Vorderseite, rechte Brust (links im Bild), Position gemäß Verbandsregel
       // DB: posX=30%, posY=25%, width=15%, height=12% (mind. 10cm Höhe)
-      extraPrompt += ` FRONT VIEW (left jersey): MUST include a player number on the FRONT RIGHT CHEST area (viewer's left side of the front jersey). The front number should be approximately 10cm tall (12% of jersey height), positioned at the upper right chest area. Use the same font style as the back number but smaller. The front number should be clearly visible.`;
+      // Auf gleicher Höhe wie Vereinswappen (Y=32%)
+      extraPrompt += ` FRONT VIEW (left jersey) - FRONT NUMBER: MUST include a player number on the FRONT LEFT CHEST area (viewer's left side = wearer's right chest, opposite side from the crest). The front number should be approximately 10cm tall (12% of jersey height), positioned at 32% from top of the jersey (same vertical height as the club crest on the opposite side). Use the same font style as the back number but smaller. The front number must be clearly visible and readable.`;
 
       // VEREINSNAME = Immer hinten auf dem Rücken, über der Nummer
       if (clubName) {
@@ -465,11 +470,11 @@ export default function KiDesign() {
       if (enabledSponsors.length > 0) {
         enabledSponsors.forEach((s, i) => {
           if (s.type === "hauptsponsor" || i === 0) {
-            extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR: MUST place the main sponsor logo (provided as reference image) on the FRONT CENTER CHEST of the jersey. Position: centered horizontally on the chest, below the club crest area (approximately at 30-40% from top of jersey). Size: approximately 20cm wide x 8cm tall. The sponsor logo must be placed EXACTLY as provided - do NOT modify, redraw, or reinterpret it.`;
+            extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO: MUST place the main sponsor logo (provided as reference image) on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: The sponsor logo must be reproduced PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or alter it in ANY way. It must look IDENTICAL to the reference image provided. This is a legally protected trademark.`;
           } else if (s.type === "spartensponsor" || i === 1) {
-            extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR: MUST place the secondary sponsor logo (provided as reference image) on the UPPER BACK of the jersey, below the collar. Position: centered horizontally, approximately 65% from top. Size: approximately 15cm wide x 6cm tall. Use the EXACT original image.`;
+            extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO: MUST place the secondary sponsor logo (provided as reference image) on the LOWER BACK of the jersey, below the player number area. Position: centered horizontally, approximately 65% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Reproduce PIXEL-PERFECT - do NOT modify or reinterpret. This is a legally protected trademark.`;
           } else {
-            extraPrompt += ` SLEEVE SPONSOR: Place the sponsor logo (provided as reference image) on the SLEEVE area. Size: approximately 8cm wide x 4cm tall. Use the EXACT original image.`;
+            extraPrompt += ` SLEEVE SPONSOR: Place the sponsor logo (provided as reference image) on the SLEEVE area. Size: approximately 8cm wide x 4cm tall. CRITICAL: Reproduce PIXEL-PERFECT without ANY modifications.`;
           }
         });
       }
@@ -914,7 +919,7 @@ export default function KiDesign() {
                           <div className="flex items-center justify-between p-2 bg-white rounded border">
                             <div className="flex items-center gap-2">
                               <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-60" />
-                              <span className="text-sm">Wappen unter Rückennummer</span>
+                              <span className="text-sm">Wappen in Rückennummer</span>
                             </div>
                             <Switch checked={useWappenInNumber} onCheckedChange={setUseWappenInNumber} />
                           </div>

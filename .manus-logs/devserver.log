@@ -8785,3 +8785,5 @@
 [2026-05-07T17:36:13.480Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-07T17:36:14.534Z] Server running on http://localhost:3000/
 [2026-05-07T17:48:48.106Z] 1:48:48 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T18:02:25.637Z] 2:02:25 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T18:02:42.393Z] 2:02:42 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
