@@ -1,0 +1,54 @@
+{
+  "query": "SELECT id, label, purpose, posX, posY, width, height, fontSize, fontFamily FROM product_zones WHERE partId = 1320010 ORDER BY posY;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, label, purpose, posX, posY, width, height, fontSize, fontFamily FROM product_zones WHERE partId = 1320010 ORDER BY posY;",
+  "rows": [
+    {
+      "id": "1410021",
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "8",
+      "posY": "8",
+      "width": "12",
+      "height": "15",
+      "fontSize": "NULL",
+      "fontFamily": "NULL"
+    },
+    {
+      "id": "1410022",
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "78",
+      "posY": "8",
+      "width": "12",
+      "height": "15",
+      "fontSize": "60",
+      "fontFamily": "Oswald"
+    },
+    {
+      "id": "1410023",
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "35",
+      "width": "60",
+      "height": "15",
+      "fontSize": "NULL",
+      "fontFamily": "NULL"
+    },
+    {
+      "id": "1410024",
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "65",
+      "width": "50",
+      "height": "10",
+      "fontSize": "NULL",
+      "fontFamily": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlabel\tpurpose\tposX\tposY\twidth\theight\tfontSize\tfontFamily\n1410021\tVereinswappen\tclubLogo\t8\t8\t12\t15\tNULL\tNULL\n1410022\tBrustnummer\tplayerNumber\t78\t8\t12\t15\t60\tOswald\n1410023\tBrust-Sponsor\tlogo\t20\t35\t60\t15\tNULL\tNULL\n1410024\tBauch-Sponsor\tlogo\t25\t65\t50\t10\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 93
+}

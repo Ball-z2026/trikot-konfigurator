@@ -2030,3 +2030,37 @@
 
 - [x] Vereinsname muss auf dem Trikot angezeigt werden (aus Org-Daten automatisch übernehmen)
 - [x] KI-Mockup Vorlage generieren und als Design-Vorlage nutzen
+
+## Bug: Vorderseite Positionierung + fehlende Elemente
+
+- [ ] Brustnummer-Position korrigieren (kleiner, rechts oben auf Brusthöhe)
+- [ ] Platzhalter-Vereinswappen auf Herzseite (links oben) erstellen und eintragen
+- [ ] Sublimation-Muster als Platzhalter-Design im Konfigurator einrichten
+
+- [ ] Brustnummer-Mindesthöhe für Fußball auf 10 cm setzen (in jerseyRules.ts und DB-Zone)
+
+- [ ] Standard-Positionierung für Vereinswappen und Brustnummer als feste Regel implementieren (Mitten auf gleicher Höhe Y=33%, Nummer links posX=30, Wappen rechts posX=60 Herzseite)
+- [ ] KI-Designer Prompt aktualisieren: Korrekte Positionierung von Wappen und Nummer übernehmen
+
+- [ ] Rückseiten-Layout als Auswahloption im Konfigurator einbauen (4 Varianten)
+- [ ] Verbandsvorgaben (Schrifthöhen, Abstände) bei Layout-Berechnung berücksichtigen
+- [ ] KI-Designer: Rückseiten-Layout-Auswahl in den Prompt übernehmen
+
+## Architektur-Umbau: Produktdesigner + Konfigurator
+
+- [ ] Rückseiten-Layout-Optionen als Konstanten in shared/jerseyRules.ts (4 Varianten, dynamische Positionsberechnung)
+- [ ] Rückseiten-Layout-Optionen auch im KI-Designer-Prompt berücksichtigen
+- [ ] Produktdesigner: Alle Gestaltungs-Features (Farben, Muster, Zonen, Layout-Auswahl, KI-Designer)
+- [ ] Konfigurator: Auf "Vorlagen + Namen/Nummern/Kürzel" reduzieren (keine Design-Änderungen)
+- [ ] Alle Regeln (Positionen, Layouts, Vorgaben) sowohl im Produktdesigner als auch im KI-Prompt implementieren
+
+## Verbandsvorgaben-Korrektur (DFL/DFB exakt)
+
+- [x] jerseyRules.ts: PlayerNameRule um maxWidthCm (25) und maxHeightCm (7.5) erweitern
+- [x] jerseyRules.ts: TeamNameRule Rückseite maxHeightCm auf 7.5 cm korrigieren (nicht 2 cm)
+- [x] jerseyRules.ts: TeamNameRule Rückseite maxWidthCm = 25 cm hinzufügen
+- [x] jerseyRules.ts: 2cm Vereinsname-Höhe nur bei Rückensponsor-Sonderfall (§ 25 Nr. 5d)
+- [x] Konfigurator-Rendering: Text-Fitting-Logik implementieren (erst Höhe 7.5cm, dann Breite 25cm als Limit)
+- [x] calculateBackPositions: Zonen auf korrekte cm-Werte (7.5cm Höhe, 25cm Breite)
+- [x] DB-Zonen aktualisieren: Spielername/Vereinsname Höhe und Breite korrigieren
+- [x] getPositionRulesForAI: KI-Prompt mit exakter Standardregel und Referenzgröße L=75cm aktualisiert

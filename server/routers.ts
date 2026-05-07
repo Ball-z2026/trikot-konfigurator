@@ -2311,7 +2311,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           const org = await getOrganizationById(team.orgId);
           orgName = org?.name || null;
         }
-        return { id: team.id, name: team.name, orgName, players: playersList };
+        return { id: team.id, name: team.name, orgId: team.orgId, orgName, players: playersList };
       }),
 
     /** Mannschaft nach ID */
@@ -3444,7 +3444,13 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           prompt = input.customPrompt;
         } else if (input.designImageBase64) {
           // Image-to-Image: Fotorealistisches Mockup mit Person
-          prompt = `Professional fashion photography of a young athletic man wearing this exact ${garmentType} shown in the reference image. The ${sideLabel} of the garment must match the reference EXACTLY - preserve all logos, text, numbers, colors, and graphic placements precisely as shown. Full body shot, model standing naturally on an urban sidewalk with blurred city background. Natural daylight, shallow depth of field, shot on Canon EOS R5 85mm f/1.4. High-end commercial fashion photography style.`;
+          // FESTE POSITIONIERUNGSREGELN:
+          // Vorderseite: Brustnummer LINKS im Bild (rechte Brust Träger), Vereinswappen RECHTS (Herzseite), beide Mitten auf gleicher Höhe
+          // Rückseite: Vereinsname oben → Rückennummer groß Mitte → Spielername unter Nummer
+          const positioningRule = sideLabel === "front"
+            ? "CRITICAL POSITIONING: The chest number must be on the LEFT side of the image (wearer's right chest). The club crest/badge must be on the RIGHT side of the image (wearer's left chest / heart side). Both elements must be at the SAME HEIGHT on the chest."
+            : "CRITICAL POSITIONING: From top to bottom: Club name at top (small), then large back number in the center, then player name BELOW the number.";
+          prompt = `Professional fashion photography of a young athletic man wearing this exact ${garmentType} shown in the reference image. The ${sideLabel} of the garment must match the reference EXACTLY - preserve all logos, text, numbers, colors, and graphic placements precisely as shown. ${positioningRule} Full body shot, model standing naturally on an urban sidewalk with blurred city background. Natural daylight, shallow depth of field, shot on Canon EOS R5 85mm f/1.4. High-end commercial fashion photography style.`;
         } else {
           // Fallback ohne Referenzbild
           const colorDesc = input.colorDescription ? ` in colors ${input.colorDescription}` : "";

@@ -8594,3 +8594,70 @@
 [2026-05-07T09:55:59.286Z] Server running on http://localhost:3000/
 [2026-05-07T09:56:34.734Z] 5:56:34 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-07T09:57:42.824Z] 5:57:42 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T10:20:55.834Z] 6:20:55 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-07T10:20:58.157Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T10:20:59.034Z] Server running on http://localhost:3000/
+[2026-05-07T10:21:11.755Z] 6:21:11 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T10:21:37.647Z] 6:21:37 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T10:22:02.785Z] 6:22:02 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T10:22:24.634Z] 6:22:24 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T10:24:16.535Z] 6:24:16 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T11:20:14.753Z] 7:20:14 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T11:22:00.194Z] 7:22:00 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T11:23:00.870Z] 7:23:00 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T11:23:48.075Z] 7:23:48 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-07T11:51:40.251Z] 7:51:40 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/pages/Register.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/ZoneEditorPage.tsx, /src/pages/KiAnalyseDtf.tsx, /src/pages/KiAnalyseSublimation.tsx, /src/pages/KiDesign.tsx
+[2026-05-07T11:51:40.360Z] 7:51:40 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T11:51:42.854Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T11:51:44.342Z] Server running on http://localhost:3000/
+[2026-05-07T12:19:10.218Z] 8:19:10 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T12:19:10.218Z] 8:19:10 AM [vite] (client) hmr update /src/pages/KiAnalyseDtf.tsx, /src/pages/KiAnalyseSublimation.tsx, /src/pages/ZoneEditorPage.tsx, /src/pages/KiDesign.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/Register.tsx
+[2026-05-07T12:19:12.817Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T12:19:13.783Z] Server running on http://localhost:3000/
+[2026-05-07T12:19:59.650Z] 8:19:59 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-07T12:20:02.061Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T12:20:02.905Z] Server running on http://localhost:3000/
+[2026-05-07T12:24:17.165Z] 8:24:17 AM [vite] (client) hmr update /src/pages/Register.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/KiDesign.tsx, /src/pages/KiAnalyseSublimation.tsx, /src/pages/ZoneEditorPage.tsx, /src/pages/KiAnalyseDtf.tsx
+[2026-05-07T12:24:17.186Z] 8:24:17 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T12:24:19.300Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T12:24:20.062Z] Server running on http://localhost:3000/
+[2026-05-07T13:15:52.808Z] [StorageProxy] file fetch error: 403
+[2026-05-07T13:16:50.633Z] 9:16:50 AM [vite] (client) hmr update /src/pages/Register.tsx, /src/pages/KiAnalyseSublimation.tsx, /src/pages/ZoneEditorPage.tsx, /src/pages/KiAnalyseDtf.tsx, /src/pages/KiDesign.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx
+[2026-05-07T13:16:50.655Z] 9:16:50 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T13:16:53.142Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T13:16:54.174Z] Server running on http://localhost:3000/
+[2026-05-07T13:17:15.358Z] 9:17:15 AM [vite] (client) hmr update /src/pages/Register.tsx, /src/pages/KiAnalyseDtf.tsx, /src/pages/ZoneEditorPage.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/KiDesign.tsx, /src/pages/KiAnalyseSublimation.tsx
+[2026-05-07T13:17:15.428Z] 9:17:15 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T13:17:17.169Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T13:17:17.867Z] Server running on http://localhost:3000/
+[2026-05-07T14:27:04.480Z] 10:27:04 AM [vite] (client) hmr update /src/pages/TrainerDashboard.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/Register.tsx, /src/pages/KiAnalyseDtf.tsx, /src/pages/ZoneEditorPage.tsx, /src/pages/KiAnalyseSublimation.tsx, /src/pages/KiDesign.tsx
+[2026-05-07T14:27:04.550Z] 10:27:04 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:27:06.428Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:27:07.251Z] Server running on http://localhost:3000/
+[2026-05-07T14:27:31.377Z] 10:27:31 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:27:33.220Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:27:34.182Z] Server running on http://localhost:3000/
+[2026-05-07T14:27:40.297Z] 10:27:40 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:27:42.325Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:27:43.575Z] Server running on http://localhost:3000/
+[2026-05-07T14:28:00.147Z] 10:28:00 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:28:01.799Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:28:02.673Z] Server running on http://localhost:3000/
+[2026-05-07T14:28:26.595Z] 10:28:26 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:28:28.444Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:28:29.335Z] Server running on http://localhost:3000/
+[2026-05-07T14:29:03.783Z] 10:29:03 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:29:05.764Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:29:06.592Z] Server running on http://localhost:3000/
+[2026-05-07T14:29:47.875Z] 10:29:47 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:29:49.668Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:29:50.499Z] Server running on http://localhost:3000/
+[2026-05-07T14:30:25.464Z] 10:30:25 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:30:27.314Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:30:28.150Z] Server running on http://localhost:3000/
+[2026-05-07T14:41:11.238Z] 10:41:11 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:41:13.544Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:41:14.770Z] Server running on http://localhost:3000/
+[2026-05-07T14:41:24.419Z] 10:41:24 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-07T14:41:26.228Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T14:41:27.024Z] Server running on http://localhost:3000/

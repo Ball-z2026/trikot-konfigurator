@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, label, imageUrl FROM product_parts WHERE productId = 1380003 ORDER BY sortOrder;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, label, imageUrl FROM product_parts WHERE productId = 1380003 ORDER BY sortOrder;",
+  "rows": [
+    {
+      "id": "1320010",
+      "label": "Vorderteil",
+      "imageUrl": "/manus-storage/fussball_front_8452f3c3.png"
+    },
+    {
+      "id": "1320011",
+      "label": "Rückteil",
+      "imageUrl": "/manus-storage/fussball_back_d24ca9df.png"
+    },
+    {
+      "id": "1320012",
+      "label": "Ärmel Links",
+      "imageUrl": "/manus-storage/fussball_aermel_links_832ef2a4.png"
+    },
+    {
+      "id": "1320013",
+      "label": "Ärmel Rechts",
+      "imageUrl": "/manus-storage/fussball_aermel_rechts_3bdb550b.png"
+    },
+    {
+      "id": "1320014",
+      "label": "Kragen",
+      "imageUrl": "/manus-storage/trikot_kragen_0bd5b194.png"
+    },
+    {
+      "id": "1320015",
+      "label": "Bündchen Links",
+      "imageUrl": "/manus-storage/trikot_buendchen_1_0e0583dd.png"
+    },
+    {
+      "id": "1320016",
+      "label": "Bündchen Rechts",
+      "imageUrl": "/manus-storage/trikot_buendchen_2_5cdec8b0.png"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlabel\timageUrl\n1320010\tVorderteil\t/manus-storage/fussball_front_8452f3c3.png\n1320011\tRückteil\t/manus-storage/fussball_back_d24ca9df.png\n1320012\tÄrmel Links\t/manus-storage/fussball_aermel_links_832ef2a4.png\n1320013\tÄrmel Rechts\t/manus-storage/fussball_aermel_rechts_3bdb550b.png\n1320014\tKragen\t/manus-storage/trikot_kragen_0bd5b194.png\n1320015\tBündchen Links\t/manus-storage/trikot_buendchen_1_0e0583dd.png\n1320016\tBündchen Rechts\t/manus-storage/trikot_buendchen_2_5cdec8b0.png\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

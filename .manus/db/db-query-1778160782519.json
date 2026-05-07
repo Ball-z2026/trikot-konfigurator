@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, purpose, label, posX, posY, width, height, fontSize, fontFamily, heightCm FROM product_zones WHERE partId = 1320011 ORDER BY posY;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, purpose, label, posX, posY, width, height, fontSize, fontFamily, heightCm FROM product_zones WHERE partId = 1320011 ORDER BY posY;",
+  "rows": [
+    {
+      "id": "1410025",
+      "purpose": "clubName",
+      "label": "Vereinsname",
+      "posX": "30",
+      "posY": "21",
+      "width": "40",
+      "height": "4",
+      "fontSize": "18",
+      "fontFamily": "Oswald",
+      "heightCm": "NULL"
+    },
+    {
+      "id": "1410027",
+      "purpose": "playerNumber",
+      "label": "Spielernummer",
+      "posX": "35",
+      "posY": "22",
+      "width": "30",
+      "height": "30",
+      "fontSize": "90",
+      "fontFamily": "Oswald",
+      "heightCm": "25"
+    },
+    {
+      "id": "1410026",
+      "purpose": "playerName",
+      "label": "Spielername",
+      "posX": "25",
+      "posY": "54",
+      "width": "50",
+      "height": "6",
+      "fontSize": "32",
+      "fontFamily": "Oswald",
+      "heightCm": "NULL"
+    },
+    {
+      "id": "1410028",
+      "purpose": "logo",
+      "label": "Rücken-Sponsor",
+      "posX": "30",
+      "posY": "65",
+      "width": "40",
+      "height": "8",
+      "fontSize": "NULL",
+      "fontFamily": "NULL",
+      "heightCm": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpurpose\tlabel\tposX\tposY\twidth\theight\tfontSize\tfontFamily\theightCm\n1410025\tclubName\tVereinsname\t30\t21\t40\t4\t18\tOswald\tNULL\n1410027\tplayerNumber\tSpielernummer\t35\t22\t30\t30\t90\tOswald\t25\n1410026\tplayerName\tSpielername\t25\t54\t50\t6\t32\tOswald\tNULL\n1410028\tlogo\tRücken-Sponsor\t30\t65\t40\t8\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 275
+}

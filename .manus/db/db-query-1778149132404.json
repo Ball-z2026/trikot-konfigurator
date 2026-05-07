@@ -1,0 +1,13 @@
+{
+  "query": "SHOW TABLES LIKE '%logo%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SHOW TABLES LIKE '%logo%';",
+  "rows": [
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2 (%logo%)": "org_logos"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_3uAVwxvCFYUTTcHvTxGuX2 (%logo%)\norg_logos\n",
+  "stderr": "",
+  "execution_time_ms": 48
+}

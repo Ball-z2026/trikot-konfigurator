@@ -967,29 +967,7 @@ export default function CustomerConfigurator() {
 
 
 
-  // ─── Auto-Zuweisung: Org-Logo in alle Vereinswappen-Zonen (clubLogo) setzen ───
-  useEffect(() => {
-    if (autoLogoApplied || !orgDefaultLogo?.imageUrl || allZones.length === 0) return;
-    const logoZones = allZones.filter((z) => z.purpose === "clubLogo");
-    if (logoZones.length === 0) return;
-    setZoneContents((prev) => {
-      const updated = { ...prev };
-      for (const zone of logoZones) {
-        const current = updated[zone.id]?.imageDataUrl;
-        // Überschreibe wenn leer ODER wenn es das vorherige auto-gesetzte Logo ist
-        if (!current || current === prevAutoLogoUrl.current) {
-          updated[zone.id] = {
-            ...updated[zone.id],
-            zoneId: zone.id,
-            imageDataUrl: orgDefaultLogo.imageUrl,
-          };
-        }
-      }
-      return updated;
-    });
-    prevAutoLogoUrl.current = orgDefaultLogo.imageUrl;
-    setAutoLogoApplied(true);
-  }, [orgDefaultLogo, allZones, autoLogoApplied]);
+  // ─── Auto-Zuweisung: Org-Logo → wird weiter unten nach effectiveOrgLogo definiert ───
   // ─── Auto-Zuweisung: Abt.-Schrift in alle Text-Zonen setzen ───
   useEffect(() => {
     if (autoFontApplied || !deptDefaultFont?.fontFamily || allZones.length === 0) return;
@@ -1043,6 +1021,38 @@ export default function CustomerConfigurator() {
     { enabled: !!teamIdParam && !userOrgId && !teamPlayersLoaded }
   );
   const effectiveTeamData = teamData ?? teamDataPublic;
+
+  // ─── Fallback: Org-Logo über öffentliche Team-API (ohne Login) ───
+  const publicOrgId = (effectiveTeamData as any)?.orgId as number | undefined;
+  const { data: orgDefaultLogoPublic } = trpc.orgLogo.getDefault.useQuery(
+    { orgId: publicOrgId! },
+    { enabled: !!publicOrgId && !userOrgId }
+  );
+  // Effektives Logo: Login-basiert oder öffentlich
+  const effectiveOrgLogo = orgDefaultLogo ?? orgDefaultLogoPublic;
+
+  // ─── Auto-Zuweisung: Org-Logo in alle Vereinswappen-Zonen (clubLogo) setzen ───
+  useEffect(() => {
+    if (autoLogoApplied || !effectiveOrgLogo?.imageUrl || allZones.length === 0) return;
+    const logoZones = allZones.filter((z) => z.purpose === "clubLogo");
+    if (logoZones.length === 0) return;
+    setZoneContents((prev) => {
+      const updated = { ...prev };
+      for (const zone of logoZones) {
+        const current = updated[zone.id]?.imageDataUrl;
+        if (!current || current === prevAutoLogoUrl.current) {
+          updated[zone.id] = {
+            ...updated[zone.id],
+            zoneId: zone.id,
+            imageDataUrl: effectiveOrgLogo.imageUrl,
+          };
+        }
+      }
+      return updated;
+    });
+    prevAutoLogoUrl.current = effectiveOrgLogo.imageUrl;
+    setAutoLogoApplied(true);
+  }, [effectiveOrgLogo, allZones, autoLogoApplied]);
 
   // ─── Fallback: Vereinsname aus öffentlicher Team-API (ohne Login) ───
   useEffect(() => {
@@ -1984,34 +1994,41 @@ export default function CustomerConfigurator() {
                           }}
                         >
                           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded overflow-hidden relative"
-                            style={{ backgroundColor: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? getPartColor(part.id) : undefined }}
+                            style={{ backgroundColor: "#ffffff" }}
                           >
                             {part.imageUrl ? (
                               <>
+                                {/* Farbige Ebene mit Luminanz-Maske */}
+                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div className="absolute inset-0 pointer-events-none" style={{
+                                    backgroundColor: getPartColor(part.id),
+                                    maskImage: `url(${storageUrl(part.imageUrl)})`,
+                                    WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
+                                    maskSize: "contain",
+                                    WebkitMaskSize: "contain",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskPosition: "center",
+                                    WebkitMaskPosition: "center",
+                                  }} />
+                                )}
                                 <img
                                   src={storageUrl(part.imageUrl)}
                                   alt={part.label}
                                   className="w-full h-full object-contain relative"
                                   crossOrigin="anonymous"
-                                  style={{ mixBlendMode: hasTransparentImages ? undefined : "multiply" as const }}
-                                  
+                                  style={{
+                                    position: "relative",
+                                    zIndex: 2,
+                                    mixBlendMode: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
+                                  }}
                                 />
-                                {/* Farb-Overlay für transparente Bilder (SVG): CSS-Mask + multiply */}
-                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                   <div className="absolute inset-0 pointer-events-none" style={{
-                                     backgroundColor: getPartColor(part.id),
-                                     mixBlendMode: "hue" as const,
+                                {/* Farb-Overlay für transparente Bilder (SVG): hue blend mode */}
+                                {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div className="absolute inset-0 pointer-events-none" style={{
+                                    backgroundColor: getPartColor(part.id),
+                                    mixBlendMode: "hue" as const,
                                   }} />
-                                )}
-                                {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
-                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                  <div
-                                    className="absolute inset-0 pointer-events-none"
-                                    style={{
-                                      backgroundColor: getPartColor(part.id),
-                                      mixBlendMode: "multiply" as const,
-                                    }}
-                                  />
                                 )}
                               </>
                             ) : (
@@ -2210,7 +2227,7 @@ export default function CustomerConfigurator() {
                         <div
                           key={part.id}
                           className="relative rounded-lg border overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
-                          style={{ backgroundColor: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? getPartColor(part.id) : "#b8bcc2" }}
+                          style={{ backgroundColor: "#ffffff" }}
                           onClick={() => {
                             setActivePartId(part.id);
                             setViewMode("parts");
@@ -2219,32 +2236,42 @@ export default function CustomerConfigurator() {
                           <div className="relative">
                             {part.imageUrl ? (
                               <>
+                                {/* Farbige Ebene mit Luminanz-Maske */}
+                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                  <div
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                      backgroundColor: getPartColor(part.id),
+                                      maskImage: `url(${storageUrl(part.imageUrl)})`,
+                                      WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
+                                      maskSize: "contain",
+                                      WebkitMaskSize: "contain",
+                                      maskRepeat: "no-repeat",
+                                      WebkitMaskRepeat: "no-repeat",
+                                      maskPosition: "center",
+                                      WebkitMaskPosition: "center",
+                                    }}
+                                  />
+                                )}
                                 <img
                                   src={storageUrl(part.imageUrl)}
                                   alt={part.label}
                                   className="w-full h-auto block p-1 relative"
                                   draggable={false}
                                   crossOrigin="anonymous"
-                                  style={{ mixBlendMode: hasTransparentImages ? undefined : "multiply" as const }}
-                                  
+                                  style={{
+                                    position: "relative",
+                                    zIndex: 2,
+                                    mixBlendMode: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
+                                  }}
                                 />
-                                {/* Farb-Overlay für SVG-basierte Bilder: 'color' blend mode */}
+                                {/* Farb-Overlay für SVG-basierte Bilder: 'hue' blend mode */}
                                 {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
                                   <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
                                       backgroundColor: getPartColor(part.id),
                                       mixBlendMode: "hue" as const,
-                                    }}
-                                  />
-                                )}
-                                {/* Farb-Overlay für nicht-transparente Bilder (PNG) */}
-                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
-                                  <div
-                                    className="absolute inset-0 pointer-events-none"
-                                    style={{
-                                      backgroundColor: getPartColor(part.id),
-                                      mixBlendMode: "multiply" as const,
                                     }}
                                   />
                                 )}
@@ -2401,7 +2428,7 @@ export default function CustomerConfigurator() {
                    className="relative w-full mx-auto select-none"
                    style={{
                      ...((isFreeZoneMode && (draggingZone !== null || resizingZone !== null)) ? { touchAction: "none" } : {}),
-                     backgroundColor: "#b8bcc2",
+                     backgroundColor: "#ffffff",
                    }}
                   onClick={() => setSelectedZoneId(null)}
                   onDragOver={(e) => {
@@ -2440,37 +2467,47 @@ export default function CustomerConfigurator() {
                     dragSponsorRef.current = null;
                   }}
                 >
-                  {/* CSS-based coloring: color behind image, visible through transparent areas */}
+                  {/* CSS-based coloring: Trikot-Bild als Luminanz-Maske, Farbe nur innerhalb der Trikot-Form */}
                   {currentImage ? (
                     <div className="relative w-full" style={{ position: "relative", zIndex: 1 }}>
-                      {/* Hauptbild */}
+                      {/* Farbige Ebene: Farbe wird durch Luminanz-Maske auf Trikot-Form begrenzt */}
+                      {!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            backgroundColor: activeColor,
+                            maskImage: `url(${currentImage})`,
+                            WebkitMaskImage: `url(${currentImage})`,
+                            maskSize: "contain",
+                            WebkitMaskSize: "contain",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskRepeat: "no-repeat",
+                            maskPosition: "center",
+                            WebkitMaskPosition: "center",
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
+                      {/* Hauptbild darüber mit multiply um Schatten/Details zu erhalten */}
                       <img
                         src={currentImage}
                         alt={hasParts && activePart ? activePart.label : `${activeSide} Ansicht`}
                         className="w-full h-auto block pointer-events-none drop-shadow-md relative"
                         draggable={false}
                         crossOrigin="anonymous"
-                        style={{ mixBlendMode: hasTransparentImages ? undefined : "multiply" as const }}
-                        
+                        style={{
+                          position: "relative",
+                          zIndex: 2,
+                          mixBlendMode: (!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
+                        }}
                       />
                       {/* Farb-Overlay für Bekleidung (farbige PNGs): 'hue' blend mode */}
-                      {/* 'hue' ändert den Farbton des Bildes, behält Sättigung+Helligkeit */}
                       {hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
                             backgroundColor: activeColor,
                             mixBlendMode: "hue" as const,
-                          }}
-                        />
-                      )}
-                      {/* Farb-Overlay für nicht-transparente Bilder (Trikot-PNGs mit weißem Hintergrund) */}
-                      {!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
-                        <div
-                          className="absolute inset-0 pointer-events-none"
-                          style={{
-                            backgroundColor: activeColor,
-                            mixBlendMode: "multiply" as const,
                           }}
                         />
                       )}

@@ -1,0 +1,130 @@
+{
+  "query": "\nSELECT id, purpose, posX, posY, width, height, widthCm, heightCm, maxWidthCm, maxHeightCm \nFROM product_zones \nWHERE purpose = 'clubName'\nORDER BY id\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute \nSELECT id, purpose, posX, posY, width, height, widthCm, heightCm, maxWidthCm, maxHeightCm \nFROM product_zones \nWHERE purpose = 'clubName'\nORDER BY id\nLIMIT 10;\n",
+  "rows": [
+    {
+      "id": "1410025",
+      "purpose": "clubName",
+      "posX": "30",
+      "posY": "21",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410035",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410045",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410055",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410065",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410075",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410085",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410093",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1410148",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    },
+    {
+      "id": "1470009",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5",
+      "maxWidthCm": "25",
+      "maxHeightCm": "7.5"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpurpose\tposX\tposY\twidth\theight\twidthCm\theightCm\tmaxWidthCm\tmaxHeightCm\n1410025\tclubName\t30\t21\t45\t9\t25\t7.5\t25\t7.5\n1410035\tclubName\t10\t2\t45\t9\t25\t7.5\t25\t7.5\n1410045\tclubName\t10\t2\t45\t9\t25\t7.5\t25\t7.5\n1410055\tclubName\t10\t2\t45\t9\t25\t7.5\t25\t7.5\n1410065\tclubName\t10\t2\t45\t9\t25\t7.5\t25\t7.5\n1410075\tclubName\t10\t2\t45\t9\t25\t7.5\t25\t7.5\n1410085\tclubName\t10\t2\t45\t9\t25\t7.5\t25\t7.5\n1410093\tclubName\t10\t2\t45\t9\t25\t7.5\t25\t7.5\n1410148\tclubName\t25\t5\t45\t9\t25\t7.5\t25\t7.5\n1470009\tclubName\t25\t5\t45\t9\t25\t7.5\t25\t7.5\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

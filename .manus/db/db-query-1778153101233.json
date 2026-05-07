@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, label, purpose, posX, posY, width, height, fontSize FROM product_zones WHERE partId = 1320011 ORDER BY posY;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, label, purpose, posX, posY, width, height, fontSize FROM product_zones WHERE partId = 1320011 ORDER BY posY;",
+  "rows": [
+    {
+      "id": "1410025",
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "15",
+      "posY": "5",
+      "width": "70",
+      "height": "8",
+      "fontSize": "50"
+    },
+    {
+      "id": "1410027",
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "15",
+      "width": "50",
+      "height": "40",
+      "fontSize": "120"
+    },
+    {
+      "id": "1410026",
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "15",
+      "posY": "57",
+      "width": "70",
+      "height": "8",
+      "fontSize": "70"
+    },
+    {
+      "id": "1410028",
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "70",
+      "width": "70",
+      "height": "12",
+      "fontSize": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlabel\tpurpose\tposX\tposY\twidth\theight\tfontSize\n1410025\tVereinsname\tclubName\t15\t5\t70\t8\t50\n1410027\tSpielernummer\tplayerNumber\t25\t15\t50\t40\t120\n1410026\tSpielername\tplayerName\t15\t57\t70\t8\t70\n1410028\tRücken-Sponsor\tlogo\t15\t70\t70\t12\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

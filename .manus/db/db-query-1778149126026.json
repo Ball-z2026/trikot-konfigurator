@@ -1,0 +1,9 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%logo%' OR (TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%wappen%') OR (TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%image%') OR (TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%crest%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%logo%' OR (TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%wappen%') OR (TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%image%') OR (TABLE_NAME = 'organizations' AND COLUMN_NAME LIKE '%crest%');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 99
+}

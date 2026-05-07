@@ -183,6 +183,10 @@ export interface PlayerNameRule {
   required: boolean;
   /** Mindesthöhe der Buchstaben in cm */
   minHeightCm: number;
+  /** Maximale Höhe der Buchstaben in cm (Verbandsvorgabe) */
+  maxHeightCm: number;
+  /** Maximale Breite der Textzone in cm (Verbandsvorgabe) */
+  maxWidthCm: number;
   /** Position: "above_number" | "below_collar" | "flexible" */
   position: "above_number" | "below_collar" | "flexible";
   /** Mindestabstand zur Nummer in cm */
@@ -195,8 +199,10 @@ export interface PlayerNameRule {
 export interface TeamNameRule {
   /** Ist der Vereinsname auf dem Trikot erlaubt? */
   allowed: boolean;
-  /** Max. Höhe in cm (null = keine Begrenzung) */
-  maxHeightCm: number | null;
+  /** Max. Höhe der Buchstaben in cm (Verbandsvorgabe) */
+  maxHeightCm: number;
+  /** Max. Breite der Textzone in cm (Verbandsvorgabe) */
+  maxWidthCm: number;
   /** Position */
   position: string;
   notes: string[];
@@ -265,7 +271,7 @@ export function getNumberRules(
       }
       return {
         backMinHeight: 25,
-        frontMinHeight: null,
+        frontMinHeight: 10,
         shortsMinHeight: null,
         strokeMinWidth: 2,
         numberRange: { min: 1, max: 49 },
@@ -273,6 +279,7 @@ export function getNumberRules(
         frontRequired: false,
         notes: [
           "Rückennummer: 25–35 cm Höhe",
+          "Brustnummer: mind. 10 cm Höhe",
           "Strichstärke: 2–5 cm",
           "Nummern 1–49 (Nummer 1 nur für Torhüter)",
           "Nummern müssen sich farblich deutlich abheben",
@@ -574,27 +581,37 @@ export function getPlayerNameRules(
         return {
           required: true,
           minHeightCm: 5,
+          maxHeightCm: 7.5,
+          maxWidthCm: 25,
           position: "above_number",
           minDistanceToNumberCm: 2,
           notes: [
-            "Spielername Pflicht (Profi)",
-            "Oberhalb der Rückennummer, 2 cm Abstand",
-            "Farbe muss der Trikotnummer entsprechen",
+            "Spielername Pflicht (DFL Art. 11.1)",
+            "Buchstabenhöhe: höchstens 7,5 cm (DFL Art. 11.6)",
+            "Maximale Breite: 25 cm",
+            "Rückseite, oberhalb oder unterhalb der Nummer (DFL Art. 11.3)",
+            "Farbe muss der Trikotnummer entsprechen (DFL Art. 11.4)",
             "Freigestellt (ohne Hintergrund) auf dem Trikot",
-            "Vereinsname optional oberhalb des Spielernamens (max. 2 cm hoch)",
+            "Sonderfall mit Rücken-Sponsor: Spielername MUSS oberhalb der Nummer, 2 cm Abstand (§ 25 Nr. 5d)",
           ],
-          source: "DFB Allgemeinverbindliche Vorschriften § 10 / DFL § 25",
+          source: "DFL Richtlinie Art. 11 / DFB § 10 / DFB § 25 Nr. 5d",
         };
       }
       return {
         required: false,
         minHeightCm: 2.5,
-        position: "above_number",
-        minDistanceToNumberCm: 2,
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
+        position: "flexible",
+        minDistanceToNumberCm: 0,
         notes: [
-          "Spielername optional (Amateur)",
-          "Nachname und/oder Vorname erlaubt",
-          "Muss dem Spielberechtigungslisten-Eintrag entsprechen",
+          "Spielername optional (DFB § 10 Nr. 1: 'kann')",
+          "Buchstabenhöhe: höchstens 7,5 cm (DFB § 10 Nr. 6)",
+          "Maximale Breite: 25 cm",
+          "Nachname und/oder Vorname erlaubt (DFB § 10 Nr. 1)",
+          "Ober- oder unterhalb der Nummer (DFB § 10 Nr. 3)",
+          "Farbe muss der Spielernummer entsprechen (DFB § 10 Nr. 4)",
+          "Ohne Rücken-Sponsor: kein Pflicht-Abstand definiert",
         ],
         source: "DFB Allgemeinverbindliche Vorschriften § 10",
       };
@@ -603,11 +620,14 @@ export function getPlayerNameRules(
       return {
         required: false,
         minHeightCm: 4,
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
         position: "flexible",
         minDistanceToNumberCm: 0,
         notes: [
           "Spielername empfohlen (nicht Pflicht im Amateurbereich)",
           "Einzelbuchstabe mind. 4 cm hoch",
+          "Standardregel: max. 7,5 cm Höhe, max. 25 cm Breite",
           "Rückseite des Trikots",
         ],
         source: "DHB Zusatzbestimmungen / IHF Reglement",
@@ -618,11 +638,14 @@ export function getPlayerNameRules(
         return {
           required: true,
           minHeightCm: 4,
+          maxHeightCm: 7.5,
+          maxWidthCm: 25,
           position: "below_collar",
           minDistanceToNumberCm: 0,
           notes: [
             "Spielername Pflicht (1. Bundesliga)",
             "Unter dem Kragen, mind. 4 cm hoch",
+            "Standardregel: max. 7,5 cm Höhe, max. 25 cm Breite",
             "Nachname des Spielers",
             "Fette Blockschrift ohne Serifen obligatorisch",
             "Zwischen Kragen und Name kein Sponsor erlaubt",
@@ -633,11 +656,14 @@ export function getPlayerNameRules(
       return {
         required: false,
         minHeightCm: 4,
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
         position: "below_collar",
         minDistanceToNumberCm: 0,
         notes: [
           "Spielername freigestellt (2. Bundesliga und darunter)",
           "Falls verwendet: mind. 4 cm hoch, unter dem Kragen",
+          "Standardregel: max. 7,5 cm Höhe, max. 25 cm Breite",
           "Fette Blockschrift ohne Serifen obligatorisch",
         ],
         source: "VBL-Reglement / VBL-Wiki",
@@ -647,6 +673,8 @@ export function getPlayerNameRules(
       return {
         required: level === "profi",
         minHeightCm: level === "profi" ? 5 : 2,
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
         position: "above_number",
         minDistanceToNumberCm: 2,
         notes: [
@@ -655,6 +683,7 @@ export function getPlayerNameRules(
             : "Spielername optional (Amateur)",
           "Rückseite, oberhalb der Nummer",
           `Mind. ${level === "profi" ? 5 : 2} cm Buchstabenhöhe`,
+          "Standardregel: max. 7,5 cm Höhe, max. 25 cm Breite",
         ],
         source: "FIBA Rules Art. 4 / easyCredit BBL Standards",
       };
@@ -673,51 +702,56 @@ export function getTeamNameRules(
     case "fussball":
       return {
         allowed: true,
-        maxHeightCm: 2,
-        position: "Rücken, oberhalb des Spielernamens (falls vorhanden), 2 cm Abstand",
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
+        position: "Rücken, oberhalb oder unterhalb der Spielernummer (DFL Art. 15.4 / DFB § 14 Nr. 4)",
         notes: [
-          "Vereinsname optional auf der Rückseite",
-          "Max. 2 cm Höhe",
-          "Oberhalb des Spielernamens mit 2 cm Abstand",
-          "Farbe muss der Trikotnummer entsprechen (bei Rückenwerbung)",
+          "Vereinsname auf Rückseite: Buchstaben höchstens 7,5 cm (DFL Art. 15.4b / DFB § 14 Nr. 4b)",
+          "Maximale Breite: 25 cm",
+          "Oberhalb ODER unterhalb der Spielernummer",
+          "Farbe muss der Spielernummer entsprechen (DFB § 14 Nr. 4a)",
+          "Sonderfall mit Rücken-Sponsor: Vereinsname NUR oberhalb Spielername, max. 2 cm Höhe, 2 cm Abstand (§ 25 Nr. 5d ii)",
         ],
-        source: "DFB Allgemeinverbindliche Vorschriften § 10 / DFL § 25",
+        source: "DFL Richtlinie Art. 15.4 / DFB Allgemeinverbindliche Vorschriften § 14 Nr. 4",
       };
 
     case "handball":
       return {
         allowed: true,
-        maxHeightCm: null,
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
         position: "Frei positionierbar (meist Rücken oder Brust)",
         notes: [
           "Vereinsname erlaubt",
-          "Keine spezifische Größenbeschränkung",
+          "Keine spezifische Verbandsvorgabe – Standardregel angewandt: max. 7,5 cm Höhe, max. 25 cm Breite",
           "Darf Nummern nicht beeinträchtigen",
         ],
-        source: "DHB Spielordnung",
+        source: "DHB Spielordnung (Standardregel)",
       };
 
     case "volleyball":
       return {
         allowed: true,
-        maxHeightCm: 10,
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
         position: "Rücken (oberhalb der Nummer) oder Brust",
         notes: [
           "Vereinsname erlaubt (Rücken oder Brust)",
-          "Max. 10 cm Schrifthöhe (Schweizer Reglement, ähnlich DVV)",
+          "Standardregel: max. 7,5 cm Höhe, max. 25 cm Breite",
           "Falls Spielername vorhanden: Vereinsname oberhalb der Nummer eingeschränkt",
         ],
-        source: "VBL-Reglement / DVV BSO",
+        source: "VBL-Reglement / DVV BSO (Standardregel)",
       };
 
     case "basketball":
       return {
         allowed: true,
-        maxHeightCm: null,
+        maxHeightCm: 7.5,
+        maxWidthCm: 25,
         position: "Vorderseite des Trikots (Brust)",
         notes: [
           "Vereinsname auf Vorderseite üblich",
-          "Keine spezifische Größenbeschränkung",
+          "Standardregel: max. 7,5 cm Höhe, max. 25 cm Breite",
         ],
         source: "FIBA Rules Art. 4 / DBB Spielordnung",
       };
@@ -993,4 +1027,279 @@ export function formatFullRulesForDisplay(ruleSet: JerseyRuleSet): string {
   sections.push(`Mind. ${ruleSet.playerName.minHeightCm} cm Buchstabenhöhe`);
 
   return sections.join("\n");
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Standard-Positionierung für Trikot-Elemente
+// ═══════════════════════════════════════════════════════════════════
+// FEST DEFINIERT – Nur ändern wenn Verbandsvorgaben es erfordern!
+// Alle Werte in Prozent relativ zum Trikot-Canvas.
+// Die Mitten beider Elemente (Wappen + Brustnummer) liegen auf gleicher Höhe (Y=33%).
+
+export interface ZonePositionRule {
+  /** Horizontale Position (links = 0%, rechts = 100%) */
+  posX: number;
+  /** Vertikale Position (oben = 0%, unten = 100%) */
+  posY: number;
+  /** Breite in % */
+  width: number;
+  /** Höhe in % */
+  height: number;
+  /** Beschreibung */
+  description: string;
+}
+
+/**
+ * Standard-Positionierung Vorderseite
+ * - Brustnummer: links (= rechte Brust des Trägers)
+ * - Vereinswappen: rechts (= linke Brust / Herzseite des Trägers)
+ * - Beide Mitten auf gleicher Höhe (Y=33%)
+ */
+export const FRONT_ZONE_POSITIONS = {
+  playerNumberFront: {
+    posX: 30,
+    posY: 25,
+    width: 15,
+    height: 12,
+    description: "Brustnummer – links im Bild (rechte Brust des Trägers), 10cm hoch, Mitte Y=31%",
+  } as ZonePositionRule,
+  clubLogo: {
+    posX: 60,
+    posY: 26,
+    width: 12,
+    height: 10,
+    description: "Vereinswappen – rechts im Bild (Herzseite/linke Brust des Trägers), Mitte Y=31%",
+  } as ZonePositionRule,
+  chestSponsor: {
+    posX: 25,
+    posY: 45,
+    width: 50,
+    height: 12,
+    description: "Brust-Sponsor – zentriert unter Wappen/Nummer",
+  } as ZonePositionRule,
+  bellySponsor: {
+    posX: 30,
+    posY: 70,
+    width: 40,
+    height: 10,
+    description: "Bauch-Sponsor – zentriert im unteren Brustbereich",
+  } as ZonePositionRule,
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════
+// Rückseiten-Layout-Optionen
+// ═══════════════════════════════════════════════════════════════════
+// Die Rückennummer ist IMMER fest positioniert (Verbandsvorgabe).
+// Die Elemente darüber/darunter sind wählbar.
+
+export type BackLayoutType =
+  | "clubName_number_playerName"   // Vereinsname → Nummer → Spielername
+  | "playerName_number"            // Spielername → Nummer (kein Vereinsname)
+  | "number_playerName"            // Nummer → Spielername (kein Vereinsname, Name unten)
+  | "clubName_playerName_number";  // Vereinsname → Spielername → Nummer
+
+export interface BackLayoutOption {
+  type: BackLayoutType;
+  label: string;
+  description: string;
+  /** Reihenfolge der Elemente von oben nach unten */
+  order: Array<"clubName" | "playerName" | "playerNumber">;
+  /** Hat einen Vereinsnamen */
+  hasClubName: boolean;
+}
+
+export const BACK_LAYOUT_OPTIONS: BackLayoutOption[] = [
+  {
+    type: "clubName_number_playerName",
+    label: "Vereinsname – Nummer – Spielername",
+    description: "Klassisch: Vereinsname oben, große Nummer Mitte, Spielername unten",
+    order: ["clubName", "playerNumber", "playerName"],
+    hasClubName: true,
+  },
+  {
+    type: "playerName_number",
+    label: "Spielername – Nummer",
+    description: "Spielername über der Nummer, kein Vereinsname",
+    order: ["playerName", "playerNumber"],
+    hasClubName: false,
+  },
+  {
+    type: "number_playerName",
+    label: "Nummer – Spielername",
+    description: "Nummer oben, Spielername darunter, kein Vereinsname",
+    order: ["playerNumber", "playerName"],
+    hasClubName: false,
+  },
+  {
+    type: "clubName_playerName_number",
+    label: "Vereinsname – Spielername – Nummer",
+    description: "Vereinsname oben, Spielername darunter, Nummer unten",
+    order: ["clubName", "playerName", "playerNumber"],
+    hasClubName: true,
+  },
+];
+
+/**
+ * Berechnet die Rückseiten-Positionen basierend auf dem gewählten Layout
+ * und den Verbandsvorgaben (Schrifthöhen, Abstände).
+ *
+ * Standardregel für Textzonen (wenn keine abweichende Verbandsvorgabe):
+ * - Schrift auf max. 7,5 cm Höhe setzen
+ * - Wenn Text dann breiter als 25 cm → Schrift verkleinern bis 25 cm Breite passt
+ * - Höhe max. 7,5 cm, Breite max. 25 cm – der kleinere Wert bestimmt die Schriftgröße
+ *
+ * @param layout - Gewähltes Rückseiten-Layout
+ * @param sportart - Sportart für Verbandsvorgaben
+ * @param level - Spielklasse
+ * @returns Positionierung aller Rückseiten-Zonen
+ */
+export function calculateBackPositions(
+  layout: BackLayoutType,
+  sportart: SportartCode = "fussball",
+  level: "profi" | "semi" | "amateur" = "amateur"
+): Record<string, ZonePositionRule> {
+  const numberRules = getNumberRules(sportart, level);
+  const nameRules = getPlayerNameRules(sportart, level);
+  const teamNameRules = getTeamNameRules(sportart, level);
+
+  // REFERENZ: Größe L = 75 cm Höhe (alle Maße basieren darauf)
+  // Trikot-Fläche = 86.2% der Bildhöhe → sichtbare Höhe im Canvas = 86.2%
+  // Umrechnung: 75 cm verteilen sich auf 86.2% → 1 cm = 86.2 / 75 = 1.15% des Canvas
+  const REFERENCE_HEIGHT_CM = 75; // Größe L
+  const JERSEY_AREA_PCT = 86.2; // Trikot-Fläche als % der Bildhöhe
+  const CM_TO_PCT = JERSEY_AREA_PCT / REFERENCE_HEIGHT_CM; // ≈ 1.15
+  
+  // Rückennummer-Höhe basiert auf Verbandsvorgabe (z.B. 25 cm bei Fußball = 28.7%)
+  const numberHeight = numberRules.backMinHeight ? Math.round(numberRules.backMinHeight * CM_TO_PCT) : 29;
+  
+  // Abstand: nur bei Profi mit Rücken-Sponsor ist 2cm Pflicht, sonst 1cm Standard
+  const minGap = nameRules.minDistanceToNumberCm > 0 
+    ? Math.round(nameRules.minDistanceToNumberCm * CM_TO_PCT) 
+    : Math.round(1 * CM_TO_PCT); // 1 cm Standard-Abstand für Lesbarkeit
+  
+  // Spielername-Zone: max. 7,5 cm Höhe = 8.6% (Verbandsvorgabe)
+  // Die tatsächliche Schriftgröße wird im Rendering bestimmt:
+  // Erst 7,5 cm Höhe versuchen, wenn Text > 25 cm breit → nach Breite skalieren
+  const nameHeight = Math.round(nameRules.maxHeightCm * CM_TO_PCT);
+  
+  // Vereinsname-Zone: max. 7,5 cm Höhe = 8.6% (Verbandsvorgabe)
+  const clubNameHeight = Math.round(teamNameRules.maxHeightCm * CM_TO_PCT);
+  
+  // Breite der Textzonen: max. 25 cm
+  // Bei Größe L ist die Trikotbreite ca. 55 cm (ergibt sich aus dem Bild/Schnitt)
+  // 25 cm / 55 cm × 100 = ~45% der Bildbreite
+  // Die Breite ergibt sich automatisch aus der Höhe des Trikots (75 cm bei L)
+  const REFERENCE_WIDTH_CM = 55; // Trikotbreite bei Größe L (ergibt sich aus Schnitt)
+  const textZoneWidth = Math.round((nameRules.maxWidthCm / REFERENCE_WIDTH_CM) * 100); // 25/55*100 ≈ 45%
+
+  const positions: Record<string, ZonePositionRule> = {};
+
+  // Zentrierte Position für Textzonen (posX so dass Zone mittig liegt)
+  const textZonePosX = Math.round((100 - textZoneWidth) / 2);
+
+  switch (layout) {
+    case "clubName_number_playerName": {
+      // Vereinsname → Nummer → Spielername
+      const clubNameY = 21;
+      const numberY = clubNameY + clubNameHeight + minGap;
+      const nameY = numberY + numberHeight + minGap;
+      positions.clubName = { posX: textZonePosX, posY: clubNameY, width: textZoneWidth, height: clubNameHeight, description: "Vereinsname – max. 7,5cm Höhe, max. 25cm Breite" };
+      positions.playerNumberBack = { posX: 30, posY: numberY, width: 40, height: numberHeight, description: "Rückennummer – 25-35cm (Verbandsvorgabe)" };
+      positions.playerName = { posX: textZonePosX, posY: nameY, width: textZoneWidth, height: nameHeight, description: "Spielername – max. 7,5cm Höhe, max. 25cm Breite" };
+      break;
+    }
+    case "playerName_number": {
+      // Spielername → Nummer (kein Vereinsname)
+      const nameY = 18;
+      const numberY = nameY + nameHeight + minGap;
+      positions.playerName = { posX: textZonePosX, posY: nameY, width: textZoneWidth, height: nameHeight, description: "Spielername – max. 7,5cm Höhe, max. 25cm Breite" };
+      positions.playerNumberBack = { posX: 30, posY: numberY, width: 40, height: numberHeight, description: "Rückennummer – 25-35cm (Verbandsvorgabe)" };
+      break;
+    }
+    case "number_playerName": {
+      // Nummer → Spielername (kein Vereinsname)
+      const numberY = 21;
+      const nameY = numberY + numberHeight + minGap;
+      positions.playerNumberBack = { posX: 30, posY: numberY, width: 40, height: numberHeight, description: "Rückennummer – 25-35cm (Verbandsvorgabe)" };
+      positions.playerName = { posX: textZonePosX, posY: nameY, width: textZoneWidth, height: nameHeight, description: "Spielername – max. 7,5cm Höhe, max. 25cm Breite" };
+      break;
+    }
+    case "clubName_playerName_number": {
+      // Vereinsname → Spielername → Nummer
+      const clubNameY = 21;
+      const nameY = clubNameY + clubNameHeight + minGap;
+      const numberY = nameY + nameHeight + minGap;
+      positions.clubName = { posX: textZonePosX, posY: clubNameY, width: textZoneWidth, height: clubNameHeight, description: "Vereinsname – max. 7,5cm Höhe, max. 25cm Breite" };
+      positions.playerName = { posX: textZonePosX, posY: nameY, width: textZoneWidth, height: nameHeight, description: "Spielername – max. 7,5cm Höhe, max. 25cm Breite" };
+      positions.playerNumberBack = { posX: 30, posY: numberY, width: 40, height: numberHeight, description: "Rückennummer – 25-35cm (Verbandsvorgabe)" };
+      break;
+    }
+  }
+
+  // Rücken-Sponsor immer ganz unten
+  positions.backSponsor = { posX: 25, posY: 82, width: 50, height: 10, description: "Rücken-Sponsor – unten zentriert" };
+
+  return positions;
+}
+
+/** Standard-Layout für neue Produkte */
+export const DEFAULT_BACK_LAYOUT: BackLayoutType = "clubName_number_playerName";
+
+/**
+ * Gibt die Standard-Positionierung als Text für den KI-Designer zurück.
+ * Berücksichtigt das gewählte Rückseiten-Layout und die exakten Verbandsvorgaben.
+ */
+export function getPositionRulesForAI(
+  backLayout: BackLayoutType = DEFAULT_BACK_LAYOUT,
+  sportart: SportartCode = "fussball",
+  level: "profi" | "semi" | "amateur" = "amateur"
+): string {
+  const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
+  const nameRules = getPlayerNameRules(sportart, level);
+  const teamNameRules = getTeamNameRules(sportart, level);
+  const numberRules = getNumberRules(sportart, level);
+
+  const orderDescription = layoutOption
+    ? layoutOption.order.map((el, i) => {
+        const labels: Record<string, string> = {
+          clubName: `Club name (max. ${teamNameRules.maxHeightCm}cm height, max. ${teamNameRules.maxWidthCm}cm width)`,
+          playerName: `Player name (max. ${nameRules.maxHeightCm}cm height, max. ${nameRules.maxWidthCm}cm width)`,
+          playerNumber: `Back number (${numberRules.backMinHeight}-35cm height)`,
+        };
+        return `${i + 1}. ${labels[el]}`;
+      }).join(", then ")
+    : "Club name, then back number, then player name";
+
+  return `FESTE POSITIONIERUNGSREGELN FÜR TRIKOTS:
+
+REFERENZ: Alle Maße basieren auf Größe L = 75 cm Höhe. Die Breite ergibt sich automatisch aus dem Schnitt.
+
+VORDERSEITE (UNVERÄNDERLICH):
+- Brustnummer: LINKS im Bild (= rechte Brust des Trägers), Position X=30%, Y=25%, Größe 15%×16%
+- Vereinswappen: RECHTS im Bild (= Herzseite/linke Brust des Trägers), Position X=60%, Y=28%, Größe 12%×10%
+- WICHTIG: Die MITTEN beider Elemente müssen auf GLEICHER HÖHE liegen (Y=33%)
+- Brust-Sponsor: Zentriert unter Wappen/Nummer, Y=45%
+- Bauch-Sponsor: Zentriert im unteren Bereich, Y=70%
+
+RÜCKSEITE (Layout: ${layoutOption?.label || "Standard"}):
+Reihenfolge von oben nach unten: ${orderDescription}
+
+VERBANDSVORGABEN TEXTZONEN (${sportart.toUpperCase()}, ${level}):
+- STANDARDREGEL für Spielername und Vereinsname:
+  1. Schrift auf max. ${nameRules.maxHeightCm} cm Höhe setzen
+  2. Prüfen ob Text in max. ${nameRules.maxWidthCm} cm Breite passt
+  3. Falls Text zu breit: Schrift verkleinern bis ${nameRules.maxWidthCm} cm Breite eingehalten wird
+  4. Der KLEINERE Wert (Höhe oder Breite) bestimmt die endgültige Schriftgröße
+- Rückennummer: ${numberRules.backMinHeight}–35 cm Höhe (Verbandsvorgabe)
+- Spielername: max. ${nameRules.maxHeightCm} cm Höhe, max. ${nameRules.maxWidthCm} cm Breite
+- Vereinsname: max. ${teamNameRules.maxHeightCm} cm Höhe, max. ${teamNameRules.maxWidthCm} cm Breite
+- Rücken-Sponsor: Unten zentriert, Y=82%
+
+REGELN:
+- Vereinswappen IMMER auf der Herzseite (rechts im Bild = links am Träger)
+- Brustnummer und Wappen IMMER auf gleicher Höhe (Mitten ausgerichtet)
+- Rückennummer: Position und Größe gemäß Verbandsvorgabe (NICHT änderbar)
+- Textzonen-Größe: Erst Höhe prüfen, dann Breite – der limitierende Wert gewinnt
+- Nur Verbandsvorgaben können die Positionierung überschreiben`;
 }
