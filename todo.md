@@ -2101,3 +2101,8 @@
 ## Bug: PDF-Upload für Sponsoren-Logos (07.05.2026)
 - [ ] Sponsoren-Logo Upload: PDF als erlaubtes Format hinzufügen
 - [ ] Bug: Vereinswappen in Rückennummer integrieren funktioniert nicht (Post-Processing schlägt fehl)
+
+## Bugs gemeldet 07.05.2026 (Screenshot)
+- [x] Bug: Vorderseite Nummer und Wappen vertauscht – Prompt korrigiert: VIEWER'S RIGHT/LEFT explizit
+- [x] Bug: Wappen-in-Nummer – Neuer KI-Prompt: Wappen 50% der Nummern-Breite, zentriert in jede Ziffer (kein Post-Processing)
+- [x] Bug: Vorlage speichern – Button nicht mehr disabled, Auto-Name wenn leer

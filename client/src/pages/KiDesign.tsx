@@ -174,7 +174,7 @@ export default function KiDesign() {
   const createTemplate = trpc.designTemplate.create.useMutation();
   const generateAiMockup = trpc.mockup.generateAi.useMutation();
   const removeBackgroundMut = trpc.mockup.removeBackground.useMutation();
-  const compositeCrestInNumberMutation = trpc.mockup.compositeCrestInNumber.useMutation();
+  // Wappen-in-Nummer wird jetzt per KI-Prompt gelöst (kein Post-Processing mehr nötig)
 
   // Membership für orgId / deptId
   const { data: memberships } = trpc.membership.mine.useQuery();
@@ -429,27 +429,26 @@ export default function KiDesign() {
         if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
       }
       
-      // VEREINSWAPPEN = KI platziert das echte Wappen auf der Herzseite (wie Vereinsname auf Rückseite)
-      // Position gemäß DB: posX=60%, posY=28% auf dem Einzelteil, Größe 10%×10%
+      // VEREINSWAPPEN = KI platziert das echte Wappen auf der Herzseite
+      // Herzseite = linke Brust des Trägers = RECHTE Seite im Bild (Betrachter-Perspektive)
       // Auf gleicher Höhe wie Brustnummer (Y=32% = etwas unterhalb Kragen)
       if (defaultLogo?.imageUrl) {
-        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST: MUST place the club crest/badge (provided as reference image) on the HEART SIDE of the front jersey. The heart side is the LEFT CHEST of the wearer = RIGHT SIDE when viewing the front jersey. Position: at approximately 60% from left and 32% from top of the jersey (same vertical height as the front number on the opposite side). Size: approximately 8-10cm (10% of jersey height). The crest must be reproduced PIXEL-PERFECT as provided in the reference image - do NOT modify, redraw, reinterpret, simplify, or change any colors. Use the EXACT original image without ANY alterations.`;
+        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST PLACEMENT: Place the club crest/badge (provided as reference image) on the VIEWER'S RIGHT SIDE of the front jersey chest area (this is the wearer's left chest / heart side). Position: approximately 60-65% from the LEFT edge of the jersey and 32% from the top. Size: approximately 8-10cm (10% of jersey height). IMPORTANT: The crest goes on the RIGHT side as seen by the viewer, the number goes on the LEFT side as seen by the viewer. The crest must be reproduced PIXEL-PERFECT as provided in the reference image - do NOT modify, redraw, reinterpret, simplify, or change any colors.`;
       }
 
-      // WAPPEN AUF RÜCKSEITE = Zwei Optionen:
-      // Option A: "Wasserzeichen groß" = Wappen groß über den gesamten Rücken als Wasserzeichen (HINTER der Nummer)
-      // Option B: "Wappen in Nummer" = Post-Processing compositet Wappen IN die Nummern-Ziffern (nach Generierung)
-      // Für Option B: KI generiert eine normale, einfarbige, gut sichtbare Rückennummer.
-      // Das Wappen wird NACH der Generierung per Sharp/Compositing in die Nummer eingesetzt.
+      // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
+      // Schriftgröße der Rückennummer: 25-35cm Höhe (Verbandsregel)
+      // Wappen verkleinert auf 50% der Nummern-Breite, zentriert in jede Ziffer
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        // Hinweis an KI: Nummer muss gut erkennbar und einfarbig sein (für späteres Compositing)
-        extraPrompt += ` BACK VIEW (right jersey) - BACK NUMBER STYLE: The back number MUST be a single SOLID COLOR with CLEAR, SHARP EDGES and HIGH CONTRAST against the jersey background. Do NOT add any texture, gradient, pattern, or crest inside the number. The number must be completely flat/solid colored for post-processing. Make the number large (25-35cm) and clearly visible.`;
+        // Rückennummer-Größe: 25-35cm auf 75cm Trikot = ca. 33-47% der Trikothöhe
+        // Eine Ziffer ist ca. 15-20cm breit bei dieser Höhe
+        // Wappen = 50% davon = ca. 7.5-10cm breit
+        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER: The back number has a font size of 25-35cm height (this is 33-47% of the jersey height of 75cm). Each number digit is approximately 15-20cm wide at this height. The club crest/badge (EXACT SAME as on the front chest, provided as reference image) MUST be placed INSIDE each number digit. Scale the crest to exactly 50% of the digit width (approximately 7.5-10cm). Center the crest vertically and horizontally inside each digit. The number digit acts as a frame around the crest - draw the digit outline/border in a contrasting color so it remains readable, with the small crest sitting centered inside like a window. The crest must be pixel-perfect identical to the front chest version - same colors, same proportions, same details, just scaled down to 50% of digit width. Do NOT stretch or distort the crest. Do NOT make the crest fill the entire digit - leave visible number-colored border around it.`;
       }
 
-      // BRUSTNUMMER = Vorderseite, rechte Brust (links im Bild), Position gemäß Verbandsregel
-      // DB: posX=30%, posY=25%, width=15%, height=12% (mind. 10cm Höhe)
+      // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
       // Auf gleicher Höhe wie Vereinswappen (Y=32%)
-      extraPrompt += ` FRONT VIEW (left jersey) - FRONT NUMBER: MUST include a player number on the FRONT LEFT CHEST area (viewer's left side = wearer's right chest, opposite side from the crest). The front number should be approximately 10cm tall (12% of jersey height), positioned at 32% from top of the jersey (same vertical height as the club crest on the opposite side). Use the same font style as the back number but smaller. The front number must be clearly visible and readable.`;
+      extraPrompt += ` FRONT VIEW (left jersey) - FRONT NUMBER PLACEMENT: Place a player number on the VIEWER'S LEFT SIDE of the front jersey chest area (this is the wearer's right chest, opposite side from the crest). Position: approximately 30-35% from the LEFT edge of the jersey and 32% from the top (same height as the crest on the opposite side). Size: approximately 10cm tall (12% of jersey height). IMPORTANT: The number goes on the LEFT side as seen by the viewer, the crest goes on the RIGHT side as seen by the viewer. Use the same font style as the back number but smaller.`;
 
       // RÜCKSEITEN-LAYOUT = Dynamische Positionierung basierend auf gewähltem Layout
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
@@ -558,28 +557,7 @@ export default function KiDesign() {
       });
 
       if (result.url) {
-        let finalUrl = result.url;
-        
-        // Post-Processing: Wappen IN die Rückennummer compositen
-        if (useWappenInNumber && defaultLogo?.imageUrl) {
-          try {
-            toast.info("Vereinswappen wird in die Rückennummer eingearbeitet...");
-            const crestResult = await compositeCrestInNumberMutation.mutateAsync({
-              imageUrl: result.url,
-              crestImageUrl: defaultLogo.imageUrl,
-              opacity: 0.7,
-            });
-            if (crestResult.url) {
-              finalUrl = crestResult.url;
-              toast.success("Vereinswappen erfolgreich in Rückennummer eingearbeitet!");
-            }
-          } catch (err: any) {
-            console.error("Crest-in-number compositing failed:", err);
-            toast.warning("Wappen-in-Nummer konnte nicht angewendet werden. Original wird verwendet.");
-          }
-        }
-        
-        setGeneratedImageUrl(finalUrl);
+        setGeneratedImageUrl(result.url);
         toast.success("Trikot-Design generiert! Sie können jetzt Zonen hinzufügen.");
         setStep("generate");
       }
@@ -655,15 +633,22 @@ export default function KiDesign() {
 
   // ── Speichern ──
   const handleSave = async () => {
-    if (!templateName.trim()) { toast.error("Bitte einen Namen eingeben"); return; }
     if (!generatedImageUrl) { toast.error("Bitte zuerst ein Design generieren"); return; }
+    // Wenn kein Name eingegeben wurde, automatisch einen Standardnamen generieren
+    let saveName = templateName.trim();
+    if (!saveName) {
+      const sportLabel = SPORT_TYPES.find(s => s.id === selectedSport)?.name || "Trikot";
+      saveName = `KI-Design ${sportLabel} ${new Date().toLocaleDateString("de-DE")}`;
+      setTemplateName(saveName);
+      toast.info(`Vorlagenname automatisch gesetzt: "${saveName}"`);
+    }
     if (!selectedSport) { toast.error("Bitte eine Sportart wählen"); return; }
 
     const enabledZones = zones.filter(z => z.enabled !== false);
     setSaving(true);
     try {
       await createTemplate.mutateAsync({
-        name: templateName,
+        name: saveName,
         imageUrl: generatedImageUrl,
         storageKey: undefined,
         positionsConfig: enabledZones.length > 0 ? { productId: null, zones: enabledZones, jerseyColor: primaryColor } : undefined,
@@ -876,7 +861,7 @@ export default function KiDesign() {
               </Button>
             )}
             {(step === "generate" || step === "edit" || step === "save") && generatedImageUrl && (
-              <Button size="sm" onClick={handleSave} disabled={saving || !templateName.trim() || !selectedSport}>
+              <Button size="sm" onClick={handleSave} disabled={saving}>
                 <Save className="w-4 h-4 mr-1" />
                 {saving ? "Speichert..." : "Vorlage speichern"}
               </Button>
