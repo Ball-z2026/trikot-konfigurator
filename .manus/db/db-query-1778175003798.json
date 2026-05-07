@@ -1,0 +1,2570 @@
+{
+  "query": "SELECT label, purpose, posX, posY, width, height, widthCm, heightCm FROM product_zones WHERE side = 'front' ORDER BY posY;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT label, purpose, posX, posY, width, height, widthCm, heightCm FROM product_zones WHERE side = 'front' ORDER BY posY;",
+  "rows": [
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "35",
+      "posY": "5",
+      "width": "30",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "75",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "75",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "75",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "75",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "75",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "75",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "5",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "50",
+      "height": "10",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "5",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinswappen Handball Wölfe Wien",
+      "purpose": "logo",
+      "posX": "42",
+      "posY": "8",
+      "width": "27",
+      "height": "10",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "8",
+      "width": "15",
+      "height": "18",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Ärmel-Logo Links",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Ärmel-Logo Links",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Ärmel-Logo Links",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Ärmel-Logo Rechts",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Ärmel-Logo Rechts",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Ärmel-Logo Links",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Ärmel-Logo Links",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Ärmel-Logo Rechts",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Ärmel-Logo Rechts",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Ärmel-Logo Rechts",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "20",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Ärmel-Logo Rechts",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Ärmel-Logo Links",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "10",
+      "width": "15",
+      "height": "18",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "10",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Test Zone",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "20",
+      "height": "20",
+      "widthCm": "10",
+      "heightCm": "5"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "logo",
+      "posX": "50.5",
+      "posY": "11.5",
+      "width": "25.40576",
+      "height": "18.531555",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Club Logo Front Top",
+      "purpose": "logo",
+      "posX": "45",
+      "posY": "12",
+      "width": "10",
+      "height": "5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "12",
+      "width": "15",
+      "height": "18",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "logo",
+      "posX": "50.5",
+      "posY": "13",
+      "width": "27.5",
+      "height": "14",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo artiva",
+      "purpose": "custom",
+      "posX": "20.5",
+      "posY": "13",
+      "width": "17.5",
+      "height": "14",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo",
+      "purpose": "custom",
+      "posX": "32.5",
+      "posY": "14",
+      "width": "14.5",
+      "height": "12",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo",
+      "purpose": "custom",
+      "posX": "32.5",
+      "posY": "14",
+      "width": "11.707689",
+      "height": "11.671383",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo (rechts oben)",
+      "purpose": "custom",
+      "posX": "75",
+      "posY": "14",
+      "width": "5",
+      "height": "5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo (links oben)",
+      "purpose": "custom",
+      "posX": "18",
+      "posY": "14",
+      "width": "10",
+      "height": "5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone A",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "15",
+      "width": "25",
+      "height": "25",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "28.23",
+      "posY": "15.77",
+      "width": "15",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "59.03",
+      "posY": "17.21",
+      "width": "9.47",
+      "height": "14.52",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "54.52",
+      "posY": "17.63",
+      "width": "25",
+      "height": "3",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo (rechts oben)",
+      "purpose": "custom",
+      "posX": "75",
+      "posY": "18",
+      "width": "5",
+      "height": "5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo (links oben)",
+      "purpose": "custom",
+      "posX": "18",
+      "posY": "18",
+      "width": "10",
+      "height": "5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Mitte",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Logo",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "20",
+      "width": "40",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "30",
+      "posY": "21",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "52",
+      "posY": "22",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "35",
+      "posY": "22",
+      "width": "30",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "25"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "logo",
+      "posX": "52",
+      "posY": "22",
+      "width": "17",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo",
+      "purpose": "custom",
+      "posX": "22.5",
+      "posY": "22.5",
+      "width": "15.5",
+      "height": "5.5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "logo",
+      "posX": "50.5",
+      "posY": "23",
+      "width": "19",
+      "height": "14",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "22.52",
+      "posY": "24.34",
+      "width": "50",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "width": "16",
+      "height": "10",
+      "widthCm": "12",
+      "heightCm": "15"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Club Name Front",
+      "purpose": "clubName",
+      "posX": "25",
+      "posY": "25",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "30",
+      "posY": "25",
+      "width": "15",
+      "height": "12",
+      "widthCm": "NULL",
+      "heightCm": "10"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "25",
+      "width": "50",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "26.540838",
+      "posY": "25.497513",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "31",
+      "posY": "26.5",
+      "width": "48",
+      "height": "22",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "30.5",
+      "posY": "27",
+      "width": "39",
+      "height": "22",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rückennummer",
+      "purpose": "playerNumber",
+      "posX": "33",
+      "posY": "27",
+      "width": "34",
+      "height": "21",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "44.67",
+      "posY": "27.24",
+      "width": "18",
+      "height": "7",
+      "widthCm": "10",
+      "heightCm": "10"
+    },
+    {
+      "label": "Front Logo R",
+      "purpose": "custom",
+      "posX": "32",
+      "posY": "28",
+      "width": "36",
+      "height": "18",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Front Logo R",
+      "purpose": "logo",
+      "posX": "32",
+      "posY": "28",
+      "width": "36",
+      "height": "18",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "60",
+      "posY": "28",
+      "width": "10",
+      "height": "10",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "33",
+      "posY": "29",
+      "width": "30",
+      "height": "30",
+      "widthCm": "20",
+      "heightCm": "25"
+    },
+    {
+      "label": "Sponsor/Teamname Vorderseite",
+      "purpose": "custom",
+      "posX": "20",
+      "posY": "30",
+      "width": "60",
+      "height": "8",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor/Teamname Vorderseite",
+      "purpose": "custom",
+      "posX": "20",
+      "posY": "30",
+      "width": "60",
+      "height": "5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "31",
+      "posY": "30.5",
+      "width": "38",
+      "height": "29",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "32.125828",
+      "posY": "30.620234",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "24.11",
+      "posY": "34.91",
+      "width": "50",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Player Number Front",
+      "purpose": "playerNumber",
+      "posX": "35",
+      "posY": "35",
+      "width": "30",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Nummer",
+      "purpose": "playerNumber",
+      "posX": "35",
+      "posY": "40",
+      "width": "30",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "40",
+      "width": "40",
+      "height": "10",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "25.988962",
+      "posY": "40.248756",
+      "width": "48",
+      "height": "30",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "28.373068",
+      "posY": "42.77612",
+      "width": "42.856514",
+      "height": "12.751244",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Front Text 'R-SPORT'",
+      "purpose": "custom",
+      "posX": "35",
+      "posY": "44",
+      "width": "30",
+      "height": "5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust",
+      "purpose": "custom",
+      "posX": "26.808783",
+      "posY": "44.708237",
+      "width": "46",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Brust Sponsor",
+      "purpose": "custom",
+      "posX": "20",
+      "posY": "45",
+      "width": "60",
+      "height": "10",
+      "widthCm": "26",
+      "heightCm": "10"
+    },
+    {
+      "label": "Sponsor Brust",
+      "purpose": "custom",
+      "posX": "41",
+      "posY": "48",
+      "width": "28",
+      "height": "10",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust",
+      "purpose": "custom",
+      "posX": "38.31152",
+      "posY": "52.262238",
+      "width": "25",
+      "height": "13",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "25",
+      "posY": "54",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust",
+      "purpose": "custom",
+      "posX": "31",
+      "posY": "55",
+      "width": "38",
+      "height": "14",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Zone B",
+      "purpose": "logo",
+      "posX": "55",
+      "posY": "55",
+      "width": "35",
+      "height": "20",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust Slogan",
+      "purpose": "custom",
+      "posX": "41",
+      "posY": "58",
+      "width": "28",
+      "height": "7",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "60",
+      "width": "60",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "60",
+      "width": "60",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "60",
+      "width": "60",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "60",
+      "width": "60",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "60",
+      "width": "60",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "60",
+      "width": "60",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "32",
+      "posY": "60",
+      "width": "36",
+      "height": "8",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "width": "70",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "width": "70",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust Mit gutem Gewissen",
+      "purpose": "custom",
+      "posX": "32",
+      "posY": "65",
+      "width": "43",
+      "height": "4",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "width": "70",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "width": "70",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "width": "70",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "30",
+      "posY": "65",
+      "width": "40",
+      "height": "8",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "15",
+      "posY": "65",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "width": "70",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "width": "70",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Kürzel",
+      "purpose": "playerInitials",
+      "posX": "35",
+      "posY": "65",
+      "width": "30",
+      "height": "8",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust Untertext",
+      "purpose": "custom",
+      "posX": "40",
+      "posY": "68",
+      "width": "28",
+      "height": "3",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "19.65",
+      "posY": "68.58",
+      "width": "60",
+      "height": "15",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust",
+      "purpose": "custom",
+      "posX": "37.81152",
+      "posY": "68.95809",
+      "width": "26",
+      "height": "4.5",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Sponsor Brust blitzblank",
+      "purpose": "custom",
+      "posX": "32.59882",
+      "posY": "69.51579",
+      "width": "18.898241",
+      "height": "17.90878",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Bauch Sponsor",
+      "purpose": "custom",
+      "posX": "25",
+      "posY": "70",
+      "width": "50",
+      "height": "8",
+      "widthCm": "20",
+      "heightCm": "8"
+    },
+    {
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "25",
+      "posY": "75",
+      "width": "45",
+      "height": "9",
+      "widthCm": "25",
+      "heightCm": "7.5"
+    },
+    {
+      "label": "Herstellerlogo Bryfect",
+      "purpose": "custom",
+      "posX": "60.5",
+      "posY": "78",
+      "width": "24.5",
+      "height": "3",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Rücken Sponsor",
+      "purpose": "custom",
+      "posX": "20",
+      "posY": "82",
+      "width": "60",
+      "height": "8",
+      "widthCm": "25",
+      "heightCm": "8"
+    },
+    {
+      "label": "Herstellerlogo Ärmel",
+      "purpose": "custom",
+      "posX": "72",
+      "posY": "86",
+      "width": "16",
+      "height": "3",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    },
+    {
+      "label": "Herstellerlogo Ärmel",
+      "purpose": "custom",
+      "posX": "64",
+      "posY": "87",
+      "width": "15",
+      "height": "3",
+      "widthCm": "NULL",
+      "heightCm": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "label\tpurpose\tposX\tposY\twidth\theight\twidthCm\theightCm\nVereinsname\tclubName\t10\t2\t45\t9\t25\t7.5\nVereinsname\tclubName\t10\t2\t45\t9\t25\t7.5\nVereinsname\tclubName\t10\t2\t45\t9\t25\t7.5\nVereinsname\tclubName\t10\t2\t45\t9\t25\t7.5\nVereinsname\tclubName\t10\t2\t45\t9\t25\t7.5\nVereinsname\tclubName\t10\t2\t45\t9\t25\t7.5\nVereinsname\tclubName\t10\t2\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinswappen\tclubLogo\t35\t5\t30\t15\tNULL\tNULL\nVereinswappen\tclubLogo\t5\t5\t15\t15\tNULL\tNULL\nBrustnummer\tplayerNumber\t75\t5\t15\t15\tNULL\tNULL\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nBrustnummer\tplayerNumber\t75\t5\t15\t15\tNULL\tNULL\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinswappen\tclubLogo\t5\t5\t15\t15\tNULL\tNULL\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinswappen\tclubLogo\t5\t5\t15\t15\tNULL\tNULL\nBrustnummer\tplayerNumber\t75\t5\t15\t15\tNULL\tNULL\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nBrustnummer\tplayerNumber\t75\t5\t15\t15\tNULL\tNULL\nVereinswappen\tclubLogo\t5\t5\t15\t15\tNULL\tNULL\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinswappen\tclubLogo\t5\t5\t15\t15\tNULL\tNULL\nBrustnummer\tplayerNumber\t75\t5\t15\t15\tNULL\tNULL\nBrustnummer\tplayerNumber\t75\t5\t15\t15\tNULL\tNULL\nVereinswappen\tclubLogo\t5\t5\t15\t15\tNULL\tNULL\nVereinsname\tclubName\t25\t5\t50\t10\tNULL\tNULL\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinsname\tclubName\t25\t5\t45\t9\t25\t7.5\nVereinswappen Handball Wölfe Wien\tlogo\t42\t8\t27\t10\tNULL\tNULL\nVereinswappen\tclubLogo\t5\t8\t15\t18\tNULL\tNULL\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nÄrmel-Logo Links\tlogo\t10\t10\t80\t40\tNULL\tNULL\nÄrmel-Logo Links\tlogo\t10\t10\t80\t40\tNULL\tNULL\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nÄrmel-Logo Links\tlogo\t10\t10\t80\t40\tNULL\tNULL\nÄrmel-Logo Rechts\tlogo\t10\t10\t80\t40\tNULL\tNULL\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nÄrmel-Logo Rechts\tlogo\t10\t10\t80\t40\tNULL\tNULL\nÄrmel-Logo Links\tlogo\t10\t10\t80\t40\tNULL\tNULL\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nÄrmel-Logo Links\tlogo\t10\t10\t80\t40\tNULL\tNULL\nÄrmel-Logo Rechts\tlogo\t10\t10\t80\t40\tNULL\tNULL\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nÄrmel-Logo Rechts\tlogo\t10\t10\t80\t40\tNULL\tNULL\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nÄrmel-Logo Rechts\tlogo\t10\t10\t80\t40\tNULL\tNULL\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nVereinsname\tclubName\t20\t10\t45\t9\t25\t7.5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nÄrmel-Logo Rechts\tlogo\t10\t10\t80\t40\tNULL\tNULL\nÄrmel-Logo Links\tlogo\t10\t10\t80\t40\tNULL\tNULL\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nVereinswappen\tclubLogo\t5\t10\t15\t18\tNULL\tNULL\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nTest Zone\tplayerName\t10\t10\t20\t20\tNULL\tNULL\nTest Zone\tplayerName\t10\t10\t45\t9\t25\t7.5\nTest Zone\tlogo\t10\t10\t20\t20\t10\t5\nVereinswappen\tlogo\t50.5\t11.5\t25.40576\t18.531555\tNULL\tNULL\nSpielername\tplayerName\t10\t12\t45\t9\t25\t7.5\nSpielername\tplayerName\t10\t12\t45\t9\t25\t7.5\nSpielername\tplayerName\t10\t12\t45\t9\t25\t7.5\nSpielername\tplayerName\t10\t12\t45\t9\t25\t7.5\nSpielername\tplayerName\t10\t12\t45\t9\t25\t7.5\nClub Logo Front Top\tlogo\t45\t12\t10\t5\tNULL\tNULL\nSpielername\tplayerName\t10\t12\t45\t9\t25\t7.5\nSpielername\tplayerName\t10\t12\t45\t9\t25\t7.5\nVereinswappen\tclubLogo\t5\t12\t15\t18\tNULL\tNULL\nVereinswappen\tlogo\t50.5\t13\t27.5\t14\tNULL\tNULL\nHerstellerlogo artiva\tcustom\t20.5\t13\t17.5\t14\tNULL\tNULL\nHerstellerlogo\tcustom\t32.5\t14\t14.5\t12\tNULL\tNULL\nHerstellerlogo\tcustom\t32.5\t14\t11.707689\t11.671383\tNULL\tNULL\nHerstellerlogo (rechts oben)\tcustom\t75\t14\t5\t5\tNULL\tNULL\nHerstellerlogo (links oben)\tcustom\t18\t14\t10\t5\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nZone A\tlogo\t15\t15\t25\t25\tNULL\tNULL\nVereinswappen\tclubLogo\t28.23\t15.77\t15\t15\tNULL\tNULL\nVereinswappen\tclubLogo\t59.03\t17.21\t9.47\t14.52\tNULL\tNULL\nBrustnummer\tplayerNumber\t54.52\t17.63\t25\t3\tNULL\tNULL\nHerstellerlogo (rechts oben)\tcustom\t75\t18\t5\t5\tNULL\tNULL\nHerstellerlogo (links oben)\tcustom\t18\t18\t10\t5\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nBrust Mitte\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nSponsor Logo\tlogo\t30\t20\t40\t30\tNULL\tNULL\nVereinsname\tclubName\t30\t21\t45\t9\t25\t7.5\nVereinsname\tclubName\t52\t22\t45\t9\t25\t7.5\nSpielernummer\tplayerNumber\t35\t22\t30\t30\tNULL\t25\nVereinswappen\tlogo\t52\t22\t17\t15\tNULL\tNULL\nHerstellerlogo\tcustom\t22.5\t22.5\t15.5\t5.5\tNULL\tNULL\nVereinswappen\tlogo\t50.5\t23\t19\t14\tNULL\tNULL\nSpielernummer\tplayerNumber\t22.52\t24.34\t50\t30\tNULL\tNULL\nSpielernummer\tplayerNumber\t25\t25\t50\t30\tNULL\tNULL\nSpielernummer\tplayerNumber\t25\t25\t50\t30\tNULL\tNULL\nSpielernummer\tplayerNumber\t25\t25\t50\t30\tNULL\tNULL\nBrust-Sponsor\tlogo\t25\t25\t50\t20\tNULL\tNULL\nBrustnummer\tplayerNumber\t25\t25\t16\t10\t12\t15\nSpielernummer\tplayerNumber\t25\t25\t50\t30\tNULL\tNULL\nBrust-Sponsor\tlogo\t25\t25\t50\t20\tNULL\tNULL\nBrust-Sponsor\tlogo\t25\t25\t50\t20\tNULL\tNULL\nSpielernummer\tplayerNumber\t25\t25\t50\t30\tNULL\tNULL\nClub Name Front\tclubName\t25\t25\t45\t9\t25\t7.5\nBrust-Sponsor\tlogo\t25\t25\t50\t20\tNULL\tNULL\nBrustnummer\tplayerNumber\t30\t25\t15\t12\tNULL\t10\nSpielernummer\tplayerNumber\t25\t25\t50\t30\tNULL\tNULL\nBrust-Sponsor\tlogo\t25\t25\t50\t20\tNULL\tNULL\nBrust-Sponsor\tlogo\t25\t25\t50\t20\tNULL\tNULL\nVereinsname\tclubName\t26.540838\t25.497513\t45\t9\t25\t7.5\nBrustnummer\tplayerNumber\t31\t26.5\t48\t22\tNULL\tNULL\nBrustnummer\tplayerNumber\t30.5\t27\t39\t22\tNULL\tNULL\nRückennummer\tplayerNumber\t33\t27\t34\t21\tNULL\tNULL\nVereinswappen\tclubLogo\t44.67\t27.24\t18\t7\t10\t10\nFront Logo R\tcustom\t32\t28\t36\t18\tNULL\tNULL\nFront Logo R\tlogo\t32\t28\t36\t18\tNULL\tNULL\nVereinswappen\tclubLogo\t60\t28\t10\t10\tNULL\tNULL\nSpielernummer\tplayerNumber\t33\t29\t30\t30\t20\t25\nSponsor/Teamname Vorderseite\tcustom\t20\t30\t60\t8\tNULL\tNULL\nSponsor/Teamname Vorderseite\tcustom\t20\t30\t60\t5\tNULL\tNULL\nBrustnummer\tplayerNumber\t31\t30.5\t38\t29\tNULL\tNULL\nVereinsname\tclubName\t32.125828\t30.620234\t45\t9\t25\t7.5\nBrust-Sponsor\tlogo\t24.11\t34.91\t50\t20\tNULL\tNULL\nPlayer Number Front\tplayerNumber\t35\t35\t30\t15\tNULL\tNULL\nNummer\tplayerNumber\t35\t40\t30\t20\tNULL\tNULL\nBrust-Sponsor\tlogo\t30\t40\t40\t10\tNULL\tNULL\nBrustnummer\tplayerNumber\t25.988962\t40.248756\t48\t30\tNULL\tNULL\nBrustnummer\tplayerNumber\t28.373068\t42.77612\t42.856514\t12.751244\tNULL\tNULL\nFront Text 'R-SPORT'\tcustom\t35\t44\t30\t5\tNULL\tNULL\nSponsor Brust\tcustom\t26.808783\t44.708237\t46\t15\tNULL\tNULL\nBrust Sponsor\tcustom\t20\t45\t60\t10\t26\t10\nSponsor Brust\tcustom\t41\t48\t28\t10\tNULL\tNULL\nSponsor Brust\tcustom\t38.31152\t52.262238\t25\t13\tNULL\tNULL\nSpielername\tplayerName\t25\t54\t45\t9\t25\t7.5\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nSponsor Brust\tcustom\t31\t55\t38\t14\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nZone B\tlogo\t55\t55\t35\t20\tNULL\tNULL\nSponsor Brust Slogan\tcustom\t41\t58\t28\t7\tNULL\tNULL\nBauch-Sponsor\tlogo\t20\t60\t60\t15\tNULL\tNULL\nBauch-Sponsor\tlogo\t20\t60\t60\t15\tNULL\tNULL\nBauch-Sponsor\tlogo\t20\t60\t60\t15\tNULL\tNULL\nBauch-Sponsor\tlogo\t20\t60\t60\t15\tNULL\tNULL\nBauch-Sponsor\tlogo\t20\t60\t60\t15\tNULL\tNULL\nBauch-Sponsor\tlogo\t20\t60\t60\t15\tNULL\tNULL\nBauch-Sponsor\tlogo\t32\t60\t36\t8\tNULL\tNULL\nRücken-Sponsor\tlogo\t15\t65\t70\t15\tNULL\tNULL\nRücken-Sponsor\tlogo\t15\t65\t70\t15\tNULL\tNULL\nSponsor Brust Mit gutem Gewissen\tcustom\t32\t65\t43\t4\tNULL\tNULL\nRücken-Sponsor\tlogo\t15\t65\t70\t15\tNULL\tNULL\nRücken-Sponsor\tlogo\t15\t65\t70\t15\tNULL\tNULL\nRücken-Sponsor\tlogo\t15\t65\t70\t15\tNULL\tNULL\nRücken-Sponsor\tlogo\t30\t65\t40\t8\tNULL\tNULL\nSpielername\tplayerName\t15\t65\t45\t9\t25\t7.5\nRücken-Sponsor\tlogo\t15\t65\t70\t15\tNULL\tNULL\nRücken-Sponsor\tlogo\t15\t65\t70\t15\tNULL\tNULL\nKürzel\tplayerInitials\t35\t65\t30\t8\tNULL\tNULL\nSponsor Brust Untertext\tcustom\t40\t68\t28\t3\tNULL\tNULL\nBauch-Sponsor\tlogo\t19.65\t68.58\t60\t15\tNULL\tNULL\nSponsor Brust\tcustom\t37.81152\t68.95809\t26\t4.5\tNULL\tNULL\nSponsor Brust blitzblank\tcustom\t32.59882\t69.51579\t18.898241\t17.90878\tNULL\tNULL\nBauch Sponsor\tcustom\t25\t70\t50\t8\t20\t8\nSpielername\tplayerName\t25\t75\t45\t9\t25\t7.5\nHerstellerlogo Bryfect\tcustom\t60.5\t78\t24.5\t3\tNULL\tNULL\nRücken Sponsor\tcustom\t20\t82\t60\t8\t25\t8\nHerstellerlogo Ärmel\tcustom\t72\t86\t16\t3\tNULL\tNULL\nHerstellerlogo Ärmel\tcustom\t64\t87\t15\t3\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

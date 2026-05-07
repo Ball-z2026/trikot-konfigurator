@@ -8688,3 +8688,99 @@
 [2026-05-07T17:06:19.227Z] 1:06:19 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-07T17:07:11.790Z] 1:07:11 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-07T17:20:08.263Z] 1:20:08 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:31:22.452Z] 1:31:22 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:31:46.309Z] 1:31:46 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:33:45.611Z] 1:33:45 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:34:08.957Z] 1:34:08 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:34:31.678Z] 1:34:31 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:35:12.348Z] 1:35:12 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:35:12.475Z] 1:35:12 PM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx: Identifier 'additionalRefs' has already been declared. (522:12)
+[2026-05-07T17:35:12.476Z] 
+[2026-05-07T17:35:12.476Z] 520 |       // Die Straßenkarte wird NUR als Prompt-Beschreibung verwendet (nicht als Referenzbild),
+[2026-05-07T17:35:12.477Z] 521 |       // da die Google Maps Proxy-URL vom Bildgenerator nicht geladen werden kann (401).
+[2026-05-07T17:35:12.477Z] > 522 |       const additionalRefs: string[] = [];
+[2026-05-07T17:35:12.478Z] |             ^
+[2026-05-07T17:35:12.478Z] 523 |
+[2026-05-07T17:35:12.478Z] 524 |       const result = await generateAiMockup.mutateAsync({
+[2026-05-07T17:35:12.479Z] 525 |         productName: `${sportInfo?.name || selectedSport} Trikot`,
+[2026-05-07T17:35:12.479Z] Plugin: vite:react-babel
+[2026-05-07T17:35:12.479Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx:522:12
+[2026-05-07T17:35:12.480Z] 520 |        // Die Straßenkarte wird NUR als Prompt-Beschreibung verwendet (nicht als Referenzbild),
+[2026-05-07T17:35:12.480Z] 521 |        // da die Google Maps Proxy-URL vom Bildgenerator nicht geladen werden kann (401).
+[2026-05-07T17:35:12.480Z] 522 |        const additionalRefs: string[] = [];
+[2026-05-07T17:35:12.481Z] |              ^
+[2026-05-07T17:35:12.481Z] 523 |
+[2026-05-07T17:35:12.482Z] 524 |        const result = await generateAiMockup.mutateAsync({
+[2026-05-07T17:35:12.482Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-07T17:35:12.483Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-07T17:35:12.483Z] at checkRedeclarationInScope (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/util/scope.ts:164:19)
+[2026-05-07T17:35:12.483Z] at declareName (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/util/scope.ts:118:12)
+[2026-05-07T17:35:12.484Z] at declareName (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/scope.ts:89:11)
+[2026-05-07T17:35:12.484Z] at declareNameFromIdentifier (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:876:16)
+[2026-05-07T17:35:12.485Z] at checkIdentifier (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:871:12)
+[2026-05-07T17:35:12.485Z] at checkLVal (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:763:12)
+[2026-05-07T17:35:12.485Z] at parseVarId (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1633:10)
+[2026-05-07T17:35:12.486Z] at parseVarId (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3700:13)
+[2026-05-07T17:35:12.486Z] at parseVar (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1582:12)
+[2026-05-07T17:35:12.486Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+[2026-05-07T17:35:12.487Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3085:33)
+[2026-05-07T17:35:12.488Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:612:21)
+[2026-05-07T17:35:12.488Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-07T17:35:12.489Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-07T17:35:12.489Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-07T17:35:12.490Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-07T17:35:12.490Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-07T17:35:12.491Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-07T17:35:12.491Z] at parseTryStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1205:23)
+[2026-05-07T17:35:12.492Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:549:21)
+[2026-05-07T17:35:12.492Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-07T17:35:12.493Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-07T17:35:12.493Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-07T17:35:12.494Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-07T17:35:12.494Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-07T17:35:12.495Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-07T17:35:12.495Z] at parseFunctionBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2621:24)
+[2026-05-07T17:35:12.496Z] at parseArrowExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2562:10)
+[2026-05-07T17:35:12.496Z] at parseAsyncArrowFromCallExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1067:10)
+[2026-05-07T17:35:12.497Z] at parseAsyncArrowFromCallExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3724:20)
+[2026-05-07T17:35:12.498Z] at parseCoverCallAndAsyncArrowHead (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:942:27)
+[2026-05-07T17:35:12.498Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:804:19)
+[2026-05-07T17:35:12.499Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2809:20)
+[2026-05-07T17:35:12.499Z] at parseSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:763:19)
+[2026-05-07T17:35:12.500Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:748:17)
+[2026-05-07T17:35:12.500Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-07T17:35:12.501Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-07T17:35:12.501Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-07T17:35:12.502Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-07T17:35:12.502Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-07T17:35:12.503Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-07T17:35:12.503Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-07T17:35:12.505Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-07T17:35:12.505Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-05-07T17:35:12.506Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3192:16)
+[2026-05-07T17:35:12.507Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-05-07T17:35:12.507Z] at parseVar (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1587:18)
+[2026-05-07T17:35:12.508Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+[2026-05-07T17:35:12.651Z] 1:35:12 PM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx: Identifier 'additionalRefs' has already been declared. (522:12)
+[2026-05-07T17:35:12.652Z] 
+[2026-05-07T17:35:12.652Z] 520 |       // Die Straßenkarte wird NUR als Prompt-Beschreibung verwendet (nicht als Referenzbild),
+[2026-05-07T17:35:12.653Z] 521 |       // da die Google Maps Proxy-URL vom Bildgenerator nicht geladen werden kann (401).
+[2026-05-07T17:35:12.653Z] > 522 |       const additionalRefs: string[] = [];
+[2026-05-07T17:35:12.653Z] |             ^
+[2026-05-07T17:35:12.654Z] 523 |
+[2026-05-07T17:35:12.654Z] 524 |       const result = await generateAiMockup.mutateAsync({
+[2026-05-07T17:35:12.654Z] 525 |         productName: `${sportInfo?.name || selectedSport} Trikot`,
+[2026-05-07T17:35:12.655Z] Plugin: vite:react-babel
+[2026-05-07T17:35:12.655Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx:522:12
+[2026-05-07T17:35:12.656Z] 520 |        // Die Straßenkarte wird NUR als Prompt-Beschreibung verwendet (nicht als Referenzbild),
+[2026-05-07T17:35:12.656Z] 521 |        // da die Google Maps Proxy-URL vom Bildgenerator nicht geladen werden kann (401).
+[2026-05-07T17:35:12.656Z] 522 |        const additionalRefs: string[] = [];
+[2026-05-07T17:35:12.657Z] |              ^
+[2026-05-07T17:35:12.657Z] 523 |
+[2026-05-07T17:35:12.657Z] 524 |        const result = await generateAiMockup.mutateAsync({
+[2026-05-07T17:35:41.104Z] 1:35:41 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T17:36:08.181Z] Dev server process group stopped
+[2026-05-07T17:36:08.306Z] Dev server exited with code -15
+[2026-05-07T17:36:11.220Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-07T17:36:13.480Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T17:36:14.534Z] Server running on http://localhost:3000/
