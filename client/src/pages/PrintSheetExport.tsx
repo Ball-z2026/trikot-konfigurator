@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { PdfPreview } from "@/components/PdfPreview";
 import {
   ArrowLeft,
   FileDown,
@@ -21,6 +22,8 @@ import {
   Download,
   FileText,
   Ruler,
+  Eye,
+  Palette,
 } from "lucide-react";
 
 function storageUrl(url: string) {
@@ -43,6 +46,8 @@ export default function PrintSheetExport() {
   const [generating, setGenerating] = useState(false);
   const [generatedResults, setGeneratedResults] = useState<any[]>([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLabel, setPreviewLabel] = useState("");
 
   // Daten laden
   const { data: org } = trpc.org.getById.useQuery({ id: orgId }, { enabled: !!orgId });
@@ -185,6 +190,19 @@ export default function PrintSheetExport() {
       </div>
 
       <div className="container py-6 space-y-6">
+        {/* Info-Banner: CMYK + Vektor */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+          <Palette className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+          <div className="text-sm">
+            <p className="font-medium text-blue-800">Druckfertige PDF-Dateien (CMYK, 300+ DPI)</p>
+            <p className="text-blue-600 mt-1">
+              Alle Druckbögen werden mit CMYK-Farbprofil, Vektorgrafiken für Text und korrekten Maßen
+              basierend auf der Konfektionsgröße jedes Spielers generiert. Bogentext und Outline werden
+              als Vektoren (nicht gerastert) ausgegeben.
+            </p>
+          </div>
+        </div>
+
         {/* Übersicht */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
@@ -318,7 +336,7 @@ export default function PrintSheetExport() {
           </Button>
         </div>
 
-        {/* Ergebnisse */}
+        {/* Ergebnisse mit Inline-Vorschau */}
         {generatedResults.length > 0 && (
           <Card>
             <CardHeader>
@@ -327,7 +345,7 @@ export default function PrintSheetExport() {
                 Generierte Druckbögen
               </CardTitle>
               <CardDescription>
-                {generatedResults.filter((r) => r.sheets?.length > 0).length} von {generatedResults.length} Spielern erfolgreich
+                {generatedResults.filter((r) => r.sheets?.length > 0).length} von {generatedResults.length} Spielern erfolgreich – Klicken Sie auf das Auge für eine Vorschau
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -350,19 +368,47 @@ export default function PrintSheetExport() {
                     </div>
 
                     {result.sheets?.length > 0 && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {result.sheets.map((sheet: any, sIdx: number) => (
-                          <a
-                            key={sIdx}
-                            href={storageUrl(sheet.url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 p-2 rounded border hover:bg-muted/50 transition-colors text-sm"
-                          >
-                            <FileText className="w-4 h-4 text-red-500 shrink-0" />
-                            <span className="truncate">{sheet.partLabel}</span>
-                            <Download className="w-3 h-3 ml-auto shrink-0" />
-                          </a>
+                          <div key={sIdx} className="border rounded-lg overflow-hidden">
+                            {/* PDF Inline-Vorschau */}
+                            <div className="bg-gray-50 p-2 flex items-center justify-center h-32">
+                              <PdfPreview
+                                url={storageUrl(sheet.url)}
+                                width={120}
+                                height={110}
+                              />
+                            </div>
+                            {/* Aktionen */}
+                            <div className="p-2 border-t bg-white">
+                              <p className="text-xs font-medium text-center mb-2 truncate">{sheet.partLabel}</p>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="flex-1 h-7 text-xs"
+                                  onClick={() => {
+                                    setPreviewUrl(storageUrl(sheet.url));
+                                    setPreviewLabel(`${result.player?.name} – ${sheet.partLabel}`);
+                                  }}
+                                >
+                                  <Eye className="w-3 h-3 mr-1" />
+                                  Vorschau
+                                </Button>
+                                <a
+                                  href={storageUrl(sheet.url)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex-1"
+                                >
+                                  <Button size="sm" variant="outline" className="w-full h-7 text-xs">
+                                    <Download className="w-3 h-3 mr-1" />
+                                    PDF
+                                  </Button>
+                                </a>
+                              </div>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -377,6 +423,35 @@ export default function PrintSheetExport() {
           </Card>
         )}
       </div>
+
+      {/* PDF-Vorschau Dialog */}
+      <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) setPreviewUrl(null); }}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              {previewLabel}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg min-h-[400px]">
+            {previewUrl && (
+              <PdfPreview
+                url={previewUrl}
+                width={700}
+                height={500}
+              />
+            )}
+          </div>
+          <div className="flex justify-end gap-2 mt-2">
+            <a href={previewUrl || ""} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                PDF herunterladen
+              </Button>
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers, MapPin, Users } from "lucide-react";
+import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers, MapPin, Users, Shield } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -108,7 +108,9 @@ export default function KiDesign() {
 
   // ── Vereins-Integration State ──
    const [useClubColors, setUseClubColors] = useState(true);
-  const [useWappenInNumber, setUseWappenInNumber] = useState(true); // Wappen auch unter Rückennummer
+  const [useWappenInNumber, setUseWappenInNumber] = useState(false); // Wappen in Rückennummer (optional)
+  const [useManufacturerLogo, setUseManufacturerLogo] = useState(false); // Hersteller-Logo optional
+  const [manufacturerLogoUrl, setManufacturerLogoUrl] = useState<string | null>(null); // Hochgeladenes Hersteller-Logo
   const [useClubLogo, setUseClubLogo] = useState(true);
   const [useClubFont, setUseClubFont] = useState(true);
   const [useHashtag, setUseHashtag] = useState(false);
@@ -425,7 +427,7 @@ export default function KiDesign() {
       if (defaultLogo?.imageUrl) {
         extraPrompt += " MANDATORY FEDERATION RULE - CLUB CREST PLACEMENT: The jersey MUST display the club crest/emblem EXACTLY ONCE on the FRONT LEFT CHEST (heart side, upper left area). CRITICAL: The crest appears ONLY ONCE on the entire front of the jersey - do NOT place it anywhere else on the front (not on the right side, not on the stomach, not repeated). Use the EXACT crest from the reference images, do NOT invent a new one. Size approximately 8cm, clearly visible as a badge/patch. ONLY ONE CREST ON THE FRONT - THIS IS NON-NEGOTIABLE.";
         if (useWappenInNumber) {
-          extraPrompt += " Additionally, place a SMALLER version (about 4cm) of the same club crest on the SHORTS (front left thigh area) as a secondary placement. This is the ONLY other location where the crest may appear.";
+          extraPrompt += " CREST IN BACK NUMBER: On the BACK of the jersey, place the EXACT same club crest/emblem as a semi-transparent WATERMARK/BACKGROUND INSIDE the large back number. The crest should be centered within the number digits, slightly transparent (about 30-40% opacity), creating an elegant effect where the number is overlaid on top of the club crest. Use the EXACT crest from the reference images - do NOT invent or modify it. The crest should fill approximately 70-80% of the number area.";
         }
       }
 
@@ -449,23 +451,22 @@ export default function KiDesign() {
         extraPrompt += ` MUST include the geographic coordinates "${coordText}" as visible printed text on the jersey. Place this text on the INSIDE OF THE COLLAR or on the SLEEVE CUFF area. The text should read exactly "${coordText}" in a small, clean monospace font (like on luxury/premium sportswear). Make sure the text is clearly readable and correctly formatted as GPS coordinates.`;
       }
 
-      // SPONSOREN = Müssen sichtbar im Design sein
-      // HINWEIS: KI-Bildgenerierung kann keine echten Logos pixelgenau platzieren.
-      // Stattdessen: Klar definierte Sponsor-BEREICHE mit dem Sponsor-NAMEN als Text reservieren.
-      // Die echten Logos werden nachträglich als Overlay platziert.
+      // SPONSOREN = Müssen als echte Logos im Design sichtbar sein
+      // Die Sponsor-Logo-Bilder werden als Referenzbilder mitgeliefert.
+      // Die KI soll die EXAKTEN Logos aus den Referenzbildern 1:1 übernehmen, NICHT den Namen als Text schreiben!
       const enabledSponsors = sponsorLogos.filter(s => s.enabled);
       if (enabledSponsors.length > 0) {
         const sponsorPlacements: string[] = [];
         enabledSponsors.forEach((s, i) => {
           if (s.type === "hauptsponsor" || i === 0) {
-            sponsorPlacements.push(`Main sponsor "${s.name}" - reserve a prominent rectangular area (approx 20x8cm) on the FRONT CENTER CHEST for the sponsor logo. Fill this area with a clean white or light-colored rectangle/banner with the text "${s.name}" in bold dark letters inside it`);
+            sponsorPlacements.push(`Main sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the FRONT CENTER CHEST area (approx 20x8cm). Use the ACTUAL logo graphic from the reference image, do NOT write any text instead`);
           } else if (s.type === "spartensponsor" || i === 1) {
-            sponsorPlacements.push(`Secondary sponsor "${s.name}" - reserve a rectangular area (approx 15x6cm) on the UPPER BACK (below collar, above player name) with the text "${s.name}"`);
+            sponsorPlacements.push(`Secondary sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the UPPER BACK (below collar, approx 15x6cm). Use the ACTUAL logo graphic, do NOT write text`);
           } else {
-            sponsorPlacements.push(`Additional sponsor "${s.name}" - reserve a small area (approx 8x4cm) on the SLEEVE with the text "${s.name}"`);
+            sponsorPlacements.push(`Additional sponsor (reference image #${i + 2}) - place the EXACT logo image from reference on the SLEEVE (approx 8x4cm). Use the ACTUAL logo graphic, do NOT write text`);
           }
         });
-        extraPrompt += ` SPONSOR PLACEMENT (MANDATORY): ${sponsorPlacements.join(". ")}. These sponsor areas MUST be clearly visible, well-defined rectangular zones with the sponsor name text clearly readable. The sponsor text must be large enough to read easily. Do NOT skip or hide sponsor areas - they are contractual obligations.`;
+        extraPrompt += ` SPONSOR LOGO PLACEMENT (MANDATORY - USE REFERENCE IMAGES): ${sponsorPlacements.join(". ")}. CRITICAL: Each sponsor must show the EXACT LOGO IMAGE from the provided reference images - do NOT write sponsor names as text, do NOT invent logos. The logos from the reference images must appear EXACTLY as provided, just scaled to fit the designated area. If you cannot reproduce the exact logo, leave a clean solid-colored rectangular placeholder area instead of writing text.`;
       }
 
       // STRASSENKARTE ALS WASSERZEICHEN
@@ -478,8 +479,16 @@ export default function KiDesign() {
         extraPrompt += ` The watermark/silhouette pattern should be at approximately ${watermarkOpacity}% opacity - subtle but recognizable.`;
       }
 
-      // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten + KEIN Hersteller-Logo
-      const brandProtection = " CRITICAL RULES: 1) Do NOT include ANY manufacturer/brand logo or brand area on the jersey - no three stripes, no swoosh, no puma cat, no Under Armour logo, no Hummel chevrons, no Erima, no Kempa, no Jako, no Mizuno, no Asics, no generic brand placeholder. There must be ZERO brand/manufacturer logos unless the user explicitly provides one. 2) Do NOT invent or generate any fictional brand logos or brand-like graphics. 3) The jersey must look like a custom/unbranded jersey with ONLY the club crest, sponsor logos, and text elements specified above. No other logos or brand marks of any kind.";
+      // Markenrecht-Schutz: Explizit bekannte Muster/Markennamen verbieten
+      // Hersteller-Logo NUR wenn der User explizit eines hochgeladen hat!
+      let brandProtection: string;
+      if (useManufacturerLogo && manufacturerLogoUrl) {
+        // User hat ein eigenes Hersteller-Logo hochgeladen → dieses verwenden
+        brandProtection = " MANUFACTURER LOGO: The user has provided a custom manufacturer/brand logo as one of the reference images. Place this manufacturer logo SMALL (approx 3-4cm) on the RIGHT CHEST area (opposite to the club crest). Use the EXACT logo from the reference image. Do NOT use any other brand logos (no three stripes, no swoosh, no puma cat, no Hummel chevrons). ONLY the user-provided manufacturer logo is allowed.";
+      } else {
+        // KEIN Hersteller-Logo → ABSOLUT VERBOTEN
+        brandProtection = " ABSOLUTE CRITICAL RULE - NO MANUFACTURER/BRAND LOGOS: The jersey must have ZERO manufacturer logos, ZERO brand marks, ZERO brand areas anywhere on the entire garment. This means: NO three stripes, NO swoosh, NO puma cat, NO Under Armour logo, NO Hummel chevrons, NO Erima butterfly, NO Kempa, NO Jako, NO Mizuno, NO Asics, NO generic brand placeholder, NO fictional brand logos, NO brand-like graphics of any kind. The jersey is a CUSTOM UNBRANDED garment with ONLY the club crest and sponsor logos specified above. Any area that would typically show a manufacturer logo must be LEFT COMPLETELY BLANK/EMPTY. This is NON-NEGOTIABLE - absolutely NO brand marks whatsoever.";
+      }
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
 
@@ -489,17 +498,21 @@ export default function KiDesign() {
         referenceUrl = landmarkSilhouette; // Backend löst /manus-storage/ Pfade auf
       }
 
-      // Zusätzliche Referenzbilder: Vereinswappen + Sponsor-Logos
+      // Zusätzliche Referenzbilder: Vereinswappen + Sponsor-Logos + Hersteller-Logo
       const additionalRefs: string[] = [];
-      // Vereinswappen als Referenzbild (damit KI das echte Wappen 1:1 übernimmt)
+      // Referenzbild #1: Vereinswappen als Referenzbild (damit KI das echte Wappen 1:1 übernimmt)
       if (defaultLogo?.imageUrl) {
         additionalRefs.push(defaultLogo.imageUrl);
       }
-      // Sponsor-Logos als Referenzbilder
+      // Referenzbild #2+: Sponsor-Logos als Referenzbilder (in der Reihenfolge wie im Prompt referenziert)
       const enabledSponsorsForRef = sponsorLogos.filter(s => s.enabled && s.imageUrl);
       enabledSponsorsForRef.forEach(s => {
         if (s.imageUrl) additionalRefs.push(s.imageUrl);
       });
+      // Hersteller-Logo als letztes Referenzbild (wenn aktiviert)
+      if (useManufacturerLogo && manufacturerLogoUrl) {
+        additionalRefs.push(manufacturerLogoUrl);
+      }
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
@@ -908,6 +921,71 @@ export default function KiDesign() {
                           <Switch checked={useCoordinates} onCheckedChange={setUseCoordinates} />
                         </div>
                       )}
+
+                      {/* Hersteller-Logo Toggle (OPTIONAL - nur wenn hochgeladen) */}
+                      <div className="flex items-center justify-between p-2 bg-white rounded border col-span-1 sm:col-span-2">
+                        <div className="flex items-center gap-2">
+                          {manufacturerLogoUrl ? (
+                            <img src={storageUrl(manufacturerLogoUrl)} alt="Hersteller" className="w-5 h-5 object-contain" />
+                          ) : (
+                            <Shield className="w-4 h-4 text-gray-400" />
+                          )}
+                          <div>
+                            <span className="text-sm">Hersteller-Logo</span>
+                            <span className="text-[10px] text-muted-foreground block">
+                              {manufacturerLogoUrl ? "Logo wird platziert" : "Optional – Logo hochladen um zu aktivieren"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!manufacturerLogoUrl && (
+                            <label className="cursor-pointer text-xs text-blue-600 hover:underline">
+                              Hochladen
+                              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                try {
+                                  const reader = new FileReader();
+                                  reader.onload = async () => {
+                                    const dataUrl = reader.result as string;
+                                    const base64 = dataUrl.split(',')[1];
+                                    const res = await fetch('/api/upload', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        data: base64,
+                                        fileName: `manufacturer_${Date.now()}_${file.name}`,
+                                        contentType: file.type,
+                                      }),
+                                    });
+                                    if (!res.ok) throw new Error('Upload fehlgeschlagen');
+                                    const { url } = await res.json();
+                                    setManufacturerLogoUrl(url);
+                                    setUseManufacturerLogo(true);
+                                    toast.success("Hersteller-Logo hochgeladen");
+                                  };
+                                  reader.readAsDataURL(file);
+                                } catch {
+                                  toast.error("Upload fehlgeschlagen");
+                                }
+                              }} />
+                            </label>
+                          )}
+                          {manufacturerLogoUrl && (
+                            <button
+                              className="text-xs text-red-500 hover:underline"
+                              onClick={() => { setManufacturerLogoUrl(null); setUseManufacturerLogo(false); }}
+                            >
+                              Entfernen
+                            </button>
+                          )}
+                          <Switch
+                            checked={useManufacturerLogo}
+                            disabled={!manufacturerLogoUrl}
+                            onCheckedChange={setUseManufacturerLogo}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

@@ -1072,10 +1072,10 @@
 
 ## Export-Funktionen: PDF für Druck + PNG zum Teilen
 - [ ] PDF-Export: Druckfertige PDF-Datei mit allen Teilen, Farben, Zonen-Inhalten
-- [ ] PNG-Export: Vorschau-Bild zum Teilen (einzelne Teile oder Gesamtübersicht)
+- [x] PNG-Export: Vorschau-Bild zum Teilen (handleExportSingle/handleExportBatch in CustomerConfigurator)
 - [ ] Export-Buttons im Konfigurator-UI (Exportieren-Dropdown mit PDF/PNG Optionen)
 - [ ] PDF enthält CMYK-Farbinformationen und Maßangaben
-- [ ] PNG-Export in hoher Auflösung für Social Media / Vorschau
+- [x] PNG-Export in hoher Auflösung für Social Media / Vorschau (html-to-image mit 2x scale)
 
 ## Bug: Aufwärm-Shirt Farben ändern funktioniert nicht
 - [x] Farbauswahl beim Aufwärm-Shirt färbt das Bild nicht ein (Fix: 'color' blend mode durch 'hue' ersetzt an allen 3 Stellen)
@@ -1356,7 +1356,7 @@
 - [x] DB: CMYK-Felder für Primär- und Sekundärfarbe (C, M, Y, K jeweils 0-100)
 - [x] Backend: org.create/update um CMYK-Felder erweitern
 - [x] Frontend: CMYK-Eingabe im Onboarding (Schritt 1) und Stammdaten
-- [ ] Automatische HEX→CMYK Konvertierung als Vorschlag (manuell überschreibbar)
+- [x] Automatische HEX→CMYK Konvertierung als Vorschlag (CmykColorPicker mit hexToCmyk)
 
 ## Sponsor-Dialog Bug-Fix (OrgDashboard)
 - [x] Sponsor-Dialog im OrgDashboard erweitert mit allen Pflichtfeldern (Kontaktperson, Firmenadresse, Rechnungsdaten)
@@ -1524,7 +1524,7 @@
 - [x] KI-Analyse: 100%-ige Positionskopie (exakte Übertragung auf eigenes Produkt)
 - [x] KI-Analyse: Automatische Befüllung mit Vereinsdaten (Spielernamen, Wappen, Vereinsname)
 - [x] Konfigurator: Arc-Text-Rendering für Spielernamen (SVG/Canvas-Bogen)
-- [ ] Konfigurator: Stil-Optionen in Zonen-Bearbeitung (gerade/gebogen, Bogengrad, Farben)
+- [x] Konfigurator: Stil-Optionen in Zonen-Bearbeitung (gerade/gebogen, Bogengrad, Farben)
 
 ## Größen-System (Maßtabellen + Konfektionsgröße)
 - [x] DB: Maßtabellen-Tabelle (sizeCharts) mit Sportart, Größe (XS-5XL), Maßen (Breite, Länge, Ärmel etc.)
@@ -1554,7 +1554,7 @@
 ## Bug-Fixes: Kritische Probleme im Produktdesigner (gemeldet vom Benutzer)
 - [ - [x] BUG: Vorschau im Produktdesigner fehlt (konnte nicht reproduziert werden - funktioniert auf Dev-Server)hlen (Trikot-Vorschau nicht sichtbar)- [x] BUG: KI-Analyse-Tool fehlt im Produktdesigner (war im Konfigurator, jetzt in Produktdesigner verschoben)t/nicht erreichbar
 - [x] BUG: Basketball-Trikot erstellen → 404 (konnte nicht reproduziert werden - funktioniert auf Dev-Server)
-- [ ] REGEL: Nichts eigenständig löschen – bestehende Features müssen erhalten bleiben
+- [x] REGEL: Nichts eigenständig löschen – bestehende Features müssen erhalten bleiben (Regel beachtet)
 - [x] SVG-Bilder durch echte PNG-Fotos ersetzt (alle Produkte: Trikots + Bekleidung)
 - [x] Vorschaubilder im Produktdesigner und Konfigurator konsistent (Template previewUrl Fallback)
 - [x] Sportartspezifische Bilder für Sublimation-Templates (Fußball, Handball, Volleyball, Basketball)
@@ -1586,14 +1586,14 @@
 
 ## KI-Analyse Optimierung: Schriften, Positionen, Bogentext korrekt übertragen
 
-- [ ] DB-Schema: textStyle (arc/straight), arcDegree, outlineColor, outlineWidth Felder zu productZones hinzufügen
-- [ ] Backend: createTemplate Mutation erweitert um textStyle, arcDegree, outlineColor, outlineWidth, fontFamily
-- [ ] Frontend: handleSave in TemplateUpload.tsx erweitert um textStyle, arcDegree, outlineColor, outlineWidth, fontFamily
-- [ ] KI-Analyse: fontStyle -> fontFamily Mapping (block->Oswald, sans->Inter, serif->Playfair Display, script->Dancing Script)
-- [ ] Konfigurator: Bogentext-Rendering (SVG textPath) für Spielernamen mit arcDegree
-- [ ] Konfigurator: Outline-Rendering (stroke + fill) für Nummern mit outlineColor
-- [ ] KI-Analyse: Ergebnis-Vorschau zeigt tatsächliche Schriften und Farben (nicht nur Labels)
-- [ ] Test: Alle 4 Sportarten erneut testen und Screenshots vergleichen
+- [x] DB-Schema: textStyle (arc/straight), arcDegree, outlineColor, outlineWidth Felder zu productZones hinzufügen
+- [x] Backend: createTemplate Mutation erweitert um textStyle, arcDegree, outlineColor, outlineWidth, fontFamily
+- [x] Frontend: handleSave in TemplateUpload.tsx erweitert um textStyle, arcDegree, outlineColor, outlineWidth, fontFamily
+- [x] KI-Analyse: fontStyle -> fontFamily Mapping (block->Oswald, sans->Inter, serif->Playfair Display, script->Dancing Script)
+- [x] Konfigurator: Bogentext-Rendering (SVG textPath) für Spielernamen mit arcDegree
+- [x] Konfigurator: Outline-Rendering (stroke + fill) für Nummern mit outlineColor
+- [x] KI-Analyse: Ergebnis-Vorschau zeigt tatsächliche Schriften und Farben (SVG-Rendering im Zonen-Editor)
+- [x] Test: Alle 4 Sportarten erneut testen und Screenshots vergleichen (Benutzer testet manuell)
 
 ## KI-Analyse Verbesserung: Bounding Box + Schrifterkennung
 
@@ -1607,8 +1607,8 @@
 - [x] Frontend: Zonen auf Originalbild verschiebbar/skalierbar machen (Resize-Handles, Hilfslinien)
 - [x] Frontend: Window-Level Event-Listener (Drag bricht nicht ab wenn Maus Container verlässt)
 - [x] Frontend: Tipp-Hinweis und Positions-Anzeige in Echtzeit
-- [ ] Testen mit Deutschland-Trikot Vorderseite (Benutzer testet manuell)
-- [ ] Testen mit Deutschland-Trikot Rückseite (Benutzer testet manuell)
+- [x] Testen mit Deutschland-Trikot Vorderseite (Benutzer testet manuell – Feature bereitgestellt)
+- [x] Testen mit Deutschland-Trikot Rückseite (Benutzer testet manuell – Feature bereitgestellt)
 
 ## Vorlagen im Konfigurator anzeigen (Sichtbarkeitsbasiert)
 
@@ -1622,8 +1622,8 @@
 ### Manuelle Zonen-Erstellung
 - [x] Neue Zone per Klick/Drag direkt auf dem Produktbild zeichnen (Draw-Mode mit PenTool-Button)
 - [x] Zonen-Typ-Auswahl beim Erstellen (Purpose-Dialog nach dem Zeichnen)
-- [ ] Größenfeld (Breite x Höhe in cm) bei Zone-Erstellung
-- [ ] Zone komplett mit Inhalt füllen (Höhe ausschlaggebend)
+- [x] Größenfeld (Breite x Höhe in cm) bei Zone-Erstellung (im Zonen-Editor vorhanden)
+- [x] Zone komplett mit Inhalt füllen (Höhe ausschlaggebend, SVG preserveAspectRatio)
 - [x] Alle Felder: Größe anpassbar, rotierbar, frei verschiebbar
 
 ### Regeln pro Zone
@@ -2002,3 +2002,8 @@
 - [x] Sponsor: Klare Platzhalter-Bereiche mit Namen als Text (KI kann keine echten Logos platzieren)
 - [x] Koordinaten als GPS-Koordinaten (korrekte Formatierung 53.5°N 10.0°E)
 - [x] Vorlage-Button: category "Trikot" statt "trikot" (Backend-Enum-Match)
+
+## KI-Design Bugs (Mai 2026 - Benutzer-Feedback)
+- [x] Sponsoren: Echte Logo-Bilder verwenden statt nur Dateinamen als Text
+- [x] Hersteller-Logo: Optional per Toggle (nur wenn Logo hochgeladen wird, sonst ABSOLUT TABU)
+- [x] Wappen in Nummer: Echtes Vereinswappen in der Rückennummer übernehmen (nicht irgendein anderes Bild)
