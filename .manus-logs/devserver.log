@@ -8828,3 +8828,13 @@
 [2026-05-07T21:48:26.951Z] Server running on http://localhost:3000/
 [2026-05-07T21:49:44.789Z] 5:49:44 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
 [2026-05-07T22:04:40.879Z] 6:04:40 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-07T22:19:13.574Z] 6:19:13 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
+[2026-05-07T22:20:34.412Z] 6:20:34 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
+[2026-05-07T22:23:12.801Z] 6:23:12 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
+[2026-05-07T22:25:13.521Z] 6:25:13 PM [vite] (client) hmr update /src/index.css, /src/components/PdfPreview.tsx
+[2026-05-07T22:25:56.860Z] Dev server process group stopped
+[2026-05-07T22:25:56.912Z] Dev server exited with code -15
+[2026-05-07T22:25:59.896Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-07T22:26:01.632Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-07T22:26:02.435Z] 6:26:02 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+[2026-05-07T22:26:02.463Z] Server running on http://localhost:3000/

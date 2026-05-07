@@ -2109,3 +2109,9 @@
 
 ## Bug: Wappen als Wasserzeichen auf Rückseite funktioniert nicht (07.05.2026)
 - [ ] Wappen-Wasserzeichen auf Rückseite: Prompt/Toggle prüfen und fixen
+
+## PDF-Sponsoren-Logo: Thumbnail + Original (08.05.2026)
+- [x] PDF-Vorschau: pdfjs-dist mit Vite-Worker-Import (?url Suffix) – rendert erste Seite als Canvas
+- [x] DB: thumbnailUrl-Feld existiert bereits (logoThumbnailUrl)
+- [x] Frontend: PdfPreview rendert PDF als Canvas-Bild, Original bleibt in S3 für Produktion
+- [x] Bei Produkterstellung: Original-PDF in bester Qualität aus S3 (logoUrl)
