@@ -107,7 +107,8 @@ export default function KiDesign() {
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
 
   // ── Vereins-Integration State ──
-  const [useClubColors, setUseClubColors] = useState(false);
+   const [useClubColors, setUseClubColors] = useState(true);
+  const [useWappenInNumber, setUseWappenInNumber] = useState(true); // Wappen auch unter Rückennummer
   const [useClubLogo, setUseClubLogo] = useState(true);
   const [useClubFont, setUseClubFont] = useState(true);
   const [useHashtag, setUseHashtag] = useState(false);
@@ -422,7 +423,10 @@ export default function KiDesign() {
       // VEREINSWAPPEN = ZWINGEND links auf der Brust (Verbandsregel, kein Interpretationsspielraum!)
       // Wird IMMER gesetzt wenn ein Vereinswappen existiert - kein Toggle!
       if (defaultLogo?.imageUrl) {
-        extraPrompt += " MANDATORY FEDERATION RULE: The jersey MUST have a club crest/emblem/badge on the LEFT CHEST (heart side). This is a non-negotiable federation requirement. The crest must be approximately 8cm in size, clearly visible as a separate badge/patch element on the upper left chest area (heart side). ONE single badge, NOT repeated, NOT as watermark. This is the most important placement rule.";
+        extraPrompt += " MANDATORY FEDERATION RULE: The jersey MUST have the EXACT club crest/emblem/badge from the reference image on the LEFT CHEST (heart side). Do NOT invent or generate a new crest - use the EXACT crest provided in the reference images. The crest must be approximately 8cm in size, clearly visible as a separate badge/patch element on the upper left chest area (heart side). ONE single badge, NOT repeated, NOT as watermark. Copy the reference crest EXACTLY as provided.";
+        if (useWappenInNumber) {
+          extraPrompt += " Additionally, place a SMALLER version of the same club crest BELOW the player number on the BACK of the jersey (optional decorative placement).";
+        }
       }
 
       // VEREINSNAME = Immer hinten auf dem Rücken, über der Nummer
@@ -473,12 +477,23 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
 
-      // Referenzbild: NUR die Silhouette als Referenz verwenden (für Wasserzeichen-Muster)
-      // Das Vereinswappen wird NICHT als Referenzbild verwendet - es wird nur im Prompt beschrieben
+      // Referenzbild: Silhouette als Haupt-Referenz (für Wasserzeichen-Muster)
       let referenceUrl: string | undefined;
       if (useLandmark && landmarkSilhouette) {
         referenceUrl = landmarkSilhouette; // Backend löst /manus-storage/ Pfade auf
       }
+
+      // Zusätzliche Referenzbilder: Vereinswappen + Sponsor-Logos
+      const additionalRefs: string[] = [];
+      // Vereinswappen als Referenzbild (damit KI das echte Wappen 1:1 übernimmt)
+      if (defaultLogo?.imageUrl) {
+        additionalRefs.push(defaultLogo.imageUrl);
+      }
+      // Sponsor-Logos als Referenzbilder
+      const enabledSponsorsForRef = sponsorLogos.filter(s => s.enabled && s.imageUrl);
+      enabledSponsorsForRef.forEach(s => {
+        if (s.imageUrl) additionalRefs.push(s.imageUrl);
+      });
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
@@ -487,6 +502,7 @@ export default function KiDesign() {
         side: "front",
         customPrompt: prompt,
         referenceImageUrl: referenceUrl,
+        referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
       });
 
       if (result.url) {
@@ -756,7 +772,7 @@ export default function KiDesign() {
                 Vollbild-Editor
               </Button>
             )}
-            {(step === "edit" || step === "save") && (
+            {(step === "generate" || step === "edit" || step === "save") && generatedImageUrl && (
               <Button size="sm" onClick={handleSave} disabled={saving || !templateName.trim() || !selectedSport}>
                 <Save className="w-4 h-4 mr-1" />
                 {saving ? "Speichert..." : "Vorlage speichern"}
@@ -833,16 +849,25 @@ export default function KiDesign() {
 
                       {/* Vereinswappen = ZWINGEND (Verbandsregel, kein Toggle) */}
                       {defaultLogo && (
-                        <div className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
-                          <div className="flex items-center gap-2">
-                            <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-6 h-6 object-contain" />
-                            <div>
-                              <span className="text-sm font-medium">Vereinswappen</span>
-                              <span className="text-[10px] text-green-700 block">Pflicht (Verbandsregel: Herzseite)</span>
+                        <>
+                          <div className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
+                            <div className="flex items-center gap-2">
+                              <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-6 h-6 object-contain" />
+                              <div>
+                                <span className="text-sm font-medium">Vereinswappen (Brust links)</span>
+                                <span className="text-[10px] text-green-700 block">Pflicht (Verbandsregel: Herzseite)</span>
+                              </div>
                             </div>
+                            <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">PFLICHT</span>
                           </div>
-                          <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">PFLICHT</span>
-                        </div>
+                          <div className="flex items-center justify-between p-2 bg-white rounded border">
+                            <div className="flex items-center gap-2">
+                              <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-60" />
+                              <span className="text-sm">Wappen unter Rückennummer</span>
+                            </div>
+                            <Switch checked={useWappenInNumber} onCheckedChange={setUseWappenInNumber} />
+                          </div>
+                        </>
                       )}
 
                       {/* Schrift Toggle */}

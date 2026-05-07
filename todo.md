@@ -1985,3 +1985,9 @@
 - [x] Vereinsname: Hinten auf dem Rücken, über der Nummer
 - [x] Koordinaten: Im Kragen oder Ärmel (links/rechts)
 - [x] Hashtag: Im Nacken des Trikots
+
+## KI-Design Finale Fixes (Mai 2026)
+- [x] Sponsor-Logo als Referenzbild an KI übergeben (nicht nur Name als Text)
+- [x] Echtes Vereinswappen als Referenzbild an KI übergeben (KI soll es 1:1 übernehmen, nicht selbst generieren)
+- [x] Wappen optional auch unter der Rückennummer platzieren (Toggle)
+- [x] Speichern-Button hinzufügen (Vorlage speichern) - war vorhanden, jetzt auch im generate-Step sichtbar

@@ -3399,6 +3399,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         customPrompt: z.string().optional(),
         /** URL eines Referenzbildes (z.B. Wahrzeichen-Silhouette als Wasserzeichen) */
         referenceImageUrl: z.string().optional(),
+        /** Array von Referenzbild-URLs (Vereinswappen, Sponsor-Logos, Silhouette etc.) */
+        referenceImageUrls: z.array(z.string()).optional(),
       }))
       .mutation(async ({ input }) => {
         const sideLabel = input.side === "back" ? "back" : "front";
@@ -3446,6 +3448,23 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
             url: refUrl,
             mimeType: "image/png",
           });
+        }
+        // Mehrere Referenzbilder (Wappen, Sponsoren etc.)
+        if (input.referenceImageUrls && input.referenceImageUrls.length > 0) {
+          for (const imgUrl of input.referenceImageUrls) {
+            let resolvedUrl = imgUrl;
+            if (resolvedUrl.includes("/manus-storage/") || resolvedUrl.includes("/api/storage-proxy/")) {
+              const keyMatch = resolvedUrl.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+              if (keyMatch) {
+                const { storageGetSignedUrl } = await import("./storage");
+                resolvedUrl = await storageGetSignedUrl(keyMatch[1]);
+              }
+            }
+            originalImages.push({
+              url: resolvedUrl,
+              mimeType: "image/png",
+            });
+          }
         }
 
         const result = await generateImage({ prompt, originalImages: originalImages.length > 0 ? originalImages : undefined });
