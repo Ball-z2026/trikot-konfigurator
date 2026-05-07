@@ -179,7 +179,7 @@ export default function KiDesign() {
   const createTemplate = trpc.designTemplate.create.useMutation();
   const generateAiMockup = trpc.mockup.generateAi.useMutation();
   const removeBackgroundMut = trpc.mockup.removeBackground.useMutation();
-  // Wappen-in-Nummer wird jetzt per KI-Prompt gelöst (kein Post-Processing mehr nötig)
+  const compositeCrestInNumberMut = trpc.mockup.compositeCrestInNumber.useMutation();
 
   // Membership für orgId / deptId
   const { data: memberships } = trpc.membership.mine.useQuery();
@@ -423,10 +423,10 @@ export default function KiDesign() {
         
         if (landmarkStyle === "large") {
           // Groß als Wasserzeichen
-          extraPrompt += ` LANDMARK SILHOUETTE WATERMARK: Use EXCLUSIVELY the silhouette shape from the provided reference image (the landmark/building outline). Do NOT invent, guess, or substitute any other shapes, icons, or symbols. The EXACT silhouette outline from the reference must be used as a SINGLE LARGE WATERMARK ${placementText}. Place it as a big, centered background element covering approximately 50-60% of the jersey surface area. Render it as a subtle tonal element (same color family but slightly lighter/darker shade) at ${landmarkOpacity}% opacity. CRITICAL: Use ONLY the exact shape from the reference image - do NOT use generic sports icons, trophies, balls, stars, or any other symbols. The silhouette is a background layer - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
+          extraPrompt += ` LANDMARK SILHOUETTE WATERMARK [REFERENCE IMAGE #1 is the silhouette]: The FIRST reference image provided is a silhouette/outline of a landmark building. Use EXCLUSIVELY this exact shape as a SINGLE LARGE WATERMARK ${placementText}. Place it as a big, centered background element covering approximately 50-60% of the jersey surface area. Render it as a subtle tonal element (same color family but slightly lighter/darker shade) at ${landmarkOpacity}% opacity. ABSOLUTE RULE: The shape MUST match the first reference image EXACTLY. Do NOT substitute with trophies, balls, stars, shields, or any generic icons. The silhouette is a background layer - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
         } else {
           // Kleine zufällige als Muster
-          extraPrompt += ` LANDMARK SILHOUETTE PATTERN: Use EXCLUSIVELY the silhouette shape from the provided reference image (the landmark/building outline). Do NOT invent, guess, or substitute any other shapes, icons, or symbols. Take the EXACT silhouette outline from the reference and repeat it as a PATTERN of SMALL copies ${placementText}. Scatter many small copies of THIS EXACT SAME silhouette shape randomly across the jersey fabric at various sizes (2-5cm each) and slight rotations, creating an all-over pattern. CRITICAL: Every single shape in the pattern must be the SAME silhouette from the reference image - do NOT use generic sports icons, trophies, balls, stars, shields, or any other symbols. Render at ${landmarkOpacity}% opacity as subtle tonal elements. The pattern is a background texture - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
+          extraPrompt += ` LANDMARK SILHOUETTE PATTERN [REFERENCE IMAGE #1 is the silhouette]: The FIRST reference image provided is a silhouette/outline of a landmark building. Take this EXACT shape and repeat it as a PATTERN of SMALL copies ${placementText}. Scatter many small copies of THIS EXACT SAME silhouette shape randomly across the jersey fabric at various sizes (2-5cm each) and slight rotations, creating an all-over pattern. ABSOLUTE RULE: Every single shape in the pattern MUST be this exact silhouette from reference image #1. Do NOT substitute with trophies, balls, stars, shields, or any generic icons. Render at ${landmarkOpacity}% opacity as subtle tonal elements. The pattern is a background texture - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
         }
       }
       
@@ -455,13 +455,13 @@ export default function KiDesign() {
       // Regel: Wappen-Höhe = 7% der Nummernhöhe, Mitte des unteren Bereichs, gleiche Höhe bei zweistellig
       if (useWappenInNumber && defaultLogo?.imageUrl) {
         extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER [MANDATORY - MUST BE VISIBLE]:
-The club crest (same as front chest) MUST appear as a TINY emblem INSIDE each digit of the back number. This is a REQUIRED element that must be clearly visible in the final image.
+The club crest MUST appear as a small emblem INSIDE each digit of the back number.
 
-SIZE: The crest height = 7% of the total number height (very small, like a watermark stamp inside the digit).
-POSITION: Centered horizontally within each digit, placed in the lower third of the digit vertically.
-FOR TWO-DIGIT NUMBERS: Both crests at the EXACT SAME vertical height.
+SIZE: Crest height = exactly 7% of the back number height.
+POSITION: Place the crest at the CENTER OF THE LOWER HALF of each digit (not the geometric center of the whole digit, but the center point of only the bottom half of the digit). Horizontally centered within each digit.
+FOR TWO-DIGIT NUMBERS (e.g. 23): BOTH digits get a crest, and BOTH crests MUST be at the EXACT SAME vertical Y-position (identical height from top).
 
-The crest is rendered in full color (identical to the front chest crest) and sits INSIDE the digit shape. The digit outline/fill remains visible as a frame around the tiny crest. This is NOT optional - the crest MUST be visible inside each number digit.`;
+The crest is rendered in full color (identical to the front chest crest). The digit outline/fill remains fully visible around the small crest. This is NOT optional - the crest MUST appear inside EVERY digit.`;
       }
 
       // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
@@ -503,18 +503,28 @@ The crest is rendered in full color (identical to the front chest crest) and sit
         extraPrompt += ` MUST include the geographic coordinates "${coordText}" as visible printed text on the jersey. Place this text on the INSIDE OF THE COLLAR or on the SLEEVE CUFF area. The text should read exactly "${coordText}" in a small, clean monospace font (like on luxury/premium sportswear). Make sure the text is clearly readable and correctly formatted as GPS coordinates.`;
       }
 
-      // SPONSOREN = KI platziert die echten Sponsor-Logos (wie Vereinsname auf Rückseite)
+      // SPONSOREN = KI platziert die echten Sponsor-Logos
+      // Bei Fußball: max 3 Sponsoren je Seite. Bei 2 Sponsoren: 1 vorne, 1 hinten.
       const enabledSponsors = sponsorLogos.filter(s => s.enabled && s.imageUrl);
       if (enabledSponsors.length > 0) {
-        enabledSponsors.forEach((s, i) => {
-          if (s.type === "hauptsponsor" || i === 0) {
-            extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO: MUST place the main sponsor logo (provided as reference image) on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: The sponsor logo must be reproduced PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or alter it in ANY way. It must look IDENTICAL to the reference image provided. This is a legally protected trademark.`;
-          } else if (s.type === "spartensponsor" || i === 1) {
-            extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO: MUST place the secondary sponsor logo (provided as reference image) on the LOWER BACK of the jersey, below the player number area. Position: centered horizontally, approximately 65% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Reproduce PIXEL-PERFECT - do NOT modify or reinterpret. This is a legally protected trademark.`;
-          } else {
-            extraPrompt += ` SLEEVE SPONSOR: Place the sponsor logo (provided as reference image) on the SLEEVE area. Size: approximately 8cm wide x 4cm tall. CRITICAL: Reproduce PIXEL-PERFECT without ANY modifications.`;
-          }
-        });
+        const isFootball = selectedSport === "fussball";
+        
+        if (isFootball && enabledSponsors.length === 2) {
+          // Fußball + genau 2 Sponsoren: Erster vorne, Zweiter hinten
+          extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO: MUST place the sponsor logo "${enabledSponsors[0].name}" (provided as reference image) on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: The sponsor logo must be reproduced PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or alter it in ANY way. This is a legally protected trademark.`;
+          extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO: MUST place the sponsor logo "${enabledSponsors[1].name}" (provided as reference image) on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Reproduce PIXEL-PERFECT - do NOT modify or reinterpret. This is a legally protected trademark.`;
+        } else {
+          // Standard-Logik: Haupt vorne, Sparte hinten, Rest Ärmel
+          enabledSponsors.forEach((s, i) => {
+            if (s.type === "hauptsponsor" || i === 0) {
+              extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO: MUST place the main sponsor logo "${s.name}" (provided as reference image) on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: The sponsor logo must be reproduced PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or alter it in ANY way. This is a legally protected trademark.`;
+            } else if (s.type === "spartensponsor" || i === 1) {
+              extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO: MUST place the secondary sponsor logo "${s.name}" (provided as reference image) on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Reproduce PIXEL-PERFECT - do NOT modify or reinterpret. This is a legally protected trademark.`;
+            } else {
+              extraPrompt += ` SLEEVE SPONSOR: Place the sponsor logo "${s.name}" (provided as reference image) on the SLEEVE area. Size: approximately 8cm wide x 4cm tall. CRITICAL: Reproduce PIXEL-PERFECT without ANY modifications.`;
+            }
+          });
+        }
       }
 
       // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE (groß, halbtransparent, HINTER der Nummer)
@@ -536,28 +546,30 @@ The crest is rendered in full color (identical to the front chest crest) and sit
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
-      // Referenzbild: Silhouette als Haupt-Referenz (für Wasserzeichen-Muster)
-      let referenceUrl: string | undefined;
-      if (useLandmark && landmarkSilhouette) {
-        referenceUrl = landmarkSilhouette; // Backend löst /manus-storage/ Pfade auf
-      }
-
-      // REFERENZBILDER: Vereinswappen und Sponsor-Logos werden als Referenz an die KI gesendet
-      // Die KI platziert sie gemäß den Prompt-Anweisungen (wie Vereinsname auf der Rückseite)
+      // REFERENZBILDER: Alle Bilder werden in einer geordneten Liste an die KI gesendet.
+      // Die Reihenfolge ist wichtig: Silhouette ZUERST (wenn vorhanden), dann Wappen, dann Sponsoren.
+      // Im Prompt wird explizit auf die Reihenfolge verwiesen.
       const additionalRefs: string[] = [];
+      let referenceUrl: string | undefined;
       
-      // Vereinswappen als Referenzbild
+      // 1. Silhouette als ERSTES Referenzbild (wenn Wahrzeichen aktiv)
+      if (useLandmark && landmarkSilhouette) {
+        referenceUrl = landmarkSilhouette;
+        additionalRefs.push(landmarkSilhouette);
+      }
+      
+      // 2. Vereinswappen als Referenzbild
       if (defaultLogo?.imageUrl) {
         additionalRefs.push(defaultLogo.imageUrl);
       }
       
-      // Sponsor-Logos als Referenzbilder
+      // 3. Sponsor-Logos als Referenzbilder
       const enabledSponsorsForRef = sponsorLogos.filter(s => s.enabled && s.imageUrl);
       enabledSponsorsForRef.forEach(s => {
         if (s.imageUrl) additionalRefs.push(s.imageUrl);
       });
       
-      // Hersteller-Logo als Referenzbild
+      // 4. Hersteller-Logo als Referenzbild
       if (useManufacturerLogo && manufacturerLogoUrl) {
         additionalRefs.push(manufacturerLogoUrl);
       }
@@ -573,7 +585,27 @@ The crest is rendered in full color (identical to the front chest crest) and sit
       });
 
       if (result.url) {
-        setGeneratedImageUrl(result.url);
+        let finalUrl = result.url;
+        
+        // Post-Processing: Wappen IN die Rückennummer compositen (deterministisch, nicht KI-abhängig)
+        if (useWappenInNumber && defaultLogo?.imageUrl) {
+          try {
+            toast.info("Wappen wird in Rückennummer eingesetzt...");
+            const crestResult = await compositeCrestInNumberMut.mutateAsync({
+              imageUrl: finalUrl,
+              crestImageUrl: defaultLogo.imageUrl,
+              opacity: 0.85,
+            });
+            if (crestResult.url) {
+              finalUrl = crestResult.url;
+            }
+          } catch (err) {
+            console.error("Crest-in-Number compositing failed:", err);
+            // Weiter mit dem Original-Bild
+          }
+        }
+        
+        setGeneratedImageUrl(finalUrl);
         toast.success("Trikot-Design generiert! Sie können jetzt Zonen hinzufügen.");
         setStep("generate");
       }

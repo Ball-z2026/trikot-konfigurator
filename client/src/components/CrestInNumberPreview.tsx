@@ -112,13 +112,14 @@ export default function CrestInNumberPreview({
 
     // === GLEICHE HÖHE für alle Wappen bei zweistelligen Nummern ===
     // Berechne eine einheitliche Y-Position für alle Wappen:
-    // "Mitte des unteren Bereichs" = 75% der Ziffernhöhe (zwischen Mitte und Boden)
+    // "Mitte des unteren Bereichs" = Mittelpunkt der UNTEREN HÄLFTE der Ziffer
     const digitTop = digitBaselineY - (digitMetrics[0]?.ascent || fontSize * 0.75);
     const digitBottom = digitBaselineY + (digitMetrics[0]?.descent || fontSize * 0.1);
     const digitTotalHeight = digitBottom - digitTop;
-    // "Unterer Bereich" = untere 33% der Ziffer → Mitte davon
-    const lowerThirdCenter = digitBottom - (digitTotalHeight * 0.167); // Mitte des unteren Drittels
-    const crestY = lowerThirdCenter - crestHeight / 2;
+    // "CENTER OF THE LOWER HALF" = Mittelpunkt zwischen Mitte und Boden der Ziffer
+    const digitMiddle = digitTop + digitTotalHeight * 0.5;
+    const lowerHalfCenter = (digitMiddle + digitBottom) / 2; // Mitte der unteren Hälfte
+    const crestY = lowerHalfCenter - crestHeight / 2;
 
     for (let i = 0; i < digitMetrics.length; i++) {
       const dm = digitMetrics[i];

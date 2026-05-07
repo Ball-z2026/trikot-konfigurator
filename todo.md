@@ -2137,3 +2137,8 @@
 - [x] BUG: Frontnummer/Wappen-Position – [FIXED POSITION - DO NOT MOVE] Tag hinzugefügt, Positionen unverändert
 - [x] BUG: Wappen in Rückennummer – Prompt vereinfacht und als [MANDATORY] markiert
 
+## Bug-Fixes Runde 2 (08.05.2026)
+- [x] BUG: Wappen-in-Nummer – Prompt korrigiert (7% Höhe, CENTER OF LOWER HALF, gleiche Höhe) + deterministisches Post-Processing via compositeCrestInNumber
+- [x] BUG: Fußball 2 Sponsoren → 1 vorne + 1 hinten implementiert
+- [x] BUG: Wahrzeichen-Silhouette – Referenzbild #1 explizit im Prompt nummeriert + in additionalRefs aufgenommen
+
