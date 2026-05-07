@@ -485,7 +485,7 @@ export default function KiDesign() {
       // Alle Logos werden per Post-Processing hinzugefügt.
       const brandProtection = " ABSOLUTE CRITICAL RULE - NO LOGOS OF ANY KIND: The jersey must have ZERO logos, ZERO brand marks, ZERO emblems, ZERO badges, ZERO crests anywhere on the entire garment. This means: NO manufacturer logos (no three stripes, no swoosh, no puma cat, no Hummel, no Erima, no Jako, no Mizuno), NO club crests/emblems, NO sponsor logos, NO text logos, NO brand-like graphics of any kind. The jersey is a COMPLETELY BLANK custom garment with ONLY the pattern/design, colors, and text elements (club name, number, hashtag, coordinates if specified). Every area where a logo would typically appear must be LEFT COMPLETELY EMPTY. This is the MOST IMPORTANT rule - absolutely NO logos or emblems whatsoever. They will be added separately after generation.";
 
-      const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Front view, high-end product photography, studio lighting, no wrinkles.`;
+      const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). High-end product photography, studio lighting, no wrinkles.`;
 
       // Referenzbild: Silhouette als Haupt-Referenz (für Wasserzeichen-Muster)
       let referenceUrl: string | undefined;
@@ -497,74 +497,88 @@ export default function KiDesign() {
       // Stattdessen: logoOverlays für Post-Processing aufbauen
       const logoOverlays: Array<{imageUrl: string; xPercent: number; yPercent: number; widthPercent: number; heightPercent: number; opacity?: number}> = [];
       
-      // Vereinswappen: Herzseite (RECHTS im Bild = links am Träger)
-      // Position gemäß Verbandsvorgabe: X=60%, Y=28%, Größe 12%×10%
+      // ═══ LOGO-OVERLAYS FÜR DUAL-TRIKOT-BILD ═══
+      // Das KI-Bild zeigt Vorderseite LINKS (0-50%) und Rückseite RECHTS (50-100%).
+      // DB-Positionen beziehen sich auf ein einzelnes Teil.
+      // Umrechnung: x_gesamt = x_teil / 2 (Vorderseite) bzw. 50 + x_teil / 2 (Rückseite)
+      //             width_gesamt = width_teil / 2
+      //             y und height bleiben gleich
+
+      // ── Vereinswappen: Herzseite auf VORDERSEITE (linke Hälfte) ──
+      // DB: posX=60%, posY=28%, width=10%, height=10% (auf Einzelteil)
+      // Gesamtbild: x = 60/2 = 30%, y = 28%, w = 10/2 = 5%, h = 10%
       if (defaultLogo?.imageUrl) {
         logoOverlays.push({
           imageUrl: defaultLogo.imageUrl,
-          xPercent: 60,
+          xPercent: 30,
           yPercent: 28,
-          widthPercent: 12,
+          widthPercent: 5,
           heightPercent: 10,
         });
       }
 
-      // Wappen in Rückennummer (optional, wenn Toggle aktiv)
-      // Das gleiche unveränderte Wappen wird halbtransparent in der Nummern-Zone platziert
+      // ── Wappen in Rückennummer (optional, wenn Toggle aktiv) ──
+      // Rückseite = rechte Hälfte des Bildes
+      // DB: Rückennummer posX=35%, posY=22%, width=30%, height=30%
+      // Gesamtbild: x = 50 + 35/2 = 67.5%, y = 22%, w = 30/2 = 15%, h = 30%
       if (useWappenInNumber && defaultLogo?.imageUrl) {
-        // Rückennummer-Position: zentriert, Y abhängig vom Layout
-        // Standard-Layout "clubName_number_playerName": Nummer bei ca. Y=30%, Höhe=29%
         logoOverlays.push({
           imageUrl: defaultLogo.imageUrl,
-          xPercent: 35,
-          yPercent: 32,
-          widthPercent: 30,
-          heightPercent: 28,
-          opacity: 0.15, // Subtil im Hintergrund der Nummer
+          xPercent: 67.5,
+          yPercent: 22,
+          widthPercent: 15,
+          heightPercent: 30,
+          opacity: 0.15,
         });
       }
       
-      // Sponsor-Logos
+      // ── Sponsor-Logos ──
       const enabledSponsorsForOverlay = sponsorLogos.filter(s => s.enabled && s.imageUrl);
       enabledSponsorsForOverlay.forEach((s, i) => {
         if (!s.imageUrl) return;
         if (s.type === "hauptsponsor" || i === 0) {
-          // Hauptsponsor: Vorne mittig auf der Brust
+          // Hauptsponsor: Brust-Sponsor auf VORDERSEITE (linke Hälfte)
+          // DB: posX=30%, posY=40%, width=40%, height=10%
+          // Gesamtbild: x = 30/2 = 15%, y = 40%, w = 40/2 = 20%, h = 10%
           logoOverlays.push({
             imageUrl: s.imageUrl,
-            xPercent: 25,
-            yPercent: 38,
-            widthPercent: 30,
-            heightPercent: 12,
+            xPercent: 15,
+            yPercent: 40,
+            widthPercent: 20,
+            heightPercent: 10,
           });
         } else if (s.type === "spartensponsor" || i === 1) {
-          // Spartensponsor: Rücken oben mittig
+          // Spartensponsor: Rücken-Sponsor auf RÜCKSEITE (rechte Hälfte)
+          // DB: posX=30%, posY=65%, width=40%, height=8%
+          // Gesamtbild: x = 50 + 30/2 = 65%, y = 65%, w = 40/2 = 20%, h = 8%
           logoOverlays.push({
             imageUrl: s.imageUrl,
-            xPercent: 30,
-            yPercent: 12,
-            widthPercent: 22,
+            xPercent: 65,
+            yPercent: 65,
+            widthPercent: 20,
             heightPercent: 8,
           });
         } else {
-          // Weitere Sponsoren: Ärmel
+          // Weitere Sponsoren: Ärmel (linke Hälfte, ganz links)
           logoOverlays.push({
             imageUrl: s.imageUrl,
-            xPercent: 5,
+            xPercent: 2,
             yPercent: 25,
-            widthPercent: 12,
+            widthPercent: 6,
             heightPercent: 8,
           });
         }
       });
       
       // Hersteller-Logo (nur wenn explizit hochgeladen)
+      // Rechte Brust auf VORDERSEITE (linke Hälfte)
+      // Gegenüber vom Vereinswappen
       if (useManufacturerLogo && manufacturerLogoUrl) {
         logoOverlays.push({
           imageUrl: manufacturerLogoUrl,
-          xPercent: 55,
-          yPercent: 18,
-          widthPercent: 6,
+          xPercent: 8,
+          yPercent: 28,
+          widthPercent: 4,
           heightPercent: 6,
         });
       }

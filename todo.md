@@ -2071,3 +2071,12 @@
 - [ ] KI-Designer: Wappen an vorgegebener Position (Herzseite) im generierten Design platzieren lassen
 - [ ] KI-Designer: Toggle/Option "Wappen in Nummern einbauen" (Wappen als Hintergrund/Textur in Rückennummer)
 - [ ] KI-Designer: Prompt so formulieren, dass Position und Größe des Wappens exakt den Verbandsvorgaben entsprechen
+
+## Logo-Compositing Korrektur (07.05.2026)
+- [x] Vereinswappen-Position korrigieren: x=30%, y=28%, w=5%, h=10% (linke Hälfte, Herzseite)
+- [x] Wappen-in-Nummer-Position korrigieren: x=67.5%, y=22%, w=15%, h=30% (rechte Hälfte, Nummern-Zone)
+- [x] Sponsor-Position korrigieren: Hauptsponsor x=15%, y=40%, w=20%, h=10% (linke Hälfte, Brust)
+- [x] RERO ist Sponsor nicht Hersteller – wird als Hauptsponsor auf Brust-Sponsor-Fläche platziert
+- [x] Alle Prozent-Werte an Dual-Trikot-Layout angepasst (x/2 für Vorderseite, 50+x/2 für Rückseite)
+- [x] Referenzgröße L = 75 cm im KI-Prompt ergänzt
+- [x] Prompt: 'Show FRONT and BACK view side by side' explizit angegeben

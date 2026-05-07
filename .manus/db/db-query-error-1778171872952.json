@@ -1,0 +1,8 @@
+{
+  "query": "SELECT pz.purpose, pz.posX, pz.posY, pz.width, pz.height, pp.name as partName FROM product_zones pz JOIN product_parts pp ON pz.partId = pp.id WHERE pp.name LIKE '%Vorder%' OR pp.name LIKE '%Front%' ORDER BY pp.name, pz.purpose;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT pz.purpose, pz.posX, pz.posY, pz.width, pz.height, pp.name as partName FROM product_zones pz JOIN product_parts pp ON pz.partId = pp.id WHERE pp.name LIKE '%Vorder%' OR pp.name LIKE '%Front%' ORDER BY pp.name, pz.purpose;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'pp.name' in 'order clause'"
+  ]
+}
