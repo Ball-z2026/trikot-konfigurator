@@ -509,14 +509,15 @@ export default function KiDesign() {
       //             y und height bleiben gleich
 
       // ── Vereinswappen: Herzseite auf VORDERSEITE (linke Hälfte) ──
-      // DB: posX=60%, posY=28%, width=10%, height=10% (auf Einzelteil)
-      // Gesamtbild: x = 60/2 = 30%, y = 28%, w = 10/2 = 5%, h = 10%
+      // Die Rückseite funktioniert mit: x=67.5% (= 50 + 35/2) für Mitte der rechten Hälfte.
+      // Herzseite = RECHTS auf dem linken Trikot = ca. x=35% im Gesamtbild.
+      // Größe: 7% breit, 10% hoch (muss auf dem Gesamtbild sichtbar sein)
       if (defaultLogo?.imageUrl) {
         logoOverlays.push({
           imageUrl: defaultLogo.imageUrl,
-          xPercent: 30,
-          yPercent: 28,
-          widthPercent: 5,
+          xPercent: 35,
+          yPercent: 25,
+          widthPercent: 7,
           heightPercent: 10,
         });
       }
@@ -542,14 +543,14 @@ export default function KiDesign() {
         if (!s.imageUrl) return;
         if (s.type === "hauptsponsor" || i === 0) {
           // Hauptsponsor: Brust-Sponsor auf VORDERSEITE (linke Hälfte)
-          // DB: posX=30%, posY=40%, width=40%, height=10%
-          // Gesamtbild: x = 30/2 = 15%, y = 40%, w = 40/2 = 20%, h = 10%
+          // Mitte des linken Trikots liegt bei ca. x=22-25% im Gesamtbild
+          // Sponsor mittig auf der Brust, unter dem Wappen
           logoOverlays.push({
             imageUrl: s.imageUrl,
             xPercent: 15,
-            yPercent: 40,
-            widthPercent: 20,
-            heightPercent: 10,
+            yPercent: 38,
+            widthPercent: 18,
+            heightPercent: 8,
           });
         } else if (s.type === "spartensponsor" || i === 1) {
           // Spartensponsor: Rücken-Sponsor auf RÜCKSEITE (rechte Hälfte)
