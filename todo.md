@@ -2117,5 +2117,18 @@
 - [x] Bei Produkterstellung: Original-PDF in bester Qualität aus S3 (logoUrl)
 
 ## Live-Vorschau: Wappen in Nummer (08.05.2026)
-- [x] CrestInNumberPreview-Komponente: Zeigt visuell wie das Wappen in der Nummer positioniert wird (50% der Breite am unteren Ende, 1cm vom Boden, horizontal zentriert)
+- [x] CrestInNumberPreview-Komponente: Zeigt visuell wie das Wappen in der Nummer positioniert wird
 - [x] Einbindung in KiDesign.tsx: Nur sichtbar wenn useWappenInNumber && defaultLogo?.imageUrl
+- [x] Korrektur: Wappen-Größe = 7% der Höhe der Rückennummer (nicht 50% Breite)
+- [x] Korrektur: Horizontal zentriert im UNTEREN Bereich der Ziffer (nicht Gesamtmitte)
+- [x] Korrektur: Bei zweistelligen Nummern beide Wappen auf GLEICHER Höhe
+- [x] KI-Prompt anpassen: Neue Positionierungsregeln (7% Höhe, unterer Bereich, gleiche Höhe)
+
+## Wahrzeichen-Silhouette Erweiterung (08.05.2026)
+- [x] Silhouette wird tatsächlich ins Design übernommen (Prompt + Referenzbild korrekt an KI senden)
+- [x] Darstellungsart-Auswahl: Groß als Wasserzeichen ODER zufällige kleine als Muster-Wasserzeichen
+- [x] Platzierung-Auswahl: Nur Vorderseite ODER Vorder- und Rückseite
+- [x] Deckkraft-Schieberegler (wie bei Straßenkarte) für Wahrzeichen-Silhouette
+- [x] Ausschluss-Logik: Wenn Wahrzeichen auf Rückseite → Vereinswappen-Wasserzeichen (Rücken) automatisch deaktivieren
+- [x] Prompt-Anpassung: Wahrzeichen-Prompt je nach Darstellungsart und Platzierung generieren
+

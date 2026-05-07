@@ -122,6 +122,10 @@ export default function KiDesign() {
   const [landmarkSilhouette, setLandmarkSilhouette] = useState<string | null>(null);
   const [extractingSilhouette, setExtractingSilhouette] = useState(false);
   const [useLandmark, setUseLandmark] = useState(false);
+  // Wahrzeichen-Optionen: Darstellungsart + Platzierung + Deckkraft
+  const [landmarkStyle, setLandmarkStyle] = useState<"large" | "pattern">("large"); // groß oder kleine als Muster
+  const [landmarkPlacement, setLandmarkPlacement] = useState<"front" | "both">("front"); // nur Front oder Front+Rück
+  const [landmarkOpacity, setLandmarkOpacity] = useState<number>(20); // eigener Deckkraft-Slider
 
   // ── Muster-Upload State ──
   const [patternImage, setPatternImage] = useState<string | null>(null);
@@ -411,9 +415,19 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       
-      // WAHRZEICHEN-SILHOUETTE = Wasserzeichen (groß, wiederholt, subtil im Hintergrund)
+      // WAHRZEICHEN-SILHOUETTE = Wasserzeichen (je nach Darstellungsart + Platzierung)
       if (useLandmark && landmarkSilhouette) {
-        extraPrompt += " MUST incorporate the landmark silhouette from the reference image as a large repeating WATERMARK pattern across the entire jersey fabric. The silhouette should be used as a tonal background texture - repeated multiple times across the jersey surface, slightly transparent/tonal (same color family but lighter/darker shade), creating an elegant all-over pattern effect like a wallpaper. Be creative with the repetition and scale.";
+        const placementText = landmarkPlacement === "both"
+          ? "on BOTH the FRONT and BACK of the jersey"
+          : "on the FRONT of the jersey ONLY";
+        
+        if (landmarkStyle === "large") {
+          // Groß als Wasserzeichen
+          extraPrompt += ` MUST incorporate the landmark silhouette from the reference image as a SINGLE LARGE WATERMARK ${placementText}. The silhouette should be a big, centered background element covering approximately 50-60% of the jersey surface area. It should be rendered as a subtle tonal element (same color family but slightly lighter/darker shade) at ${landmarkOpacity}% opacity. The silhouette is a background layer - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
+        } else {
+          // Kleine zufällige als Muster
+          extraPrompt += ` MUST incorporate the landmark silhouette from the reference image as a REPEATING PATTERN of SMALL silhouettes ${placementText}. Scatter many small copies of the silhouette randomly across the jersey fabric at various sizes (2-5cm each) and slight rotations, creating an elegant all-over pattern effect like a wallpaper texture. The silhouettes should be rendered as subtle tonal elements (same color family but slightly lighter/darker shade) at ${landmarkOpacity}% opacity. The pattern is a background texture - all other elements (numbers, text, logos) must be clearly visible IN FRONT OF it.`;
+        }
       }
       
       // MUSTER-UPLOAD
@@ -438,28 +452,29 @@ export default function KiDesign() {
       }
 
       // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
-      // Regel: Breite der Ziffer auslesen → Wappen = 50% dieser Breite → gleicher Abstand nach unten, links, rechts
-      // Bei jeder Schriftgröße bleibt das Verhältnis gleich (proportional)
+      // Regel: Wappen-Höhe = 7% der Nummernhöhe, Mitte des unteren Bereichs, gleiche Höhe bei zweistellig
       if (useWappenInNumber && defaultLogo?.imageUrl) {
         extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER - EXACT PLACEMENT RULE:
 
-STEP 1: MEASURE the width of each back number digit AT ITS BOTTOM EDGE (the widest point at the very bottom of the numeral shape). Call this value W.
+STEP 1: DETERMINE the total HEIGHT of the back number digits. Call this value H.
 
-STEP 2: SCALE the club crest to EXACTLY 50% of W.
-- Example: If digit bottom width = 4cm → crest width = 2cm
-- Example: If digit bottom width = 6cm → crest width = 3cm
-- Example: If digit bottom width = 10cm → crest width = 5cm
+STEP 2: SCALE the club crest HEIGHT to EXACTLY 7% of H.
+- Example: If number height = 25cm → crest height = 1.75cm
+- Example: If number height = 30cm → crest height = 2.1cm
+- The crest width follows from maintaining the original aspect ratio.
 
 STEP 3: POSITION the crest:
-- Horizontally: CENTERED within the digit (equal space left and right)
-  Example: 4cm digit, 2cm crest → 1cm gap left, 1cm gap right
-- Vertically: Place the crest exactly 1cm ABOVE the bottom edge of the digit
-  (NOT centered vertically - always 1cm from the bottom, regardless of digit height)
+- Vertically: Place the crest at the CENTER OF THE LOWER THIRD of each digit.
+  (Divide the digit into 3 equal vertical sections. Place the crest centered in the bottom section.)
+  CRITICAL: For two-digit numbers (e.g. 10, 23, 99), BOTH crests MUST be at the EXACT SAME vertical height.
+  Calculate the position once and apply it identically to both digits.
+- Horizontally: CENTERED within the lower portion of each digit (equal space left and right)
 
 The crest MUST:
-- Be EXACTLY half the width of the digit measured at its bottom edge
-- Sit 1cm above the bottom of the digit (fixed distance, not proportional)
-- Be horizontally centered (equal left/right spacing)
+- Have a height of EXACTLY 7% of the total number height
+- Be positioned at the center of the lower third of the digit
+- Be at the SAME vertical position in ALL digits (critical for two-digit numbers)
+- Be horizontally centered within each digit
 - Maintain its original aspect ratio
 - Be IDENTICAL to the front chest crest (same colors, details, proportions)
 - Appear inside EVERY digit of the back number
@@ -530,10 +545,8 @@ The digit outline remains fully visible as a frame/border around the crest in a 
         extraPrompt += ` Include a subtle street map pattern as a watermark/texture across the jersey fabric at approximately ${watermarkOpacity}% opacity. The map should show road lines and intersections creating an abstract geometric pattern that blends into the jersey design as a tonal background texture.`;
       }
 
-      // WASSERZEICHEN-DECKUNG (für Silhouette)
-      if (useLandmark && landmarkSilhouette) {
-        extraPrompt += ` The watermark/silhouette pattern should be at approximately ${watermarkOpacity}% opacity - subtle but recognizable.`;
-      }
+      // WASSERZEICHEN-DECKUNG (für Silhouette) - jetzt direkt im Hauptprompt oben integriert
+      // (landmarkOpacity wird bereits im Wahrzeichen-Prompt oben verwendet)
 
       // Markenrecht-Schutz: Keine ERFUNDENEN Logos oder Marken!
       // Die KI darf NUR die als Referenz übergebenen echten Logos verwenden.
@@ -1113,15 +1126,23 @@ The digit outline remains fully visible as a frame/border around the crest in a 
                   </Select>
                   {/* Wappen als Wasserzeichen auf Rücken */}
                   {defaultLogo && (
-                    <div className="flex items-center justify-between p-2 mt-2 bg-white rounded border">
+                    <div className={`flex items-center justify-between p-2 mt-2 rounded border ${useLandmark && landmarkPlacement === "both" ? "bg-gray-100 opacity-50" : "bg-white"}`}>
                       <div className="flex items-center gap-2">
                         <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-40" />
                         <div>
                           <span className="text-sm">Wappen als Wasserzeichen (Rücken)</span>
-                          <span className="text-[10px] text-muted-foreground block">Groß, halbtransparent HINTER der Nummer</span>
+                          <span className="text-[10px] text-muted-foreground block">
+                            {useLandmark && landmarkPlacement === "both"
+                              ? "Nicht verfügbar: Wahrzeichen auf Rückseite aktiv"
+                              : "Groß, halbtransparent HINTER der Nummer"}
+                          </span>
                         </div>
                       </div>
-                      <Switch checked={useBackCrestWatermark} onCheckedChange={setUseBackCrestWatermark} />
+                      <Switch
+                        checked={useBackCrestWatermark}
+                        onCheckedChange={setUseBackCrestWatermark}
+                        disabled={useLandmark && landmarkPlacement === "both"}
+                      />
                     </div>
                   )}
                 </div>
@@ -1254,7 +1275,7 @@ The digit outline remains fully visible as a frame/border around the crest in a 
                               <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[8px] px-1 rounded">Silhouette</span>
                             </div>
                             <div className="flex flex-col gap-1">
-                              <span className="text-xs text-green-600 font-medium">Als Wasserzeichen ins Trikot</span>
+                              <span className="text-xs text-green-600 font-medium">Silhouette ins Trikot übernehmen</span>
                               <Switch checked={useLandmark} onCheckedChange={setUseLandmark} />
                             </div>
                           </div>
@@ -1262,6 +1283,100 @@ The digit outline remains fully visible as a frame/border around the crest in a 
                       </div>
                     )}
                   </div>
+
+                  {/* Wahrzeichen-Optionen: Darstellungsart + Platzierung + Deckkraft */}
+                  {useLandmark && landmarkSilhouette && (
+                    <div className="mt-3 space-y-3 p-3 rounded-lg border border-purple-200 bg-purple-50/50">
+                      {/* Darstellungsart */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-semibold text-purple-800">Darstellungsart</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setLandmarkStyle("large")}
+                            className={`px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                              landmarkStyle === "large"
+                                ? "border-purple-500 bg-purple-100 text-purple-800"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-purple-300"
+                            }`}
+                          >
+                            Groß als Wasserzeichen
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setLandmarkStyle("pattern")}
+                            className={`px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                              landmarkStyle === "pattern"
+                                ? "border-purple-500 bg-purple-100 text-purple-800"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-purple-300"
+                            }`}
+                          >
+                            Kleine als Muster
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-purple-600">
+                          {landmarkStyle === "large"
+                            ? "Eine große Silhouette als subtiles Wasserzeichen im Hintergrund"
+                            : "Viele kleine Silhouetten zufällig verteilt als Muster-Wasserzeichen"}
+                        </p>
+                      </div>
+
+                      {/* Platzierung */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-semibold text-purple-800">Platzierung</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setLandmarkPlacement("front")}
+                            className={`px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                              landmarkPlacement === "front"
+                                ? "border-purple-500 bg-purple-100 text-purple-800"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-purple-300"
+                            }`}
+                          >
+                            Nur Vorderseite
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLandmarkPlacement("both");
+                              // Ausschluss: Wenn Rückseite gewählt → Vereinswappen-Wasserzeichen deaktivieren
+                              setUseBackCrestWatermark(false);
+                            }}
+                            className={`px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                              landmarkPlacement === "both"
+                                ? "border-purple-500 bg-purple-100 text-purple-800"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-purple-300"
+                            }`}
+                          >
+                            Vorder- & Rückseite
+                          </button>
+                        </div>
+                        {landmarkPlacement === "both" && (
+                          <p className="text-[10px] text-amber-600 font-medium">
+                            Hinweis: Vereinswappen als Wasserzeichen (Rücken) ist bei dieser Auswahl nicht möglich.
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Deckkraft-Slider */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-semibold text-purple-800">Deckkraft: {landmarkOpacity}%</span>
+                        <Slider
+                          value={[landmarkOpacity]}
+                          onValueChange={(v) => setLandmarkOpacity(v[0])}
+                          min={5}
+                          max={50}
+                          step={5}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-[10px] text-purple-400">
+                          <span>5% (kaum sichtbar)</span>
+                          <span>50% (deutlich)</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* ═══ MUSTER-UPLOAD ═══ */}
