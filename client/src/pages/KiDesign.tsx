@@ -229,56 +229,12 @@ export default function KiDesign() {
       toast.error("Keine Vereinsadresse hinterlegt. Bitte zuerst in der Verwaltung die Vereinsadresse eintragen.");
       return;
     }
-    setLoadingMap(true);
-    try {
-      // Vollständige Adresse aus den Vereinsdaten zusammenbauen
-      const fullAddress = `${orgData.street}, ${orgData.zip || ""} ${orgData.city}, ${orgData.country || "Deutschland"}`;
-      
-      // Verwende Google Static Maps API über den Manus Proxy (Frontend-Zugang)
-      const forgeUrl = import.meta.env.VITE_FRONTEND_FORGE_API_URL || "https://forge.butterfly-effect.dev";
-      const apiKey = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
-      
-      // PRIORITÄT: Wenn Koordinaten im Verein hinterlegt sind, diese verwenden (präziser)
-      // Ansonsten die vollständige Adresse als Geocoding-Fallback
-      let center: string;
-      if (orgData.latitude && orgData.longitude && orgData.latitude !== 0 && orgData.longitude !== 0) {
-        center = `${orgData.latitude},${orgData.longitude}`;
-      } else {
-        // Adresse URL-encodiert als Fallback
-        center = encodeURIComponent(fullAddress);
-      }
-      
-      // Karte mit minimalistischem Stil (nur Straßen, keine Labels) für Wasserzeichen-Effekt
-      const mapUrl = `${forgeUrl}/v1/maps/proxy/maps/api/staticmap?center=${center}&zoom=15&size=600x600&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0x333333&style=feature:road.local|element:geometry|color:0x555555&style=feature:water|element:geometry|color:0x111111&style=feature:landscape|element:geometry|color:0x000000&style=feature:poi|visibility:off&style=feature:transit|visibility:off&key=${apiKey}`;
-      
-      // Karte herunterladen und in Storage hochladen (damit die KI eine öffentliche URL bekommt)
-      const mapResponse = await fetch(mapUrl, {
-        headers: { "Authorization": `Bearer ${apiKey}` },
-      });
-      if (!mapResponse.ok) throw new Error(`Karte konnte nicht geladen werden (${mapResponse.status})`);
-      const mapBlob = await mapResponse.blob();
-      const mapReader = new FileReader();
-      const mapBase64: string = await new Promise((resolve, reject) => {
-        mapReader.onload = () => resolve((mapReader.result as string).split(",")[1]);
-        mapReader.onerror = reject;
-        mapReader.readAsDataURL(mapBlob);
-      });
-      const uploadRes = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: mapBase64, fileName: `map_${Date.now()}.png`, contentType: "image/png" }),
-      });
-      if (!uploadRes.ok) throw new Error("Karten-Upload fehlgeschlagen");
-      const { url: storedMapUrl } = await uploadRes.json();
-      
-      setMapImageUrl(storedMapUrl);
-      setUseMapWatermark(true);
-      toast.success(`Straßenkarte für "${fullAddress}" geladen und gespeichert!`);
-    } catch (error) {
-      toast.error("Karte konnte nicht geladen werden");
-    } finally {
-      setLoadingMap(false);
-    }
+    // Kein Bild-Download mehr nötig – die Adresse wird direkt in den Prompt geschrieben
+    // Die KI generiert das Straßennetz-Muster selbstständig basierend auf der Adresse
+    const fullAddress = `${orgData.street}, ${orgData.zip || ""} ${orgData.city}, ${orgData.country || "Deutschland"}`;
+    setMapImageUrl(fullAddress); // Speichere die Adresse statt einer Bild-URL
+    setUseMapWatermark(true);
+    toast.success(`Straßenkarte für "${fullAddress}" wird beim Generieren automatisch als Stoffmuster verwendet.`);
   };
 
   // ── Vereinsfarben automatisch übernehmen wenn Toggle aktiv ──
@@ -444,7 +400,7 @@ export default function KiDesign() {
       const imageSlots: { url: string | null; slotNum: number; description: string }[] = [
         { slotNum: 1, url: defaultLogo?.imageUrl || null, description: "Vereinswappen" },
         { slotNum: 2, url: null, description: "Wahrzeichen (per Prompt-Beschreibung)" },
-        { slotNum: 3, url: (useMapWatermark && mapImageUrl) ? mapImageUrl : null, description: "Straßenkarte" },
+        { slotNum: 3, url: null, description: "Straßenkarte (per Adresse im Prompt)" },
         { slotNum: 4, url: sponsorByPosition.chest?.imageUrl || null, description: "Sponsor Brust" },
         { slotNum: 5, url: sponsorByPosition.back?.imageUrl || null, description: "Sponsor Rücken" },
         { slotNum: 6, url: sponsorByPosition.sleeve_left?.imageUrl || null, description: "Sponsor Ärmel links" },
@@ -493,9 +449,9 @@ export default function KiDesign() {
         }
       }
       
-      // SLOT 3: Straßenkarte
+      // STRASSENKARTE: Per Adresse im Prompt (kein Bild mehr nötig)
       if (useMapWatermark && mapImageUrl) {
-        extraPrompt += ` STRASSENKARTE (Slot 3): Diese Karte ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Die Straßenlinien bilden ein Muster im Stoff. Ton-in-Ton, ${watermarkOpacity}% heller/dunkler als Trikotfarbe. Bedeckt den gesamten Stoff. Liegt HINTER allen Logos und Nummern.`;
+        extraPrompt += ` STRASSENKARTE: Das Straßennetz der Umgebung von "${mapImageUrl}" ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Zeige die Straßen und Wege dieser Adresse als feines Linienmuster im Stoff. Ton-in-Ton, ${watermarkOpacity}% heller/dunkler als Trikotfarbe. Bedeckt den gesamten Stoff. Liegt HINTER allen Logos und Nummern.`;
       }
       
       // SLOT 4-10: Sponsoren
@@ -535,7 +491,7 @@ export default function KiDesign() {
       }
 
       // NUMMER: Vorne und hinten IDENTISCH, einfarbig
-      extraPrompt += ` NUMMER: Vorne und hinten DIESELBE Nummer, DIESELBE FARBE. EINFARBIG – KEINE Muster, KEINE Texturen. Saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert. BRUSTNUMMER: Kleiner (10cm), links (gegenüber Wappen).`;
+      extraPrompt += ` NUMMER: Vorne und hinten DIESELBE Nummer, DIESELBE FARBE. EINFARBIG – KEINE Muster, KEINE Texturen. Saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert auf dem Rücken. BRUSTNUMMER: Kleiner (10cm Höhe), MITTIG auf der Brust zentriert (horizontal zentriert zwischen den Schultern).`;
 
       // RÜCKSEITEN-LAYOUT
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
@@ -569,7 +525,7 @@ export default function KiDesign() {
         const latDir = Number(orgData.latitude) >= 0 ? "N" : "S";
         const lngDir = Number(orgData.longitude) >= 0 ? "E" : "W";
         const coordText = `${Math.abs(Number(lat))}°${latDir} ${Math.abs(Number(lng))}°${lngDir}`;
-        extraPrompt += ` Coordinates "${coordText}" on collar or sleeve cuff, small monospace font.`;
+        extraPrompt += ` Coordinates "${coordText}" on RIGHT SHOULDER area (front view, upper right), CLEARLY LEGIBLE, bold monospace font, high contrast color against fabric. Size: large enough to read easily (at least 1.5cm height).`;
       }
 
       // Markenrecht-Schutz: Keine ERFUNDENEN Logos oder Marken!
@@ -1611,19 +1567,17 @@ export default function KiDesign() {
                     <p className="text-xs text-muted-foreground">Straßenkarte von: <strong>{orgData.street}, {orgData.zip} {orgData.city}</strong></p>
                     <div className="flex items-center gap-3">
                       <Button 
-                        variant="outline" 
+                        variant={useMapWatermark ? "default" : "outline"}
                         size="sm" 
                         onClick={generateMapImage}
-                        disabled={loadingMap}
                       >
-                        {loadingMap ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <MapPin className="w-4 h-4 mr-1" />}
-                        Karte generieren
+                        <MapPin className="w-4 h-4 mr-1" />
+                        {useMapWatermark ? "Karte aktiviert" : "Karte aktivieren"}
                       </Button>
-                      {mapImageUrl && (
-                        <div className="flex items-center gap-3">
-                          <img src={mapImageUrl} alt="Straßenkarte" className="w-16 h-16 object-cover rounded border" />
-                          <Switch checked={useMapWatermark} onCheckedChange={setUseMapWatermark} />
-                        </div>
+                      {useMapWatermark && (
+                        <Button variant="ghost" size="sm" onClick={() => { setUseMapWatermark(false); setMapImageUrl(null); }}>
+                          Deaktivieren
+                        </Button>
                       )}
                     </div>
                   </div>

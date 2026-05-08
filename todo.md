@@ -2222,3 +2222,8 @@
 - [x] Wahrzeichen-Prompt auf Textbeschreibung umstellen (kein Referenzbild mehr)
 - [x] Slot 2 nicht mehr als Referenzbild senden
 - [x] Bestehende Optionen beibehalten (groß/klein, vorne/hinten, Opacity, Wappen-Ausschluss)
+
+## Prompt-Fixes & Karte (08.05.2026)
+- [x] Nummer auf Vorderseite: mittig positionieren (nicht links)
+- [x] Koordinaten auf rechter Schulter: gut lesbar (größere Schrift)
+- [x] Karte generieren: Vereinsadresse automatisch in Prompt schreiben statt Bild-Download
