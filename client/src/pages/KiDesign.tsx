@@ -109,7 +109,7 @@ export default function KiDesign() {
 
   // ── Vereins-Integration State ──
    const [useClubColors, setUseClubColors] = useState(true);
-  const [useWappenInNumber, setUseWappenInNumber] = useState(false); // Wappen in Rückennummer (optional)
+  const [useWappenInNumber] = useState(false); // Wappen in Rückennummer – DEAKTIVIERT (funktioniert nicht zuverlässig)
   const [useManufacturerLogo, setUseManufacturerLogo] = useState(false); // Hersteller-Logo optional
   const [manufacturerLogoUrl, setManufacturerLogoUrl] = useState<string | null>(null); // Hochgeladenes Hersteller-Logo
   const [useClubLogo, setUseClubLogo] = useState(true);
@@ -452,17 +452,9 @@ export default function KiDesign() {
       }
 
       // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
-      // Regel: Wappen-Höhe = 7% der Nummernhöhe, Mitte des unteren Bereichs, gleiche Höhe bei zweistellig
-      if (useWappenInNumber && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST INSIDE BACK NUMBER [MANDATORY - MUST BE VISIBLE]:
-The club crest MUST appear as a small emblem INSIDE each digit of the back number.
-
-SIZE: Crest height = exactly 7% of the back number height.
-POSITION: Place the crest at the CENTER OF THE LOWER HALF of each digit (not the geometric center of the whole digit, but the center point of only the bottom half of the digit). Horizontally centered within each digit.
-FOR TWO-DIGIT NUMBERS (e.g. 23): BOTH digits get a crest, and BOTH crests MUST be at the EXACT SAME vertical Y-position (identical height from top).
-
-The crest is rendered in full color (identical to the front chest crest). The digit outline/fill remains fully visible around the small crest. This is NOT optional - the crest MUST appear inside EVERY digit.`;
-      }
+      // Wappen in Rückennummer – DEAKTIVIERT (später als Feature)
+      // Stattdessen: Rückennummer ist immer einfarbig (solid color)
+      extraPrompt += ` BACK NUMBER: The back number must be SOLID SINGLE COLOR (no patterns, no textures, no emblems inside the digits). Clean, bold, clearly readable digits.`;
 
       // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
       // Auf gleicher Höhe wie Vereinswappen (Y=32%)
@@ -509,19 +501,26 @@ The crest is rendered in full color (identical to the front chest crest). The di
       if (enabledSponsors.length > 0) {
         const isFootball = selectedSport === "fussball";
         
+        // Zähle die Position der Sponsor-Logos in der Referenzbild-Liste
+        // Reihenfolge: Silhouette (optional), Wappen, dann Sponsoren
+        const sponsorRefStartIndex = (useLandmark && landmarkSilhouette ? 1 : 0) + (defaultLogo?.imageUrl ? 1 : 0);
+        
         if (isFootball && enabledSponsors.length === 2) {
           // Fußball + genau 2 Sponsoren: Erster vorne, Zweiter hinten
-          extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO: MUST place the sponsor logo "${enabledSponsors[0].name}" (provided as reference image) on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: The sponsor logo must be reproduced PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or alter it in ANY way. This is a legally protected trademark.`;
-          extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO: MUST place the sponsor logo "${enabledSponsors[1].name}" (provided as reference image) on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Reproduce PIXEL-PERFECT - do NOT modify or reinterpret. This is a legally protected trademark.`;
+          const ref1 = sponsorRefStartIndex + 1; // 1-basiert
+          const ref2 = sponsorRefStartIndex + 2;
+          extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO [Reference image #${ref1} is this sponsor logo]: MUST place the sponsor logo "${enabledSponsors[0].name}" on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: Use EXACTLY the logo from reference image #${ref1}. Reproduce PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or write just the name as text. This is a legally protected trademark that must appear as the ACTUAL LOGO IMAGE.`;
+          extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO [Reference image #${ref2} is this sponsor logo]: MUST place the sponsor logo "${enabledSponsors[1].name}" on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Use EXACTLY the logo from reference image #${ref2}. Reproduce PIXEL-PERFECT - do NOT modify, redraw, or write just the name as text. This is a legally protected trademark that must appear as the ACTUAL LOGO IMAGE.`;
         } else {
           // Standard-Logik: Haupt vorne, Sparte hinten, Rest Ärmel
           enabledSponsors.forEach((s, i) => {
+            const refIdx = sponsorRefStartIndex + i + 1; // 1-basiert
             if (s.type === "hauptsponsor" || i === 0) {
-              extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO: MUST place the main sponsor logo "${s.name}" (provided as reference image) on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: The sponsor logo must be reproduced PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or alter it in ANY way. This is a legally protected trademark.`;
+              extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO [Reference image #${refIdx} is this sponsor logo]: MUST place the main sponsor logo "${s.name}" on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. CRITICAL: Use EXACTLY the logo from reference image #${refIdx}. Reproduce PIXEL-PERFECT - do NOT modify, redraw, reinterpret, simplify, change colors, or write just the name as text. This is a legally protected trademark that must appear as the ACTUAL LOGO IMAGE.`;
             } else if (s.type === "spartensponsor" || i === 1) {
-              extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO: MUST place the secondary sponsor logo "${s.name}" (provided as reference image) on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Reproduce PIXEL-PERFECT - do NOT modify or reinterpret. This is a legally protected trademark.`;
+              extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO [Reference image #${refIdx} is this sponsor logo]: MUST place the secondary sponsor logo "${s.name}" on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. CRITICAL: Use EXACTLY the logo from reference image #${refIdx}. Reproduce PIXEL-PERFECT - do NOT modify, redraw, or write just the name as text. This is a legally protected trademark that must appear as the ACTUAL LOGO IMAGE.`;
             } else {
-              extraPrompt += ` SLEEVE SPONSOR: Place the sponsor logo "${s.name}" (provided as reference image) on the SLEEVE area. Size: approximately 8cm wide x 4cm tall. CRITICAL: Reproduce PIXEL-PERFECT without ANY modifications.`;
+              extraPrompt += ` SLEEVE SPONSOR [Reference image #${refIdx}]: Place the sponsor logo "${s.name}" on the SLEEVE area. Size: approximately 8cm wide x 4cm tall. CRITICAL: Use EXACTLY the logo from reference image #${refIdx}. Reproduce PIXEL-PERFECT without ANY modifications - do NOT write just the name as text.`;
             }
           });
         }
@@ -587,23 +586,7 @@ The crest is rendered in full color (identical to the front chest crest). The di
       if (result.url) {
         let finalUrl = result.url;
         
-        // Post-Processing: Wappen IN die Rückennummer compositen (deterministisch, nicht KI-abhängig)
-        if (useWappenInNumber && defaultLogo?.imageUrl) {
-          try {
-            toast.info("Wappen wird in Rückennummer eingesetzt...");
-            const crestResult = await compositeCrestInNumberMut.mutateAsync({
-              imageUrl: finalUrl,
-              crestImageUrl: defaultLogo.imageUrl,
-              opacity: 0.85,
-            });
-            if (crestResult.url) {
-              finalUrl = crestResult.url;
-            }
-          } catch (err) {
-            console.error("Crest-in-Number compositing failed:", err);
-            // Weiter mit dem Original-Bild
-          }
-        }
+        // Wappen in Rückennummer – DEAKTIVIERT (später als Feature)
         
         setGeneratedImageUrl(finalUrl);
         toast.success("Trikot-Design generiert! Sie können jetzt Zonen hinzufügen.");
@@ -996,26 +979,7 @@ The crest is rendered in full color (identical to the front chest crest). The di
                             </div>
                             <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">PFLICHT</span>
                           </div>
-                          <div className="flex items-center justify-between p-2 bg-white rounded border">
-                            <div className="flex items-center gap-2">
-                              <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-60" />
-                              <div>
-                                <span className="text-sm">Wappen in Rückennummer</span>
-                                <span className="text-[10px] text-muted-foreground block">Wappen als Textur in den Ziffern (Clipping-Mask)</span>
-                              </div>
-                            </div>
-                            <Switch checked={useWappenInNumber} onCheckedChange={setUseWappenInNumber} />
-                          </div>
-                          {/* Live-Vorschau: Wappen in Nummer */}
-                          {useWappenInNumber && defaultLogo?.imageUrl && (
-                            <CrestInNumberPreview
-                              crestImageUrl={defaultLogo.imageUrl}
-                              number="10"
-                              fontFamily={defaultFont?.fontFamily || "Oswald"}
-                              fontColor={primaryColor}
-                              outlineColor={secondaryColor}
-                            />
-                          )}
+                          {/* Wappen in Rückennummer – DEAKTIVIERT (später als Feature hinzufügen) */}
                         </>
                       )}
 

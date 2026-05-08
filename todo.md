@@ -2142,3 +2142,11 @@
 - [x] BUG: Fußball 2 Sponsoren → 1 vorne + 1 hinten implementiert
 - [x] BUG: Wahrzeichen-Silhouette – Referenzbild #1 explizit im Prompt nummeriert + in additionalRefs aufgenommen
 
+## Deaktivierung + Sponsoren-Bug (08.05.2026)
+- [x] Wappen-in-Rückennummer komplett deaktiviert (Toggle, Prompt, Post-Processing) + einfarbige Nummer im Prompt
+- [x] BUG: Bei 2 Sponsoren – Referenzbild-Nummerierung im Prompt hinzugefügt (Reference image #N)
+- [x] BUG: Sponsor-Logo – Prompt verstärkt: "do NOT write just the name as text" + "must appear as ACTUAL LOGO IMAGE"
+
+## Später (Feature-Backlog)
+- [ ] Wappen in Rückennummer als optionales Feature (wenn KI-Qualität besser wird)
+
