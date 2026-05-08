@@ -449,13 +449,11 @@ export default function KiDesign() {
         if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
       }
       
-      // VEREINSWAPPEN = KI platziert das echte Wappen auf der Herzseite
-      // Herzseite = linke Brust des Trägers = RECHTE Seite im Bild (Betrachter-Perspektive)
-      // Auf gleicher Höhe wie Brustnummer (Y=32% = etwas unterhalb Kragen)
+      // VEREINSWAPPEN = KI platziert das Wappen auf der Herzseite
+      // Bildnummer wird dynamisch berechnet basierend auf vorherigen Bildern
       if (defaultLogo?.imageUrl) {
-        // Berechne die Bildnummer für das Wappen
         const crestImageNum = (useLandmark && landmarkSilhouette) ? 2 : 1;
-        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST [IMAGE #${crestImageNum} - FIXED POSITION - DO NOT MOVE]: IMAGE #${crestImageNum} shows the club crest/badge. Place this crest on the VIEWER'S RIGHT SIDE of the front jersey chest area (wearer's left chest / heart side). Position: approximately 60-65% from LEFT edge, 32% from top. Size: approximately 8-10cm (10% of jersey height). IMPORTANT: Crest on RIGHT side (viewer), number on LEFT side (viewer). These positions are FIXED. [ABSOLUTE CREST RULE]: Copy the EXACT graphic from IMAGE #${crestImageNum} - same shape, same design, same symbols, same proportions. You may adjust COLORS to harmonize with jersey, but FORM/SHAPE must remain PIXEL-PERFECT. Do NOT simplify, redraw, or create a different version.`;
+        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST: Reference image ${crestImageNum} is the club crest/badge. Place it on the VIEWER'S RIGHT SIDE of the front jersey chest (heart side). Position: 60-65% from left, 32% from top. Size: 8-10cm. Reproduce this image EXACTLY as shown - same shape, colors, proportions. Do NOT simplify or redraw it.`;
       }
 
       // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
@@ -502,39 +500,36 @@ export default function KiDesign() {
         extraPrompt += ` MUST include the geographic coordinates "${coordText}" as visible printed text on the jersey. Place this text on the INSIDE OF THE COLLAR or on the SLEEVE CUFF area. The text should read exactly "${coordText}" in a small, clean monospace font (like on luxury/premium sportswear). Make sure the text is clearly readable and correctly formatted as GPS coordinates.`;
       }
 
-      // SPONSOREN = KI platziert die echten Sponsor-Logos basierend auf gewählter Position
-      // Berechne die exakte Bildnummer für jeden Sponsor im Referenzbild-Array:
-      // Position 1 = Silhouette (wenn vorhanden), danach Wappen, danach Sponsoren
+      // SPONSOREN = KI platziert die Sponsor-Logos basierend auf Position
       const enabledSponsors = sponsorLogos.filter(s => s.enabled && s.imageUrl);
       if (enabledSponsors.length > 0) {
-        const positionDescriptions: Record<string, { view: string; placement: string; size: string }> = {
-          chest: { view: "FRONT VIEW (left jersey)", placement: "FRONT CENTER CHEST, below the crest and number area, centered horizontally, approximately 45-55% from top", size: "20cm wide x 8cm tall" },
-          back: { view: "BACK VIEW (right jersey)", placement: "LOWER BACK, below the player name area, centered horizontally, approximately 75-80% from top", size: "15cm wide x 6cm tall" },
-          sleeve_left: { view: "FRONT VIEW (left jersey)", placement: "LEFT SLEEVE (viewer's left), centered on the sleeve, approximately 35% from top", size: "8cm wide x 4cm tall" },
-          sleeve_right: { view: "FRONT VIEW (left jersey)", placement: "RIGHT SLEEVE (viewer's right), centered on the sleeve, approximately 35% from top", size: "8cm wide x 4cm tall" },
-          side_left: { view: "FRONT VIEW (left jersey)", placement: "LEFT SIDE of the jersey torso (viewer's left), vertically centered", size: "10cm wide x 5cm tall" },
-          side_right: { view: "FRONT VIEW (left jersey)", placement: "RIGHT SIDE of the jersey torso (viewer's right), vertically centered", size: "10cm wide x 5cm tall" },
-          collar: { view: "BACK VIEW (right jersey)", placement: "COLLAR/NAPE area, centered below the collar", size: "6cm wide x 3cm tall" },
+        const positionDescriptions: Record<string, string> = {
+          chest: "front center chest, below crest and number, centered horizontally (45-55% from top)",
+          back: "lower back, below player name, centered (75-80% from top)",
+          sleeve_left: "left sleeve (viewer's left), centered on sleeve",
+          sleeve_right: "right sleeve (viewer's right), centered on sleeve",
+          side_left: "left side of torso (viewer's left)",
+          side_right: "right side of torso (viewer's right)",
+          collar: "back collar/nape area",
         };
 
-        // Berechne den Start-Index der Sponsor-Bilder im Referenz-Array (1-basiert)
-        // referenceUrl (Silhouette) = Image #1, additionalRefs[0] (Wappen) = Image #2, etc.
-        let sponsorStartImageNum = 1; // 1-basiert
-        if (useLandmark && landmarkSilhouette) sponsorStartImageNum++; // Silhouette ist #1
-        if (defaultLogo?.imageUrl) sponsorStartImageNum++; // Wappen ist nächstes
+        // Berechne Start-Bildnummer: Silhouette (wenn da) + Wappen (wenn da) + dann Sponsoren
+        let sponsorStartNum = 1;
+        if (useLandmark && landmarkSilhouette) sponsorStartNum++;
+        if (defaultLogo?.imageUrl) sponsorStartNum++;
 
         enabledSponsors.forEach((s, i) => {
-          const imageNum = sponsorStartImageNum + i;
+          const imgNum = sponsorStartNum + i;
           const pos = sponsorPositions[s.id] || "chest";
-          const desc = positionDescriptions[pos] || positionDescriptions.chest;
-          extraPrompt += ` ${desc.view} - SPONSOR "${s.name}" [IMAGE #${imageNum} - ZERO CREATIVE FREEDOM]: IMAGE #${imageNum} shows the logo of "${s.name}". You MUST reproduce this logo EXACTLY as it appears in IMAGE #${imageNum} and place it at ${desc.placement}. Size: approximately ${desc.size}. [ABSOLUTE LOGO RULE]: Copy the EXACT graphic from IMAGE #${imageNum} - same shapes, same typography, same proportions, same colors/layout. Do NOT write the sponsor name "${s.name}" as plain text. Do NOT simplify or redraw. The image IS the logo - reproduce it pixel-perfect. This is a legally protected trademark.`;
+          const placement = positionDescriptions[pos] || positionDescriptions.chest;
+          extraPrompt += ` SPONSOR - Reference image ${imgNum} is the logo of "${s.name}". Place it at: ${placement}. Reproduce this logo EXACTLY as shown in reference image ${imgNum} - same shapes, typography, colors. Do NOT write the name as text. Do NOT simplify. Copy the image pixel-perfect.`;
         });
       }
 
-      // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE (groß, halbtransparent, HINTER der Nummer)
+      // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE
       if (useBackCrestWatermark && defaultLogo?.imageUrl) {
-        const crestWmImageNum = (useLandmark && landmarkSilhouette) ? 2 : 1;
-        extraPrompt += ` BACK VIEW (right jersey) - CREST WATERMARK [IMAGE #${crestWmImageNum}]: Place the club crest from IMAGE #${crestWmImageNum} as a LARGE WATERMARK on the BACK of the jersey. Centered on back, approximately 60-70% of jersey width, rendered at ${backCrestOpacity}% opacity as a subtle tonal background element. CRITICAL: The crest watermark must be BEHIND/UNDERNEATH all other elements (number, player name, club name). The back number and text must be clearly visible IN FRONT OF the watermark.`;
+        const crestNum = (useLandmark && landmarkSilhouette) ? 2 : 1;
+        extraPrompt += ` BACK VIEW (right jersey) - CREST WATERMARK: Use reference image ${crestNum} (the club crest) as a LARGE WATERMARK on the back. Centered, 60-70% of jersey width, ${backCrestOpacity}% opacity, tonal (same hue as jersey). It must be BEHIND the number, name, and all text.`;
       }
 
       // STRASSENKARTE ALS WASSERZEICHEN
@@ -551,31 +546,28 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
-      // REFERENZBILDER: Alle Bilder werden in einer geordneten Liste an die KI gesendet.
-      // Die Reihenfolge ist wichtig: Silhouette ZUERST (wenn vorhanden), dann Wappen, dann Sponsoren.
-      // Im Prompt wird explizit auf die Reihenfolge verwiesen.
+      // REFERENZBILDER: Alle Bilder in fester Reihenfolge senden.
+      // Reihenfolge: 1. Silhouette (wenn aktiv), 2. Wappen (wenn da), 3+ Sponsoren, dann Hersteller
+      // Der Prompt referenziert jedes Bild mit seiner Nummer.
       const additionalRefs: string[] = [];
       let referenceUrl: string | undefined;
       
-      // 1. Silhouette als HAUPTREFERENZ (wenn Wahrzeichen aktiv)
-      // WICHTIG: Silhouette wird NUR als referenceUrl gesetzt (höchste Priorität),
-      // NICHT zusätzlich in additionalRefs, damit sie nicht doppelt gesendet wird.
+      // Bild 1: Silhouette (wenn Wahrzeichen aktiv)
       if (useLandmark && landmarkSilhouette) {
         referenceUrl = landmarkSilhouette;
       }
       
-      // 2. Vereinswappen als Referenzbild
+      // Nächstes Bild: Vereinswappen
       if (defaultLogo?.imageUrl) {
         additionalRefs.push(defaultLogo.imageUrl);
       }
       
-      // 3. Sponsor-Logos als Referenzbilder
-      const enabledSponsorsForRef = sponsorLogos.filter(s => s.enabled && s.imageUrl);
-      enabledSponsorsForRef.forEach(s => {
+      // Nächste Bilder: Sponsor-Logos
+      enabledSponsors.forEach(s => {
         if (s.imageUrl) additionalRefs.push(s.imageUrl);
       });
       
-      // 4. Hersteller-Logo als Referenzbild
+      // Letztes Bild: Hersteller-Logo
       if (useManufacturerLogo && manufacturerLogoUrl) {
         additionalRefs.push(manufacturerLogoUrl);
       }
