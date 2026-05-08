@@ -341,17 +341,17 @@ export default function KiDesign() {
   // ── Sportart-spezifische Kleidungsstücke für den Prompt ──
   const getGarmentDescription = (sportId: string): string => {
     const map: Record<string, string> = {
-      fussball: "soccer jersey with shorts",
-      handball: "handball jersey (tight-fit, short sleeves) with shorts",
-      volleyball: "volleyball jersey (lightweight, sleeveless or short-sleeve) with shorts",
-      basketball: "basketball jersey (sleeveless tank top) with basketball shorts",
-      hockey: "field hockey jersey with skirt/shorts",
-      rugby: "rugby jersey (reinforced, long-sleeve) with shorts",
-      american_football: "american football jersey (mesh, oversized) with pants",
+      fussball: "soccer jersey (short sleeves, V-neck or crew neck)",
+      handball: "handball jersey (tight-fit, short sleeves)",
+      volleyball: "volleyball jersey (lightweight, sleeveless or short-sleeve)",
+      basketball: "basketball jersey (sleeveless tank top, wide armholes)",
+      hockey: "field hockey jersey (short sleeves)",
+      rugby: "rugby jersey (reinforced, long-sleeve)",
+      american_football: "american football jersey (mesh, oversized)",
       eishockey: "ice hockey jersey (long-sleeve, loose-fit)",
-      tischtennis: "table tennis polo shirt with shorts",
-      badminton: "badminton jersey (lightweight, breathable) with shorts",
-      tennis: "tennis polo shirt with tennis skirt/shorts",
+      tischtennis: "table tennis polo shirt (short sleeves, collar)",
+      badminton: "badminton jersey (lightweight, breathable, short sleeves)",
+      tennis: "tennis polo shirt (short sleeves, collar)",
     };
     return map[sportId] || "sports jersey";
   };
@@ -672,7 +672,7 @@ export default function KiDesign() {
 
       // Markenrecht-Schutz: Keine ERFUNDENEN Logos oder Marken!
       // Die KI darf NUR die als Referenz übergebenen echten Logos verwenden.
-      const brandProtection = " ABSOLUTE PROHIBITION - ZERO BRAND ELEMENTS: This is a CUSTOM jersey with NO manufacturer. Do NOT invent, create, or add ANY brand name, logo, text, symbol, wordmark, or graphic that is not EXPLICITLY provided as a reference image above. FORBIDDEN elements include but are not limited to: three stripes, swoosh, puma cat, Hummel chevrons, Erima, Jako, Mizuno, Under Armour, Rero, Front, or ANY other real or fictional brand name/logo. The shoulders MUST be plain fabric only. The collar area MUST be plain. The chest area MUST only contain what is explicitly assigned (crest, number, sponsor from reference images). ANY area not explicitly assigned to an element MUST show ONLY the jersey fabric/pattern – NO decorative logos, NO fictional brand marks, NO text that was not instructed. If you are unsure whether to add something – DO NOT ADD IT. LESS IS MORE. Only the EXPLICITLY listed elements belong on this jersey.";
+      const brandProtection = " ABSOLUTE PROHIBITION - ZERO BRAND ELEMENTS: This is a CUSTOM jersey with NO manufacturer. Do NOT invent, create, or add ANY brand name, logo, text, symbol, wordmark, or graphic that is not EXPLICITLY provided as a reference image above. FORBIDDEN elements include but are not limited to: three stripes, swoosh, puma cat, Hummel chevrons, Erima, Jako, Mizuno, Under Armour, or ANY other real or fictional MANUFACTURER brand name/logo. The ONLY logos allowed are those explicitly provided as reference images (sponsor logos, club crest). The shoulders MUST be plain fabric only. The collar area MUST be plain. The chest area MUST only contain what is explicitly assigned (crest, number, sponsor from reference images). ANY area not explicitly assigned to an element MUST show ONLY the jersey fabric/pattern – NO decorative logos, NO fictional brand marks, NO text that was not instructed. If you are unsure whether to add something – DO NOT ADD IT. LESS IS MORE. Only the EXPLICITLY listed elements belong on this jersey.";
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
@@ -902,7 +902,7 @@ export default function KiDesign() {
         });
       }
 
-      const shortsPrompt = `ABSOLUTE RULE: DO NOT invent, create, or add ANY brand names, manufacturer logos, trademark symbols, or fictional brand text. NO Nike, Adidas, Puma, Joma, Erima, Hummel, or ANY other brand. NO fictional brands like RERO, fefb, etc. ZERO tolerance for any brand elements.
+      const shortsPrompt = `ABSOLUTE RULE: DO NOT invent, create, or add ANY brand names, manufacturer logos, trademark symbols, or fictional brand text. NO Nike, Adidas, Puma, Joma, Erima, Hummel, or ANY other brand. NO fictional manufacturer brands. ZERO tolerance for any manufacturer brand elements. The ONLY logos allowed are those explicitly provided as reference images (sponsor logos, club crest).
 
 Professional product photography of ONLY sports SHORTS (kurze Sporthose) for ${currentSportInfo?.name || selectedSport}. Flat lay on pure white background. CRITICAL INSTRUCTION: Generate ONLY the SHORTS/PANTS – absolutely NO jersey, NO shirt, NO top, NO upper body garment, NO socks, NO shoes. The image must show ONLY a pair of short sports pants. The shorts should match the jersey design from reference image 1 in style and colors: Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. Show FRONT and BACK view side by side (front on left, back on right). Size L (approx. 45cm length). The shorts are a typical ${currentSportInfo?.name || selectedSport} short – lightweight, elastic waistband, mid-thigh length.${shortsExtras}
 

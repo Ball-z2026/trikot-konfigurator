@@ -13,6 +13,7 @@
 import sharp from "sharp";
 import axios from "axios";
 import { colorsAreTooSimilar, isDarkColor, rgbToHex } from "@shared/contrastUtils";
+import { removeBackground, isPhotoroomConfigured } from "./photoroom";
 
 export interface LogoPlacement {
   /** URL des Logo-Bildes (Storage-URL oder signierte URL) */
@@ -235,6 +236,23 @@ export async function compositeLogosOnImage(
   for (const logo of logos) {
     try {
       let logoBuffer = await fetchImageBuffer(logo.imageUrl);
+      
+      // ═══ AUTOMATISCHE FREISTELLUNG ═══
+      // Prüfe ob das Logo einen Alpha-Kanal hat. Wenn nicht, Hintergrund entfernen.
+      const logoMeta = await sharp(logoBuffer).metadata();
+      const hasTransparency = logoMeta.hasAlpha === true;
+      
+      if (!hasTransparency && isPhotoroomConfigured()) {
+        try {
+          console.log(`[LogoCompositing] Logo hat keinen Alpha-Kanal, entferne Hintergrund: ${logo.imageUrl.substring(0, 80)}...`);
+          const bgRemoved = await removeBackground({ url: logo.imageUrl });
+          // Freigestelltes Bild laden
+          logoBuffer = await fetchImageBuffer(bgRemoved.url);
+        } catch (bgErr) {
+          console.warn(`[LogoCompositing] Hintergrund-Entfernung fehlgeschlagen, verwende Original:`, bgErr);
+          // Fallback: Original verwenden
+        }
+      }
       
       // ═══ KONTRAST-LOGIK ═══
       if (logo.autoContrast !== false) {

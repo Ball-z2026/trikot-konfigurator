@@ -34,6 +34,8 @@ import ZoneEditorPage from "./pages/ZoneEditorPage";
 import KiAnalyseDtf from "./pages/KiAnalyseDtf";
 import KiAnalyseSublimation from "./pages/KiAnalyseSublimation";
 import KiDesign from "./pages/KiDesign";
+import ProduktDesignerV2 from "./pages/ProduktDesignerV2";
+import ProduktEditorV2 from "./pages/ProduktEditorV2";
 import { ZoneEditorProvider } from "./contexts/ZoneEditorContext";
 
 function Router() {
@@ -65,6 +67,8 @@ function Router() {
       {/* ─── Modul 2: Produktdesigner (Produkte erstellen/bearbeiten) ─── */}
       <Route path="/designer/products" component={AdminProducts} />
       <Route path="/designer/products/:id" component={AdminProductEditor} />
+      <Route path="/designer/v2" component={ProduktDesignerV2} />
+      <Route path="/designer/v2/:id" component={ProduktEditorV2} />
       <Route path="/designer/zone-editor" component={ZoneEditorPage} />
       <Route path="/designer/ki-dtf" component={KiAnalyseDtf} />
       <Route path="/designer/ki-sublimation" component={KiAnalyseSublimation} />

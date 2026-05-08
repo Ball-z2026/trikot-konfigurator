@@ -2276,3 +2276,6 @@
 - [x] Prompt-Fix: Ärmel wurden als ganzes Trikot generiert statt als einzelnes Ärmel-Panel → Klare Form-Beschreibung (sleeve shape)
 - [x] Prompt-Fix: Rückseite generierte Wasserzeichen obwohl das programmatisch per Compositing gemacht wird → Wasserzeichen-Anweisung aus Prompt entfernt
 - [x] Prompt-Fix: "Leave CLEAR SPACE for..." Anweisungen entfernt (KI interpretierte das als "schreibe Platzhalter-Text")
+
+- [x] Logo-Compositing: Automatische Freistellung von Sponsor-Logos ohne Alpha-Kanal (Photoroom removeBackground)
+- [x] RERO aus Markenverbots-Liste entfernt (ist ein echtes Sponsor-Logo des Users)
