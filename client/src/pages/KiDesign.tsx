@@ -421,16 +421,16 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       
-      // WAHRZEICHEN: Bild wird klar als "WAHRZEICHEN" benannt und 1 zu 1 übernommen
-      if (useLandmark && landmarkSilhouette) {
+      // WAHRZEICHEN: Das hochgeladene Bild wird direkt als Wasserzeichen verwendet (kein Silhouette-Zwischenschritt)
+      if (useLandmark && landmarkImage) {
         const placementText = landmarkPlacement === "both"
-          ? "on BOTH the FRONT and BACK of the jersey"
-          : "on the FRONT of the jersey ONLY";
+          ? "auf VORDER- und RÜCKSEITE des Trikots"
+          : "auf der VORDERSEITE des Trikots";
         
         if (landmarkStyle === "large") {
-          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" (Referenzbild 1) ist eine Silhouette eines Gebäudes/Wahrzeichens. Übernimm diese Form 1 zu 1 als großes tonales Wasserzeichen ${placementText}. Größe: 50-60% der Trikotfläche, zentriert. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler. Das Wasserzeichen liegt HINTER allen Logos, Nummern und Texten.`;
+          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" ist ein Referenzbild. Übernimm dieses Bild 1 zu 1 als großes Wasserzeichen ${placementText}. Größe: 50-60% der Trikotfläche, zentriert. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler (tonal). Das Wasserzeichen liegt HINTER allen Logos, Nummern und Texten. NICHT als Text schreiben - das BILD übernehmen!`;
         } else {
-          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" (Referenzbild 1) ist eine Silhouette eines Gebäudes/Wahrzeichens. Übernimm diese Form 1 zu 1 und wiederhole sie als Streumuster aus vielen kleinen Kopien (2-5cm) ${placementText}. Verschiedene Größen und leichte Drehungen. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler (tonal). Das Muster liegt HINTER allen Logos, Nummern und Texten.`;
+          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" ist ein Referenzbild. Übernimm dieses Bild 1 zu 1 und wiederhole es als Streumuster aus vielen kleinen Kopien (2-5cm) ${placementText}. Verschiedene Größen und leichte Drehungen. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler (tonal). Das Muster liegt HINTER allen Logos, Nummern und Texten. NICHT als Text schreiben - das BILD übernehmen!`;
         }
       }
       
@@ -451,18 +451,15 @@ export default function KiDesign() {
       // VEREINSWAPPEN = KI platziert das Wappen auf der Herzseite
       // Bildnummer wird dynamisch berechnet basierend auf vorherigen Bildern
       if (defaultLogo?.imageUrl) {
-        const crestImageNum = (useLandmark && landmarkSilhouette) ? 2 : 1;
-        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST: Reference image ${crestImageNum} is the club crest/badge. Place it on the VIEWER'S RIGHT SIDE of the front jersey chest (heart side). Position: 60-65% from left, 32% from top. Size: 8-10cm. Reproduce this image EXACTLY as shown - same shape, colors, proportions. Do NOT simplify or redraw it.`;
+        const crestImageNum = (useLandmark && landmarkImage) ? 2 : 1;
+        extraPrompt += ` VEREINSWAPPEN: Referenzbild ${crestImageNum} ist das Vereinswappen. Platziere es auf der RECHTEN SEITE der Brust (Herzseite, aus Betrachtersicht rechts). Position: 60-65% von links, 32% von oben. Größe: 8-10cm. Übernimm dieses Bild 1 zu 1.`;
       }
 
       // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
       // Wappen in Rückennummer – DEAKTIVIERT (später als Feature)
       // Stattdessen: Rückennummer ist immer einfarbig (solid color)
-      extraPrompt += ` BACK NUMBER: The back number must be SOLID SINGLE COLOR (no patterns, no textures, no emblems inside the digits). Clean, bold, clearly readable digits.`;
-
-      // BRUSTNUMMER = Vorderseite, linke Seite im Bild (= rechte Brust des Trägers)
-      // Auf gleicher Höhe wie Vereinswappen (Y=32%)
-      extraPrompt += ` FRONT VIEW (left jersey) - FRONT NUMBER PLACEMENT [FIXED POSITION - DO NOT MOVE]: Place a player number on the VIEWER'S LEFT SIDE of the front jersey chest area (this is the wearer's right chest, opposite side from the crest). Position: approximately 30-35% from the LEFT edge of the jersey and 32% from the top (same height as the crest on the opposite side). Size: approximately 10cm tall (12% of jersey height). IMPORTANT: The number goes on the LEFT side as seen by the viewer, the crest goes on the RIGHT side as seen by the viewer. These positions are FIXED and must NOT be affected by any watermark, pattern, or background element. Use the same font style as the back number but smaller.`;
+      // NUMMER: Vorne und hinten IDENTISCH, einfarbig
+      extraPrompt += ` NUMMER: Vorne und hinten muss DIESELBE Nummer stehen (z.B. wenn hinten "9" steht, muss vorne auch "9" stehen). Die Nummer muss EINFARBIG sein - KEINE Muster, KEINE Texturen, KEINE Embleme, KEINE Zeichen in den Ziffern. Nur eine saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert. BRUSTNUMMER: Kleiner (10cm), auf der LINKEN Seite aus Betrachtersicht (gegenüber dem Wappen), Position: 30-35% von links, 32% von oben.`;
 
       // RÜCKSEITEN-LAYOUT = Dynamische Positionierung basierend auf gewähltem Layout
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
@@ -514,7 +511,7 @@ export default function KiDesign() {
 
         // Berechne Start-Bildnummer: Silhouette (wenn da) + Wappen (wenn da) + dann Sponsoren
         let sponsorStartNum = 1;
-        if (useLandmark && landmarkSilhouette) sponsorStartNum++;
+        if (useLandmark && landmarkImage) sponsorStartNum++;
         if (defaultLogo?.imageUrl) sponsorStartNum++;
 
         enabledSponsors.forEach((s, i) => {
@@ -527,8 +524,8 @@ export default function KiDesign() {
 
       // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE
       if (useBackCrestWatermark && defaultLogo?.imageUrl) {
-        const crestNum = (useLandmark && landmarkSilhouette) ? 2 : 1;
-        extraPrompt += ` BACK VIEW (right jersey) - CREST WATERMARK: Use reference image ${crestNum} (the club crest) as a LARGE WATERMARK on the back. Centered, 60-70% of jersey width, ${backCrestOpacity}% opacity, tonal (same hue as jersey). It must be BEHIND the number, name, and all text.`;
+        const crestNum = (useLandmark && landmarkImage) ? 2 : 1;
+        extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: Referenzbild ${crestNum} (Vereinswappen) als großes Wasserzeichen auf der Rückseite. Zentriert, 60-70% Breite, ${backCrestOpacity}% Deckkraft, tonal (gleicher Farbton wie Trikot). Liegt HINTER Nummer, Name und Text.`;
       }
 
       // STRASSENKARTE ALS WASSERZEICHEN
@@ -546,14 +543,16 @@ export default function KiDesign() {
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
       // REFERENZBILDER: Alle Bilder in fester Reihenfolge senden.
-      // Reihenfolge: 1. Silhouette (wenn aktiv), 2. Wappen (wenn da), 3+ Sponsoren, dann Hersteller
+      // Reihenfolge: 1. Wahrzeichen-Bild (wenn aktiv), 2. Wappen (wenn da), 3+ Sponsoren, dann Hersteller
       // Der Prompt referenziert jedes Bild mit seiner Nummer.
       const additionalRefs: string[] = [];
       let referenceUrl: string | undefined;
       
-      // Bild 1: Silhouette (wenn Wahrzeichen aktiv)
-      if (useLandmark && landmarkSilhouette) {
-        referenceUrl = landmarkSilhouette;
+      // Wahrzeichen-Bild (das hochgeladene Original direkt als Wasserzeichen)
+      if (useLandmark && landmarkImage) {
+        // Wenn landmarkSilhouette existiert (freigestellt), nutze das. Sonst das Original.
+        const wahrzeichenUrl = landmarkSilhouette || landmarkImage;
+        referenceUrl = wahrzeichenUrl;
       }
       
       // Nächstes Bild: Vereinswappen
@@ -1374,7 +1373,7 @@ export default function KiDesign() {
                   </div>
 
                   {/* Wahrzeichen-Optionen: Darstellungsart + Platzierung + Deckkraft */}
-                  {useLandmark && landmarkSilhouette && (
+                  {useLandmark && (landmarkImage || landmarkSilhouette) && (
                     <div className="mt-3 space-y-3 p-3 rounded-lg border border-purple-200 bg-purple-50/50">
                       {/* Darstellungsart */}
                       <div className="space-y-2">
