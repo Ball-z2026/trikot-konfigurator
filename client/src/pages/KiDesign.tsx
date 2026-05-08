@@ -421,17 +421,16 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       
-      // WAHRZEICHEN-SILHOUETTE = Wasserzeichen (je nach Darstellungsart + Platzierung)
-      // WICHTIG: Die Silhouette ist IMMER IMAGE #1 (referenceUrl = originalImages[0])
+      // WAHRZEICHEN: Bild wird klar als "WAHRZEICHEN" benannt und 1 zu 1 übernommen
       if (useLandmark && landmarkSilhouette) {
         const placementText = landmarkPlacement === "both"
           ? "on BOTH the FRONT and BACK of the jersey"
           : "on the FRONT of the jersey ONLY";
         
         if (landmarkStyle === "large") {
-          extraPrompt += ` [CRITICAL - SILHOUETTE WATERMARK - IMAGE #1]: IMAGE #1 (the FIRST reference image) is a SILHOUETTE with a TRANSPARENT/CHECKERED background showing a dark outline shape. This is NOT a logo, NOT a sponsor, NOT a crest - it is a building/landmark silhouette cutout. USE THIS EXACT SHAPE as a large tonal watermark ${placementText}. Size: 50-60% of jersey surface, centered. Opacity: ${landmarkOpacity}%. Color: same hue as jersey base, slightly lighter or darker. ABSOLUTE RULES: 1) Use ONLY the exact outline from IMAGE #1. 2) DO NOT use any sponsor logo, crest, or text as the watermark. 3) DO NOT replace with any other shape. 4) If unclear, leave jersey PLAIN. 5) Silhouette goes BEHIND all logos, numbers, text.`;
+          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" (Referenzbild 1) ist eine Silhouette eines Gebäudes/Wahrzeichens. Übernimm diese Form 1 zu 1 als großes tonales Wasserzeichen ${placementText}. Größe: 50-60% der Trikotfläche, zentriert. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler. Das Wasserzeichen liegt HINTER allen Logos, Nummern und Texten.`;
         } else {
-          extraPrompt += ` [CRITICAL - SILHOUETTE PATTERN - IMAGE #1]: IMAGE #1 (the FIRST reference image) is a SILHOUETTE with a TRANSPARENT/CHECKERED background showing a dark outline shape. This is NOT a logo, NOT a sponsor, NOT a crest - it is a building/landmark silhouette cutout. Take this EXACT shape and repeat it as a scattered all-over pattern of small copies (2-5cm each) ${placementText}. Scatter many copies at various sizes and slight rotations. Opacity: ${landmarkOpacity}%. Color: same hue as jersey, slightly lighter or darker (tonal). ABSOLUTE RULES: 1) Every shape in the pattern MUST be an exact copy of IMAGE #1 outline. 2) DO NOT use any sponsor logo or crest shape. 3) DO NOT replace with generic icons. 4) If unclear, leave jersey PLAIN. 5) Pattern goes BEHIND all logos, numbers, text.`;
+          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" (Referenzbild 1) ist eine Silhouette eines Gebäudes/Wahrzeichens. Übernimm diese Form 1 zu 1 und wiederhole sie als Streumuster aus vielen kleinen Kopien (2-5cm) ${placementText}. Verschiedene Größen und leichte Drehungen. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler (tonal). Das Muster liegt HINTER allen Logos, Nummern und Texten.`;
         }
       }
       
