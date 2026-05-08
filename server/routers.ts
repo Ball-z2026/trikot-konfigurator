@@ -3660,6 +3660,71 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         return { configured: isPhotoroomConfigured() };
       }),
     /** Schnittmuster-Generierung: Separate KI-Muster pro Schnittteil */
+    /** Straßenkarte als Bild generieren und in Storage speichern */
+    generateStreetMap: protectedProcedure
+      .input(z.object({
+        address: z.string(),
+        style: z.enum(["roads_only", "minimal", "standard"]).optional().default("roads_only"),
+      }))
+      .mutation(async ({ input }) => {
+        const { makeRequest } = await import("./_core/map");
+        const { ENV } = await import("./_core/env");
+        const { storagePut } = await import("./storage");
+        
+        // 1. Geocode die Adresse um Koordinaten zu bekommen
+        const geocodeResult = await makeRequest<{
+          results: Array<{ geometry: { location: { lat: number; lng: number } } }>;
+          status: string;
+        }>("/maps/api/geocode/json", { address: input.address });
+        
+        if (!geocodeResult.results || geocodeResult.results.length === 0) {
+          throw new Error(`Adresse nicht gefunden: ${input.address}`);
+        }
+        
+        const { lat, lng } = geocodeResult.results[0].geometry.location;
+        
+        // 2. Static Map Bild generieren (nur Straßen, keine Labels)
+        const baseUrl = ENV.forgeApiUrl.replace(/\/+$/, "");
+        const apiKey = ENV.forgeApiKey;
+        
+        // Stil: Nur Straßennetz sichtbar, Rest ausgeblendet
+        const mapStyle = [
+          "feature:all|element:labels|visibility:off",
+          "feature:administrative|visibility:off",
+          "feature:poi|visibility:off",
+          "feature:water|color:0xffffff",
+          "feature:landscape|color:0xffffff",
+          "feature:road|element:geometry|color:0x333333|weight:1",
+          "feature:road.highway|element:geometry|color:0x222222|weight:2",
+          "feature:transit|visibility:off",
+        ];
+        
+        const params = new URLSearchParams({
+          center: `${lat},${lng}`,
+          zoom: "15",
+          size: "1024x1024",
+          scale: "2",
+          maptype: "roadmap",
+          key: apiKey,
+        });
+        
+        mapStyle.forEach(s => params.append("style", s));
+        
+        const mapUrl = `${baseUrl}/v1/maps/proxy/maps/api/staticmap?${params.toString()}`;
+        
+        const response = await fetch(mapUrl);
+        if (!response.ok) {
+          throw new Error(`Static Map API failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const imageBuffer = Buffer.from(await response.arrayBuffer());
+        
+        // 3. In Storage speichern
+        const fileName = `street-maps/map_${Date.now()}.png`;
+        const { url } = await storagePut(fileName, imageBuffer, "image/png");
+        
+        return { url, lat, lng };
+      }),
     generateCutPatterns: protectedProcedure
       .input(z.object({
         sport: z.string(),

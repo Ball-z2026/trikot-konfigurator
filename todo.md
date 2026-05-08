@@ -2208,8 +2208,8 @@
 ## Kritische Prompt-Probleme (08.05.2026)
 - [ ] Markenelemente KOMPLETT verbieten: KI erfindet immer noch Markennamen (RERO etc.)
 - [ ] Wahrzeichen-Bild prüfen: Ist die URL für die KI überhaupt lesbar?
-- [ ] Karten-Generierung fixen: Button "Karte generieren" funktioniert nicht
-- [ ] Alternative: Adresse direkt im Prompt verwenden statt Karten-Bild
+- [x] Karten-Generierung fixen: Button "Karte generieren" funktioniert nicht
+- [x] Alternative: Adresse direkt im Prompt verwenden statt Karten-Bild (Backend-Endpunkt generiert echtes Kartenbild via Maps API → Storage)
 
 ## GROSSER UMBAU: Logos per Post-Processing statt KI (08.05.2026)
 - [ ] Wappen und Sponsoren aus Referenzbildern entfernen (nur Wahrzeichen/Karte als Referenz)

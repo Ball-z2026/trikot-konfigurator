@@ -9339,3 +9339,11 @@
 [2026-05-08T21:16:44.553Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-08T21:16:46.614Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-08T21:16:47.484Z] Server running on http://localhost:3000/
+[2026-05-08T21:41:31.138Z] 5:41:31 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T21:41:33.109Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:41:33.970Z] Server running on http://localhost:3000/
+[2026-05-08T21:44:30.478Z] Dev server process group stopped
+[2026-05-08T21:44:30.524Z] Dev server exited with code -15
+[2026-05-08T21:44:33.492Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T21:44:35.205Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:44:35.950Z] Server running on http://localhost:3000/

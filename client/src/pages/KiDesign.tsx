@@ -234,18 +234,27 @@ export default function KiDesign() {
     }
   }, [orgSponsors]);
 
-  // Straßenkarte aus Vereinsadresse generieren
+  // Straßenkarte aus Vereinsadresse generieren (über Backend Maps-API → Storage-URL)
+  const generateStreetMapMut = trpc.mockup.generateStreetMap.useMutation();
   const generateMapImage = async () => {
     if (!orgData?.street || !orgData?.city) {
       toast.error("Keine Vereinsadresse hinterlegt. Bitte zuerst in der Verwaltung die Vereinsadresse eintragen.");
       return;
     }
-    // Kein Bild-Download mehr nötig – die Adresse wird direkt in den Prompt geschrieben
-    // Die KI generiert das Straßennetz-Muster selbstständig basierend auf der Adresse
     const fullAddress = `${orgData.street}, ${orgData.zip || ""} ${orgData.city}, ${orgData.country || "Deutschland"}`;
-    setMapImageUrl(fullAddress); // Speichere die Adresse statt einer Bild-URL
-    setUseMapWatermark(true);
-    toast.success(`Straßenkarte für "${fullAddress}" wird beim Generieren automatisch als Stoffmuster verwendet.`);
+    try {
+      setLoadingMap(true);
+      toast.info(`Generiere Straßenkarte für "${fullAddress}"...`);
+      const result = await generateStreetMapMut.mutateAsync({ address: fullAddress });
+      setMapImageUrl(result.url); // Echte Storage-URL statt Adress-String
+      setUseMapWatermark(true);
+      toast.success(`Straßenkarte generiert und gespeichert.`);
+    } catch (err: any) {
+      console.error("Street map generation failed:", err);
+      toast.error(`Straßenkarte konnte nicht generiert werden: ${err.message || "Unbekannter Fehler"}`);
+    } finally {
+      setLoadingMap(false);
+    }
   };
 
   // ── Vereinsfarben automatisch übernehmen wenn Toggle aktiv ──
