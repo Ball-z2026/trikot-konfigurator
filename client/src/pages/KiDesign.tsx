@@ -419,18 +419,9 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       
-      // WAHRZEICHEN: Das hochgeladene Bild wird direkt als Wasserzeichen verwendet (kein Silhouette-Zwischenschritt)
-      if (useLandmark && landmarkImage) {
-        const placementText = landmarkPlacement === "both"
-          ? "auf VORDER- und RÜCKSEITE des Trikots"
-          : "auf der VORDERSEITE des Trikots";
-        
-        if (landmarkStyle === "large") {
-          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" ist ein Referenzbild. Übernimm dieses Bild 1 zu 1 als großes Wasserzeichen ${placementText}. Größe: 50-60% der Trikotfläche, zentriert. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler (tonal). Das Wasserzeichen liegt HINTER allen Logos, Nummern und Texten. NICHT als Text schreiben - das BILD übernehmen!`;
-        } else {
-          extraPrompt += ` WAHRZEICHEN: Das Bild "WAHRZEICHEN" ist ein Referenzbild. Übernimm dieses Bild 1 zu 1 und wiederhole es als Streumuster aus vielen kleinen Kopien (2-5cm) ${placementText}. Verschiedene Größen und leichte Drehungen. Deckkraft: ${landmarkOpacity}%. Farbe: gleicher Farbton wie Trikot, etwas heller oder dunkler (tonal). Das Muster liegt HINTER allen Logos, Nummern und Texten. NICHT als Text schreiben - das BILD übernehmen!`;
-        }
-      }
+      // WAHRZEICHEN: Wird NICHT mehr im Prompt beschrieben.
+      // Es wird NACH der Generierung als programmatisches Overlay draufgelegt (100% zuverlässig).
+      // Siehe overlays-Array weiter unten.
       
       // MUSTER-UPLOAD
       if (usePattern && patternColors.length > 0) {
@@ -540,29 +531,36 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
-      // REFERENZBILDER: ALLE Bilder gehen in additionalRefs (KEIN referenceUrl!).
-      // So werden alle Bilder gleichwertig behandelt und über den Prompt gesteuert.
-      // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen (wenn da), 3+ Sponsoren, dann Hersteller
+      // REFERENZBILDER: Wappen und Sponsoren als Referenz für die KI.
+      // WAHRZEICHEN wird NICHT als Referenzbild gesendet - es wird NACH der Generierung als Overlay draufgelegt.
       const additionalRefs: string[] = [];
       
-      // Bild 1: Wahrzeichen (NUR die Upload-URL verwenden, NICHT die Data-URL)
-      if (useLandmark && landmarkSilhouette) {
-        additionalRefs.push(landmarkSilhouette);
-      }
-      
-      // Nächstes Bild: Vereinswappen
+      // Vereinswappen als Referenzbild
       if (defaultLogo?.imageUrl) {
         additionalRefs.push(defaultLogo.imageUrl);
       }
       
-      // Nächste Bilder: Sponsor-Logos
+      // Sponsor-Logos als Referenzbilder
       enabledSponsors.forEach(s => {
         if (s.imageUrl) additionalRefs.push(s.imageUrl);
       });
       
-      // Letztes Bild: Hersteller-Logo
+      // Hersteller-Logo
       if (useManufacturerLogo && manufacturerLogoUrl) {
         additionalRefs.push(manufacturerLogoUrl);
+      }
+
+      // Wahrzeichen als Overlay NACH der Generierung (zentriert, halbtransparent)
+      const overlays: Array<{imageUrl: string; xPercent: number; yPercent: number; widthPercent: number; heightPercent: number; opacity?: number}> = [];
+      if (useLandmark && landmarkSilhouette) {
+        overlays.push({
+          imageUrl: landmarkSilhouette,
+          xPercent: 10,
+          yPercent: 15,
+          widthPercent: 80,
+          heightPercent: 70,
+          opacity: (landmarkOpacity || 15) / 100,
+        });
       }
 
       const result = await generateAiMockup.mutateAsync({
@@ -573,6 +571,7 @@ export default function KiDesign() {
         customPrompt: prompt,
         referenceImageUrl: undefined,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
+        logoOverlays: overlays.length > 0 ? overlays : undefined,
       });
 
       if (result.url) {
