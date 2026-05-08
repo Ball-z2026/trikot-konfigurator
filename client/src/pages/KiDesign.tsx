@@ -738,41 +738,57 @@ export default function KiDesign() {
       const shortsSponsorLogos = sponsorLogos.filter(s => shortsSponsorIds.includes(s.id) && s.imageUrl);
       const hasFrontSponsor = shortsSponsorLogos.some(s => (shortsSponsorPlacements[s.id] || "front") === "front");
       
-      // POSITIONIERUNG: Alle Elemente UNTEN am Hosenbein-Saum (unteres Drittel des Beins)
-      // Gleiche Seitenaufteilung wie Trikot: Nummer LINKS, Wappen RECHTS
-      if (shortsIncludeNumber) {
-        shortsExtras += ` FRONT VIEW - PLAYER NUMBER: Place player number "23" on the FRONT LEFT LEG (viewer's left). Position: BOTTOM of the leg, near the hem/cuff (lower third of the shorts leg). Size: approximately 8cm tall. Use the same font style and color as the jersey back number.`;
-      }
-      // Wappen nur wenn KEIN Sponsor vorne (Sponsor ersetzt Wappen-Position)
+      // Referenzbilder für die Hose aufbauen: Trikot ist immer Bild 1 (referenceUrl)
+      // Danach: Wappen (wenn gewählt), dann Sponsoren
+      const shortsAdditionalRefs: string[] = [];
+      let imgCounter = 1; // Bild 1 = Trikot (referenceUrl)
+      
+      // Wappen als Referenzbild hinzufügen (nur wenn gewählt UND kein Sponsor vorne)
+      let crestImgNum = 0;
       if (shortsIncludeCrest && defaultLogo?.imageUrl && !hasFrontSponsor) {
-        shortsExtras += ` FRONT VIEW - CLUB CREST: Place the club crest (from reference image) on the FRONT RIGHT LEG (viewer's right). Position: BOTTOM of the leg, near the hem/cuff (same height as number on opposite leg). Size: approximately 5-6cm. [ABSOLUTE CREST RULE]: Reproduce PIXEL-PERFECT from reference - EXACT same shape/design. Color adjustment OK, FORM must be IDENTICAL.`;
+        imgCounter++;
+        crestImgNum = imgCounter;
+        shortsAdditionalRefs.push(defaultLogo.imageUrl);
       }
+      
+      // Sponsor-Bilder als Referenz hinzufügen
+      const sponsorImgNums: Record<string, number> = {};
+      shortsSponsorLogos.forEach(s => {
+        if (s.imageUrl) {
+          imgCounter++;
+          sponsorImgNums[s.id] = imgCounter;
+          shortsAdditionalRefs.push(s.imageUrl);
+        }
+      });
+      
+      // POSITIONIERUNG: Alle Elemente UNTEN am Hosenbein-Saum
+      if (shortsIncludeNumber) {
+        shortsExtras += ` VORDERSEITE - NUMMER: Spielernummer "23" auf dem LINKEN Hosenbein (aus Betrachtersicht links). Position: UNTEN am Bein, nahe am Saum. Größe: ca. 8cm. Gleiche Schriftart und Farbe wie die Rücken-Nummer des Trikots.`;
+      }
+      
+      // Wappen nur wenn gewählt UND kein Sponsor vorne
+      if (crestImgNum > 0) {
+        shortsExtras += ` VORDERSEITE - VEREINSWAPPEN: Referenzbild ${crestImgNum} ist das Vereinswappen. Übernimm es 1 zu 1 auf dem RECHTEN Hosenbein (aus Betrachtersicht rechts). Position: UNTEN am Bein, nahe am Saum, gleiche Höhe wie Nummer gegenüber. Größe: ca. 5-6cm.`;
+      }
+      
       // Sponsoren auf der Hose
       if (shortsSponsorLogos.length > 0) {
         shortsSponsorLogos.forEach((s) => {
           const placement = shortsSponsorPlacements[s.id] || "front";
           const size = shortsSponsorSizes[s.id] || "medium";
-          const sizeMap = { small: "5cm wide x 2cm tall", medium: "8cm wide x 3cm tall", large: "12cm wide x 5cm tall" };
+          const sizeMap = { small: "5cm breit x 2cm hoch", medium: "8cm breit x 3cm hoch", large: "12cm breit x 5cm hoch" };
+          const imgNum = sponsorImgNums[s.id];
+          if (!imgNum) return;
+          
           if (placement === "front") {
-            // Vorne: Sponsor ersetzt Wappen-Position (rechtes Bein, UNTEN)
-            shortsExtras += ` FRONT VIEW - SPONSOR: Place sponsor logo "${s.name}" (from reference image) on the FRONT RIGHT LEG (viewer's right). Position: BOTTOM of the leg, near the hem/cuff. Size: approximately ${sizeMap[size]}. [ABSOLUTE LOGO RULE]: Reproduce PIXEL-PERFECT - EXACT same shape/typography/proportions. Color adjustment OK, FORM must be IDENTICAL.`;
+            shortsExtras += ` VORDERSEITE - SPONSOR "${s.name}": Referenzbild ${imgNum} ist das Logo von "${s.name}". Übernimm dieses Logo 1 zu 1 auf dem RECHTEN Hosenbein (aus Betrachtersicht rechts). Position: UNTEN am Bein, nahe am Saum. Größe: ca. ${sizeMap[size]}.`;
           } else {
-            // Hinten: Sponsor UNTEN am Hosenbein
-            shortsExtras += ` BACK VIEW - SPONSOR: Place sponsor logo "${s.name}" (from reference image) on the BACK of the shorts. Position: BOTTOM of the leg, near the hem/cuff, centered. Size: approximately ${sizeMap[size]}. [ABSOLUTE LOGO RULE]: Reproduce PIXEL-PERFECT - EXACT same shape/typography/proportions. Color adjustment OK, FORM must be IDENTICAL.`;
+            shortsExtras += ` RÜCKSEITE - SPONSOR "${s.name}": Referenzbild ${imgNum} ist das Logo von "${s.name}". Übernimm dieses Logo 1 zu 1 auf der RÜCKSEITE der Hose. Position: UNTEN am Bein, nahe am Saum, zentriert. Größe: ca. ${sizeMap[size]}.`;
           }
         });
       }
 
-      const shortsPrompt = `Professional product photography of ONLY sports shorts/pants for ${currentSportInfo?.name || selectedSport}, flat lay on white background. CRITICAL: Generate ONLY the shorts - absolutely NO jersey, NO shirt, NO socks, NO other clothing items in the image. ONLY SHORTS. The shorts must match this jersey design: Primary color: ${primaryColor}, Secondary color: ${secondaryColor}, Accent color: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. The shorts should complement the jersey with the same color scheme and similar design elements. Show FRONT and BACK view side by side (front on left, back on right). SIZE L. High-end product photography, studio lighting, no wrinkles.${shortsExtras} CRITICAL BRAND RULE: Do NOT invent any logos or brand marks that are NOT provided as reference images.`;
-
-      // Referenzbilder für die Hose: Trikot + Wappen + Sponsoren
-      const shortsAdditionalRefs: string[] = [];
-      if (shortsIncludeCrest && defaultLogo?.imageUrl) {
-        shortsAdditionalRefs.push(defaultLogo.imageUrl);
-      }
-      shortsSponsorLogos.forEach(s => {
-        if (s.imageUrl) shortsAdditionalRefs.push(s.imageUrl);
-      });
+      const shortsPrompt = `Professionelle Produktfotografie von NUR einer Sporthose für ${currentSportInfo?.name || selectedSport}, flach liegend auf weißem Hintergrund. WICHTIG: Zeige NUR die Hose - KEIN Trikot, KEIN Shirt, KEINE Socken, KEINE anderen Kleidungsstücke. NUR DIE HOSE. Die Hose muss zum Trikot-Design passen (Referenzbild 1): Primärfarbe: ${primaryColor}, Sekundärfarbe: ${secondaryColor}, Akzentfarbe: ${accentColor}. Design-Stil: ${currentStyleInfo?.label || designStyle}. Zeige VORDERSEITE und RÜCKSEITE nebeneinander (vorne links, hinten rechts). Größe L.${shortsExtras} WICHTIG: Erfinde KEINE Logos oder Marken die nicht als Referenzbild mitgegeben wurden. Alle Sponsor-Logos müssen 1 zu 1 vom Referenzbild übernommen werden.`;
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${currentSportInfo?.name || selectedSport} Hose`,
