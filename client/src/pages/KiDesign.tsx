@@ -728,7 +728,7 @@ export default function KiDesign() {
       
       // POSITIONIERUNG: Alle Elemente UNTEN am Hosenbein-Saum
       if (shortsIncludeNumber) {
-        shortsExtras += ` VORDERSEITE - NUMMER: Spielernummer "23" auf dem LINKEN Hosenbein (aus Betrachtersicht links). Position: UNTEN am Bein, nahe am Saum. Größe: ca. 8cm. Gleiche Schriftart und Farbe wie die Rücken-Nummer des Trikots.`;
+        shortsExtras += ` VORDERSEITE - NUMMER: Spielernummer "23" MITTIG ZENTRIERT auf der Vorderseite der Hose. Position: Oberer Bereich des linken Hosenbeins, gut sichtbar. Größe: ca. 8cm. Gleiche Schriftart und Farbe wie die Rücken-Nummer des Trikots.`;
       }
       
       // Wappen nur wenn gewählt UND kein Sponsor vorne
@@ -753,7 +753,11 @@ export default function KiDesign() {
         });
       }
 
-      const shortsPrompt = `Professional product photography of ONLY sports SHORTS (kurze Sporthose) for ${currentSportInfo?.name || selectedSport}. Flat lay on pure white background. CRITICAL INSTRUCTION: Generate ONLY the SHORTS/PANTS – absolutely NO jersey, NO shirt, NO top, NO upper body garment, NO socks, NO shoes. The image must show ONLY a pair of short sports pants. The shorts should match the jersey design from reference image 1 in style and colors: Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. Show FRONT and BACK view side by side (front on left, back on right). Size L (approx. 45cm length). The shorts are a typical ${currentSportInfo?.name || selectedSport} short – lightweight, elastic waistband, mid-thigh length.${shortsExtras} Do NOT invent any logos or brand marks. Only use logos from the provided reference images. NO manufacturer logos. High-end product photography, studio lighting, no wrinkles.`;
+      const shortsPrompt = `ABSOLUTE RULE: DO NOT invent, create, or add ANY brand names, manufacturer logos, trademark symbols, or fictional brand text. NO Nike, Adidas, Puma, Joma, Erima, Hummel, or ANY other brand. NO fictional brands like RERO, fefb, etc. ZERO tolerance for any brand elements.
+
+Professional product photography of ONLY sports SHORTS (kurze Sporthose) for ${currentSportInfo?.name || selectedSport}. Flat lay on pure white background. CRITICAL INSTRUCTION: Generate ONLY the SHORTS/PANTS – absolutely NO jersey, NO shirt, NO top, NO upper body garment, NO socks, NO shoes. The image must show ONLY a pair of short sports pants. The shorts should match the jersey design from reference image 1 in style and colors: Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. Show FRONT and BACK view side by side (front on left, back on right). Size L (approx. 45cm length). The shorts are a typical ${currentSportInfo?.name || selectedSport} short – lightweight, elastic waistband, mid-thigh length.${shortsExtras}
+
+FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark symbols anywhere on the shorts. The ONLY logos allowed are those explicitly provided as reference images above. If no logo reference images are provided, the shorts must be completely free of any logos or brand marks.`;
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${currentSportInfo?.name || selectedSport} Hose`,

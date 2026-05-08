@@ -2227,3 +2227,7 @@
 - [x] Nummer auf Vorderseite: mittig positionieren (nicht links)
 - [x] Koordinaten auf rechter Schulter: gut lesbar (größere Schrift)
 - [x] Karte generieren: Vereinsadresse automatisch in Prompt schreiben statt Bild-Download
+
+## Hosen-Prompt Fix (08.05.2026)
+- [x] Hosen-Prompt: Markenverbot verstärkt (Anfang + Ende)
+- [x] Hosen-Prompt: Spielernummer MITTIG auf der Hose (nicht links/rechts)
