@@ -154,6 +154,10 @@ export default function KiDesign() {
   // Passende Hose (Upselling)
   const [matchingShortsUrl, setMatchingShortsUrl] = useState<string | null>(null);
   const [generatingShorts, setGeneratingShorts] = useState(false);
+  
+  // Änderungsfunktion nach Generierung
+  const [editDescription, setEditDescription] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
   const [backLayout, setBackLayout] = useState<BackLayoutType>(DEFAULT_BACK_LAYOUT);
   const [useBackCrestWatermark, setUseBackCrestWatermark] = useState(false); // Wappen als großes Wasserzeichen auf Rücken
 
@@ -551,10 +555,11 @@ export default function KiDesign() {
       const additionalRefs: string[] = [];
       let referenceUrl: string | undefined;
       
-      // 1. Silhouette als ERSTES Referenzbild (wenn Wahrzeichen aktiv)
+      // 1. Silhouette als HAUPTREFERENZ (wenn Wahrzeichen aktiv)
+      // WICHTIG: Silhouette wird NUR als referenceUrl gesetzt (höchste Priorität),
+      // NICHT zusätzlich in additionalRefs, damit sie nicht doppelt gesendet wird.
       if (useLandmark && landmarkSilhouette) {
         referenceUrl = landmarkSilhouette;
-        additionalRefs.push(landmarkSilhouette);
       }
       
       // 2. Vereinswappen als Referenzbild
@@ -718,14 +723,45 @@ export default function KiDesign() {
     }
   };
 
-  // ── Passende Hose automatisch generieren (Upselling) ──
+  // ── Hosen-Optionen State ──
+  const [shortsIncludeNumber, setShortsIncludeNumber] = useState(true);
+  const [shortsIncludeCrest, setShortsIncludeCrest] = useState(true);
+  const [shortsSponsorIds, setShortsSponsorIds] = useState<string[]>([]);
+
+  // ── Passende Hose generieren (mit Nummer, Wappen, Sponsoren) ──
   const generateMatchingShorts = async () => {
     if (!generatedImageUrl) return;
     setGeneratingShorts(true);
     try {
       const currentSportInfo = SPORT_TYPES.find(s => s.id === selectedSport);
       const currentStyleInfo = DESIGN_STYLES.find(s => s.value === designStyle);
-      const shortsPrompt = `Professional product photography of matching sports shorts/pants for ${currentSportInfo?.name || selectedSport}, flat lay on white background. The shorts must match this jersey design exactly: Primary color: ${primaryColor}, Secondary color: ${secondaryColor}, Accent color: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. The shorts should complement the jersey with the same color scheme, similar design elements and patterns. Show FRONT view only. CRITICAL: Show ONLY the shorts - no jersey, no socks, no other items. SIZE L. High-end product photography, studio lighting, no wrinkles. NO logos, NO brand marks, NO emblems of any kind.`;
+      
+      // Hosen-Prompt mit optionalen Elementen
+      let shortsExtras = "";
+      if (shortsIncludeNumber) {
+        shortsExtras += ` Place a player number on the LEFT LEG (viewer's perspective) of the shorts. The number should be approximately 8cm tall, positioned on the upper-outer thigh area. Use the same font style and color as the jersey back number. The number is "23".`;
+      }
+      if (shortsIncludeCrest && defaultLogo?.imageUrl) {
+        shortsExtras += ` Place the club crest/badge (provided as reference image) on the RIGHT LEG (viewer's perspective) of the shorts. Position: upper-outer thigh area, same height as the number on the opposite leg. Size: approximately 5-6cm. Reproduce PIXEL-PERFECT from the reference image.`;
+      }
+      // Sponsoren auf der Hose
+      const shortsSponsorLogos = sponsorLogos.filter(s => shortsSponsorIds.includes(s.id) && s.imageUrl);
+      if (shortsSponsorLogos.length > 0) {
+        shortsSponsorLogos.forEach((s, i) => {
+          shortsExtras += ` Place sponsor logo "${s.name}" (from reference image) on the ${i === 0 ? "FRONT CENTER" : "BACK"} of the shorts, below the waistband. Size: approximately 8cm wide x 3cm tall. Reproduce PIXEL-PERFECT - do NOT write just the name as text.`;
+        });
+      }
+
+      const shortsPrompt = `Professional product photography of matching sports shorts/pants for ${currentSportInfo?.name || selectedSport}, flat lay on white background. The shorts must match this jersey design exactly: Primary color: ${primaryColor}, Secondary color: ${secondaryColor}, Accent color: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. The shorts should complement the jersey with the same color scheme, similar design elements and patterns. Show FRONT view only. CRITICAL: Show ONLY the shorts - no jersey, no socks, no other items. SIZE L. High-end product photography, studio lighting, no wrinkles.${shortsExtras} CRITICAL BRAND RULE: Do NOT invent any logos or brand marks that are NOT provided as reference images.`;
+
+      // Referenzbilder für die Hose: Trikot + Wappen + Sponsoren
+      const shortsAdditionalRefs: string[] = [];
+      if (shortsIncludeCrest && defaultLogo?.imageUrl) {
+        shortsAdditionalRefs.push(defaultLogo.imageUrl);
+      }
+      shortsSponsorLogos.forEach(s => {
+        if (s.imageUrl) shortsAdditionalRefs.push(s.imageUrl);
+      });
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${currentSportInfo?.name || selectedSport} Hose`,
@@ -734,6 +770,7 @@ export default function KiDesign() {
         side: "front",
         customPrompt: shortsPrompt,
         referenceImageUrl: generatedImageUrl.startsWith("http") ? generatedImageUrl : `${window.location.origin}${generatedImageUrl}`,
+        referenceImageUrls: shortsAdditionalRefs.length > 0 ? shortsAdditionalRefs : undefined,
       });
 
       if (result.url) {
@@ -742,9 +779,37 @@ export default function KiDesign() {
       }
     } catch (error: any) {
       console.error("Hosen-Generierung fehlgeschlagen:", error);
-      // Kein Fehler-Toast - Upselling soll nicht stören
+      toast.error("Hosen-Generierung fehlgeschlagen");
     } finally {
       setGeneratingShorts(false);
+    }
+  };
+
+  // ── Design ändern (Image-to-Image Edit) ──
+  const handleEditDesign = async () => {
+    if (!generatedImageUrl || !editDescription.trim()) return;
+    setIsEditing(true);
+    try {
+      const editPrompt = `Modify this existing jersey design based on the following instruction: "${editDescription.trim()}". Keep everything else EXACTLY the same - same colors, same layout, same logos, same numbers, same overall style. ONLY change what is explicitly requested. The result must still be a professional flat-lay product photo on white background showing front and back view side by side.`;
+
+      const result = await generateAiMockup.mutateAsync({
+        productName: "Trikot (Bearbeitung)",
+        productType: "trikot",
+        side: "front",
+        customPrompt: editPrompt,
+        referenceImageUrl: generatedImageUrl.startsWith("http") ? generatedImageUrl : `${window.location.origin}${generatedImageUrl}`,
+      });
+
+      if (result.url) {
+        setGeneratedImageUrl(result.url);
+        setEditDescription("");
+        toast.success("Änderung angewendet!");
+      }
+    } catch (error: any) {
+      console.error("Design-Änderung fehlgeschlagen:", error);
+      toast.error("Änderung fehlgeschlagen: " + (error.message || "Unbekannter Fehler"));
+    } finally {
+      setIsEditing(false);
     }
   };
 
@@ -1646,21 +1711,90 @@ export default function KiDesign() {
                   })}
                 </div>
 
+                {/* ═══ ÄNDERUNGEN AM DESIGN ═══ */}
+                {generatedImageUrl && (
+                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 space-y-2">
+                    <span className="text-sm text-amber-800 font-semibold">Änderungen gewünscht?</span>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        placeholder="z.B. Muster ändern, Farbe anpassen, Logo größer..."
+                        className="flex-1 text-xs border border-amber-300 rounded px-2 py-1.5 bg-white placeholder:text-amber-400"
+                        onKeyDown={(e) => { if (e.key === "Enter" && editDescription.trim()) handleEditDesign(); }}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-amber-500 text-amber-700 hover:bg-amber-100 text-xs"
+                        onClick={handleEditDesign}
+                        disabled={isEditing || !editDescription.trim()}
+                      >
+                        {isEditing ? (
+                          <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Ändere...</>
+                        ) : (
+                          "Anpassen"
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-[10px] text-amber-600">Beschreibe was geändert werden soll. Das aktuelle Design wird als Basis verwendet.</p>
+                  </div>
+                )}
+
                 {/* ═══ GEFÄLLT MIR + HOSEN-UPSELLING ═══ */}
                 {generatedImageUrl && !matchingShortsUrl && (
-                  <div className="flex items-center gap-3 mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                    <span className="text-sm text-green-800 font-medium">Gefällt dir das Design?</span>
+                  <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200 space-y-3">
+                    <span className="text-sm text-green-800 font-semibold">Passende Hose generieren?</span>
+                    
+                    {/* Hosen-Optionen */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-green-700">Nummer übernehmen</span>
+                        <Switch checked={shortsIncludeNumber} onCheckedChange={setShortsIncludeNumber} />
+                      </div>
+                      {defaultLogo?.imageUrl && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-green-700">Vereinswappen übernehmen</span>
+                          <Switch checked={shortsIncludeCrest} onCheckedChange={setShortsIncludeCrest} />
+                        </div>
+                      )}
+                      {sponsorLogos.filter(s => s.enabled && s.imageUrl).length > 0 && (
+                        <div className="space-y-1">
+                          <span className="text-xs text-green-700 font-medium">Sponsoren auf Hose:</span>
+                          {sponsorLogos.filter(s => s.enabled && s.imageUrl).map(s => (
+                            <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={shortsSponsorIds.includes(s.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setShortsSponsorIds(prev => [...prev, s.id]);
+                                  } else {
+                                    setShortsSponsorIds(prev => prev.filter(id => id !== s.id));
+                                  }
+                                }}
+                                className="rounded border-green-400"
+                              />
+                              <img src={storageUrl(s.imageUrl) || s.imageUrl} alt={s.name} className="w-5 h-5 object-contain" />
+                              <span className="text-green-800">{s.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-green-500 text-green-700 hover:bg-green-100"
+                      className="border-green-500 text-green-700 hover:bg-green-100 w-full"
                       onClick={generateMatchingShorts}
                       disabled={generatingShorts}
                     >
                       {generatingShorts ? (
                         <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Hose wird generiert...</>
                       ) : (
-                        <><ThumbsUp className="w-3 h-3 mr-1" />Ja, passende Hose generieren</>
+                        <><ThumbsUp className="w-3 h-3 mr-1" />Passende Hose generieren</>
                       )}
                     </Button>
                   </div>

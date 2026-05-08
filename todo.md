@@ -2147,6 +2147,13 @@
 - [x] BUG: Bei 2 Sponsoren – Referenzbild-Nummerierung im Prompt hinzugefügt (Reference image #N)
 - [x] BUG: Sponsor-Logo – Prompt verstärkt: "do NOT write just the name as text" + "must appear as ACTUAL LOGO IMAGE"
 
+## Silhouette-Fix + Änderungsfunktion + Hose (08.05.2026)
+- [x] Silhouette-Übergabe: Nicht doppelt senden, als Hauptreferenz mit höchster Priorität
+- [x] Änderungsfunktion nach Generierung: Textbox für Änderungswünsche + Image-to-Image Edit
+- [x] Hose: Nummer vom Trikot übernehmen
+- [x] Hose: Vereinswappen übernehmen
+- [x] Hose: Möglichkeit Sponsoren hinzuzufügen (Auswahl)
+
 ## Später (Feature-Backlog)
 - [ ] Wappen in Rückennummer als optionales Feature (wenn KI-Qualität besser wird)
 
