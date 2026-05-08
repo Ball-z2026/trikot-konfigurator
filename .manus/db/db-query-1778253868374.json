@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, templateId, published FROM products WHERE templateId LIKE '%svg%' OR published = 0;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name, templateId, published FROM products WHERE templateId LIKE '%svg%' OR published = 0;",
+  "rows": [
+    {
+      "id": "1560005",
+      "name": "Bulk Test Product",
+      "templateId": "NULL",
+      "published": "0"
+    },
+    {
+      "id": "1560010",
+      "name": "Update Extended Test",
+      "templateId": "NULL",
+      "published": "0"
+    },
+    {
+      "id": "1650001",
+      "name": "giuh",
+      "templateId": "basketball_dtf",
+      "published": "0"
+    },
+    {
+      "id": "1680010",
+      "name": "Update Extended Test",
+      "templateId": "NULL",
+      "published": "0"
+    },
+    {
+      "id": "1680020",
+      "name": "Bulk Test Product",
+      "templateId": "NULL",
+      "published": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttemplateId\tpublished\n1560005\tBulk Test Product\tNULL\t0\n1560010\tUpdate Extended Test\tNULL\t0\n1650001\tgiuh\tbasketball_dtf\t0\n1680010\tUpdate Extended Test\tNULL\t0\n1680020\tBulk Test Product\tNULL\t0\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}
