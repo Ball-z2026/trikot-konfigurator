@@ -259,6 +259,7 @@ export default function CustomerConfigurator() {
   const [teamPlayersLoaded, setTeamPlayersLoaded] = useState(false);
   const [newPlayerNumber, setNewPlayerNumber] = useState("");
   const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerSize, setNewPlayerSize] = useState("");
   const [activePlayerIdx, setActivePlayerIdx] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [cachedMockupScreenshots, setCachedMockupScreenshots] = useState<{ front: string | null; back: string | null }>({ front: null, back: null });
@@ -1218,11 +1219,12 @@ export default function CustomerConfigurator() {
     if (!newPlayerName.trim()) return;
     setPlayers((prev) => [
       ...prev,
-      { number: newPlayerNumber.trim(), name: newPlayerName.trim().toUpperCase() },
+      { number: newPlayerNumber.trim(), name: newPlayerName.trim().toUpperCase(), size: newPlayerSize.trim() || undefined },
     ]);
     setNewPlayerNumber("");
     setNewPlayerName("");
-  }, [newPlayerNumber, newPlayerName]);
+    setNewPlayerSize("");
+  }, [newPlayerNumber, newPlayerName, newPlayerSize]);
 
   const removePlayer = useCallback(
     (idx: number) => {
@@ -1248,7 +1250,9 @@ export default function CustomerConfigurator() {
         const newPlayers: Player[] = [];
         for (const line of lines) {
           const cols = line.split(/[,;\t]/).map((p) => p.trim());
-          if (cols.length >= 2) {
+          if (cols.length >= 3) {
+            newPlayers.push({ number: cols[0], name: cols[1].toUpperCase(), size: cols[2] || undefined });
+          } else if (cols.length >= 2) {
             newPlayers.push({ number: cols[0], name: cols[1].toUpperCase() });
           } else if (cols.length === 1 && cols[0]) {
             newPlayers.push({ number: "", name: cols[0].toUpperCase() });
@@ -1264,7 +1268,32 @@ export default function CustomerConfigurator() {
     input.click();
   }, []);
 
-  // ─── Purpose-based Content Resolution ─────────────────────────────────
+  // ─── Spieler in DB persistieren ─────────────────────────────────────────────
+  const [savingPlayersToDb, setSavingPlayersToDb] = useState(false);
+  const importCsvMut = trpc.player.importCsv.useMutation();
+  const handleSavePlayersToDb = useCallback(async () => {
+    if (!teamIdParam || !userOrgId || players.length === 0) return;
+    setSavingPlayersToDb(true);
+    try {
+      const result = await importCsvMut.mutateAsync({
+        teamId: teamIdParam,
+        orgId: userOrgId,
+        players: players.map(p => ({
+          name: p.name,
+          number: p.number || undefined,
+          size: p.size || undefined,
+        })),
+        replaceExisting: true,
+      });
+      toast.success(`${result.count} Spieler in der Datenbank gespeichert`);
+    } catch (err: any) {
+      toast.error(`Speichern fehlgeschlagen: ${err.message}`);
+    } finally {
+      setSavingPlayersToDb(false);
+    }
+  }, [teamIdParam, userOrgId, players, importCsvMut]);
+
+  // ─── Purpose-based Content Resolution ──────────────────────────────────
   const activePlayer = activePlayerIdx !== null ? players[activePlayerIdx] : null;
 
   const getEffectiveContent = useCallback(
@@ -3689,12 +3718,22 @@ export default function CustomerConfigurator() {
                         className="flex-1 h-8 text-xs sm:text-sm"
                         onKeyDown={(e) => e.key === "Enter" && addPlayer()}
                       />
+                      <Select value={newPlayerSize} onValueChange={setNewPlayerSize}>
+                        <SelectTrigger className="w-16 sm:w-20 h-8 text-xs">
+                          <SelectValue placeholder="Gr." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {["XS","S","M","L","XL","XXL","3XL","128","140","152","164","176"].map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <Button size="sm" className="h-8 shrink-0" onClick={addPlayer}>
                         <Plus className="w-3.5 h-3.5" />
                       </Button>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
@@ -3704,6 +3743,18 @@ export default function CustomerConfigurator() {
                         <Upload className="w-3.5 h-3.5 mr-1.5" />
                         CSV importieren
                       </Button>
+                      {players.length > 0 && teamIdParam && userOrgId && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={handleSavePlayersToDb}
+                          disabled={savingPlayersToDb}
+                        >
+                          {savingPlayersToDb ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1" />}
+                          Speichern
+                        </Button>
+                      )}
                       {players.length > 0 && (
                         <Button
                           variant="ghost"

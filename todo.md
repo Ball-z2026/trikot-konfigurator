@@ -2270,3 +2270,9 @@
 - [x] KI-Designer Backend: Straßenkarte/Wasserzeichen/Muster korrekt pro Teil integrieren
 - [x] KI-Designer Frontend: Schnittmuster-Ansicht mit allen Teilen (statt nur ein Gesamtbild)
 - [x] KI-Designer: Ergebnis direkt als Druckbogen-Input nutzbar machen
+
+### Bug-Fix: KI-Design Schnittmuster-Teile falsch generiert
+- [x] Prompt-Fix: KI generierte Platzhalter-Texte ("CLUB NAME", "PLAYER", Nummern) trotz "NO text" Anweisung → Strikte Verbote mehrfach betont
+- [x] Prompt-Fix: Ärmel wurden als ganzes Trikot generiert statt als einzelnes Ärmel-Panel → Klare Form-Beschreibung (sleeve shape)
+- [x] Prompt-Fix: Rückseite generierte Wasserzeichen obwohl das programmatisch per Compositing gemacht wird → Wasserzeichen-Anweisung aus Prompt entfernt
+- [x] Prompt-Fix: "Leave CLEAR SPACE for..." Anweisungen entfernt (KI interpretierte das als "schreibe Platzhalter-Text")

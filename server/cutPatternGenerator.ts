@@ -79,6 +79,11 @@ export interface CutPatternResult {
 /**
  * Baut den KI-Prompt für ein einzelnes Schnittteil auf.
  * Generiert ein flaches Sublimations-Druckmuster (kein Mockup).
+ * 
+ * WICHTIG: Der Prompt darf KEINE Anweisungen enthalten die die KI dazu verleiten,
+ * Text, Logos, Nummern oder Wasserzeichen ins Bild zu generieren.
+ * Alle Overlays (Wappen, Sponsoren, Nummern, Namen) werden NACHTRÄGLICH
+ * per Compositing programmatisch draufgelegt.
  */
 function buildPatternPrompt(config: CutPatternConfig, part: CutPart): string {
   const sportMap: Record<string, string> = {
@@ -89,11 +94,11 @@ function buildPatternPrompt(config: CutPatternConfig, part: CutPart): string {
   };
   const sportEn = sportMap[config.sport] || "soccer";
 
-  const partLabels: Record<CutPart, string> = {
-    front: "FRONT PANEL (Vorderteil)",
-    back: "BACK PANEL (Rückteil)",
-    sleeve_left: "LEFT SLEEVE",
-    sleeve_right: "RIGHT SLEEVE",
+  const partShapes: Record<CutPart, string> = {
+    front: "a sleeveless torso-shaped front panel (tank top silhouette without arms, wider at shoulders tapering slightly at waist)",
+    back: "a sleeveless torso-shaped back panel (same silhouette as front, slightly longer)",
+    sleeve_left: "a single isolated SHORT SLEEVE shape (a small tapered tube, wider at shoulder seam, narrower at bicep opening, approximately 24cm wide × 35cm tall)",
+    sleeve_right: "a single isolated SHORT SLEEVE shape (a small tapered tube, wider at shoulder seam, narrower at bicep opening, approximately 24cm wide × 35cm tall, mirror of left sleeve)",
   };
 
   const partDimensions: Record<CutPart, string> = {
@@ -103,52 +108,49 @@ function buildPatternPrompt(config: CutPatternConfig, part: CutPart): string {
     sleeve_right: "approximately 24cm wide × 35cm tall (Size L)",
   };
 
-  const partLabel = partLabels[part];
+  const shape = partShapes[part];
   const dimensions = partDimensions[part];
 
-  // Basis-Prompt: Flaches Sublimations-Druckmuster
-  let prompt = `Flat-lay sublimation print template for the ${partLabel} of a professional ${sportEn} jersey. `;
-  prompt += `This is a FLAT FABRIC PANEL – NOT a 3D garment, NOT a mockup with a person. `;
+  // Basis-Prompt: Reines Sublimations-Druckmuster
+  let prompt = `CRITICAL: Generate ONLY a pure decorative pattern/design on ${shape} for a ${sportEn} jersey sublimation print. `;
+  prompt += `This is a FLAT FABRIC CUT PIECE – NOT a complete garment, NOT a 3D mockup, NOT a person wearing it. `;
+  prompt += `Show ONLY the single isolated panel shape on a pure white background. `;
   prompt += `Dimensions: ${dimensions}. `;
   prompt += `Design style: ${config.designStyle}. `;
   prompt += `Color palette: Primary ${config.primaryColor}, Secondary ${config.secondaryColor}, Accent ${config.accentColor}. `;
 
-  // Teil-spezifische Anweisungen
+  // Teil-spezifische Design-Anweisungen (NUR Muster, keine Platzhalter)
   if (part === "front") {
-    prompt += `The front panel should have the most dynamic/bold design elements. `;
-    prompt += `Leave CLEAR SPACE for: chest sponsor logo (center, ~15cm wide), club crest (heart side/left chest, ~8cm), and small chest number (right chest, 10cm height). `;
-    if (config.coordinatesText) {
-      prompt += `Include subtle coordinates text "${config.coordinatesText}" in the upper shoulder area. `;
-    }
+    prompt += `The front panel should have dynamic, bold graphic design elements (stripes, gradients, geometric shapes, or organic flowing patterns). `;
+    prompt += `Keep the center-chest area and upper-left chest area slightly less busy (these areas will receive overlays later). `;
   } else if (part === "back") {
-    prompt += `The back panel should complement the front design but be slightly calmer/less busy. `;
-    prompt += `Leave CLEAR SPACE for: large back number (center, 25-35cm height), player name below number (max 7.5cm height, max 25cm wide), club name above number (max 7.5cm height). `;
-    if (config.crestUrl) {
-      prompt += `The background should have a subtle watermark/ghost effect of the club crest (very faint, ${config.crestWatermarkOpacity || 20}% opacity). `;
-    }
-    if (config.hashtag) {
-      prompt += `Include small text "${config.hashtag}" in the nape/collar area. `;
-    }
+    prompt += `The back panel should complement the front design but be slightly calmer. `;
+    prompt += `Keep the center area (where a large number would go) slightly less busy. `;
   } else {
-    // Ärmel
-    prompt += `The sleeve panel should have a simpler, complementary design that flows from the body panel. `;
-    prompt += `Leave space for optional sleeve sponsor logo (center, ~10cm wide). `;
+    // Ärmel – klare Anweisung dass es NUR ein Ärmel ist
+    prompt += `IMPORTANT: This is ONLY a single sleeve piece – a small isolated fabric panel shaped like a short sleeve. `;
+    prompt += `It must NOT look like a full shirt or torso. It is just the sleeve cutout. `;
+    prompt += `The design should be simpler and complementary to the body panels, flowing naturally from shoulder to bicep. `;
     if (config.sublimationAreas?.includes("cuff_left") || config.sublimationAreas?.includes("cuff_right")) {
-      prompt += `Include a designed cuff/band at the bottom edge. `;
+      prompt += `Include a designed cuff/band at the bottom edge of the sleeve. `;
     }
   }
 
-  // Straßenkarte als Wasserzeichen
+  // Straßenkarte als Textur-Element (nur wenn Referenzbild gesendet wird)
   if (config.streetMapUrl && (part === "front" || part === "back")) {
-    prompt += `Incorporate a subtle street map pattern as a watermark/texture element in the lower portion of the panel. `;
+    prompt += `Incorporate the street map pattern from the reference image as a subtle texture woven into the fabric design. `;
   }
 
-  // Allgemeine Qualitätsanweisungen
-  prompt += `The pattern must be SEAMLESS at the edges where it connects to other panels. `;
-  prompt += `Pure white background OUTSIDE the panel shape. `;
-  prompt += `High resolution, print-ready quality (300 DPI equivalent). `;
-  prompt += `NO text, NO logos, NO numbers on the pattern itself – these will be added separately. `;
-  prompt += `NO brand names, NO manufacturer logos, NO known patterns. `;
+  // STRIKTE Verbote – mehrfach betont damit die KI es nicht ignoriert
+  prompt += `\n\nSTRICT RULES (MUST FOLLOW): `;
+  prompt += `• ABSOLUTELY NO TEXT of any kind (no words, no letters, no numbers, no placeholders like "CLUB NAME" or "PLAYER"). `;
+  prompt += `• ABSOLUTELY NO LOGOS (no crests, no emblems, no brand marks, no sponsor logos). `;
+  prompt += `• ABSOLUTELY NO WATERMARKS (no faint logos, no ghost images of crests). `;
+  prompt += `• ONLY pure decorative pattern/design on the fabric shape. `;
+  prompt += `• Pure white background OUTSIDE the panel shape. `;
+  prompt += `• NO manufacturer branding (no Nike, Adidas, Puma, etc.). `;
+  prompt += `• The output is ONLY the colored/patterned fabric cut piece on white. `;
+  prompt += `High resolution, print-ready quality. `;
 
   if (config.additionalNotes) {
     prompt += `Additional design notes: ${config.additionalNotes}. `;
