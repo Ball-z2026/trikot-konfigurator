@@ -2189,3 +2189,11 @@
 ## Startseite Workflow-Anleitung + Mannschaftslisten-Reiter (08.05.2026)
 - [x] Startseite: Klare Schritt-für-Schritt Anleitung für neue Benutzer (Verein anlegen → Mannschaft → Produkt → KI-Designer → Konfigurator)
 - [x] Mannschaftslisten als Reiter oben in der Navigation für schnellen Zugriff und Erstellung
+
+## Feste Bildpositionen im KI-Designer (08.05.2026)
+- [x] Slot-System implementiert: Slot 1=Wappen, 2=Wahrzeichen, 3=Straßenkarte, 4-10=Sponsoren nach Position
+- [x] Doppelte Variablen-Deklarationen (extraPrompt, additionalRefs) entfernt
+- [x] Bildzuordnungs-Header im Prompt: KI weiß exakt welches gesendete Bild welcher Slot ist
+- [x] Nur belegte Slots werden als Bilder gesendet (spart Tokens)
+- [x] Sponsoren werden nach Position gruppiert (ein Sponsor pro Position-Slot)
+- [ ] Mehrere Sponsoren auf gleicher Position: Diskussion mit User nötig (aktuell nur erster pro Position)

@@ -8916,3 +8916,179 @@
 [2026-05-08T09:02:39.871Z] 5:02:39 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-08T09:12:32.067Z] 5:12:32 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-08T09:19:52.446Z] 5:19:52 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T09:35:20.653Z] 5:35:20 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T09:35:20.798Z] 5:35:20 AM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx: Identifier 'extraPrompt' has already been declared. (505:10)
+[2026-05-08T09:35:20.799Z] 
+[2026-05-08T09:35:20.799Z] 503 |
+[2026-05-08T09:35:20.800Z] 504 |       // PROMPT: Bildzuordnung klar beschreiben
+[2026-05-08T09:35:20.800Z] > 505 |       let extraPrompt = "";
+[2026-05-08T09:35:20.801Z] |           ^
+[2026-05-08T09:35:20.801Z] 506 |
+[2026-05-08T09:35:20.801Z] 507 |       // Bildzuordnungs-Header: Sagt der KI exakt welches gesendete Bild welcher Slot ist
+[2026-05-08T09:35:20.801Z] 508 |       extraPrompt += " BILDZUORDNUNG (die Bilder werden in genau dieser Reihenfolge gesendet):";
+[2026-05-08T09:35:20.802Z] Plugin: vite:react-babel
+[2026-05-08T09:35:20.802Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx:505:10
+[2026-05-08T09:35:20.802Z] 503 |
+[2026-05-08T09:35:20.803Z] 504 |        // PROMPT: Bildzuordnung klar beschreiben
+[2026-05-08T09:35:20.803Z] 505 |        let extraPrompt = "";
+[2026-05-08T09:35:20.805Z] |            ^
+[2026-05-08T09:35:20.805Z] 506 |
+[2026-05-08T09:35:20.806Z] 507 |        // Bildzuordnungs-Header: Sagt der KI exakt welches gesendete Bild welcher Slot ist
+[2026-05-08T09:35:20.806Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-08T09:35:20.806Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-08T09:35:20.807Z] at checkRedeclarationInScope (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/util/scope.ts:164:19)
+[2026-05-08T09:35:20.807Z] at declareName (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/util/scope.ts:118:12)
+[2026-05-08T09:35:20.808Z] at declareName (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/scope.ts:89:11)
+[2026-05-08T09:35:20.809Z] at declareNameFromIdentifier (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:876:16)
+[2026-05-08T09:35:20.809Z] at checkIdentifier (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:871:12)
+[2026-05-08T09:35:20.810Z] at checkLVal (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:763:12)
+[2026-05-08T09:35:20.811Z] at parseVarId (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1633:10)
+[2026-05-08T09:35:20.811Z] at parseVarId (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3700:13)
+[2026-05-08T09:35:20.812Z] at parseVar (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1582:12)
+[2026-05-08T09:35:20.813Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+[2026-05-08T09:35:20.814Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3085:33)
+[2026-05-08T09:35:20.815Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:612:21)
+[2026-05-08T09:35:20.816Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-08T09:35:20.817Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-08T09:35:20.817Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-08T09:35:20.818Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-08T09:35:20.819Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-08T09:35:20.819Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-08T09:35:20.820Z] at parseTryStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1205:23)
+[2026-05-08T09:35:20.820Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:549:21)
+[2026-05-08T09:35:20.821Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-08T09:35:20.822Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-08T09:35:20.822Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-08T09:35:20.823Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-08T09:35:20.823Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-08T09:35:20.824Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-08T09:35:20.824Z] at parseFunctionBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2621:24)
+[2026-05-08T09:35:20.825Z] at parseArrowExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2562:10)
+[2026-05-08T09:35:20.825Z] at parseAsyncArrowFromCallExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1067:10)
+[2026-05-08T09:35:20.826Z] at parseAsyncArrowFromCallExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3724:20)
+[2026-05-08T09:35:20.827Z] at parseCoverCallAndAsyncArrowHead (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:942:27)
+[2026-05-08T09:35:20.827Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:804:19)
+[2026-05-08T09:35:20.828Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2809:20)
+[2026-05-08T09:35:20.828Z] at parseSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:763:19)
+[2026-05-08T09:35:20.828Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:748:17)
+[2026-05-08T09:35:20.829Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-08T09:35:20.829Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-08T09:35:20.830Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-08T09:35:20.830Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-08T09:35:20.830Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-08T09:35:20.831Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-08T09:35:20.831Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-08T09:35:20.832Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-08T09:35:20.832Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-05-08T09:35:20.832Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3192:16)
+[2026-05-08T09:35:20.833Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-05-08T09:35:20.833Z] at parseVar (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1587:18)
+[2026-05-08T09:35:20.834Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+[2026-05-08T09:35:20.964Z] 5:35:20 AM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx: Identifier 'extraPrompt' has already been declared. (505:10)
+[2026-05-08T09:35:20.965Z] 
+[2026-05-08T09:35:20.966Z] 503 |
+[2026-05-08T09:35:20.966Z] 504 |       // PROMPT: Bildzuordnung klar beschreiben
+[2026-05-08T09:35:20.966Z] > 505 |       let extraPrompt = "";
+[2026-05-08T09:35:20.967Z] |           ^
+[2026-05-08T09:35:20.968Z] 506 |
+[2026-05-08T09:35:20.968Z] 507 |       // Bildzuordnungs-Header: Sagt der KI exakt welches gesendete Bild welcher Slot ist
+[2026-05-08T09:35:20.969Z] 508 |       extraPrompt += " BILDZUORDNUNG (die Bilder werden in genau dieser Reihenfolge gesendet):";
+[2026-05-08T09:35:20.969Z] Plugin: vite:react-babel
+[2026-05-08T09:35:20.970Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx:505:10
+[2026-05-08T09:35:20.971Z] 503 |
+[2026-05-08T09:35:20.972Z] 504 |        // PROMPT: Bildzuordnung klar beschreiben
+[2026-05-08T09:35:20.972Z] 505 |        let extraPrompt = "";
+[2026-05-08T09:35:20.973Z] |            ^
+[2026-05-08T09:35:20.974Z] 506 |
+[2026-05-08T09:35:20.974Z] 507 |        // Bildzuordnungs-Header: Sagt der KI exakt welches gesendete Bild welcher Slot ist
+[2026-05-08T09:36:35.618Z] 5:36:35 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T09:36:35.792Z] 5:36:35 AM [vite] Internal server error: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx: Identifier 'additionalRefs' has already been declared. (616:12)
+[2026-05-08T09:36:35.793Z] 
+[2026-05-08T09:36:35.794Z] 614 |       // REFERENZBILDER: Alle in additionalRefs, KEIN referenceUrl (verursacht Stockfoto-Problem)
+[2026-05-08T09:36:35.794Z] 615 |       // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen, 3. Sponsoren
+[2026-05-08T09:36:35.795Z] > 616 |       const additionalRefs: string[] = [];
+[2026-05-08T09:36:35.795Z] |             ^
+[2026-05-08T09:36:35.796Z] 617 |
+[2026-05-08T09:36:35.796Z] 618 |       // Wahrzeichen als ERSTES Bild in der Liste
+[2026-05-08T09:36:35.796Z] 619 |       if (useLandmark && landmarkSilhouette) {
+[2026-05-08T09:36:35.797Z] Plugin: vite:react-babel
+[2026-05-08T09:36:35.797Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx:616:12
+[2026-05-08T09:36:35.798Z] 614 |        // REFERENZBILDER: Alle in additionalRefs, KEIN referenceUrl (verursacht Stockfoto-Problem)
+[2026-05-08T09:36:35.798Z] 615 |        // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen, 3. Sponsoren
+[2026-05-08T09:36:35.798Z] 616 |        const additionalRefs: string[] = [];
+[2026-05-08T09:36:35.799Z] |              ^
+[2026-05-08T09:36:35.799Z] 617 |
+[2026-05-08T09:36:35.800Z] 618 |        // Wahrzeichen als ERSTES Bild in der Liste
+[2026-05-08T09:36:35.800Z] at toParseError (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parse-error.ts:95:45)
+[2026-05-08T09:36:35.801Z] at raise (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/tokenizer/index.ts:1504:19)
+[2026-05-08T09:36:35.801Z] at checkRedeclarationInScope (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/util/scope.ts:164:19)
+[2026-05-08T09:36:35.801Z] at declareName (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/util/scope.ts:118:12)
+[2026-05-08T09:36:35.802Z] at declareName (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/scope.ts:89:11)
+[2026-05-08T09:36:35.802Z] at declareNameFromIdentifier (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:876:16)
+[2026-05-08T09:36:35.803Z] at checkIdentifier (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:871:12)
+[2026-05-08T09:36:35.803Z] at checkLVal (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/lval.ts:763:12)
+[2026-05-08T09:36:35.803Z] at parseVarId (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1633:10)
+[2026-05-08T09:36:35.804Z] at parseVarId (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3700:13)
+[2026-05-08T09:36:35.804Z] at parseVar (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1582:12)
+[2026-05-08T09:36:35.804Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+[2026-05-08T09:36:35.805Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3085:33)
+[2026-05-08T09:36:35.806Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:612:21)
+[2026-05-08T09:36:35.806Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-08T09:36:35.807Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-08T09:36:35.807Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-08T09:36:35.808Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-08T09:36:35.808Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-08T09:36:35.809Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-08T09:36:35.809Z] at parseTryStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1205:23)
+[2026-05-08T09:36:35.810Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:549:21)
+[2026-05-08T09:36:35.810Z] at parseStatementContent (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3220:20)
+[2026-05-08T09:36:35.811Z] at parseStatementLike (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+[2026-05-08T09:36:35.811Z] at parseStatementListItem (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:431:17)
+[2026-05-08T09:36:35.812Z] at parseBlockOrModuleBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1444:16)
+[2026-05-08T09:36:35.812Z] at parseBlockBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+[2026-05-08T09:36:35.813Z] at parseBlock (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1385:10)
+[2026-05-08T09:36:35.813Z] at parseFunctionBody (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2621:24)
+[2026-05-08T09:36:35.814Z] at parseArrowExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:2562:10)
+[2026-05-08T09:36:35.814Z] at parseAsyncArrowFromCallExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:1067:10)
+[2026-05-08T09:36:35.815Z] at parseAsyncArrowFromCallExpression (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3724:20)
+[2026-05-08T09:36:35.815Z] at parseCoverCallAndAsyncArrowHead (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:942:27)
+[2026-05-08T09:36:35.816Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:804:19)
+[2026-05-08T09:36:35.816Z] at parseSubscript (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:2809:20)
+[2026-05-08T09:36:35.817Z] at parseSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:763:19)
+[2026-05-08T09:36:35.818Z] at parseExprSubscripts (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:748:17)
+[2026-05-08T09:36:35.818Z] at parseUpdate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+[2026-05-08T09:36:35.819Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+[2026-05-08T09:36:35.821Z] at parseMaybeUnary (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3893:20)
+[2026-05-08T09:36:35.822Z] at parseMaybeUnaryOrPrivate (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+[2026-05-08T09:36:35.822Z] at parseExprOps (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+[2026-05-08T09:36:35.823Z] at parseMaybeConditional (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+[2026-05-08T09:36:35.823Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+[2026-05-08T09:36:35.824Z] at parseMaybeAssign (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/plugins/typescript/index.ts:3764:22)
+[2026-05-08T09:36:35.825Z] at callback (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+[2026-05-08T09:36:35.825Z] at allowInAnd (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:3192:16)
+[2026-05-08T09:36:35.826Z] at parseMaybeAssignAllowIn (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+[2026-05-08T09:36:35.827Z] at parseVar (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1587:18)
+[2026-05-08T09:36:35.827Z] at parseVarStatement (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@babel+parser@7.29.2/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+[2026-05-08T09:36:35.968Z] 5:36:35 AM [vite] (client) Pre-transform error: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx: Identifier 'additionalRefs' has already been declared. (616:12)
+[2026-05-08T09:36:35.969Z] 
+[2026-05-08T09:36:35.969Z] 614 |       // REFERENZBILDER: Alle in additionalRefs, KEIN referenceUrl (verursacht Stockfoto-Problem)
+[2026-05-08T09:36:35.970Z] 615 |       // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen, 3. Sponsoren
+[2026-05-08T09:36:35.970Z] > 616 |       const additionalRefs: string[] = [];
+[2026-05-08T09:36:35.971Z] |             ^
+[2026-05-08T09:36:35.971Z] 617 |
+[2026-05-08T09:36:35.972Z] 618 |       // Wahrzeichen als ERSTES Bild in der Liste
+[2026-05-08T09:36:35.972Z] 619 |       if (useLandmark && landmarkSilhouette) {
+[2026-05-08T09:36:35.973Z] Plugin: vite:react-babel
+[2026-05-08T09:36:35.973Z] File: /home/ubuntu/trikot-konfigurator/client/src/pages/KiDesign.tsx:616:12
+[2026-05-08T09:36:35.974Z] 614 |        // REFERENZBILDER: Alle in additionalRefs, KEIN referenceUrl (verursacht Stockfoto-Problem)
+[2026-05-08T09:36:35.974Z] 615 |        // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen, 3. Sponsoren
+[2026-05-08T09:36:35.975Z] 616 |        const additionalRefs: string[] = [];
+[2026-05-08T09:36:35.975Z] |              ^
+[2026-05-08T09:36:35.976Z] 617 |
+[2026-05-08T09:36:35.976Z] 618 |        // Wahrzeichen als ERSTES Bild in der Liste
+[2026-05-08T09:36:51.974Z] 5:36:51 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T09:38:33.824Z] Dev server process group stopped
+[2026-05-08T09:38:33.898Z] Dev server exited with code -15
+[2026-05-08T09:38:36.866Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T09:38:39.082Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T09:38:40.128Z] Server running on http://localhost:3000/

@@ -437,19 +437,122 @@ export default function KiDesign() {
         }
       }
 
-      // Zusätzliche Prompt-Teile basierend auf Optionen
+      // ===== FESTE BILDPOSITIONEN-LOGIK =====
+      // Jedes Element hat eine FESTE Slot-Nummer. Ist der Slot belegt, kommt das Bild rein.
+      // Ist er leer, wird im Prompt "LEER" geschrieben.
+      // So weiß die KI IMMER welches Bild was ist.
+      
+      // Slot-Definitionen (feste Reihenfolge):
+      // Slot 1: Vereinswappen
+      // Slot 2: Wahrzeichen
+      // Slot 3: Straßenkarte
+      // Slot 4: Sponsor Brust
+      // Slot 5: Sponsor Rücken
+      // Slot 6: Sponsor Ärmel links
+      // Slot 7: Sponsor Ärmel rechts
+      // Slot 8: Sponsor Seite links
+      // Slot 9: Sponsor Seite rechts
+      // Slot 10: Sponsor Kragen
+      
+      const enabledSponsors = sponsorLogos.filter(s => s.enabled && s.imageUrl);
+      
+      // Sponsoren nach Position gruppieren
+      const sponsorByPosition: Record<string, typeof enabledSponsors[0] | null> = {
+        chest: null,
+        back: null,
+        sleeve_left: null,
+        sleeve_right: null,
+        side_left: null,
+        side_right: null,
+        collar: null,
+      };
+      enabledSponsors.forEach(s => {
+        const pos = sponsorPositions[s.id] || "chest";
+        // Falls mehrere Sponsoren auf gleicher Position: nur den ersten nehmen
+        if (!sponsorByPosition[pos]) {
+          sponsorByPosition[pos] = s;
+        }
+      });
+      
+      // Bilder-Array aufbauen (NUR belegte Slots senden, aber Prompt beschreibt ALLE)
+      const imageSlots: { url: string | null; slotNum: number; description: string }[] = [
+        { slotNum: 1, url: defaultLogo?.imageUrl || null, description: "Vereinswappen" },
+        { slotNum: 2, url: (useLandmark && landmarkSilhouette) ? landmarkSilhouette : null, description: "Wahrzeichen" },
+        { slotNum: 3, url: (useMapWatermark && mapImageUrl) ? mapImageUrl : null, description: "Straßenkarte" },
+        { slotNum: 4, url: sponsorByPosition.chest?.imageUrl || null, description: "Sponsor Brust" },
+        { slotNum: 5, url: sponsorByPosition.back?.imageUrl || null, description: "Sponsor Rücken" },
+        { slotNum: 6, url: sponsorByPosition.sleeve_left?.imageUrl || null, description: "Sponsor Ärmel links" },
+        { slotNum: 7, url: sponsorByPosition.sleeve_right?.imageUrl || null, description: "Sponsor Ärmel rechts" },
+        { slotNum: 8, url: sponsorByPosition.side_left?.imageUrl || null, description: "Sponsor Seite links" },
+        { slotNum: 9, url: sponsorByPosition.side_right?.imageUrl || null, description: "Sponsor Seite rechts" },
+        { slotNum: 10, url: sponsorByPosition.collar?.imageUrl || null, description: "Sponsor Kragen" },
+      ];
+      
+      // Nur belegte Bilder an die KI senden (in fester Reihenfolge)
+      const additionalRefs: string[] = [];
+      const sentSlots: number[] = [];
+      imageSlots.forEach(slot => {
+        if (slot.url) {
+          additionalRefs.push(slot.url);
+          sentSlots.push(slot.slotNum);
+        }
+      });
+      
+      // PROMPT: Bildzuordnung klar beschreiben
       let extraPrompt = "";
       
-      // WAHRZEICHEN: Referenzbild 1 in der Liste – als Sublimationsdruck in den Stoff eingearbeitet
+      // Bildzuordnungs-Header: Sagt der KI exakt welches gesendete Bild welcher Slot ist
+      extraPrompt += " BILDZUORDNUNG (die Bilder werden in genau dieser Reihenfolge gesendet):";
+      let sentIndex = 1;
+      imageSlots.forEach(slot => {
+        if (slot.url) {
+          extraPrompt += ` Gesendetes Bild ${sentIndex} = ${slot.description} (Slot ${slot.slotNum}).`;
+          sentIndex++;
+        }
+      });
+      
+      // SLOT 1: Vereinswappen
+      if (defaultLogo?.imageUrl) {
+        extraPrompt += ` VEREINSWAPPEN (Slot 1): Platziere dieses Bild auf der RECHTEN SEITE der Brust (Herzseite, aus Betrachtersicht rechts). Position: 60-65% von links, 32% von oben. Größe: 8-10cm. Übernimm 1 zu 1.`;
+      }
+      
+      // SLOT 2: Wahrzeichen
       if (useLandmark && landmarkSilhouette) {
         const opacityVal = landmarkOpacity || 15;
         if (landmarkStyle === "large") {
-          extraPrompt += ` STOFF-TEXTUR: Referenzbild 1 zeigt eine Form/Silhouette. Diese Form ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Stelle dir vor, der Stoff wurde mit dieser Form bedruckt – sie ist Teil des Materials, nicht aufgeklebt. Platziere diese Form GROSS und ZENTRIERT auf dem Torso-Bereich beider Trikotseiten (vorne und hinten). Die Form soll im GLEICHEN FARBTON wie das Trikot erscheinen, nur ${opacityVal}% heller oder dunkler – wie ein Ton-in-Ton Sublimationsdruck. Sie liegt HINTER allen Logos, Nummern und Schriften. WICHTIG: Verwende GENAU die Form aus Referenzbild 1, NICHT das Vereinswappen.`;
+          extraPrompt += ` WAHRZEICHEN (Slot 2): Dieses Bild ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. GROSS und ZENTRIERT auf dem Torso beider Seiten. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern.`;
         } else {
-          extraPrompt += ` STOFF-TEXTUR: Referenzbild 1 zeigt eine Form/Silhouette. Diese Form ist als WIEDERHOLENDES MUSTER DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Viele kleine Kopien (2-5cm) dieser Form bedecken den gesamten Stoff – wie ein All-Over-Print. Die Form soll im GLEICHEN FARBTON wie das Trikot erscheinen, nur ${opacityVal}% heller oder dunkler – wie ein Ton-in-Ton Sublimationsdruck. Sie liegt HINTER allen Logos, Nummern und Schriften. WICHTIG: Verwende GENAU die Form aus Referenzbild 1, NICHT das Vereinswappen.`;
+          extraPrompt += ` WAHRZEICHEN (Slot 2): Dieses Bild ist als WIEDERHOLENDES MUSTER in den Stoff eingearbeitet (Sublimationsdruck). Viele kleine Kopien (2-5cm) bedecken den gesamten Stoff. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern.`;
         }
       }
       
+      // SLOT 3: Straßenkarte
+      if (useMapWatermark && mapImageUrl) {
+        extraPrompt += ` STRASSENKARTE (Slot 3): Diese Karte ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Die Straßenlinien bilden ein Muster im Stoff. Ton-in-Ton, ${watermarkOpacity}% heller/dunkler als Trikotfarbe. Bedeckt den gesamten Stoff. Liegt HINTER allen Logos und Nummern.`;
+      }
+      
+      // SLOT 4-10: Sponsoren
+      const sponsorSlotDescriptions: { slot: number; pos: string; placement: string }[] = [
+        { slot: 4, pos: "chest", placement: "front center chest, below crest and number, centered horizontally" },
+        { slot: 5, pos: "back", placement: "lower back, below player name, centered" },
+        { slot: 6, pos: "sleeve_left", placement: "left sleeve (viewer's left), centered on sleeve" },
+        { slot: 7, pos: "sleeve_right", placement: "right sleeve (viewer's right), centered on sleeve" },
+        { slot: 8, pos: "side_left", placement: "left side of torso" },
+        { slot: 9, pos: "side_right", placement: "right side of torso" },
+        { slot: 10, pos: "collar", placement: "back collar/nape area" },
+      ];
+      
+      sponsorSlotDescriptions.forEach(({ slot, pos, placement }) => {
+        if (sponsorByPosition[pos]?.imageUrl) {
+          extraPrompt += ` SPONSOR (Slot ${slot}): Übernimm dieses Logo-Bild 1 zu 1 an Position: ${placement}. NICHT als Text – das BILD übernehmen!`;
+        }
+      });
+      
+      // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE
+      if (useBackCrestWatermark && defaultLogo?.imageUrl) {
+        extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: Das Vereinswappen (Slot 1) zusätzlich als großes Wasserzeichen auf der Rückseite. Zentriert, 60-70% Breite, ${backCrestOpacity}% Deckkraft, tonal. Liegt HINTER Nummer, Name und Text.`;
+      }
+
       // MUSTER-UPLOAD
       if (usePattern && patternColors.length > 0) {
         const colorList = patternColors.map(c => c.replacementHex).join(", ");
@@ -463,21 +566,11 @@ export default function KiDesign() {
         if (sublimationAreas.collar) extraPrompt += " Include printed collar design.";
         if (sublimationAreas.cuff_left || sublimationAreas.cuff_right) extraPrompt += " Include printed cuff/sleeve band design.";
       }
-      
-      // VEREINSWAPPEN = KI platziert das Wappen auf der Herzseite
-      // Bildnummer wird dynamisch berechnet basierend auf vorherigen Bildern
-      if (defaultLogo?.imageUrl) {
-        const crestImageNum = (useLandmark && landmarkImage) ? 2 : 1;
-        extraPrompt += ` VEREINSWAPPEN: Referenzbild ${crestImageNum} ist das Vereinswappen. Platziere es auf der RECHTEN SEITE der Brust (Herzseite, aus Betrachtersicht rechts). Position: 60-65% von links, 32% von oben. Größe: 8-10cm. Übernimm dieses Bild 1 zu 1.`;
-      }
 
-      // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
-      // Wappen in Rückennummer – DEAKTIVIERT (später als Feature)
-      // Stattdessen: Rückennummer ist immer einfarbig (solid color)
       // NUMMER: Vorne und hinten IDENTISCH, einfarbig
-      extraPrompt += ` NUMMER: Vorne und hinten muss DIESELBE Nummer stehen UND DIESELBE FARBE haben. Die Nummer muss EINFARBIG sein - KEINE Muster, KEINE Texturen, KEINE Embleme. Nur eine saubere, fette, gut lesbare Zahl in EINER Farbe. Vorne und hinten IDENTISCHE Farbe! RÜCKENNUMMER: Groß (25-35cm), zentriert. BRUSTNUMMER: Kleiner (10cm), auf der LINKEN Seite aus Betrachtersicht (gegenüber dem Wappen), Position: 30-35% von links, 32% von oben.`;
+      extraPrompt += ` NUMMER: Vorne und hinten DIESELBE Nummer, DIESELBE FARBE. EINFARBIG – KEINE Muster, KEINE Texturen. Saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert. BRUSTNUMMER: Kleiner (10cm), links (gegenüber Wappen).`;
 
-      // RÜCKSEITEN-LAYOUT = Dynamische Positionierung basierend auf gewähltem Layout
+      // RÜCKSEITEN-LAYOUT
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
       if (layoutOption) {
         const orderDesc = layoutOption.order.map((el, i) => {
@@ -490,72 +583,27 @@ export default function KiDesign() {
         }).join(", then ");
         extraPrompt += ` BACK VIEW (right jersey) - LAYOUT ORDER from top to bottom: ${orderDesc}. `;
         if (layoutOption.hasClubName && clubName) {
-          extraPrompt += `The club name "${clubName}" MUST appear on the back in its designated position (arc/curved or straight horizontal text, clearly readable in contrasting color). `;
+          extraPrompt += `The club name "${clubName}" MUST appear on the back in its designated position. `;
         }
-        extraPrompt += `The player name should be clearly readable (max 7.5cm height). The back number must be large (25-35cm height). All elements centered horizontally.`;
+        extraPrompt += `Player name max 7.5cm height. Back number 25-35cm. All centered.`;
       } else if (clubName) {
-        extraPrompt += ` MUST include the club name "${clubName}" on the BACK of the jersey, positioned ABOVE where the player number would be. The club name should be in an arc/curved text or straight horizontal text, clearly readable in a contrasting color.`;
+        extraPrompt += ` MUST include club name "${clubName}" on the BACK, above the number.`;
       }
       
-      // HASHTAG = Im Nacken des Trikots
+      // HASHTAG
       if (useHashtag && orgData?.hashtag) {
-        extraPrompt += ` MUST include the text "${orgData.hashtag}" on the BACK NECK / NAPE area of the jersey (inside or outside of the collar at the back). It should be clearly readable in a small but visible font, similar to how brands place their name on the back collar. Use a contrasting color so it stands out.`;
+        extraPrompt += ` Text "${orgData.hashtag}" on BACK NECK/NAPE area, small but visible.`;
       }
       
-      // KOORDINATEN = Im Kragen oder Ärmel (links/rechts)
+      // KOORDINATEN
       if (useCoordinates && orgData?.latitude && orgData?.longitude) {
         const lat = Number(orgData.latitude).toFixed(4);
         const lng = Number(orgData.longitude).toFixed(4);
         const latDir = Number(orgData.latitude) >= 0 ? "N" : "S";
         const lngDir = Number(orgData.longitude) >= 0 ? "E" : "W";
         const coordText = `${Math.abs(Number(lat))}°${latDir} ${Math.abs(Number(lng))}°${lngDir}`;
-        extraPrompt += ` MUST include the geographic coordinates "${coordText}" as visible printed text on the jersey. Place this text on the INSIDE OF THE COLLAR or on the SLEEVE CUFF area. The text should read exactly "${coordText}" in a small, clean monospace font (like on luxury/premium sportswear). Make sure the text is clearly readable and correctly formatted as GPS coordinates.`;
+        extraPrompt += ` Coordinates "${coordText}" on collar or sleeve cuff, small monospace font.`;
       }
-
-      // SPONSOREN = KI platziert die Sponsor-Logos basierend auf Position
-      const enabledSponsors = sponsorLogos.filter(s => s.enabled && s.imageUrl);
-      if (enabledSponsors.length > 0) {
-        const positionDescriptions: Record<string, string> = {
-          chest: "front center chest, below crest and number, centered horizontally (45-55% from top)",
-          back: "lower back, below player name, centered (75-80% from top)",
-          sleeve_left: "left sleeve (viewer's left), centered on sleeve",
-          sleeve_right: "right sleeve (viewer's right), centered on sleeve",
-          side_left: "left side of torso (viewer's left)",
-          side_right: "right side of torso (viewer's right)",
-          collar: "back collar/nape area",
-        };
-
-        // Berechne Start-Bildnummer: Silhouette (wenn da) + Wappen (wenn da) + dann Sponsoren
-        let sponsorStartNum = 1;
-        if (useLandmark && landmarkImage) sponsorStartNum++;
-        if (defaultLogo?.imageUrl) sponsorStartNum++;
-
-        enabledSponsors.forEach((s, i) => {
-          const imgNum = sponsorStartNum + i;
-          const pos = sponsorPositions[s.id] || "chest";
-          const placement = positionDescriptions[pos] || positionDescriptions.chest;
-          extraPrompt += ` SPONSOR-LOGO: Referenzbild ${imgNum} ist ein Sponsor-Logo. Übernimm dieses Bild 1 zu 1 an Position: ${placement}. NICHT als Text schreiben - das BILD übernehmen! Exakt gleiche Form, Farben, Proportionen.`;
-        });
-      }
-
-      // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE
-      if (useBackCrestWatermark && defaultLogo?.imageUrl) {
-        const crestNum = (useLandmark && landmarkImage) ? 2 : 1;
-        extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: Referenzbild ${crestNum} (Vereinswappen) als großes Wasserzeichen auf der Rückseite. Zentriert, 60-70% Breite, ${backCrestOpacity}% Deckkraft, tonal (gleicher Farbton wie Trikot). Liegt HINTER Nummer, Name und Text.`;
-      }
-
-      // STRASSENKARTE ALS WASSERZEICHEN – Bild wird als Referenz gesendet
-      if (useMapWatermark && mapImageUrl) {
-        // Bildnummer dynamisch berechnen
-        let mapImgNum = 1;
-        if (useLandmark && landmarkSilhouette) mapImgNum++;
-        if (defaultLogo?.imageUrl) mapImgNum++;
-        mapImgNum += enabledSponsors.length;
-        extraPrompt += ` STRASSENKARTE: Referenzbild ${mapImgNum} ist eine Straßenkarte. Diese Karte ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Die Straßenlinien und Kreuzungen bilden ein abstraktes geometrisches Muster das in den Stoff eingedruckt ist. Ton-in-Ton, ${watermarkOpacity}% heller oder dunkler als die Trikotfarbe. Bedeckt den gesamten Stoff als Hintergrundtextur. Liegt HINTER allen Logos, Nummern und Schriften.`;
-      }
-
-      // WASSERZEICHEN-DECKUNG (für Silhouette) - jetzt direkt im Hauptprompt oben integriert
-      // (landmarkOpacity wird bereits im Wahrzeichen-Prompt oben verwendet)
 
       // Markenrecht-Schutz: Keine ERFUNDENEN Logos oder Marken!
       // Die KI darf NUR die als Referenz übergebenen echten Logos verwenden.
@@ -563,29 +611,7 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
-      // REFERENZBILDER: Alle in additionalRefs, KEIN referenceUrl (verursacht Stockfoto-Problem)
-      // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen, 3. Sponsoren
-      const additionalRefs: string[] = [];
-      
-      // Wahrzeichen als ERSTES Bild in der Liste
-      if (useLandmark && landmarkSilhouette) {
-        additionalRefs.push(landmarkSilhouette);
-      }
-      
-      // Vereinswappen
-      if (defaultLogo?.imageUrl) {
-        additionalRefs.push(defaultLogo.imageUrl);
-      }
-      
-      // Sponsor-Logos
-      enabledSponsors.forEach(s => {
-        if (s.imageUrl) additionalRefs.push(s.imageUrl);
-      });
-      
-      // Straßenkarte als Referenzbild
-      if (useMapWatermark && mapImageUrl) {
-        additionalRefs.push(mapImageUrl);
-      }
+      // additionalRefs wurde oben im Slot-System aufgebaut
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
