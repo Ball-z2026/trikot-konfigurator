@@ -2157,6 +2157,10 @@
 ## Wahrzeichen Silhouette erzwingen (08.05.2026)
 - [x] Prompt maximal verschärft: ZERO CREATIVE FREEDOM, PIXEL BY PIXEL reproduction, bei Nicht-Erkennung lieber BLANK als Ersatz
 
+## Sponsor-Logo + Wappen Form erzwingen (08.05.2026)
+- [x] Sponsor-Logo: ABSOLUTE LOGO RULE – Form/Typografie/Proportionen IDENTISCH, nur Farbanpassung erlaubt
+- [x] Vereinswappen: ABSOLUTE CREST RULE – Form/Design/Symbole IDENTISCH, nur Farbanpassung erlaubt
+
 ## Später (Feature-Backlog)
 - [ ] Wappen in Rückennummer als optionales Feature (wenn KI-Qualität besser wird)
 
