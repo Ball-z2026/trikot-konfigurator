@@ -419,13 +419,13 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       
-      // WAHRZEICHEN: Als referenceUrl (Hauptreferenzbild) gesendet + klarer Prompt
+      // WAHRZEICHEN: Referenzbild 1 in der Liste, klarer Prompt
       if (useLandmark && landmarkSilhouette) {
         const opacityVal = landmarkOpacity || 15;
         if (landmarkStyle === "large") {
-          extraPrompt += ` WASSERZEICHEN-ANWEISUNG: Das HAUPTREFERENZBILD (erstes Bild) zeigt eine Form/Silhouette. Verwende GENAU DIESES BILD als großes Wasserzeichen auf dem Trikot. Platziere es ZENTRIERT über den Torso-Bereich (50-60% der Trikotfläche). Deckkraft: ${opacityVal}% (sehr subtil, fast durchsichtig). Die Form muss im GLEICHEN Farbton wie das Trikot sein, nur leicht heller oder dunkler. Das Wasserzeichen liegt HINTER allen Logos, Nummern und Texten. WICHTIG: Verwende das ERSTE REFERENZBILD - nicht das Wappen, nicht einen Sponsor. Das ERSTE Bild!`;
+          extraPrompt += ` WASSERZEICHEN: Referenzbild 1 ist das WAHRZEICHEN. Übernimm GENAU DIESES BILD als großes Wasserzeichen auf dem Trikot. Platziere es ZENTRIERT über den Torso (50-60% der Fläche). Deckkraft: ${opacityVal}%. Gleicher Farbton wie Trikot, leicht heller oder dunkler. Liegt HINTER allen Logos und Nummern. Das Wahrzeichen ist Referenzbild 1 - es ist NICHT das Vereinswappen und NICHT ein Sponsor-Logo.`;
         } else {
-          extraPrompt += ` WASSERZEICHEN-ANWEISUNG: Das HAUPTREFERENZBILD (erstes Bild) zeigt eine Form/Silhouette. Verwende GENAU DIESES BILD und wiederhole es als Streumuster aus vielen kleinen Kopien (2-5cm) über das gesamte Trikot. Deckkraft: ${opacityVal}% (sehr subtil). Die Formen müssen im GLEICHEN Farbton wie das Trikot sein, nur leicht heller oder dunkler. Das Muster liegt HINTER allen Logos, Nummern und Texten. WICHTIG: Verwende das ERSTE REFERENZBILD - nicht das Wappen, nicht einen Sponsor. Das ERSTE Bild!`;
+          extraPrompt += ` WASSERZEICHEN: Referenzbild 1 ist das WAHRZEICHEN. Übernimm GENAU DIESES BILD und wiederhole es als Streumuster (viele kleine Kopien, 2-5cm) über das gesamte Trikot. Deckkraft: ${opacityVal}%. Gleicher Farbton wie Trikot, leicht heller oder dunkler. Liegt HINTER allen Logos und Nummern. Das Wahrzeichen ist Referenzbild 1 - es ist NICHT das Vereinswappen und NICHT ein Sponsor-Logo.`;
         }
       }
       
@@ -533,35 +533,28 @@ export default function KiDesign() {
 
       // Markenrecht-Schutz: Keine ERFUNDENEN Logos oder Marken!
       // Die KI darf NUR die als Referenz übergebenen echten Logos verwenden.
-      const brandProtection = " CRITICAL BRAND RULE: Do NOT invent, create, or draw any logos, brand marks, or emblems that are NOT provided as reference images. NO manufacturer logos (no three stripes, no swoosh, no puma cat, no Hummel, no Erima, no Jako, no Mizuno). ONLY use the exact logos/crests/sponsor images that are explicitly provided as reference images and described in the instructions above. Any area where a logo is NOT explicitly instructed must remain EMPTY.";
+      const brandProtection = " ABSOLUTE RULE - NO MANUFACTURER LOGOS: There is NO manufacturer/brand logo on this jersey. Do NOT add ANY logo, text, symbol, or mark on the shoulders, sleeves, collar, or anywhere else that is not EXPLICITLY described in the instructions above. NO three stripes, NO swoosh, NO puma, NO Hummel, NO Erima, NO Jako, NO Mizuno, NO 'Front', NO invented brand names. The shoulders, collar area, and any position not explicitly assigned to a sponsor MUST remain completely EMPTY and show only the jersey fabric/pattern. ONLY place elements that are EXPLICITLY instructed above.";
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
-      // REFERENZBILDER:
-      // 1. Wahrzeichen als referenceUrl (HAUPTREFERENZBILD = erstes Bild für die KI)
-      // 2. Wappen + Sponsoren als additionalRefs
+      // REFERENZBILDER: Alle in additionalRefs, KEIN referenceUrl (verursacht Stockfoto-Problem)
+      // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen, 3. Sponsoren
       const additionalRefs: string[] = [];
-      let wahrzeichenRef: string | undefined;
       
-      // Wahrzeichen als HAUPTREFERENZBILD (erstes Bild)
+      // Wahrzeichen als ERSTES Bild in der Liste
       if (useLandmark && landmarkSilhouette) {
-        wahrzeichenRef = landmarkSilhouette;
+        additionalRefs.push(landmarkSilhouette);
       }
       
-      // Vereinswappen als zusätzliches Referenzbild
+      // Vereinswappen
       if (defaultLogo?.imageUrl) {
         additionalRefs.push(defaultLogo.imageUrl);
       }
       
-      // Sponsor-Logos als zusätzliche Referenzbilder
+      // Sponsor-Logos
       enabledSponsors.forEach(s => {
         if (s.imageUrl) additionalRefs.push(s.imageUrl);
       });
-      
-      // Hersteller-Logo
-      if (useManufacturerLogo && manufacturerLogoUrl) {
-        additionalRefs.push(manufacturerLogoUrl);
-      }
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
@@ -569,7 +562,7 @@ export default function KiDesign() {
         colorDescription: `Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}`,
         side: "front",
         customPrompt: prompt,
-        referenceImageUrl: wahrzeichenRef,
+        referenceImageUrl: undefined,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
       });
 
@@ -1329,7 +1322,7 @@ export default function KiDesign() {
                 {/* ═══ WAHRZEICHEN-UPLOAD ═══ */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold uppercase text-gray-500">Wahrzeichen (optional)</Label>
-                  <p className="text-xs text-muted-foreground">Laden Sie ein Foto eines Wahrzeichens hoch – die Silhouette wird automatisch erkannt und ins Design eingebaut.</p>
+                  <p className="text-xs text-muted-foreground">Laden Sie ein Bild hoch – es wird als Wasserzeichen ins Trikot-Design übernommen.</p>
                   <div className="flex items-center gap-3">
                     <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-all">
                       <Mountain className="w-4 h-4 text-gray-500" />
@@ -1342,7 +1335,7 @@ export default function KiDesign() {
                         {extractingSilhouette && (
                           <div className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
-                            <span className="text-xs text-purple-600">Silhouette wird erkannt...</span>
+                            <span className="text-xs text-purple-600">Wird hochgeladen...</span>
                           </div>
                         )}
                         {landmarkSilhouette && (
@@ -1353,10 +1346,10 @@ export default function KiDesign() {
                                 alt="Silhouette" 
                                 className="w-full h-full object-contain invert" 
                               />
-                              <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[8px] px-1 rounded">Silhouette</span>
+                              <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[8px] px-1 rounded">Bereit</span>
                             </div>
                             <div className="flex flex-col gap-1">
-                              <span className="text-xs text-green-600 font-medium">Silhouette ins Trikot übernehmen</span>
+                              <span className="text-xs text-green-600 font-medium">Als Wasserzeichen übernehmen</span>
                               <Switch checked={useLandmark} onCheckedChange={setUseLandmark} />
                             </div>
                           </div>
@@ -1397,8 +1390,8 @@ export default function KiDesign() {
                         </div>
                         <p className="text-[10px] text-purple-600">
                           {landmarkStyle === "large"
-                            ? "Eine große Silhouette als subtiles Wasserzeichen im Hintergrund"
-                            : "Viele kleine Silhouetten zufällig verteilt als Muster-Wasserzeichen"}
+                            ? "Ein großes Wasserzeichen zentriert im Hintergrund"
+                            : "Viele kleine Kopien zufällig verteilt als Muster-Wasserzeichen"}
                         </p>
                       </div>
 
@@ -2019,7 +2012,7 @@ export default function KiDesign() {
                 <li>• Komplett neues Trikot-Design per KI</li>
                 <li>• Verbandsregeln werden automatisch beachtet</li>
                 <li>• Vereinsdaten (Wappen, Farben, Schrift) optional</li>
-                <li>• Wahrzeichen-Silhouette als Design-Element</li>
+                <li>• Wahrzeichen als Wasserzeichen-Element</li>
                 <li>• Muster-Upload mit Farb-Anpassung</li>
                 <li>• Sublimation: Kragen & Bündchen bedruckbar</li>
                 <li>• Zonen einzeln ein-/ausschaltbar</li>
