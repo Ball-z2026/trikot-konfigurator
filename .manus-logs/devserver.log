@@ -9098,3 +9098,9 @@
 [2026-05-08T10:06:58.031Z] 6:06:58 AM [tsx] change in ./server/routers.ts Restarting...
 [2026-05-08T10:07:00.463Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-08T10:07:01.663Z] Server running on http://localhost:3000/
+[2026-05-08T12:11:09.366Z] 8:11:09 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T12:11:33.397Z] 8:11:33 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T12:11:44.085Z] 8:11:44 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T12:11:55.824Z] 8:11:55 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T12:12:18.219Z] 8:12:18 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T12:12:59.505Z] 8:12:59 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css

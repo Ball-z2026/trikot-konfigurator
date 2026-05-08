@@ -117,10 +117,8 @@ export default function KiDesign() {
   const [useHashtag, setUseHashtag] = useState(false);
   const [useCoordinates, setUseCoordinates] = useState(false);
 
-  // ── Wahrzeichen-Upload State ──
-  const [landmarkImage, setLandmarkImage] = useState<string | null>(null);
-  const [landmarkSilhouette, setLandmarkSilhouette] = useState<string | null>(null);
-  const [extractingSilhouette, setExtractingSilhouette] = useState(false);
+  // ── Wahrzeichen State (per Textbeschreibung, kein Upload) ──
+  const [landmarkDescription, setLandmarkDescription] = useState<string>("");
   const [useLandmark, setUseLandmark] = useState(false);
   // Wahrzeichen-Optionen: Darstellungsart + Platzierung + Deckkraft
   const [landmarkStyle, setLandmarkStyle] = useState<"large" | "pattern">("large"); // groß oder kleine als Muster
@@ -303,38 +301,6 @@ export default function KiDesign() {
   // ── Verbandsregeln für Prompt ──
   const rules = selectedSport ? getJerseyRules(selectedSport as any, "amateur") : null;
 
-  // ── Wahrzeichen-Upload Handler ──
-  const handleLandmarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setLandmarkImage(dataUrl); // Vorschau-Bild (Data-URL für UI)
-      setUseLandmark(true);
-      setExtractingSilhouette(true);
-      try {
-        // Upload des Bildes
-        const base64 = dataUrl.split(",")[1];
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: base64, fileName: file.name, contentType: file.type }),
-        });
-        const uploadData = await uploadRes.json();
-        if (uploadData.url) {
-          // Speichere die echte Upload-URL für die KI (nicht die Data-URL)
-          setLandmarkSilhouette(uploadData.url);
-          toast.success("Wahrzeichen hochgeladen!");
-        }
-      } catch (err: any) {
-        toast.error("Upload fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
-      } finally {
-        setExtractingSilhouette(false);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
 
   // ── Muster-Upload Handler mit Farbextraktion ──
   const handlePatternUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -477,7 +443,7 @@ export default function KiDesign() {
       // Bilder-Array aufbauen (NUR belegte Slots senden, aber Prompt beschreibt ALLE)
       const imageSlots: { url: string | null; slotNum: number; description: string }[] = [
         { slotNum: 1, url: defaultLogo?.imageUrl || null, description: "Vereinswappen" },
-        { slotNum: 2, url: (useLandmark && landmarkSilhouette) ? landmarkSilhouette : null, description: "Wahrzeichen" },
+        { slotNum: 2, url: null, description: "Wahrzeichen (per Prompt-Beschreibung)" },
         { slotNum: 3, url: (useMapWatermark && mapImageUrl) ? mapImageUrl : null, description: "Straßenkarte" },
         { slotNum: 4, url: sponsorByPosition.chest?.imageUrl || null, description: "Sponsor Brust" },
         { slotNum: 5, url: sponsorByPosition.back?.imageUrl || null, description: "Sponsor Rücken" },
@@ -516,13 +482,14 @@ export default function KiDesign() {
         extraPrompt += ` VEREINSWAPPEN (Slot 1): Platziere dieses Bild NUR auf der RECHTEN SEITE der Brust (Herzseite, aus Betrachtersicht rechts). Position: 60-65% von links, 32% von oben. Größe: 8-10cm. Übernimm 1 zu 1. WICHTIG: Das Vereinswappen darf NUR an dieser einen Stelle erscheinen – NICHT als Muster, NICHT als Wasserzeichen, NICHT wiederholt!`;
       }
       
-      // SLOT 2: Wahrzeichen
-      if (useLandmark && landmarkSilhouette) {
+      // SLOT 2: Wahrzeichen (per Textbeschreibung im Prompt, kein Referenzbild)
+      if (useLandmark && landmarkDescription.trim()) {
         const opacityVal = landmarkOpacity || 15;
+        const placementText = landmarkPlacement === "both" ? "auf Vorder- UND Rückseite" : "nur auf der Vorderseite";
         if (landmarkStyle === "large") {
-          extraPrompt += ` WAHRZEICHEN (Slot 2): ACHTUNG – dies ist ein ANDERES Bild als das Vereinswappen! Dieses Bild (Slot 2, NICHT Slot 1!) ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. GROSS und ZENTRIERT auf dem Torso beider Seiten. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern. VERWECHSLUNGSGEFAHR: Verwende hier AUSSCHLIESSLICH das Bild aus Slot 2, NIEMALS das Vereinswappen aus Slot 1!`;
+          extraPrompt += ` STOFFMUSTER: Die Silhouette von "${landmarkDescription.trim()}" ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. GROSS und ZENTRIERT auf dem Torso (${placementText}). Ton-in-Ton, ${opacityVal}% heller/dunkler als Trikotfarbe. Liegt HINTER allen Nummern und Text.`;
         } else {
-          extraPrompt += ` WAHRZEICHEN (Slot 2): ACHTUNG – dies ist ein ANDERES Bild als das Vereinswappen! Dieses Bild (Slot 2, NICHT Slot 1!) ist als WIEDERHOLENDES MUSTER in den Stoff eingearbeitet (Sublimationsdruck). Viele kleine Kopien (2-5cm) bedecken den gesamten Stoff. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern. VERWECHSLUNGSGEFAHR: Verwende hier AUSSCHLIESSLICH das Bild aus Slot 2, NIEMALS das Vereinswappen aus Slot 1!`;
+          extraPrompt += ` STOFFMUSTER: Die Silhouette von "${landmarkDescription.trim()}" ist als WIEDERHOLENDES MUSTER in den Stoff eingearbeitet (Sublimationsdruck). Viele kleine Kopien bedecken den gesamten Stoff (${placementText}). Ton-in-Ton, ${opacityVal}% heller/dunkler als Trikotfarbe. Liegt HINTER allen Nummern und Text.`;
         }
       }
       
@@ -1376,47 +1343,33 @@ export default function KiDesign() {
                   </div>
                 </div>
 
-                {/* ═══ WAHRZEICHEN-UPLOAD ═══ */}
+                {/* ═══ WAHRZEICHEN (Textbeschreibung) ═══ */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold uppercase text-gray-500">Wahrzeichen (optional)</Label>
-                  <p className="text-xs text-muted-foreground">Laden Sie ein Bild hoch – es wird als Wasserzeichen ins Trikot-Design übernommen.</p>
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-all">
-                      <Mountain className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Foto hochladen</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleLandmarkUpload} />
-                    </label>
-                    {landmarkImage && (
-                      <div className="flex items-center gap-3">
-                        <img src={landmarkImage} alt="Wahrzeichen Original" className="w-12 h-12 object-cover rounded border" />
-                        {extractingSilhouette && (
-                          <div className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
-                            <span className="text-xs text-purple-600">Wird hochgeladen...</span>
-                          </div>
-                        )}
-                        {landmarkSilhouette && (
-                          <div className="flex items-center gap-3">
-                            <div className="relative w-16 h-16 rounded border-2 border-green-300 bg-gray-900 p-1">
-                              <img 
-                                src={storageUrl(landmarkSilhouette) || landmarkSilhouette} 
-                                alt="Silhouette" 
-                                className="w-full h-full object-contain invert" 
-                              />
-                              <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[8px] px-1 rounded">Bereit</span>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs text-green-600 font-medium">Als Wasserzeichen übernehmen</span>
-                              <Switch checked={useLandmark} onCheckedChange={setUseLandmark} />
-                            </div>
-                          </div>
-                        )}
+                  <p className="text-xs text-muted-foreground">Beschreiben Sie ein Wahrzeichen – die Silhouette wird als Stoffmuster ins Trikot eingearbeitet.</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="z.B. Hamburger Michel, Kölner Dom, Elbphilharmonie..."
+                          value={landmarkDescription}
+                          onChange={(e) => {
+                            setLandmarkDescription(e.target.value);
+                            if (e.target.value.trim()) setUseLandmark(true);
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:border-purple-400 focus:ring-1 focus:ring-purple-400 outline-none"
+                        />
                       </div>
-                    )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Aktiv</span>
+                        <Switch checked={useLandmark} onCheckedChange={setUseLandmark} />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Wahrzeichen-Optionen: Darstellungsart + Platzierung + Deckkraft */}
-                  {useLandmark && (landmarkImage || landmarkSilhouette) && (
+                  {useLandmark && landmarkDescription.trim() && (
                     <div className="mt-3 space-y-3 p-3 rounded-lg border border-purple-200 bg-purple-50/50">
                       {/* Darstellungsart */}
                       <div className="space-y-2">

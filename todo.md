@@ -2210,3 +2210,15 @@
 - [ ] Wahrzeichen-Bild prüfen: Ist die URL für die KI überhaupt lesbar?
 - [ ] Karten-Generierung fixen: Button "Karte generieren" funktioniert nicht
 - [ ] Alternative: Adresse direkt im Prompt verwenden statt Karten-Bild
+
+## GROSSER UMBAU: Logos per Post-Processing statt KI (08.05.2026)
+- [ ] Wappen und Sponsoren aus Referenzbildern entfernen (nur Wahrzeichen/Karte als Referenz)
+- [ ] logoOverlays im Frontend aktivieren: Wappen + Sponsoren als Post-Processing definieren
+- [ ] Prompt: Platzhalter-Bereiche für Logos freihalten, keine Logo-Beschreibung mehr
+- [ ] Markenverbot: KI darf KEINE Logos/Markennamen erfinden
+
+## Wahrzeichen-Umbau: Upload → Textfeld (08.05.2026)
+- [x] Wahrzeichen-Upload entfernen, durch Textfeld "Beschreibung" ersetzen
+- [x] Wahrzeichen-Prompt auf Textbeschreibung umstellen (kein Referenzbild mehr)
+- [x] Slot 2 nicht mehr als Referenzbild senden
+- [x] Bestehende Optionen beibehalten (groß/klein, vorne/hinten, Opacity, Wappen-Ausschluss)
