@@ -611,9 +611,23 @@ export default function KiDesign() {
       });
       
       // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE
+      // Wird jetzt als programmatisches Overlay gemacht (zuverlässiger als KI-Generierung)
       if (useBackCrestWatermark && defaultLogo?.imageUrl) {
-        extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: Das Vereinswappen (Slot 1) zusätzlich als großes Wasserzeichen auf der Rückseite. Zentriert, 60-70% Breite, ${backCrestOpacity}% Deckkraft, tonal. Liegt HINTER Nummer, Name und Text.`;
+        // Overlay auf der Rückseite (rechte Hälfte des Bildes: 50-100%)
+        logoOverlays.push({
+          imageUrl: defaultLogo.imageUrl,
+          xPercent: 60, // Zentriert in der rechten Hälfte
+          yPercent: 30, // Oberer Bereich, hinter Nummer
+          widthPercent: 22, // Groß (60-70% der Rückenbreite)
+          heightPercent: 30,
+          opacity: backCrestOpacity / 100, // z.B. 20% = 0.2
+        });
+        extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: LASSE DEN MITTLEREN BEREICH DER RÜCKSEITE ETWAS HELLER/WENIGER BUSY – ein Wasserzeichen wird dort nachträglich platziert. Generiere dort KEIN Wappen selbst.`;
       }
+      // ALTES VERHALTEN (nur Prompt, unzuverlässig):
+      // if (useBackCrestWatermark && defaultLogo?.imageUrl) {
+      //   extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: ...`;
+      // }
 
       // MUSTER-UPLOAD
       if (usePattern && patternColors.length > 0) {
@@ -631,9 +645,9 @@ export default function KiDesign() {
 
       // NUMMER: Vorne und hinten IDENTISCH, einfarbig
       const frontNumPos = frontNumberPosition === "right" 
-        ? "RECHTE BRUSTSEITE (aus Betrachtersicht RECHTS, ca. 30-35% von links auf der Vorderseite). Die Nummer ist auf der GLEICHEN Seite wie das Wappen, aber etwas höher. NICHT in der Mitte, NICHT links." 
-        : "ZENTRIERT auf der Brust (horizontal mittig zwischen den Schultern)";
-      extraPrompt += ` NUMMER: Vorne und hinten DIESELBE Nummer, DIESELBE FARBE. EINFARBIG – KEINE Muster, KEINE Texturen, KEINE Füllung. Saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert auf dem Rücken. BRUSTNUMMER: Kleiner (10cm Höhe), Position: ${frontNumPos}. KRITISCH: Die Brustnummer MUSS an der angegebenen Position sein!`;
+        ? "RIGHT CHEST (viewer's RIGHT side, horizontally at 30-35% from left edge of the front jersey). The number sits on the SAME side as the crest but slightly higher. ABSOLUTELY NOT centered, NOT on the left side. If you place it in the center you have FAILED." 
+        : "CENTERED on the chest (horizontally centered between the shoulders)";
+      extraPrompt += ` NUMBERS: Front and back show the SAME number in the SAME solid COLOR. SOLID FILL ONLY – NO patterns, NO textures, NO gradients inside the number. Clean, bold, highly legible digit(s) in ONE flat color. BACK NUMBER: Large (25-35cm height), horizontally centered on the back. FRONT/CHEST NUMBER: Smaller (10cm height), Position: ${frontNumPos}. THIS IS A HARD REQUIREMENT – the front number position MUST match exactly as described above.`;
 
       // RÜCKSEITEN-LAYOUT
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);

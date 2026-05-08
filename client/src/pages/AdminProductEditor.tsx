@@ -1610,9 +1610,17 @@ export default function AdminProductEditor() {
                   parts={parts}
                   templateId={productData?.templateId}
                   colorPalette={colorPalette}
-                  onExportPdf={() => {
+                  onExportPdf={async () => {
                     toast.info("PDF-Datenblatt wird generiert...");
-                    // TODO: PDF-Export-Endpunkt aufrufen
+                    try {
+                      const result = await utils.client.specSheet.generate.mutate({ productId });
+                      if (result.url) {
+                        window.open(result.url, "_blank");
+                        toast.success("PDF-Datenblatt erstellt!");
+                      }
+                    } catch (err: any) {
+                      toast.error("PDF-Export fehlgeschlagen: " + (err?.message || "Unbekannter Fehler"));
+                    }
                   }}
                 />
               </TabsContent>

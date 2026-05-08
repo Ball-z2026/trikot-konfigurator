@@ -1515,7 +1515,7 @@
 - [x] Frontend: Vorschau der erkannten Zonen auf dem hochgeladenen Bild (Drag & Resize)
 - [x] Frontend: Vorlage speichern mit erkannten Positionen
 - [x] Integration: Erkannte Zonen als Vorlage speicherbar (TemplateUpload-Komponente mit KI + manuellem Modus)
-- [ ] Falsche SVG-Produkte (basketball_dtf_svg, fussball_dtf_svg, handball_dtf_svg, volleyball_dtf_svg) aus DB löschen
+- [x] Falsche SVG-Produkte (basketball_dtf_svg, fussball_dtf_svg, handball_dtf_svg, volleyball_dtf_svg) aus DB gelöscht (existierten nicht mehr)
 - [ ] KI-Visualisierung mit echtem Basketball-Trikot-Mockup (ärmellos) erstellen
 
 ## KI-Bild-Analyse Erweiterung: Stil-Erkennung + Arc-Text + Auto-Befüllung
@@ -2108,7 +2108,7 @@
 - [x] Bug: Vorlage speichern – Button nicht mehr disabled, Auto-Name wenn leer
 
 ## Bug: Wappen als Wasserzeichen auf Rückseite funktioniert nicht (07.05.2026)
-- [ ] Wappen-Wasserzeichen auf Rückseite: Prompt/Toggle prüfen und fixen
+- [x] Wappen-Wasserzeichen auf Rückseite: Jetzt als programmatisches Overlay (nicht mehr KI-generiert)
 
 ## PDF-Sponsoren-Logo: Thumbnail + Original (08.05.2026)
 - [x] PDF-Vorschau: pdfjs-dist mit Vite-Worker-Import (?url Suffix) – rendert erste Seite als Canvas
@@ -2199,23 +2199,23 @@
 - [ ] Mehrere Sponsoren auf gleicher Position: Diskussion mit User nötig (aktuell nur erster pro Position)
 
 ## Hosen-Prompt Verfeinerung (08.05.2026)
-- [ ] Hosen-Prompt überarbeiten: KI generiert aktuell Trikot statt NUR Hose
+- [x] Hosen-Prompt überarbeiten: KI generiert aktuell Trikot statt NUR Hose (garmentDescription 'with shorts' entfernt)
 
 ## Prompt-Fixes (08.05.2026)
 - [x] Wahrzeichen/Wappen-Verwechslung: Klare Negativ-Anweisung dass Wappen NUR auf Herzseite darf, NICHT als Muster
 - [x] Hosen-Prompt: Komplett überarbeitet – englisch, klarer, "ONLY SHORTS" mehrfach betont, kein Trikot
 
 ## Kritische Prompt-Probleme (08.05.2026)
-- [ ] Markenelemente KOMPLETT verbieten: KI erfindet immer noch Markennamen (RERO etc.)
-- [ ] Wahrzeichen-Bild prüfen: Ist die URL für die KI überhaupt lesbar?
+- [x] Markenelemente KOMPLETT verbieten: Verbotsliste aktualisiert (RERO ist echtes Sponsor-Logo, kein Markenname)
+- [x] Wahrzeichen-Bild prüfen: Gelöst durch Umstellung auf Textbeschreibung (kein Referenzbild mehr nötig)
 - [x] Karten-Generierung fixen: Button "Karte generieren" funktioniert nicht
 - [x] Alternative: Adresse direkt im Prompt verwenden statt Karten-Bild (Backend-Endpunkt generiert echtes Kartenbild via Maps API → Storage)
 
 ## GROSSER UMBAU: Logos per Post-Processing statt KI (08.05.2026)
-- [ ] Wappen und Sponsoren aus Referenzbildern entfernen (nur Wahrzeichen/Karte als Referenz)
-- [ ] logoOverlays im Frontend aktivieren: Wappen + Sponsoren als Post-Processing definieren
-- [ ] Prompt: Platzhalter-Bereiche für Logos freihalten, keine Logo-Beschreibung mehr
-- [ ] Markenverbot: KI darf KEINE Logos/Markennamen erfinden
+- [x] Wappen und Sponsoren aus Referenzbildern entfernen (nur Wahrzeichen/Karte als Referenz)
+- [x] logoOverlays im Frontend aktivieren: Wappen + Sponsoren als Post-Processing definieren
+- [x] Prompt: Platzhalter-Bereiche für Logos freihalten, keine Logo-Beschreibung mehr
+- [x] Markenverbot: KI darf KEINE Logos/Markennamen erfinden (Verbotsliste aktualisiert)
 
 ## Wahrzeichen-Umbau: Upload → Textfeld (08.05.2026)
 - [x] Wahrzeichen-Upload entfernen, durch Textfeld "Beschreibung" ersetzen
@@ -2234,29 +2234,29 @@
 
 ## Versionshistorie & Nummern-Position (08.05.2026)
 - [ ] Versionshistorie: Jedes generierte Design speichern, Thumbnails anzeigen, zurückspringen
-- [ ] Spielernummer-Position: Option Mitte/Rechte Brust, fließt direkt in Prompt ein
+- [x] Spielernummer-Position: Option Mitte/Rechte Brust, fließt direkt in Prompt ein (Prompt verstärkt)
 
 ## Produktdesigner erweitern: Mannschaftslisten + Design-Funktionen
 
 ### Mannschaftslisten im Produktdesigner
-- [ ] Mannschaftslisten-Sektion im Produktdesigner einbauen (erstellen, hochladen, speichern)
-- [ ] CSV/Excel-Import für Mannschaftslisten im Produktdesigner
-- [ ] Mannschaftsliste manuell erstellen (Name, Nummer, Größe, Kürzel)
-- [ ] Mannschaftsliste pro User speichern und bei allen Produkten wiederverwendbar
-- [ ] Rollenbasierter Zugriff: Owner=alle, Spartenleiter=seine Sparte, Trainer=seine Mannschaft
-- [ ] Mannschaftsliste im Konfigurator als Auswahl verfügbar (Light-Version: nur Personalisierung)
+- [x] Mannschaftslisten-Sektion im Produktdesigner einbauen (TeamRosterPanel in AdminProductEditor)
+- [x] CSV/Excel-Import für Mannschaftslisten im Produktdesigner (player.importCsv)
+- [x] Mannschaftsliste manuell erstellen (Name, Nummer, Größe, Kürzel) (handleAddPlayer im TeamRosterPanel)
+- [x] Mannschaftsliste pro User speichern und bei allen Produkten wiederverwendbar (teams/players in DB, TeamRosterPanel lädt per orgId)
+- [x] Rollenbasierter Zugriff: Owner=alle, Spartenleiter=seine Sparte, Trainer=seine Mannschaft (im team-Router implementiert)
+- [x] Mannschaftsliste im Konfigurator als Auswahl verfügbar (team.mine + Dropdown + Spieler laden)
 
 ### Separate Kopie des Produktdesigners
-- [ ] ProduktDesignerV2.tsx als Kopie angelegt (Route noch nicht registriert)
-- [ ] ProduktEditorV2.tsx als Kopie angelegt (Route noch nicht registriert)
+- [x] ProduktDesignerV2.tsx als Kopie angelegt (Route registriert: /designer-v2)
+- [x] ProduktEditorV2.tsx als Kopie angelegt (Route registriert: /editor-v2/:id)
 
 ### Sicherung
 - [x] Checkpoint vor Umbau gespeichert (Version: 1920215e)
 
 ### Spezifikationsansicht + PDF-Export
-- [ ] Spezifikationsansicht im Produktdesigner: Alle Elemente links/rechts neben dem Produkt mit Details (Farbe, Größe, Schrift, Datei-Verweis)
-- [ ] PDF-Export/Datenblatt für Druckerei mit allen Element-Spezifikationen
-- [ ] Automatische Übernahme aller Änderungen im Produktdesigner in den Druckbogen
+- [x] Spezifikationsansicht im Produktdesigner: ProductSpecPanel zeigt alle Zonen mit Details
+- [x] PDF-Export/Datenblatt für Druckerei: specSheet.generate Endpunkt + Button im ProductSpecPanel
+- [x] Automatische Übernahme aller Änderungen im Produktdesigner in den Druckbogen (Zonen werden direkt aus DB geladen)
 
 ## Kontrast-Logik und korrekte Positionierung
 
