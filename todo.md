@@ -2154,6 +2154,9 @@
 - [x] Hose: Vereinswappen übernehmen
 - [x] Hose: Möglichkeit Sponsoren hinzuzufügen (Auswahl)
 
+## Wahrzeichen Silhouette erzwingen (08.05.2026)
+- [x] Prompt maximal verschärft: ZERO CREATIVE FREEDOM, PIXEL BY PIXEL reproduction, bei Nicht-Erkennung lieber BLANK als Ersatz
+
 ## Später (Feature-Backlog)
 - [ ] Wappen in Rückennummer als optionales Feature (wenn KI-Qualität besser wird)
 
