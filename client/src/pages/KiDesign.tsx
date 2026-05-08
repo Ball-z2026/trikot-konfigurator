@@ -419,13 +419,13 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       
-      // WAHRZEICHEN: Referenzbild 1 in der Liste, klarer Prompt
+      // WAHRZEICHEN: Referenzbild 1 in der Liste – als Sublimationsdruck in den Stoff eingearbeitet
       if (useLandmark && landmarkSilhouette) {
         const opacityVal = landmarkOpacity || 15;
         if (landmarkStyle === "large") {
-          extraPrompt += ` WASSERZEICHEN: Referenzbild 1 ist das WAHRZEICHEN. Übernimm GENAU DIESES BILD als großes Wasserzeichen auf dem Trikot. Platziere es ZENTRIERT über den Torso (50-60% der Fläche). Deckkraft: ${opacityVal}%. Gleicher Farbton wie Trikot, leicht heller oder dunkler. Liegt HINTER allen Logos und Nummern. Das Wahrzeichen ist Referenzbild 1 - es ist NICHT das Vereinswappen und NICHT ein Sponsor-Logo.`;
+          extraPrompt += ` STOFF-TEXTUR: Referenzbild 1 zeigt eine Form/Silhouette. Diese Form ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Stelle dir vor, der Stoff wurde mit dieser Form bedruckt – sie ist Teil des Materials, nicht aufgeklebt. Platziere diese Form GROSS und ZENTRIERT auf dem Torso-Bereich beider Trikotseiten (vorne und hinten). Die Form soll im GLEICHEN FARBTON wie das Trikot erscheinen, nur ${opacityVal}% heller oder dunkler – wie ein Ton-in-Ton Sublimationsdruck. Sie liegt HINTER allen Logos, Nummern und Schriften. WICHTIG: Verwende GENAU die Form aus Referenzbild 1, NICHT das Vereinswappen.`;
         } else {
-          extraPrompt += ` WASSERZEICHEN: Referenzbild 1 ist das WAHRZEICHEN. Übernimm GENAU DIESES BILD und wiederhole es als Streumuster (viele kleine Kopien, 2-5cm) über das gesamte Trikot. Deckkraft: ${opacityVal}%. Gleicher Farbton wie Trikot, leicht heller oder dunkler. Liegt HINTER allen Logos und Nummern. Das Wahrzeichen ist Referenzbild 1 - es ist NICHT das Vereinswappen und NICHT ein Sponsor-Logo.`;
+          extraPrompt += ` STOFF-TEXTUR: Referenzbild 1 zeigt eine Form/Silhouette. Diese Form ist als WIEDERHOLENDES MUSTER DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Viele kleine Kopien (2-5cm) dieser Form bedecken den gesamten Stoff – wie ein All-Over-Print. Die Form soll im GLEICHEN FARBTON wie das Trikot erscheinen, nur ${opacityVal}% heller oder dunkler – wie ein Ton-in-Ton Sublimationsdruck. Sie liegt HINTER allen Logos, Nummern und Schriften. WICHTIG: Verwende GENAU die Form aus Referenzbild 1, NICHT das Vereinswappen.`;
         }
       }
       
@@ -523,9 +523,14 @@ export default function KiDesign() {
         extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: Referenzbild ${crestNum} (Vereinswappen) als großes Wasserzeichen auf der Rückseite. Zentriert, 60-70% Breite, ${backCrestOpacity}% Deckkraft, tonal (gleicher Farbton wie Trikot). Liegt HINTER Nummer, Name und Text.`;
       }
 
-      // STRASSENKARTE ALS WASSERZEICHEN
+      // STRASSENKARTE ALS WASSERZEICHEN – Bild wird als Referenz gesendet
       if (useMapWatermark && mapImageUrl) {
-        extraPrompt += ` Include a subtle street map pattern as a watermark/texture across the jersey fabric at approximately ${watermarkOpacity}% opacity. The map should show road lines and intersections creating an abstract geometric pattern that blends into the jersey design as a tonal background texture.`;
+        // Bildnummer dynamisch berechnen
+        let mapImgNum = 1;
+        if (useLandmark && landmarkSilhouette) mapImgNum++;
+        if (defaultLogo?.imageUrl) mapImgNum++;
+        mapImgNum += enabledSponsors.length;
+        extraPrompt += ` STRASSENKARTE: Referenzbild ${mapImgNum} ist eine Straßenkarte. Diese Karte ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Die Straßenlinien und Kreuzungen bilden ein abstraktes geometrisches Muster das in den Stoff eingedruckt ist. Ton-in-Ton, ${watermarkOpacity}% heller oder dunkler als die Trikotfarbe. Bedeckt den gesamten Stoff als Hintergrundtextur. Liegt HINTER allen Logos, Nummern und Schriften.`;
       }
 
       // WASSERZEICHEN-DECKUNG (für Silhouette) - jetzt direkt im Hauptprompt oben integriert
@@ -555,6 +560,11 @@ export default function KiDesign() {
       enabledSponsors.forEach(s => {
         if (s.imageUrl) additionalRefs.push(s.imageUrl);
       });
+      
+      // Straßenkarte als Referenzbild
+      if (useMapWatermark && mapImageUrl) {
+        additionalRefs.push(mapImageUrl);
+      }
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
