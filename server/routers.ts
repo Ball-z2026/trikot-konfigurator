@@ -4554,6 +4554,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
             realWidthCm: widthCm,
             realHeightCm: heightCm,
             zones: filledZones,
+            backgroundImageUrl: dbPart.key === "vorderteil" ? ((design as any).frontImageUrl || undefined) : dbPart.key === "rueckteil" ? ((design as any).backImageUrl || undefined) : undefined,
           });
         }
 
@@ -4824,11 +4825,11 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
 
         // Farbpalette aus Produkt (colorsConfig)
         let colorPalette: string[] = [];
-        if (product.colorsConfig) {
+        if ((product as any).colorsConfig) {
           try {
-            const colors = typeof product.colorsConfig === "string"
-              ? JSON.parse(product.colorsConfig)
-              : product.colorsConfig;
+            const colors = typeof (product as any).colorsConfig === "string"
+              ? JSON.parse((product as any).colorsConfig)
+              : (product as any).colorsConfig;
             if (Array.isArray(colors)) {
               colorPalette = colors.filter((c: any) => typeof c === "string" && c.startsWith("#"));
             } else if (typeof colors === "object") {

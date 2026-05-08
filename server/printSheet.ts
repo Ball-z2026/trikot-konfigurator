@@ -86,6 +86,8 @@ export interface PrintSheetConfig {
   realHeightCm: number;
   /** Zonen auf diesem Part */
   zones: PrintZone[];
+  /** Hintergrundbild-URL für dieses Part (KI-generiertes Muster) */
+  backgroundImageUrl?: string;
 }
 
 export interface PlayerPrintData {
@@ -116,6 +118,8 @@ export interface PrintJobConfig {
   bleedMm?: number;
   /** Primäre Hintergrundfarbe des Designs (für Kontrast-Logik) */
   bgColor?: string;
+  /** Hintergrundbild-URL (KI-generiertes Muster) pro Part */
+  backgroundImageUrl?: string;
   /** DPI für Bildauflösung (Standard: 300) */
   dpi?: number;
 }
@@ -239,7 +243,21 @@ export async function generatePrintSheet(
     2,
     { width: safeWidth, align: "center" }
   );
-
+  // ── Hintergrundbild rendern (KI-Muster) ──
+  const bgImageUrl = part.backgroundImageUrl || config.backgroundImageUrl;
+  if (bgImageUrl) {
+    try {
+      const bgImageBuffer = await fetchImageBuffer(bgImageUrl);
+      if (bgImageBuffer) {
+        doc.image(bgImageBuffer, 0, 0, {
+          width: pageWidthPt,
+          height: pageHeightPt,
+        });
+      }
+    } catch (err) {
+      console.warn(`[PrintSheet] Hintergrundbild konnte nicht geladen werden: ${bgImageUrl}`, err);
+    }
+  }
   // ── Zonen rendern ──
   // bgColor an alle Zonen übergeben (für Kontrast-Logik)
   const bgColor = config.bgColor;

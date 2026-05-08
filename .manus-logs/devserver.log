@@ -9276,3 +9276,66 @@
 [2026-05-08T21:06:41.856Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-08T21:06:43.590Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-08T21:06:44.374Z] Server running on http://localhost:3000/
+[2026-05-08T21:08:45.603Z] 5:08:45 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-08T21:08:47.466Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:08:48.333Z] Server running on http://localhost:3000/
+[2026-05-08T21:08:50.844Z] 5:08:50 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-08T21:08:52.394Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:08:53.175Z] Server running on http://localhost:3000/
+[2026-05-08T21:09:03.960Z] 5:09:03 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-08T21:09:05.608Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:09:06.459Z] Server running on http://localhost:3000/
+[2026-05-08T21:09:59.577Z] 5:09:59 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T21:10:01.083Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:10:01.874Z] Server running on http://localhost:3000/
+[2026-05-08T21:10:19.162Z] 5:10:19 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T21:10:20.989Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:10:21.773Z] Server running on http://localhost:3000/
+[2026-05-08T21:10:38.710Z] 5:10:38 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T21:10:40.289Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:10:41.059Z] Server running on http://localhost:3000/
+[2026-05-08T21:11:01.353Z] [Auth] Missing session cookie
+[2026-05-08T21:11:01.357Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.164Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.220Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.229Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.235Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.243Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.249Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.257Z] [Auth] Missing session cookie
+[2026-05-08T21:11:02.263Z] [Auth] Missing session cookie
+[2026-05-08T21:11:08.920Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-08T21:11:08.926Z] [Auth] Missing session cookie
+[2026-05-08T21:11:08.933Z] [Auth] Missing session cookie
+[2026-05-08T21:11:15.020Z] Dev server process group stopped
+[2026-05-08T21:11:15.088Z] Dev server exited with code -15
+[2026-05-08T21:11:18.035Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T21:11:19.837Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:11:20.681Z] Server running on http://localhost:3000/
+[2026-05-08T21:11:40.225Z] 5:11:40 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T21:11:42.287Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:11:43.147Z] Server running on http://localhost:3000/
+[2026-05-08T21:13:20.966Z] 5:13:20 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-08T21:13:21.439Z] c
+[2026-05-08T21:13:21.440Z] node:internal/modules/run_main:122
+[2026-05-08T21:13:21.441Z] triggerUncaughtException(
+[2026-05-08T21:13:21.441Z] ^
+[2026-05-08T21:13:21.441Z] Error [TransformError]: Transform failed with 1 error:
+[2026-05-08T21:13:21.442Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:256:7: ERROR: Expected "finally" but found ")"
+[2026-05-08T21:13:21.442Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-05-08T21:13:21.443Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-05-08T21:13:21.443Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-05-08T21:13:21.443Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-05-08T21:13:21.444Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-05-08T21:13:21.444Z] at Socket.emit (node:events:524:28)
+[2026-05-08T21:13:21.444Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-05-08T21:13:21.444Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-05-08T21:13:21.445Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-05-08T21:13:21.445Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-05-08T21:13:21.446Z] 
+[2026-05-08T21:13:21.446Z] Node.js v22.13.0
+[2026-05-08T21:16:41.540Z] Dev server process group stopped
+[2026-05-08T21:16:41.548Z] Dev server exited with code -15
+[2026-05-08T21:16:44.553Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T21:16:46.614Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:16:47.484Z] Server running on http://localhost:3000/
