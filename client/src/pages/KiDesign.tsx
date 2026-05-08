@@ -419,9 +419,15 @@ export default function KiDesign() {
       // Zusätzliche Prompt-Teile basierend auf Optionen
       let extraPrompt = "";
       
-      // WAHRZEICHEN: Wird NICHT mehr im Prompt beschrieben.
-      // Es wird NACH der Generierung als programmatisches Overlay draufgelegt (100% zuverlässig).
-      // Siehe overlays-Array weiter unten.
+      // WAHRZEICHEN: Als referenceUrl (Hauptreferenzbild) gesendet + klarer Prompt
+      if (useLandmark && landmarkSilhouette) {
+        const opacityVal = landmarkOpacity || 15;
+        if (landmarkStyle === "large") {
+          extraPrompt += ` WASSERZEICHEN-ANWEISUNG: Das HAUPTREFERENZBILD (erstes Bild) zeigt eine Form/Silhouette. Verwende GENAU DIESES BILD als großes Wasserzeichen auf dem Trikot. Platziere es ZENTRIERT über den Torso-Bereich (50-60% der Trikotfläche). Deckkraft: ${opacityVal}% (sehr subtil, fast durchsichtig). Die Form muss im GLEICHEN Farbton wie das Trikot sein, nur leicht heller oder dunkler. Das Wasserzeichen liegt HINTER allen Logos, Nummern und Texten. WICHTIG: Verwende das ERSTE REFERENZBILD - nicht das Wappen, nicht einen Sponsor. Das ERSTE Bild!`;
+        } else {
+          extraPrompt += ` WASSERZEICHEN-ANWEISUNG: Das HAUPTREFERENZBILD (erstes Bild) zeigt eine Form/Silhouette. Verwende GENAU DIESES BILD und wiederhole es als Streumuster aus vielen kleinen Kopien (2-5cm) über das gesamte Trikot. Deckkraft: ${opacityVal}% (sehr subtil). Die Formen müssen im GLEICHEN Farbton wie das Trikot sein, nur leicht heller oder dunkler. Das Muster liegt HINTER allen Logos, Nummern und Texten. WICHTIG: Verwende das ERSTE REFERENZBILD - nicht das Wappen, nicht einen Sponsor. Das ERSTE Bild!`;
+        }
+      }
       
       // MUSTER-UPLOAD
       if (usePattern && patternColors.length > 0) {
@@ -448,7 +454,7 @@ export default function KiDesign() {
       // Wappen in Rückennummer – DEAKTIVIERT (später als Feature)
       // Stattdessen: Rückennummer ist immer einfarbig (solid color)
       // NUMMER: Vorne und hinten IDENTISCH, einfarbig
-      extraPrompt += ` NUMMER: Vorne und hinten muss DIESELBE Nummer stehen (z.B. wenn hinten "9" steht, muss vorne auch "9" stehen). Die Nummer muss EINFARBIG sein - KEINE Muster, KEINE Texturen, KEINE Embleme, KEINE Zeichen in den Ziffern. Nur eine saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert. BRUSTNUMMER: Kleiner (10cm), auf der LINKEN Seite aus Betrachtersicht (gegenüber dem Wappen), Position: 30-35% von links, 32% von oben.`;
+      extraPrompt += ` NUMMER: Vorne und hinten muss DIESELBE Nummer stehen UND DIESELBE FARBE haben. Die Nummer muss EINFARBIG sein - KEINE Muster, KEINE Texturen, KEINE Embleme. Nur eine saubere, fette, gut lesbare Zahl in EINER Farbe. Vorne und hinten IDENTISCHE Farbe! RÜCKENNUMMER: Groß (25-35cm), zentriert. BRUSTNUMMER: Kleiner (10cm), auf der LINKEN Seite aus Betrachtersicht (gegenüber dem Wappen), Position: 30-35% von links, 32% von oben.`;
 
       // RÜCKSEITEN-LAYOUT = Dynamische Positionierung basierend auf gewähltem Layout
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
@@ -531,16 +537,23 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
-      // REFERENZBILDER: Wappen und Sponsoren als Referenz für die KI.
-      // WAHRZEICHEN wird NICHT als Referenzbild gesendet - es wird NACH der Generierung als Overlay draufgelegt.
+      // REFERENZBILDER:
+      // 1. Wahrzeichen als referenceUrl (HAUPTREFERENZBILD = erstes Bild für die KI)
+      // 2. Wappen + Sponsoren als additionalRefs
       const additionalRefs: string[] = [];
+      let wahrzeichenRef: string | undefined;
       
-      // Vereinswappen als Referenzbild
+      // Wahrzeichen als HAUPTREFERENZBILD (erstes Bild)
+      if (useLandmark && landmarkSilhouette) {
+        wahrzeichenRef = landmarkSilhouette;
+      }
+      
+      // Vereinswappen als zusätzliches Referenzbild
       if (defaultLogo?.imageUrl) {
         additionalRefs.push(defaultLogo.imageUrl);
       }
       
-      // Sponsor-Logos als Referenzbilder
+      // Sponsor-Logos als zusätzliche Referenzbilder
       enabledSponsors.forEach(s => {
         if (s.imageUrl) additionalRefs.push(s.imageUrl);
       });
@@ -550,28 +563,14 @@ export default function KiDesign() {
         additionalRefs.push(manufacturerLogoUrl);
       }
 
-      // Wahrzeichen als Overlay NACH der Generierung (zentriert, halbtransparent)
-      const overlays: Array<{imageUrl: string; xPercent: number; yPercent: number; widthPercent: number; heightPercent: number; opacity?: number}> = [];
-      if (useLandmark && landmarkSilhouette) {
-        overlays.push({
-          imageUrl: landmarkSilhouette,
-          xPercent: 10,
-          yPercent: 15,
-          widthPercent: 80,
-          heightPercent: 70,
-          opacity: (landmarkOpacity || 15) / 100,
-        });
-      }
-
       const result = await generateAiMockup.mutateAsync({
         productName: `${sportInfo?.name || selectedSport} Trikot`,
         productType: "trikot",
         colorDescription: `Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}`,
         side: "front",
         customPrompt: prompt,
-        referenceImageUrl: undefined,
+        referenceImageUrl: wahrzeichenRef,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
-        logoOverlays: overlays.length > 0 ? overlays : undefined,
       });
 
       if (result.url) {
