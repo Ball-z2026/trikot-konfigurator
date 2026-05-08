@@ -740,21 +740,33 @@ export default function KiDesign() {
       
       // Hosen-Prompt mit optionalen Elementen
       let shortsExtras = "";
-      if (shortsIncludeNumber) {
-        shortsExtras += ` FRONT VIEW - PLAYER NUMBER: Place a player number on the FRONT LEFT LEG (viewer's perspective) of the shorts. The number should be approximately 8cm tall, positioned on the upper-outer thigh area. Use the same font style and color as the jersey back number. The number is "23".`;
-      }
-      if (shortsIncludeCrest && defaultLogo?.imageUrl) {
-        shortsExtras += ` FRONT VIEW - CLUB CREST: Place the club crest/badge (provided as reference image) on the FRONT RIGHT LEG (viewer's perspective) of the shorts. Position: upper-outer thigh area, same height as the number on the opposite leg. Size: approximately 5-6cm. [ABSOLUTE CREST RULE]: Reproduce the crest PIXEL-PERFECT from the reference image - EXACT same shape, design, typography. You may adjust COLOR to match shorts, but FORM must be IDENTICAL.`;
-      }
-      // Sponsoren auf der Hose mit Platzierung und Größe
+      
+      // Sponsoren-Logik: Prüfe ob ein Sponsor VORNE platziert ist
       const shortsSponsorLogos = sponsorLogos.filter(s => shortsSponsorIds.includes(s.id) && s.imageUrl);
+      const hasFrontSponsor = shortsSponsorLogos.some(s => (shortsSponsorPlacements[s.id] || "front") === "front");
+      
+      // POSITIONIERUNG: Alle Elemente UNTEN am Hosenbein-Saum (unteres Drittel des Beins)
+      // Gleiche Seitenaufteilung wie Trikot: Nummer LINKS, Wappen RECHTS
+      if (shortsIncludeNumber) {
+        shortsExtras += ` FRONT VIEW - PLAYER NUMBER: Place player number "23" on the FRONT LEFT LEG (viewer's left). Position: BOTTOM of the leg, near the hem/cuff (lower third of the shorts leg). Size: approximately 8cm tall. Use the same font style and color as the jersey back number.`;
+      }
+      // Wappen nur wenn KEIN Sponsor vorne (Sponsor ersetzt Wappen-Position)
+      if (shortsIncludeCrest && defaultLogo?.imageUrl && !hasFrontSponsor) {
+        shortsExtras += ` FRONT VIEW - CLUB CREST: Place the club crest (from reference image) on the FRONT RIGHT LEG (viewer's right). Position: BOTTOM of the leg, near the hem/cuff (same height as number on opposite leg). Size: approximately 5-6cm. [ABSOLUTE CREST RULE]: Reproduce PIXEL-PERFECT from reference - EXACT same shape/design. Color adjustment OK, FORM must be IDENTICAL.`;
+      }
+      // Sponsoren auf der Hose
       if (shortsSponsorLogos.length > 0) {
         shortsSponsorLogos.forEach((s) => {
           const placement = shortsSponsorPlacements[s.id] || "front";
           const size = shortsSponsorSizes[s.id] || "medium";
           const sizeMap = { small: "5cm wide x 2cm tall", medium: "8cm wide x 3cm tall", large: "12cm wide x 5cm tall" };
-          const posDesc = placement === "front" ? "FRONT CENTER of the shorts, below the waistband" : "BACK CENTER of the shorts";
-          shortsExtras += ` Place sponsor logo "${s.name}" (from reference image) on the ${posDesc}. Size: approximately ${sizeMap[size]}. [ABSOLUTE LOGO RULE]: Reproduce PIXEL-PERFECT - EXACT same shape, typography, proportions. You may adjust COLOR, but FORM must be IDENTICAL. Do NOT write just the name as text.`;
+          if (placement === "front") {
+            // Vorne: Sponsor ersetzt Wappen-Position (rechtes Bein, UNTEN)
+            shortsExtras += ` FRONT VIEW - SPONSOR: Place sponsor logo "${s.name}" (from reference image) on the FRONT RIGHT LEG (viewer's right). Position: BOTTOM of the leg, near the hem/cuff. Size: approximately ${sizeMap[size]}. [ABSOLUTE LOGO RULE]: Reproduce PIXEL-PERFECT - EXACT same shape/typography/proportions. Color adjustment OK, FORM must be IDENTICAL.`;
+          } else {
+            // Hinten: Sponsor UNTEN am Hosenbein
+            shortsExtras += ` BACK VIEW - SPONSOR: Place sponsor logo "${s.name}" (from reference image) on the BACK of the shorts. Position: BOTTOM of the leg, near the hem/cuff, centered. Size: approximately ${sizeMap[size]}. [ABSOLUTE LOGO RULE]: Reproduce PIXEL-PERFECT - EXACT same shape/typography/proportions. Color adjustment OK, FORM must be IDENTICAL.`;
+          }
         });
       }
 

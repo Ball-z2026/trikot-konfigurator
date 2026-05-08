@@ -2161,6 +2161,9 @@
 - [x] Hose: NUR Hose generieren (kein Trikot/Oberteil im Bild) – Prompt verstärkt: "ONLY SHORTS, NO jersey"
 - [x] Hose: Nummer + Wappen auf VORDERSEITE (FRONT LEFT LEG / FRONT RIGHT LEG)
 - [x] Hose: Sponsoren mit Platzierung (vorne/hinten) und Größenauswahl (klein/mittel/groß)
+- [x] Hose: Positionierung wie Trikot (links Nummer, rechts Wappen)
+- [x] Hose: Wenn Sponsor vorne → Sponsor ersetzt Wappen auf Vorderseite
+- [x] Hose: ALLE Elemente UNTEN am Hosenbein-Saum positionieren (auch Rückseite)
 
 ## Sponsor-Logo + Wappen Form erzwingen (08.05.2026)
 - [x] Sponsor-Logo: ABSOLUTE LOGO RULE – Form/Typografie/Proportionen IDENTISCH, nur Farbanpassung erlaubt
