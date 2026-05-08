@@ -2157,6 +2157,11 @@
 ## Wahrzeichen Silhouette erzwingen (08.05.2026)
 - [x] Prompt maximal verschärft: ZERO CREATIVE FREEDOM, PIXEL BY PIXEL reproduction, bei Nicht-Erkennung lieber BLANK als Ersatz
 
+## Hosen-Generierung korrigieren (08.05.2026)
+- [x] Hose: NUR Hose generieren (kein Trikot/Oberteil im Bild) – Prompt verstärkt: "ONLY SHORTS, NO jersey"
+- [x] Hose: Nummer + Wappen auf VORDERSEITE (FRONT LEFT LEG / FRONT RIGHT LEG)
+- [x] Hose: Sponsoren mit Platzierung (vorne/hinten) und Größenauswahl (klein/mittel/groß)
+
 ## Sponsor-Logo + Wappen Form erzwingen (08.05.2026)
 - [x] Sponsor-Logo: ABSOLUTE LOGO RULE – Form/Typografie/Proportionen IDENTISCH, nur Farbanpassung erlaubt
 - [x] Vereinswappen: ABSOLUTE CREST RULE – Form/Design/Symbole IDENTISCH, nur Farbanpassung erlaubt

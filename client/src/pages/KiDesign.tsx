@@ -727,6 +727,8 @@ export default function KiDesign() {
   const [shortsIncludeNumber, setShortsIncludeNumber] = useState(true);
   const [shortsIncludeCrest, setShortsIncludeCrest] = useState(true);
   const [shortsSponsorIds, setShortsSponsorIds] = useState<string[]>([]);
+  const [shortsSponsorPlacements, setShortsSponsorPlacements] = useState<Record<string, "front" | "back">>({});
+  const [shortsSponsorSizes, setShortsSponsorSizes] = useState<Record<string, "small" | "medium" | "large">>({});
 
   // ── Passende Hose generieren (mit Nummer, Wappen, Sponsoren) ──
   const generateMatchingShorts = async () => {
@@ -739,20 +741,24 @@ export default function KiDesign() {
       // Hosen-Prompt mit optionalen Elementen
       let shortsExtras = "";
       if (shortsIncludeNumber) {
-        shortsExtras += ` Place a player number on the LEFT LEG (viewer's perspective) of the shorts. The number should be approximately 8cm tall, positioned on the upper-outer thigh area. Use the same font style and color as the jersey back number. The number is "23".`;
+        shortsExtras += ` FRONT VIEW - PLAYER NUMBER: Place a player number on the FRONT LEFT LEG (viewer's perspective) of the shorts. The number should be approximately 8cm tall, positioned on the upper-outer thigh area. Use the same font style and color as the jersey back number. The number is "23".`;
       }
       if (shortsIncludeCrest && defaultLogo?.imageUrl) {
-        shortsExtras += ` Place the club crest/badge (provided as reference image) on the RIGHT LEG (viewer's perspective) of the shorts. Position: upper-outer thigh area, same height as the number on the opposite leg. Size: approximately 5-6cm. Reproduce PIXEL-PERFECT from the reference image.`;
+        shortsExtras += ` FRONT VIEW - CLUB CREST: Place the club crest/badge (provided as reference image) on the FRONT RIGHT LEG (viewer's perspective) of the shorts. Position: upper-outer thigh area, same height as the number on the opposite leg. Size: approximately 5-6cm. [ABSOLUTE CREST RULE]: Reproduce the crest PIXEL-PERFECT from the reference image - EXACT same shape, design, typography. You may adjust COLOR to match shorts, but FORM must be IDENTICAL.`;
       }
-      // Sponsoren auf der Hose
+      // Sponsoren auf der Hose mit Platzierung und Größe
       const shortsSponsorLogos = sponsorLogos.filter(s => shortsSponsorIds.includes(s.id) && s.imageUrl);
       if (shortsSponsorLogos.length > 0) {
-        shortsSponsorLogos.forEach((s, i) => {
-          shortsExtras += ` Place sponsor logo "${s.name}" (from reference image) on the ${i === 0 ? "FRONT CENTER" : "BACK"} of the shorts, below the waistband. Size: approximately 8cm wide x 3cm tall. Reproduce PIXEL-PERFECT - do NOT write just the name as text.`;
+        shortsSponsorLogos.forEach((s) => {
+          const placement = shortsSponsorPlacements[s.id] || "front";
+          const size = shortsSponsorSizes[s.id] || "medium";
+          const sizeMap = { small: "5cm wide x 2cm tall", medium: "8cm wide x 3cm tall", large: "12cm wide x 5cm tall" };
+          const posDesc = placement === "front" ? "FRONT CENTER of the shorts, below the waistband" : "BACK CENTER of the shorts";
+          shortsExtras += ` Place sponsor logo "${s.name}" (from reference image) on the ${posDesc}. Size: approximately ${sizeMap[size]}. [ABSOLUTE LOGO RULE]: Reproduce PIXEL-PERFECT - EXACT same shape, typography, proportions. You may adjust COLOR, but FORM must be IDENTICAL. Do NOT write just the name as text.`;
         });
       }
 
-      const shortsPrompt = `Professional product photography of matching sports shorts/pants for ${currentSportInfo?.name || selectedSport}, flat lay on white background. The shorts must match this jersey design exactly: Primary color: ${primaryColor}, Secondary color: ${secondaryColor}, Accent color: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. The shorts should complement the jersey with the same color scheme, similar design elements and patterns. Show FRONT view only. CRITICAL: Show ONLY the shorts - no jersey, no socks, no other items. SIZE L. High-end product photography, studio lighting, no wrinkles.${shortsExtras} CRITICAL BRAND RULE: Do NOT invent any logos or brand marks that are NOT provided as reference images.`;
+      const shortsPrompt = `Professional product photography of ONLY sports shorts/pants for ${currentSportInfo?.name || selectedSport}, flat lay on white background. CRITICAL: Generate ONLY the shorts - absolutely NO jersey, NO shirt, NO socks, NO other clothing items in the image. ONLY SHORTS. The shorts must match this jersey design: Primary color: ${primaryColor}, Secondary color: ${secondaryColor}, Accent color: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. The shorts should complement the jersey with the same color scheme and similar design elements. Show FRONT and BACK view side by side (front on left, back on right). SIZE L. High-end product photography, studio lighting, no wrinkles.${shortsExtras} CRITICAL BRAND RULE: Do NOT invent any logos or brand marks that are NOT provided as reference images.`;
 
       // Referenzbilder für die Hose: Trikot + Wappen + Sponsoren
       const shortsAdditionalRefs: string[] = [];
@@ -1760,25 +1766,48 @@ export default function KiDesign() {
                         </div>
                       )}
                       {sponsorLogos.filter(s => s.enabled && s.imageUrl).length > 0 && (
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <span className="text-xs text-green-700 font-medium">Sponsoren auf Hose:</span>
                           {sponsorLogos.filter(s => s.enabled && s.imageUrl).map(s => (
-                            <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={shortsSponsorIds.includes(s.id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setShortsSponsorIds(prev => [...prev, s.id]);
-                                  } else {
-                                    setShortsSponsorIds(prev => prev.filter(id => id !== s.id));
-                                  }
-                                }}
-                                className="rounded border-green-400"
-                              />
-                              <img src={storageUrl(s.imageUrl) || s.imageUrl} alt={s.name} className="w-5 h-5 object-contain" />
-                              <span className="text-green-800">{s.name}</span>
-                            </label>
+                            <div key={s.id} className="space-y-1 p-2 bg-white rounded border border-green-100">
+                              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={shortsSponsorIds.includes(s.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setShortsSponsorIds(prev => [...prev, s.id]);
+                                    } else {
+                                      setShortsSponsorIds(prev => prev.filter(id => id !== s.id));
+                                    }
+                                  }}
+                                  className="rounded border-green-400"
+                                />
+                                <img src={storageUrl(s.imageUrl) || s.imageUrl} alt={s.name} className="w-5 h-5 object-contain" />
+                                <span className="text-green-800">{s.name}</span>
+                              </label>
+                              {shortsSponsorIds.includes(s.id) && (
+                                <div className="ml-6 flex gap-2 flex-wrap">
+                                  <select
+                                    value={shortsSponsorPlacements[s.id] || "front"}
+                                    onChange={(e) => setShortsSponsorPlacements(prev => ({ ...prev, [s.id]: e.target.value as "front" | "back" }))}
+                                    className="text-[10px] px-2 py-1 rounded border border-green-300 bg-green-50"
+                                  >
+                                    <option value="front">Vorne</option>
+                                    <option value="back">Hinten</option>
+                                  </select>
+                                  <select
+                                    value={shortsSponsorSizes[s.id] || "medium"}
+                                    onChange={(e) => setShortsSponsorSizes(prev => ({ ...prev, [s.id]: e.target.value as "small" | "medium" | "large" }))}
+                                    className="text-[10px] px-2 py-1 rounded border border-green-300 bg-green-50"
+                                  >
+                                    <option value="small">Klein (5cm)</option>
+                                    <option value="medium">Mittel (8cm)</option>
+                                    <option value="large">Groß (12cm)</option>
+                                  </select>
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
