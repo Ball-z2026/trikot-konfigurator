@@ -361,14 +361,14 @@ export default function KiDesign() {
     if (!selectedSport) { toast.error("Bitte eine Sportart wählen"); return; }
     setGenerating(true);
     try {
-      const activeParts = SUBLIMATION_AREAS
-        .filter(a => sublimationAreas[a.id] && ["body_front", "body_back", "sleeve_left", "sleeve_right"].includes(a.id))
-        .map(a => {
-          if (a.id === "body_front") return "front" as const;
-          if (a.id === "body_back") return "back" as const;
-          if (a.id === "sleeve_left") return "sleeve_left" as const;
-          return "sleeve_right" as const;
-        });
+      const activeParts: ("vorderteil" | "rueckteil" | "aermel_links" | "aermel_rechts" | "kragen" | "buendchen_1" | "buendchen_2")[] = [];
+      if (sublimationAreas["body_front"]) activeParts.push("vorderteil");
+      if (sublimationAreas["body_back"]) activeParts.push("rueckteil");
+      if (sublimationAreas["sleeve_left"]) activeParts.push("aermel_links");
+      if (sublimationAreas["sleeve_right"]) activeParts.push("aermel_rechts");
+      if (sublimationAreas["collar"]) activeParts.push("kragen");
+      if (sublimationAreas["cuff_left"]) activeParts.push("buendchen_1");
+      if (sublimationAreas["cuff_right"]) activeParts.push("buendchen_2");
       if (activeParts.length === 0) {
         toast.error("Bitte mindestens einen Sublimationsbereich aktivieren");
         return;
@@ -963,7 +963,7 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
         setGeneratedImageUrl(result.url);
         // Versionshistorie: Anpassung speichern
         setDesignHistory(prev => {
-          const newHistory = [...prev.slice(0, historyIndex + 1), { url: result.url, timestamp: Date.now(), label: `Anpassung ${prev.length + 1}` }];
+          const newHistory = [...prev.slice(0, historyIndex + 1), { url: result.url!, timestamp: Date.now(), label: `Anpassung ${prev.length + 1}` }];
           setHistoryIndex(newHistory.length - 1);
           return newHistory;
         });

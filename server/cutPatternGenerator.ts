@@ -1,27 +1,169 @@
 /**
- * Cut Pattern Generator – Schnittmuster-Generierung
+ * Cut Pattern Generator V2 – Schnittmuster-Generierung
  * 
- * Generiert separate KI-Muster für jedes Schnittteil (Vorderseite, Rückseite, Ärmel).
- * Die KI erzeugt flache Sublimations-Druckvorlagen (keine Mockups mit Personen),
- * die direkt als Druckbogen-Input verwendet werden können.
+ * Korrekter Workflow (wie im erfolgreichen Test):
+ * 1. KI generiert EIN großes Stoffmuster (flaches Pattern)
+ * 2. Das Muster wird auf die Stoffgröße skaliert/gekachelt
+ * 3. Alle 7 Schnittteile werden per Polygon-Maske aus dem SELBEN Stoff ausgeschnitten
+ * 4. Durch das Layout passen die Nähte automatisch zusammen
+ * 5. Logos/Wappen/Sponsoren werden per Compositing draufgelegt (Post-Processing)
  * 
- * Workflow:
- * 1. KI generiert ein reines MUSTER (Pattern) pro Teil
- * 2. Logos/Wappen/Sponsoren werden per Compositing draufgelegt (mit Kontrast-Logik)
- * 3. Ergebnis wird in Storage gespeichert und kann als Druckbogen-Hintergrund genutzt werden
+ * Teile: Vorderteil, Rückteil, Ärmel L, Ärmel R, Kragen, Bündchen 1, Bündchen 2
  */
+import sharp from "sharp";
 import { generateImage } from "./_core/imageGeneration";
 import { compositeLogosOnImage, LogoPlacement } from "./logoCompositing";
 import { storagePut, storageGetSignedUrl } from "./storage";
 import {
-  ensureTextContrast,
   getOptimalCrestDisplay,
-  shouldUseWhiteLogoVersion,
-  isDarkColor,
 } from "../shared/contrastUtils";
 
-/** Schnittteil-Typen */
-export type CutPart = "front" | "back" | "sleeve_left" | "sleeve_right";
+/** Schnitteil-Typen (7 Teile) */
+export type CutPart = 
+  | "vorderteil" 
+  | "rueckteil" 
+  | "aermel_links" 
+  | "aermel_rechts" 
+  | "kragen" 
+  | "buendchen_1" 
+  | "buendchen_2";
+
+/** Normalisiertes Polygon (0-1 Koordinaten) */
+type NormalizedPolygon = [number, number][];
+
+/** Konfiguration pro Schnittteil */
+interface PartConfig {
+  size: [number, number]; // [width, height] in Pixeln
+  poly: NormalizedPolygon;
+  label: string;
+}
+
+/** Layout-Position auf dem Stoff */
+interface LayoutPosition {
+  x: number;
+  y: number;
+}
+
+// --- Schnittmuster-Konturen als normalisierte Polygone (0-1) ---
+// Basierend auf den echten Schnittmustern (Größe L)
+
+// Vorderteil (part_7): 1679x2260 - V-Halsausschnitt
+const VORDERTEIL_POLY: NormalizedPolygon = [
+  [0.05, 0.08],   // Schulter links oben
+  [0.05, 0.15],   // Armausschnitt links oben
+  [0.00, 0.25],   // Armausschnitt links tief
+  [0.00, 0.98],   // Saum links unten
+  [1.00, 0.98],   // Saum rechts unten
+  [1.00, 0.25],   // Armausschnitt rechts tief
+  [0.95, 0.15],   // Armausschnitt rechts oben
+  [0.95, 0.08],   // Schulter rechts oben
+  [0.65, 0.02],   // Hals rechts
+  [0.50, 0.05],   // Hals V-Spitze
+  [0.35, 0.02],   // Hals links
+];
+
+// Rückteil (part_8): 1679x2266 - U-Rundhals
+const RUECKTEIL_POLY: NormalizedPolygon = [
+  [0.05, 0.08],   // Schulter links oben
+  [0.05, 0.15],   // Armausschnitt links oben
+  [0.00, 0.25],   // Armausschnitt links tief
+  [0.00, 0.98],   // Saum links unten
+  [1.00, 0.98],   // Saum rechts unten
+  [1.00, 0.25],   // Armausschnitt rechts tief
+  [0.95, 0.15],   // Armausschnitt rechts oben
+  [0.95, 0.08],   // Schulter rechts oben
+  [0.70, 0.03],   // Hals rechts
+  [0.60, 0.07],   // Hals U-Bogen rechts
+  [0.50, 0.09],   // Hals U-Bogen mitte
+  [0.40, 0.07],   // Hals U-Bogen links
+  [0.30, 0.03],   // Hals links
+];
+
+// Ärmel (part_2): 1380x764 - Pentagon mit Bogen oben
+const AERMEL_POLY: NormalizedPolygon = [
+  [0.00, 0.70],   // Unten links
+  [0.00, 0.50],   // Seite links
+  [0.10, 0.30],   // Schulter links
+  [0.25, 0.12],   // Bogen links
+  [0.40, 0.03],   // Bogen oben links
+  [0.50, 0.00],   // Bogen Spitze
+  [0.60, 0.03],   // Bogen oben rechts
+  [0.75, 0.12],   // Bogen rechts
+  [0.90, 0.30],   // Schulter rechts
+  [1.00, 0.50],   // Seite rechts
+  [1.00, 0.70],   // Unten rechts
+  [0.90, 0.95],   // Saum rechts
+  [0.10, 0.95],   // Saum links
+];
+
+// Kragen (part_6): 1457x210 - Rechteck
+const KRAGEN_POLY: NormalizedPolygon = [
+  [0.02, 0.10],
+  [0.98, 0.10],
+  [0.98, 0.90],
+  [0.02, 0.90],
+];
+
+// Bündchen (part_3): 1139x223 - leicht trapezförmig
+const BUENDCHEN_POLY: NormalizedPolygon = [
+  [0.05, 0.10],
+  [0.95, 0.10],
+  [0.98, 0.90],
+  [0.02, 0.90],
+];
+
+// --- Teile-Konfiguration ---
+const PARTS: Record<CutPart, PartConfig> = {
+  vorderteil: {
+    size: [1679, 2260],
+    poly: VORDERTEIL_POLY,
+    label: "Vorderteil",
+  },
+  rueckteil: {
+    size: [1679, 2266],
+    poly: RUECKTEIL_POLY,
+    label: "Rückteil",
+  },
+  aermel_links: {
+    size: [1380, 764],
+    poly: AERMEL_POLY,
+    label: "Ärmel L",
+  },
+  aermel_rechts: {
+    size: [1380, 764],
+    poly: AERMEL_POLY,
+    label: "Ärmel R",
+  },
+  kragen: {
+    size: [1457, 210],
+    poly: KRAGEN_POLY,
+    label: "Kragen",
+  },
+  buendchen_1: {
+    size: [1139, 223],
+    poly: BUENDCHEN_POLY,
+    label: "Bündchen L",
+  },
+  buendchen_2: {
+    size: [1139, 223],
+    poly: BUENDCHEN_POLY,
+    label: "Bündchen R",
+  },
+};
+
+// Layout auf dem Stoff – Teile die an der Naht zusammenpassen liegen nebeneinander
+const LAYOUT: Record<CutPart, LayoutPosition> = {
+  vorderteil: { x: 0, y: 0 },
+  rueckteil: { x: 1679, y: 0 },         // direkt rechts neben Vorderteil (Seitennaht!)
+  aermel_links: { x: 0, y: 2266 },      // unter Vorderteil (Schulternaht!)
+  aermel_rechts: { x: 1679, y: 2266 },  // unter Rückteil (Schulternaht!)
+  kragen: { x: 0, y: 3030 },
+  buendchen_1: { x: 1457, y: 3030 },
+  buendchen_2: { x: 2596, y: 3030 },
+};
+
+const FABRIC_WIDTH = 3358;
+const FABRIC_HEIGHT = 3300;
 
 /** Konfiguration für die Schnittmuster-Generierung */
 export interface CutPatternConfig {
@@ -77,15 +219,25 @@ export interface CutPatternResult {
 }
 
 /**
- * Baut den KI-Prompt für ein einzelnes Schnittteil auf.
- * Generiert ein flaches Sublimations-Druckmuster (kein Mockup).
- * 
- * WICHTIG: Der Prompt darf KEINE Anweisungen enthalten die die KI dazu verleiten,
- * Text, Logos, Nummern oder Wasserzeichen ins Bild zu generieren.
- * Alle Overlays (Wappen, Sponsoren, Nummern, Namen) werden NACHTRÄGLICH
- * per Compositing programmatisch draufgelegt.
+ * Erstellt eine SVG-Polygon-Maske und gibt sie als Sharp-Buffer zurück.
  */
-function buildPatternPrompt(config: CutPatternConfig, part: CutPart): string {
+function createPolygonMaskSvg(width: number, height: number, poly: NormalizedPolygon): Buffer {
+  const points = poly
+    .map(([x, y]) => `${Math.round(x * width)},${Math.round(y * height)}`)
+    .join(" ");
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <polygon points="${points}" fill="white"/>
+  </svg>`;
+  
+  return Buffer.from(svg);
+}
+
+/**
+ * Baut den KI-Prompt für das Stoffmuster auf.
+ * Die KI generiert NUR ein flaches Stoffmuster – KEINE Trikot-Form, KEINE Texte.
+ */
+function buildFabricPrompt(config: CutPatternConfig): string {
   const sportMap: Record<string, string> = {
     fussball: "soccer",
     handball: "handball",
@@ -94,147 +246,34 @@ function buildPatternPrompt(config: CutPatternConfig, part: CutPart): string {
   };
   const sportEn = sportMap[config.sport] || "soccer";
 
-  const partShapes: Record<CutPart, string> = {
-    front: "a sleeveless torso-shaped front panel (tank top silhouette without arms, wider at shoulders tapering slightly at waist)",
-    back: "a sleeveless torso-shaped back panel (same silhouette as front, slightly longer)",
-    sleeve_left: "a single isolated SHORT SLEEVE shape (a small tapered tube, wider at shoulder seam, narrower at bicep opening, approximately 24cm wide × 35cm tall)",
-    sleeve_right: "a single isolated SHORT SLEEVE shape (a small tapered tube, wider at shoulder seam, narrower at bicep opening, approximately 24cm wide × 35cm tall, mirror of left sleeve)",
-  };
-
-  const partDimensions: Record<CutPart, string> = {
-    front: "approximately 55cm wide × 75cm tall (Size L)",
-    back: "approximately 55cm wide × 75cm tall (Size L)",
-    sleeve_left: "approximately 24cm wide × 35cm tall (Size L)",
-    sleeve_right: "approximately 24cm wide × 35cm tall (Size L)",
-  };
-
-  const shape = partShapes[part];
-  const dimensions = partDimensions[part];
-
-  // Basis-Prompt: Reines Sublimations-Druckmuster
-  let prompt = `CRITICAL: Generate ONLY a pure decorative pattern/design on ${shape} for a ${sportEn} jersey sublimation print. `;
-  prompt += `This is a FLAT FABRIC CUT PIECE – NOT a complete garment, NOT a 3D mockup, NOT a person wearing it. `;
-  prompt += `Show ONLY the single isolated panel shape on a pure white background. `;
-  prompt += `Dimensions: ${dimensions}. `;
+  let prompt = `Generate a SEAMLESS FLAT FABRIC PATTERN for a ${sportEn} jersey sublimation print. `;
+  prompt += `This is ONLY the fabric texture/pattern – NOT a garment shape, NOT a mockup, NOT a person. `;
+  prompt += `The output should be a RECTANGULAR tile of decorative fabric pattern that can be applied to cut pieces. `;
   prompt += `Design style: ${config.designStyle}. `;
   prompt += `Color palette: Primary ${config.primaryColor}, Secondary ${config.secondaryColor}, Accent ${config.accentColor}. `;
+  prompt += `The pattern should be dynamic and bold (stripes, gradients, geometric shapes, or organic flowing patterns). `;
+  prompt += `The pattern should work well when applied to different garment pieces (body, sleeves, collar). `;
 
-  // Teil-spezifische Design-Anweisungen (NUR Muster, keine Platzhalter)
-  if (part === "front") {
-    prompt += `The front panel should have dynamic, bold graphic design elements (stripes, gradients, geometric shapes, or organic flowing patterns). `;
-    prompt += `Keep the center-chest area and upper-left chest area slightly less busy (these areas will receive overlays later). `;
-  } else if (part === "back") {
-    prompt += `The back panel should complement the front design but be slightly calmer. `;
-    prompt += `Keep the center area (where a large number would go) slightly less busy. `;
-  } else {
-    // Ärmel – klare Anweisung dass es NUR ein Ärmel ist
-    prompt += `IMPORTANT: This is ONLY a single sleeve piece – a small isolated fabric panel shaped like a short sleeve. `;
-    prompt += `It must NOT look like a full shirt or torso. It is just the sleeve cutout. `;
-    prompt += `The design should be simpler and complementary to the body panels, flowing naturally from shoulder to bicep. `;
-    if (config.sublimationAreas?.includes("cuff_left") || config.sublimationAreas?.includes("cuff_right")) {
-      prompt += `Include a designed cuff/band at the bottom edge of the sleeve. `;
-    }
-  }
-
-  // Straßenkarte als Textur-Element (nur wenn Referenzbild gesendet wird)
-  if (config.streetMapUrl && (part === "front" || part === "back")) {
+  // Straßenkarte als Textur-Element
+  if (config.streetMapUrl) {
     prompt += `Incorporate the street map pattern from the reference image as a subtle texture woven into the fabric design. `;
   }
 
-  // STRIKTE Verbote – mehrfach betont damit die KI es nicht ignoriert
-  prompt += `\n\nSTRICT RULES (MUST FOLLOW): `;
-  prompt += `• ABSOLUTELY NO TEXT of any kind (no words, no letters, no numbers, no placeholders like "CLUB NAME" or "PLAYER"). `;
-  prompt += `• ABSOLUTELY NO LOGOS (no crests, no emblems, no brand marks, no sponsor logos). `;
-  prompt += `• ABSOLUTELY NO WATERMARKS (no faint logos, no ghost images of crests). `;
-  prompt += `• ONLY pure decorative pattern/design on the fabric shape. `;
-  prompt += `• Pure white background OUTSIDE the panel shape. `;
-  prompt += `• NO manufacturer branding (no Nike, Adidas, Puma, etc.). `;
-  prompt += `• The output is ONLY the colored/patterned fabric cut piece on white. `;
-  prompt += `High resolution, print-ready quality. `;
+  // STRIKTE Verbote
+  prompt += `\n\nSTRICT RULES: `;
+  prompt += `• ABSOLUTELY NO TEXT (no words, letters, numbers, names, placeholders). `;
+  prompt += `• ABSOLUTELY NO LOGOS (no crests, emblems, brand marks). `;
+  prompt += `• ABSOLUTELY NO WATERMARKS. `;
+  prompt += `• ABSOLUTELY NO garment shapes or silhouettes – ONLY flat rectangular pattern. `;
+  prompt += `• NO manufacturer branding (no Nike, Adidas, Puma). `;
+  prompt += `• Output is ONLY a flat rectangular fabric pattern/texture. `;
+  prompt += `High resolution, print-ready quality, seamless repeatable pattern. `;
 
   if (config.additionalNotes) {
     prompt += `Additional design notes: ${config.additionalNotes}. `;
   }
 
   return prompt;
-}
-
-/**
- * Berechnet die Logo-Overlay-Positionen für ein Schnittteil.
- * Basiert auf den Regeln aus jerseyRules.ts (FRONT_ZONE_POSITIONS).
- */
-function getOverlaysForPart(config: CutPatternConfig, part: CutPart): LogoPlacement[] {
-  const overlays: LogoPlacement[] = [];
-
-  if (part === "front") {
-    // Vereinswappen auf der Herzseite (links im Bild = rechte Brust des Trägers)
-    if (config.crestUrl) {
-      const crestDisplay = config.crestDominantColors
-        ? getOptimalCrestDisplay(config.crestDominantColors, config.primaryColor)
-        : { mode: "original" as const };
-
-      overlays.push({
-        imageUrl: config.crestUrl,
-        xPercent: 60, // Herzseite (rechts im Bild bei Flat-Lay = links am Träger)
-        yPercent: 8,  // Brusthöhe
-        widthPercent: 15, // ~8cm bei 55cm Breite
-        heightPercent: 14, // ~10cm bei 75cm Höhe
-        autoContrast: true,
-        logoDominantColor: config.crestDominantColors?.[0],
-      });
-    }
-
-    // Brustsponsor (Mitte)
-    if (config.chestSponsorUrl) {
-      overlays.push({
-        imageUrl: config.chestSponsorUrl,
-        xPercent: 25, // Zentriert
-        yPercent: 10, // Brusthöhe
-        widthPercent: 30, // ~16cm bei 55cm Breite
-        heightPercent: 12, // ~9cm bei 75cm Höhe
-        autoContrast: true,
-      });
-    }
-  } else if (part === "back") {
-    // Vereinswappen als Wasserzeichen (groß, dezent)
-    if (config.crestUrl && config.crestWatermarkOpacity && config.crestWatermarkOpacity > 0) {
-      overlays.push({
-        imageUrl: config.crestUrl,
-        xPercent: 15, // Zentriert (mit etwas Rand)
-        yPercent: 15,
-        widthPercent: 70,
-        heightPercent: 65,
-        opacity: (config.crestWatermarkOpacity || 20) / 100,
-        autoContrast: false, // Wasserzeichen soll dezent bleiben
-      });
-    }
-
-    // Rückensponsor (unterer Rücken)
-    if (config.backSponsorUrl) {
-      overlays.push({
-        imageUrl: config.backSponsorUrl,
-        xPercent: 25,
-        yPercent: 80,
-        widthPercent: 50,
-        heightPercent: 12,
-        autoContrast: true,
-      });
-    }
-  } else if (part === "sleeve_left" || part === "sleeve_right") {
-    // Ärmel-Sponsor
-    if (config.sleeveSponsorUrl) {
-      overlays.push({
-        imageUrl: config.sleeveSponsorUrl,
-        xPercent: 15,
-        yPercent: 20,
-        widthPercent: 70,
-        heightPercent: 30,
-        autoContrast: true,
-      });
-    }
-  }
-
-  return overlays;
 }
 
 /**
@@ -251,20 +290,103 @@ async function resolveStorageUrl(url: string): Promise<string> {
 }
 
 /**
- * Generiert ein Schnittmuster für ein einzelnes Teil.
+ * Berechnet die Logo-Overlay-Positionen für ein Schnittteil.
+ * Basiert auf den Regeln aus jerseyRules.ts (FRONT_ZONE_POSITIONS).
+ * Positionen sind relativ zum jeweiligen Schnittteil (nicht zum Gesamtstoff).
  */
-export async function generateCutPattern(
-  config: CutPatternConfig,
-  part: CutPart
-): Promise<CutPatternResult> {
-  // 1. Prompt aufbauen
-  const prompt = buildPatternPrompt(config, part);
+function getOverlaysForPart(config: CutPatternConfig, part: CutPart): LogoPlacement[] {
+  const overlays: LogoPlacement[] = [];
 
-  // 2. Referenzbilder zusammenstellen
+  if (part === "vorderteil") {
+    // Vereinswappen auf der Herzseite (rechts im Bild = links am Träger)
+    if (config.crestUrl) {
+      overlays.push({
+        imageUrl: config.crestUrl,
+        xPercent: 60, // Herzseite
+        yPercent: 8,
+        widthPercent: 15,
+        heightPercent: 14,
+        autoContrast: true,
+        logoDominantColor: config.crestDominantColors?.[0],
+      });
+    }
+
+    // Brustsponsor (Mitte)
+    if (config.chestSponsorUrl) {
+      overlays.push({
+        imageUrl: config.chestSponsorUrl,
+        xPercent: 20,
+        yPercent: 40,
+        widthPercent: 60,
+        heightPercent: 14,
+        autoContrast: true,
+      });
+    }
+  } else if (part === "rueckteil") {
+    // Vereinswappen als Wasserzeichen (groß, dezent)
+    if (config.crestUrl && config.crestWatermarkOpacity && config.crestWatermarkOpacity > 0) {
+      overlays.push({
+        imageUrl: config.crestUrl,
+        xPercent: 20,
+        yPercent: 20,
+        widthPercent: 60,
+        heightPercent: 55,
+        opacity: (config.crestWatermarkOpacity || 20) / 100,
+        autoContrast: false,
+      });
+    }
+
+    // Rückensponsor (unterer Rücken)
+    if (config.backSponsorUrl) {
+      overlays.push({
+        imageUrl: config.backSponsorUrl,
+        xPercent: 25,
+        yPercent: 80,
+        widthPercent: 50,
+        heightPercent: 12,
+        autoContrast: true,
+      });
+    }
+  } else if (part === "aermel_links" || part === "aermel_rechts") {
+    // Ärmel-Sponsor
+    if (config.sleeveSponsorUrl) {
+      overlays.push({
+        imageUrl: config.sleeveSponsorUrl,
+        xPercent: 15,
+        yPercent: 25,
+        widthPercent: 70,
+        heightPercent: 35,
+        autoContrast: true,
+      });
+    }
+  }
+
+  return overlays;
+}
+
+/**
+ * Generiert ein Stoffmuster und schneidet alle Teile daraus zu.
+ * 
+ * Workflow:
+ * 1. KI generiert EIN großes Stoffmuster
+ * 2. Muster wird auf Stoffgröße (3358x3300) skaliert
+ * 3. Jedes Teil wird an seiner Layout-Position ausgeschnitten
+ * 4. Polygon-Maske wird angewendet (ergibt die Schnittform)
+ * 5. Overlays (Logos, Wappen) werden per Compositing draufgelegt
+ */
+export async function generateAllCutPatterns(
+  config: CutPatternConfig
+): Promise<CutPatternResult[]> {
+  console.log("[CutPattern V2] Starting fabric pattern generation...");
+
+  // 1. KI generiert EIN Stoffmuster
+  const fabricPrompt = buildFabricPrompt(config);
+  console.log(`[CutPattern V2] Fabric prompt (${fabricPrompt.length} chars): ${fabricPrompt.substring(0, 200)}...`);
+
   const originalImages: Array<{ url?: string; mimeType: string }> = [];
 
-  // Straßenkarte als Referenz (nur für Front/Back)
-  if (config.streetMapUrl && (part === "front" || part === "back")) {
+  // Straßenkarte als Referenz
+  if (config.streetMapUrl) {
     const resolvedUrl = await resolveStorageUrl(config.streetMapUrl);
     originalImages.push({ url: resolvedUrl, mimeType: "image/png" });
   }
@@ -277,83 +399,148 @@ export async function generateCutPattern(
     }
   }
 
-  // 3. KI-Bild generieren
-  console.log(`[CutPattern] Generating ${part} pattern...`);
-  console.log(`[CutPattern] Prompt (${prompt.length} chars): ${prompt.substring(0, 200)}...`);
-
-  const result = await generateImage({
-    prompt,
+  const fabricResult = await generateImage({
+    prompt: fabricPrompt,
     originalImages: originalImages.length > 0 ? originalImages : undefined,
   });
 
-  if (!result.url) {
-    throw new Error(`KI-Generierung für ${part} fehlgeschlagen`);
+  if (!fabricResult.url) {
+    throw new Error("KI-Generierung des Stoffmusters fehlgeschlagen");
   }
 
-  // Pattern-URL in Storage speichern
-  const patternUrl = result.url;
+  console.log("[CutPattern V2] Fabric pattern generated, scaling to layout size...");
 
-  // 4. Logo-Overlays berechnen und compositen
-  const overlays = getOverlaysForPart(config, part);
-  let compositeUrl = patternUrl;
-  let contrastAdjusted = false;
-
-  if (overlays.length > 0) {
-    try {
-      // URLs auflösen
-      const resolvedOverlays = await Promise.all(
-        overlays.map(async (overlay) => ({
-          ...overlay,
-          imageUrl: await resolveStorageUrl(overlay.imageUrl),
-        }))
-      );
-
-      // Basis-Bild URL auflösen
-      let baseUrl = patternUrl;
-      if (baseUrl.includes("/manus-storage/")) {
-        const keyMatch = baseUrl.match(/\/manus-storage\/(.+)/);
-        if (keyMatch) {
-          baseUrl = await storageGetSignedUrl(keyMatch[1]);
-        }
-      }
-
-      // Compositing durchführen (mit automatischer Kontrast-Logik)
-      const compositedBuffer = await compositeLogosOnImage(baseUrl, resolvedOverlays);
-
-      // Ergebnis speichern
-      const fileName = `ki-designs/cut-pattern-${part}_${Date.now()}.png`;
-      const { url } = await storagePut(fileName, compositedBuffer, "image/png");
-      compositeUrl = url;
-      contrastAdjusted = true; // Kontrast-Logik war aktiv (ob sie tatsächlich eingegriffen hat, loggt compositeLogosOnImage)
-    } catch (err) {
-      console.error(`[CutPattern] Compositing for ${part} failed:`, err);
-      // Fallback: Pattern ohne Overlays
-      compositeUrl = patternUrl;
+  // 2. Stoffmuster laden und auf Layout-Größe skalieren
+  let fabricUrl = fabricResult.url;
+  if (fabricUrl.includes("/manus-storage/")) {
+    const keyMatch = fabricUrl.match(/\/manus-storage\/(.+)/);
+    if (keyMatch) {
+      fabricUrl = await storageGetSignedUrl(keyMatch[1]);
     }
   }
 
-  return {
-    part,
-    patternUrl,
-    compositeUrl,
-    contrastAdjusted,
-  };
+  const fabricResponse = await fetch(fabricUrl);
+  const fabricBuffer = Buffer.from(await fabricResponse.arrayBuffer());
+
+  // Auf Stoffgröße skalieren (cover – das Muster füllt die gesamte Fläche)
+  const scaledFabric = await sharp(fabricBuffer)
+    .resize(FABRIC_WIDTH, FABRIC_HEIGHT, { fit: "cover" })
+    .png()
+    .toBuffer();
+
+  console.log(`[CutPattern V2] Fabric scaled to ${FABRIC_WIDTH}x${FABRIC_HEIGHT}`);
+
+  // Fabric-Gesamtbild speichern (für Debugging/Vorschau)
+  const { url: fullFabricUrl } = await storagePut(
+    `ki-designs/fabric-full_${Date.now()}.png`,
+    scaledFabric,
+    "image/png"
+  );
+  console.log(`[CutPattern V2] Full fabric saved: ${fullFabricUrl}`);
+
+  // 3. Jedes Teil ausschneiden
+  const results: CutPatternResult[] = [];
+
+  for (const partName of config.parts) {
+    const partConfig = PARTS[partName];
+    if (!partConfig) {
+      console.warn(`[CutPattern V2] Unknown part: ${partName}, skipping`);
+      continue;
+    }
+
+    const [partWidth, partHeight] = partConfig.size;
+    const layout = LAYOUT[partName];
+
+    console.log(`[CutPattern V2] Cutting ${partName} (${partWidth}x${partHeight}) at layout (${layout.x}, ${layout.y})...`);
+
+    // Stoffausschnitt an der Layout-Position
+    const cropBuffer = await sharp(scaledFabric)
+      .extract({
+        left: layout.x,
+        top: layout.y,
+        width: Math.min(partWidth, FABRIC_WIDTH - layout.x),
+        height: Math.min(partHeight, FABRIC_HEIGHT - layout.y),
+      })
+      .resize(partWidth, partHeight, { fit: "fill" })
+      .png()
+      .toBuffer();
+
+    // Polygon-Maske erstellen und anwenden
+    const maskSvg = createPolygonMaskSvg(partWidth, partHeight, partConfig.poly);
+
+    const maskedBuffer = await sharp(cropBuffer)
+      .ensureAlpha()
+      .composite([{
+        input: maskSvg,
+        blend: "dest-in",
+      }])
+      .png()
+      .toBuffer();
+
+    // Pattern speichern
+    const patternFileName = `ki-designs/cut-${partName}_${Date.now()}.png`;
+    const { url: patternUrl } = await storagePut(patternFileName, maskedBuffer, "image/png");
+
+    console.log(`[CutPattern V2] ${partName} cut and saved: ${patternUrl}`);
+
+    // 4. Overlays (Logos, Wappen) per Compositing drauflegen
+    const overlays = getOverlaysForPart(config, partName);
+    let compositeUrl = patternUrl;
+    let contrastAdjusted = false;
+
+    if (overlays.length > 0) {
+      try {
+        const resolvedOverlays = await Promise.all(
+          overlays.map(async (overlay) => ({
+            ...overlay,
+            imageUrl: await resolveStorageUrl(overlay.imageUrl),
+          }))
+        );
+
+        // Basis-Bild URL auflösen
+        let baseUrl = patternUrl;
+        if (baseUrl.includes("/manus-storage/")) {
+          const keyMatch = baseUrl.match(/\/manus-storage\/(.+)/);
+          if (keyMatch) {
+            baseUrl = await storageGetSignedUrl(keyMatch[1]);
+          }
+        }
+
+        const compositedBuffer = await compositeLogosOnImage(baseUrl, resolvedOverlays);
+
+        const compositeFileName = `ki-designs/cut-${partName}-composite_${Date.now()}.png`;
+        const { url } = await storagePut(compositeFileName, compositedBuffer, "image/png");
+        compositeUrl = url;
+        contrastAdjusted = true;
+      } catch (err) {
+        console.error(`[CutPattern V2] Compositing for ${partName} failed:`, err);
+        compositeUrl = patternUrl;
+      }
+    }
+
+    results.push({
+      part: partName,
+      patternUrl,
+      compositeUrl,
+      contrastAdjusted,
+    });
+  }
+
+  console.log(`[CutPattern V2] All ${results.length} parts generated successfully`);
+  return results;
 }
 
 /**
- * Generiert alle Schnittmuster für ein komplettes Trikot.
- * Ruft die KI für jedes Teil separat auf.
+ * Legacy-Kompatibilität: Generiert ein einzelnes Teil.
+ * Intern wird trotzdem das gesamte Stoffmuster generiert.
  */
-export async function generateAllCutPatterns(
-  config: CutPatternConfig
-): Promise<CutPatternResult[]> {
-  const results: CutPatternResult[] = [];
-
-  // Sequentiell generieren (KI-API-Limits beachten)
-  for (const part of config.parts) {
-    const result = await generateCutPattern(config, part);
-    results.push(result);
-  }
-
-  return results;
+export async function generateCutPattern(
+  config: CutPatternConfig,
+  part: CutPart
+): Promise<CutPatternResult> {
+  const results = await generateAllCutPatterns({
+    ...config,
+    parts: [part],
+  });
+  return results[0];
 }

@@ -2279,3 +2279,23 @@
 
 - [x] Logo-Compositing: Automatische Freistellung von Sponsor-Logos ohne Alpha-Kanal (Photoroom removeBackground)
 - [x] RERO aus Markenverbots-Liste entfernt (ist ein echtes Sponsor-Logo des Users)
+
+### Bug-Fix: Schnittmuster-Generierung komplett überarbeiten
+- [ ] Schnittmuster auf 7 Teile erweitern: Vorderseite, Rückseite, Ärmel L, Ärmel R, Bündchen L, Bündchen R, Kragen
+- [ ] KI generiert NUR Hintergrund/Muster – KEINE Logos, KEINE Nummern, KEINE Texte, KEIN Wappen
+- [ ] Alle Logos/Texte/Nummern/Wappen per Overlay (Compositing) auf die richtigen Teile legen
+- [ ] Combined-Modus Overlay-Positionen auf Vorderseite korrigieren (Brustnummer, Wappen, Sponsor)
+- [ ] Wasserzeichen-Opacity auf Rückseite reduzieren
+
+## Schnittmuster V2 – Ein Stoffmuster → 7 Teile (Polygon-Masken)
+- [x] cutPatternGenerator.ts komplett neu geschrieben (V2-Workflow)
+- [x] KI generiert EIN großes Stoffmuster (3358x3300 px) statt 4 einzelne Teile
+- [x] 7 Schnittteile per Polygon-Maske aus dem SELBEN Stoff ausgeschnitten (Naht-Matching!)
+- [x] Teile: Vorderteil, Rückteil, Ärmel L, Ärmel R, Kragen, Bündchen L, Bündchen R
+- [x] Layout-Positionen aus Python-Blueprint (cut_pattern_v2.py) portiert
+- [x] Router-Input aktualisiert (neue Teilenamen: vorderteil, rueckteil, aermel_links, etc.)
+- [x] KiDesign.tsx Frontend aktualisiert (Sublimationsbereiche → V2-Teilenamen inkl. Kragen/Bündchen)
+- [x] Logo-Overlays per Compositing (Wappen, Sponsoren) auf Schnittteile
+- [x] printSheet.ts esbuild-Fehler war stale Cache (nach Neustart behoben)
+- [x] Server erfolgreich neugestartet mit V2-Code
+- [ ] User-Test: Schnittmuster-Generierung im Browser testen
