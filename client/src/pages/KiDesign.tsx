@@ -542,17 +542,15 @@ export default function KiDesign() {
 
       const prompt = `Professional product photography of a ${garmentDesc} for ${sportInfo?.name || selectedSport}, flat lay on white background. Design style: ${styleInfo?.label || designStyle}. Primary color: ${primaryColor}, secondary color: ${secondaryColor}, accent color: ${accentColor}.${clubName ? ` Club: ${clubName}.` : ""}${additionalNotes ? ` Additional details: ${additionalNotes}.` : ""}${rulesContext}${extraPrompt}${brandProtection} The jersey is SIZE L (75cm height). All proportions and element sizes are based on this reference size. The jersey should look like a real professional ${sportInfo?.name || selectedSport} jersey with sport-specific cut and proportions. Show FRONT and BACK view side by side (front on left, back on right). CRITICAL: Show ONLY the jersey/shirt - do NOT include shorts, pants, socks, or any other clothing items. The image must contain ONLY the upper body garment (jersey/shirt). High-end product photography, studio lighting, no wrinkles.`;
 
-      // REFERENZBILDER: Alle Bilder in fester Reihenfolge senden.
-      // Reihenfolge: 1. Wahrzeichen-Bild (wenn aktiv), 2. Wappen (wenn da), 3+ Sponsoren, dann Hersteller
-      // Der Prompt referenziert jedes Bild mit seiner Nummer.
+      // REFERENZBILDER: ALLE Bilder gehen in additionalRefs (KEIN referenceUrl!).
+      // So werden alle Bilder gleichwertig behandelt und über den Prompt gesteuert.
+      // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen (wenn da), 3+ Sponsoren, dann Hersteller
       const additionalRefs: string[] = [];
-      let referenceUrl: string | undefined;
       
-      // Wahrzeichen-Bild (das hochgeladene Original direkt als Wasserzeichen)
+      // Bild 1: Wahrzeichen (das hochgeladene Bild direkt als Wasserzeichen)
       if (useLandmark && landmarkImage) {
-        // Wenn landmarkSilhouette existiert (freigestellt), nutze das. Sonst das Original.
         const wahrzeichenUrl = landmarkSilhouette || landmarkImage;
-        referenceUrl = wahrzeichenUrl;
+        additionalRefs.push(wahrzeichenUrl);
       }
       
       // Nächstes Bild: Vereinswappen
@@ -576,7 +574,7 @@ export default function KiDesign() {
         colorDescription: `Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}`,
         side: "front",
         customPrompt: prompt,
-        referenceImageUrl: referenceUrl,
+        referenceImageUrl: undefined,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
       });
 
