@@ -513,16 +513,16 @@ export default function KiDesign() {
       
       // SLOT 1: Vereinswappen
       if (defaultLogo?.imageUrl) {
-        extraPrompt += ` VEREINSWAPPEN (Slot 1): Platziere dieses Bild auf der RECHTEN SEITE der Brust (Herzseite, aus Betrachtersicht rechts). Position: 60-65% von links, 32% von oben. Größe: 8-10cm. Übernimm 1 zu 1.`;
+        extraPrompt += ` VEREINSWAPPEN (Slot 1): Platziere dieses Bild NUR auf der RECHTEN SEITE der Brust (Herzseite, aus Betrachtersicht rechts). Position: 60-65% von links, 32% von oben. Größe: 8-10cm. Übernimm 1 zu 1. WICHTIG: Das Vereinswappen darf NUR an dieser einen Stelle erscheinen – NICHT als Muster, NICHT als Wasserzeichen, NICHT wiederholt!`;
       }
       
       // SLOT 2: Wahrzeichen
       if (useLandmark && landmarkSilhouette) {
         const opacityVal = landmarkOpacity || 15;
         if (landmarkStyle === "large") {
-          extraPrompt += ` WAHRZEICHEN (Slot 2): Dieses Bild ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. GROSS und ZENTRIERT auf dem Torso beider Seiten. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern.`;
+          extraPrompt += ` WAHRZEICHEN (Slot 2): ACHTUNG – dies ist ein ANDERES Bild als das Vereinswappen! Dieses Bild (Slot 2, NICHT Slot 1!) ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. GROSS und ZENTRIERT auf dem Torso beider Seiten. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern. VERWECHSLUNGSGEFAHR: Verwende hier AUSSCHLIESSLICH das Bild aus Slot 2, NIEMALS das Vereinswappen aus Slot 1!`;
         } else {
-          extraPrompt += ` WAHRZEICHEN (Slot 2): Dieses Bild ist als WIEDERHOLENDES MUSTER in den Stoff eingearbeitet (Sublimationsdruck). Viele kleine Kopien (2-5cm) bedecken den gesamten Stoff. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern.`;
+          extraPrompt += ` WAHRZEICHEN (Slot 2): ACHTUNG – dies ist ein ANDERES Bild als das Vereinswappen! Dieses Bild (Slot 2, NICHT Slot 1!) ist als WIEDERHOLENDES MUSTER in den Stoff eingearbeitet (Sublimationsdruck). Viele kleine Kopien (2-5cm) bedecken den gesamten Stoff. Gleicher Farbton wie Trikot, ${opacityVal}% heller/dunkler. Liegt HINTER allen Logos und Nummern. VERWECHSLUNGSGEFAHR: Verwende hier AUSSCHLIESSLICH das Bild aus Slot 2, NIEMALS das Vereinswappen aus Slot 1!`;
         }
       }
       
@@ -830,7 +830,7 @@ export default function KiDesign() {
         });
       }
 
-      const shortsPrompt = `Professionelle Produktfotografie von NUR einer Sporthose für ${currentSportInfo?.name || selectedSport}, flach liegend auf weißem Hintergrund. WICHTIG: Zeige NUR die Hose - KEIN Trikot, KEIN Shirt, KEINE Socken, KEINE anderen Kleidungsstücke. NUR DIE HOSE. Die Hose muss zum Trikot-Design passen (Referenzbild 1): Primärfarbe: ${primaryColor}, Sekundärfarbe: ${secondaryColor}, Akzentfarbe: ${accentColor}. Design-Stil: ${currentStyleInfo?.label || designStyle}. Zeige VORDERSEITE und RÜCKSEITE nebeneinander (vorne links, hinten rechts). Größe L.${shortsExtras} WICHTIG: Erfinde KEINE Logos oder Marken die nicht als Referenzbild mitgegeben wurden. Alle Sponsor-Logos müssen 1 zu 1 vom Referenzbild übernommen werden.`;
+      const shortsPrompt = `Professional product photography of ONLY sports SHORTS (kurze Sporthose) for ${currentSportInfo?.name || selectedSport}. Flat lay on pure white background. CRITICAL INSTRUCTION: Generate ONLY the SHORTS/PANTS – absolutely NO jersey, NO shirt, NO top, NO upper body garment, NO socks, NO shoes. The image must show ONLY a pair of short sports pants. The shorts should match the jersey design from reference image 1 in style and colors: Primary: ${primaryColor}, Secondary: ${secondaryColor}, Accent: ${accentColor}. Design style: ${currentStyleInfo?.label || designStyle}. Show FRONT and BACK view side by side (front on left, back on right). Size L (approx. 45cm length). The shorts are a typical ${currentSportInfo?.name || selectedSport} short – lightweight, elastic waistband, mid-thigh length.${shortsExtras} Do NOT invent any logos or brand marks. Only use logos from the provided reference images. NO manufacturer logos. High-end product photography, studio lighting, no wrinkles.`;
 
       const result = await generateAiMockup.mutateAsync({
         productName: `${currentSportInfo?.name || selectedSport} Hose`,

@@ -9092,3 +9092,5 @@
 [2026-05-08T09:38:36.866Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-08T09:38:39.082Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-08T09:38:40.128Z] Server running on http://localhost:3000/
+[2026-05-08T09:50:58.877Z] 5:50:58 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T09:51:29.751Z] 5:51:29 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css

@@ -2197,3 +2197,10 @@
 - [x] Nur belegte Slots werden als Bilder gesendet (spart Tokens)
 - [x] Sponsoren werden nach Position gruppiert (ein Sponsor pro Position-Slot)
 - [ ] Mehrere Sponsoren auf gleicher Position: Diskussion mit User nötig (aktuell nur erster pro Position)
+
+## Hosen-Prompt Verfeinerung (08.05.2026)
+- [ ] Hosen-Prompt überarbeiten: KI generiert aktuell Trikot statt NUR Hose
+
+## Prompt-Fixes (08.05.2026)
+- [x] Wahrzeichen/Wappen-Verwechslung: Klare Negativ-Anweisung dass Wappen NUR auf Herzseite darf, NICHT als Muster
+- [x] Hosen-Prompt: Komplett überarbeitet – englisch, klarer, "ONLY SHORTS" mehrfach betont, kein Trikot
