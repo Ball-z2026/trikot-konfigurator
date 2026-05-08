@@ -252,9 +252,28 @@ export default function KiDesign() {
       
       // Karte mit minimalistischem Stil (nur Straßen, keine Labels) für Wasserzeichen-Effekt
       const mapUrl = `${forgeUrl}/v1/maps/proxy/maps/api/staticmap?center=${center}&zoom=15&size=600x600&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0x333333&style=feature:road.local|element:geometry|color:0x555555&style=feature:water|element:geometry|color:0x111111&style=feature:landscape|element:geometry|color:0x000000&style=feature:poi|visibility:off&style=feature:transit|visibility:off&key=${apiKey}`;
-      setMapImageUrl(mapUrl);
+      
+      // Karte herunterladen und in Storage hochladen (damit die KI eine öffentliche URL bekommt)
+      const mapResponse = await fetch(mapUrl);
+      if (!mapResponse.ok) throw new Error("Karte konnte nicht geladen werden");
+      const mapBlob = await mapResponse.blob();
+      const mapReader = new FileReader();
+      const mapBase64: string = await new Promise((resolve, reject) => {
+        mapReader.onload = () => resolve((mapReader.result as string).split(",")[1]);
+        mapReader.onerror = reject;
+        mapReader.readAsDataURL(mapBlob);
+      });
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: mapBase64, fileName: `map_${Date.now()}.png`, contentType: "image/png" }),
+      });
+      if (!uploadRes.ok) throw new Error("Karten-Upload fehlgeschlagen");
+      const { url: storedMapUrl } = await uploadRes.json();
+      
+      setMapImageUrl(storedMapUrl);
       setUseMapWatermark(true);
-      toast.success(`Straßenkarte für "${fullAddress}" geladen!`);
+      toast.success(`Straßenkarte für "${fullAddress}" geladen und gespeichert!`);
     } catch (error) {
       toast.error("Karte konnte nicht geladen werden");
     } finally {
