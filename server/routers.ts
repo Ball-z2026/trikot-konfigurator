@@ -3498,6 +3498,15 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           }
         }
 
+        // DEBUG: Logge welche Bilder in welcher Reihenfolge gesendet werden
+        console.log("[AI-Design] Sending", originalImages.length, "reference images:");
+        originalImages.forEach((img, i) => {
+          const urlPreview = img.url ? img.url.substring(0, 100) + "..." : "(base64)";
+          console.log(`  Image ${i + 1}: ${urlPreview}`);
+        });
+        console.log("[AI-Design] Prompt length:", prompt.length, "chars");
+        console.log("[AI-Design] Prompt (first 500):", prompt.substring(0, 500));
+
         const result = await generateImage({ prompt, originalImages: originalImages.length > 0 ? originalImages : undefined });
 
         // Post-Processing: Echte Logos auf das generierte Bild compositen

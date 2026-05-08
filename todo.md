@@ -2204,3 +2204,9 @@
 ## Prompt-Fixes (08.05.2026)
 - [x] Wahrzeichen/Wappen-Verwechslung: Klare Negativ-Anweisung dass Wappen NUR auf Herzseite darf, NICHT als Muster
 - [x] Hosen-Prompt: Komplett überarbeitet – englisch, klarer, "ONLY SHORTS" mehrfach betont, kein Trikot
+
+## Kritische Prompt-Probleme (08.05.2026)
+- [ ] Markenelemente KOMPLETT verbieten: KI erfindet immer noch Markennamen (RERO etc.)
+- [ ] Wahrzeichen-Bild prüfen: Ist die URL für die KI überhaupt lesbar?
+- [ ] Karten-Generierung fixen: Button "Karte generieren" funktioniert nicht
+- [ ] Alternative: Adresse direkt im Prompt verwenden statt Karten-Bild
