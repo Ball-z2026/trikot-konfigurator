@@ -2231,3 +2231,7 @@
 ## Hosen-Prompt Fix (08.05.2026)
 - [x] Hosen-Prompt: Markenverbot verstärkt (Anfang + Ende)
 - [x] Hosen-Prompt: Spielernummer MITTIG auf der Hose (nicht links/rechts)
+
+## Versionshistorie & Nummern-Position (08.05.2026)
+- [ ] Versionshistorie: Jedes generierte Design speichern, Thumbnails anzeigen, zurückspringen
+- [ ] Spielernummer-Position: Option Mitte/Rechte Brust, fließt direkt in Prompt ein

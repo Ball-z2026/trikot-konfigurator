@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers, MapPin, Users, Shield, ThumbsUp } from "lucide-react";
+import { Plus, Trash2, Save, Sparkles, Loader2, ChevronLeft, ChevronRight, Maximize2, AlertTriangle, Wand2, Palette, RefreshCw, Upload, Image, Mountain, Layers, MapPin, Users, Shield, ThumbsUp } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -154,6 +154,13 @@ export default function KiDesign() {
   const [matchingShortsUrl, setMatchingShortsUrl] = useState<string | null>(null);
   const [generatingShorts, setGeneratingShorts] = useState(false);
   
+  // ── Versionshistorie für generierte Designs ──
+  const [designHistory, setDesignHistory] = useState<Array<{ url: string; timestamp: number; label: string }>>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+
+  // ── Spielernummer-Position (Vorderseite) ──
+  const [frontNumberPosition, setFrontNumberPosition] = useState<"center" | "right">("center");
+
   // Änderungsfunktion nach Generierung
   const [editDescription, setEditDescription] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -491,7 +498,10 @@ export default function KiDesign() {
       }
 
       // NUMMER: Vorne und hinten IDENTISCH, einfarbig
-      extraPrompt += ` NUMMER: Vorne und hinten DIESELBE Nummer, DIESELBE FARBE. EINFARBIG – KEINE Muster, KEINE Texturen. Saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert auf dem Rücken. BRUSTNUMMER: Kleiner (10cm Höhe), MITTIG auf der Brust zentriert (horizontal zentriert zwischen den Schultern).`;
+      const frontNumPos = frontNumberPosition === "right" 
+        ? "on the RIGHT CHEST (right side from viewer's perspective), vertically aligned with the crest on the left" 
+        : "CENTERED on the chest (horizontally centered between the shoulders)";
+      extraPrompt += ` NUMMER: Vorne und hinten DIESELBE Nummer, DIESELBE FARBE. EINFARBIG – KEINE Muster, KEINE Texturen. Saubere, fette, gut lesbare Zahl in EINER Farbe. RÜCKENNUMMER: Groß (25-35cm), zentriert auf dem Rücken. BRUSTNUMMER: Kleiner (10cm Höhe), ${frontNumPos}.`;
 
       // RÜCKSEITEN-LAYOUT
       const layoutOption = BACK_LAYOUT_OPTIONS.find(o => o.type === backLayout);
@@ -552,6 +562,12 @@ export default function KiDesign() {
         // Wappen in Rückennummer – DEAKTIVIERT (später als Feature)
         
         setGeneratedImageUrl(finalUrl);
+        // Versionshistorie: Neues Design speichern
+        setDesignHistory(prev => {
+          const newHistory = [...prev.slice(0, historyIndex + 1), { url: finalUrl, timestamp: Date.now(), label: `Version ${prev.length + 1}` }];
+          setHistoryIndex(newHistory.length - 1);
+          return newHistory;
+        });
         toast.success("Trikot-Design generiert! Sie können jetzt Zonen hinzufügen.");
         setStep("generate");
       }
@@ -798,6 +814,12 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
 
       if (result.url) {
         setGeneratedImageUrl(result.url);
+        // Versionshistorie: Anpassung speichern
+        setDesignHistory(prev => {
+          const newHistory = [...prev.slice(0, historyIndex + 1), { url: result.url, timestamp: Date.now(), label: `Anpassung ${prev.length + 1}` }];
+          setHistoryIndex(newHistory.length - 1);
+          return newHistory;
+        });
         setEditDescription("");
         toast.success("Änderung angewendet!");
       }
@@ -1076,6 +1098,23 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
                           <Switch checked={useCoordinates} onCheckedChange={setUseCoordinates} />
                         </div>
                       )}
+
+                      {/* Spielernummer-Position (Vorderseite) */}
+                      <div className="flex items-center justify-between p-2 bg-white rounded border">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-red-600">88</span>
+                          <span className="text-sm">Brustnummer</span>
+                        </div>
+                        <Select value={frontNumberPosition} onValueChange={(v) => setFrontNumberPosition(v as "center" | "right")}>
+                          <SelectTrigger className="w-[120px] h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="center">Mitte</SelectItem>
+                            <SelectItem value="right">Rechte Brust</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
                       {/* Hersteller-Logo Toggle (OPTIONAL - nur wenn hochgeladen) */}
                       <div className="flex items-center justify-between p-2 bg-white rounded border col-span-1 sm:col-span-2">
@@ -1682,6 +1721,52 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
                     </Button>
                   </div>
                 </div>
+
+                {/* ═══ VERSIONSHISTORIE ═══ */}
+                {designHistory.length > 1 && (
+                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={historyIndex <= 0}
+                      onClick={() => {
+                        const newIdx = historyIndex - 1;
+                        setHistoryIndex(newIdx);
+                        setGeneratedImageUrl(designHistory[newIdx].url);
+                      }}
+                    >
+                      <ChevronLeft className="w-3 h-3" />
+                    </Button>
+                    <div className="flex gap-1 overflow-x-auto flex-1">
+                      {designHistory.map((entry, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => { setHistoryIndex(idx); setGeneratedImageUrl(entry.url); }}
+                          className={`flex-shrink-0 w-12 h-12 rounded border-2 overflow-hidden ${
+                            idx === historyIndex ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200 hover:border-gray-400"
+                          }`}
+                        >
+                          <img src={storageUrl(entry.url) || entry.url} alt={entry.label} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={historyIndex >= designHistory.length - 1}
+                      onClick={() => {
+                        const newIdx = historyIndex + 1;
+                        setHistoryIndex(newIdx);
+                        setGeneratedImageUrl(designHistory[newIdx].url);
+                      }}
+                    >
+                      <ChevronRight className="w-3 h-3" />
+                    </Button>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                      {historyIndex + 1}/{designHistory.length}
+                    </span>
+                  </div>
+                )}
 
                 {/* Canvas mit Bild und Zonen */}
                 <div
