@@ -2185,3 +2185,7 @@
 - [x] Bug: Wahrzeichen-Silhouette verwendet Sponsor-Daten statt die generierte Silhouette (Fix: IMAGE #1 explizit)
 - [x] Bug: Vereinswappen wird rot eingefärbt wenn Wahrzeichen-Deckkraft geändert wird (Fix: Slider getrennt)
 - [x] Feature: Deckkraft-Slider für Vereinswappen-Wasserzeichen auf Rückseite hinzufügen (backCrestOpacity)
+
+## Startseite Workflow-Anleitung + Mannschaftslisten-Reiter (08.05.2026)
+- [x] Startseite: Klare Schritt-für-Schritt Anleitung für neue Benutzer (Verein anlegen → Mannschaft → Produkt → KI-Designer → Konfigurator)
+- [x] Mannschaftslisten als Reiter oben in der Navigation für schnellen Zugriff und Erstellung
