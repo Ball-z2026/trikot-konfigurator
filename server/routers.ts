@@ -200,6 +200,7 @@ import {
   type PlayerPrintData,
   type PrintJobConfig,
 } from "./printSheet";
+import { generateSpecSheet, type SpecSheetConfig } from "./specSheet";
 import {
   getSizeDimensions,
   getAvailableSizes,
@@ -4771,6 +4772,98 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           successCount: allResults.filter(r => r.sheets.length > 0).length,
           results: allResults,
         };
+      }),
+  }),
+
+  // ─── Spezifikations-Datenblatt ──────────────────────────────────────────────────────────────────────────
+  specSheet: router({
+    /** Spezifikations-PDF für ein Produkt generieren */
+    generate: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Produkt laden
+        const product = await getProductById(input.productId);
+        if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Produkt nicht gefunden" });
+
+        // Parts und Zonen laden
+        const dbParts = await listPartsByProduct(product.id);
+        const dbZones = await listZonesByProduct(product.id);
+
+        // Template finden
+        const tmpl = product.templateId ? TEXTIL_TEMPLATES.find(t => t.id === product.templateId) : null;
+
+        // Farbpalette aus Produkt (colorsConfig)
+        let colorPalette: string[] = [];
+        if (product.colorsConfig) {
+          try {
+            const colors = typeof product.colorsConfig === "string"
+              ? JSON.parse(product.colorsConfig)
+              : product.colorsConfig;
+            if (Array.isArray(colors)) {
+              colorPalette = colors.filter((c: any) => typeof c === "string" && c.startsWith("#"));
+            } else if (typeof colors === "object") {
+              colorPalette = Object.values(colors).filter((c: any) => typeof c === "string" && (c as string).startsWith("#")) as string[];
+            }
+          } catch { /* ignore */ }
+        }
+
+        // Parts zusammenbauen
+        const specParts = dbParts.map((dbPart) => {
+          const partZones = dbZones.filter(z => z.partId === dbPart.id);
+          const templatePart = tmpl?.parts?.find(tp => tp.key === dbPart.key);
+
+          return {
+            key: dbPart.key,
+            label: dbPart.label,
+            imageUrl: dbPart.imageUrl || null,
+            zones: partZones.map((z) => ({
+              label: z.label || z.purpose || "Zone",
+              purpose: z.purpose || "custom",
+              type: (z.purpose === "logo" || z.purpose === "clubLogo" || z.purpose === "sponsor" || z.purpose === "flag")
+                ? "image" as const
+                : (z.purpose === "playerName" || z.purpose === "playerNumber" || z.purpose === "clubName" || z.purpose === "abbreviation" || z.purpose === "coordinates" || z.purpose === "hashtag" || z.purpose === "playerInitials")
+                  ? "text" as const
+                  : "both" as const,
+              posX: z.posX,
+              posY: z.posY,
+              width: z.width,
+              height: z.height,
+              widthCm: z.widthCm || null,
+              heightCm: z.heightCm || null,
+              rotation: z.rotation || 0,
+              fontFamily: z.fontFamily || null,
+              fontSize: z.fontSize || null,
+              fontColor: z.fontColor || null,
+              fontWeight: z.fontWeight || null,
+              textAlign: z.textAlign || null,
+            })),
+          };
+        });
+
+        const specConfig: SpecSheetConfig = {
+          productName: product.name,
+          templateId: product.templateId || null,
+          category: tmpl?.sport || null,
+          parts: specParts,
+          colorPalette,
+          createdAt: new Date().toLocaleDateString("de-DE", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+
+        const pdfBuffer = await generateSpecSheet(specConfig);
+
+        // PDF in S3 speichern
+        const fileName = `spezifikationen/${product.id}_spec_${Date.now()}.pdf`;
+        const { key, url } = await storagePut(fileName, pdfBuffer, "application/pdf");
+
+        return { url, key, productName: product.name };
       }),
   }),
 

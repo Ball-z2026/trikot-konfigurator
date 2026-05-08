@@ -1,0 +1,10 @@
+{
+  "query": "SELECT * FROM org_logos WHERE orgId = 450001; SELECT * FROM sponsor_logos LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT * FROM org_logos WHERE orgId = 450001; SELECT * FROM sponsor_logos LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "id\torgId\tname\timageUrl\tstorageKey\tisDefault\tsortOrder\tcreatedAt\tupdatedAt",
+    "450001\t450001\tVereinslogo\t/manus-storage/org-logos/450001/vereinslogo_7303a53c.jpg\torg-logos/450001/vereinslogo_7303a53c.jpg\t1\t0\t2026-05-05 16:41:12\t2026-05-05 16:41:12",
+    "ERROR 1146 (42S02) at line 1: Table '3uavwxvcfyuttchvtxgux2.sponsor_logos' doesn't exist"
+  ]
+}

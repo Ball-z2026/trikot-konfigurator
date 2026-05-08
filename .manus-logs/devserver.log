@@ -9118,3 +9118,109 @@
 [2026-05-08T14:36:01.195Z] 10:36:01 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-08T14:38:12.573Z] 10:38:12 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-08T14:38:48.950Z] 10:38:48 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T15:53:23.534Z] 11:53:23 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-08T15:53:43.402Z] 11:53:43 AM [vite] (client) hmr update /src/pages/AdminProductEditor.tsx, /src/index.css
+[2026-05-08T15:59:06.273Z] 11:59:06 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T15:59:08.683Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T15:59:09.894Z] Server running on http://localhost:3000/
+[2026-05-08T15:59:41.880Z] 11:59:41 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T15:59:43.950Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T15:59:44.916Z] Server running on http://localhost:3000/
+[2026-05-08T17:09:35.235Z] Dev server process group stopped
+[2026-05-08T17:09:38.511Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T17:09:51.740Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T17:09:53.306Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T17:09:55.786Z] Server running on http://localhost:3000/
+[2026-05-08T19:54:04.187Z] [Auth] Missing session cookie
+[2026-05-08T19:54:05.628Z] [Auth] Missing session cookie
+[2026-05-08T19:54:06.690Z] [Auth] Missing session cookie
+[2026-05-08T19:56:28.142Z] 3:56:28 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-08T19:56:30.227Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T19:56:31.191Z] Server running on http://localhost:3000/
+[2026-05-08T19:56:36.820Z] [Auth] Missing session cookie
+[2026-05-08T19:57:08.676Z] 3:57:08 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-08T19:57:09.243Z] c
+[2026-05-08T19:57:09.244Z] node:internal/modules/run_main:122
+[2026-05-08T19:57:09.244Z] triggerUncaughtException(
+[2026-05-08T19:57:09.245Z] ^
+[2026-05-08T19:57:09.245Z] Error [TransformError]: Transform failed with 3 errors:
+[2026-05-08T19:57:09.245Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:419:8: ERROR: The symbol "fontColor" has already been declared
+[2026-05-08T19:57:09.245Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:420:8: ERROR: The symbol "cmyk" has already been declared
+[2026-05-08T19:57:09.246Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:576:0: ERROR: Unexpected "export"
+[2026-05-08T19:57:09.246Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-05-08T19:57:09.246Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-05-08T19:57:09.247Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-05-08T19:57:09.248Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-05-08T19:57:09.248Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-05-08T19:57:09.249Z] at Socket.emit (node:events:524:28)
+[2026-05-08T19:57:09.249Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-05-08T19:57:09.250Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-05-08T19:57:09.250Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-05-08T19:57:09.250Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-05-08T19:57:09.251Z] 
+[2026-05-08T19:57:09.251Z] Node.js v22.13.0
+[2026-05-08T19:57:23.788Z] 3:57:23 PM [tsx] change in ./server/printSheet.ts Rerunning...
+[2026-05-08T19:57:25.150Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T19:57:25.935Z] Server running on http://localhost:3000/
+[2026-05-08T19:57:30.912Z] [Auth] Missing session cookie
+[2026-05-08T19:57:39.736Z] 3:57:39 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-08T19:57:40.158Z] c
+[2026-05-08T19:57:40.159Z] node:internal/modules/run_main:122
+[2026-05-08T19:57:40.159Z] triggerUncaughtException(
+[2026-05-08T19:57:40.159Z] ^
+[2026-05-08T19:57:40.160Z] Error [TransformError]: Transform failed with 2 errors:
+[2026-05-08T19:57:40.160Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:414:8: ERROR: The symbol "fontColor" has already been declared
+[2026-05-08T19:57:40.160Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:415:8: ERROR: The symbol "cmyk" has already been declared
+[2026-05-08T19:57:40.161Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-05-08T19:57:40.161Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-05-08T19:57:40.161Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-05-08T19:57:40.162Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-05-08T19:57:40.162Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-05-08T19:57:40.162Z] at Socket.emit (node:events:524:28)
+[2026-05-08T19:57:40.163Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-05-08T19:57:40.163Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-05-08T19:57:40.163Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-05-08T19:57:40.163Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-05-08T19:57:40.164Z] 
+[2026-05-08T19:57:40.164Z] Node.js v22.13.0
+[2026-05-08T19:57:49.267Z] 3:57:49 PM [tsx] change in ./server/printSheet.ts Rerunning...
+[2026-05-08T19:57:49.616Z] c
+[2026-05-08T19:57:49.616Z] node:internal/modules/run_main:122
+[2026-05-08T19:57:49.617Z] triggerUncaughtException(
+[2026-05-08T19:57:49.617Z] ^
+[2026-05-08T19:57:49.618Z] Error [TransformError]: Transform failed with 2 errors:
+[2026-05-08T19:57:49.618Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:412:8: ERROR: The symbol "cmyk" has already been declared
+[2026-05-08T19:57:49.618Z] /home/ubuntu/trikot-konfigurator/server/printSheet.ts:568:0: ERROR: Unexpected "export"
+[2026-05-08T19:57:49.619Z] at failureErrorWithLog (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1748:15)
+[2026-05-08T19:57:49.619Z] at /home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:1017:50
+[2026-05-08T19:57:49.619Z] at responseCallbacks.<computed> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:884:9)
+[2026-05-08T19:57:49.620Z] at handleIncomingPacket (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:939:12)
+[2026-05-08T19:57:49.620Z] at Socket.readFromStdout (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/esbuild@0.27.7/node_modules/esbuild/lib/main.js:862:7)
+[2026-05-08T19:57:49.620Z] at Socket.emit (node:events:524:28)
+[2026-05-08T19:57:49.621Z] at addChunk (node:internal/streams/readable:561:12)
+[2026-05-08T19:57:49.621Z] at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+[2026-05-08T19:57:49.621Z] at Readable.push (node:internal/streams/readable:392:5)
+[2026-05-08T19:57:49.622Z] at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2026-05-08T19:57:49.622Z] 
+[2026-05-08T19:57:49.622Z] Node.js v22.13.0
+[2026-05-08T19:58:28.019Z] 3:58:28 PM [tsx] change in ./server/printSheet.ts Rerunning...
+[2026-05-08T19:58:29.414Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T19:58:30.227Z] Server running on http://localhost:3000/
+[2026-05-08T20:02:32.252Z] Dev server process group stopped
+[2026-05-08T20:02:32.288Z] Dev server exited with code -15
+[2026-05-08T20:02:35.269Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T20:02:36.861Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T20:02:37.627Z] Server running on http://localhost:3000/
+[2026-05-08T20:02:45.324Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.352Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.928Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.960Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.965Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.968Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.972Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.978Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.982Z] [Auth] Missing session cookie
+[2026-05-08T20:02:45.986Z] [Auth] Missing session cookie
+[2026-05-08T20:02:52.376Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-08T20:02:52.379Z] [Auth] Missing session cookie
+[2026-05-08T20:02:52.384Z] [Auth] Missing session cookie

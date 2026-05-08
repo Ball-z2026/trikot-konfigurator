@@ -1,0 +1,21 @@
+{
+  "query": "SELECT * FROM org_logos WHERE orgId = 450001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT * FROM org_logos WHERE orgId = 450001;",
+  "rows": [
+    {
+      "id": "450001",
+      "orgId": "450001",
+      "name": "Vereinslogo",
+      "imageUrl": "/manus-storage/org-logos/450001/vereinslogo_7303a53c.jpg",
+      "storageKey": "org-logos/450001/vereinslogo_7303a53c.jpg",
+      "isDefault": "1",
+      "sortOrder": "0",
+      "createdAt": "2026-05-05 16:41:12",
+      "updatedAt": "2026-05-05 16:41:12"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torgId\tname\timageUrl\tstorageKey\tisDefault\tsortOrder\tcreatedAt\tupdatedAt\n450001\t450001\tVereinslogo\t/manus-storage/org-logos/450001/vereinslogo_7303a53c.jpg\torg-logos/450001/vereinslogo_7303a53c.jpg\t1\t0\t2026-05-05 16:41:12\t2026-05-05 16:41:12\n",
+  "stderr": "",
+  "execution_time_ms": 257
+}

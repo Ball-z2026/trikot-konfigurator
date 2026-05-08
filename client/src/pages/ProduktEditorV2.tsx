@@ -1,6 +1,4 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import TeamRosterPanel from "@/components/TeamRosterPanel";
-import ProductSpecPanel from "@/components/ProductSpecPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -245,13 +243,6 @@ export default function AdminProductEditor() {
   const [pendingDrawRect, setPendingDrawRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   // Naht-Linien anzeigen
   const [showSeams, setShowSeams] = useState(true);
-  // Mannschaftsliste
-  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
-
-  // Org-ID des Users laden (für Mannschaftsliste)
-  const { data: myMemberships } = trpc.membership.mine.useQuery(undefined, { enabled: !!user });
-  const userOrgId = useMemo(() => myMemberships?.[0]?.orgId ?? null, [myMemberships]);
-
   // Freigabe-Dialog
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [approvalApprovers, setApprovalApprovers] = useState<Array<{type: "department_lead" | "owner" | "sponsor", userId?: number, sponsorId?: number}>>([]);
@@ -876,15 +867,13 @@ export default function AdminProductEditor() {
           {/* Right: Settings Panel */}
           <div className="space-y-4 lg:overflow-y-auto lg:max-h-[calc(100vh-120px)] lg:pr-1">
             <Tabs defaultValue="zones">
-              <TabsList className="w-full flex-wrap h-auto gap-0.5 p-0.5">
-                <TabsTrigger value="details" className="flex-1 text-[10px] sm:text-xs px-2 py-1">Details</TabsTrigger>
+              <TabsList className="w-full">
+                <TabsTrigger value="details" className="flex-1 text-xs sm:text-sm">Details</TabsTrigger>
                 {hasParts && activePart && (
-                  <TabsTrigger value="part" className="flex-1 text-[10px] sm:text-xs px-2 py-1">Teil</TabsTrigger>
+                  <TabsTrigger value="part" className="flex-1 text-xs sm:text-sm">Teil</TabsTrigger>
                 )}
-                <TabsTrigger value="zones" className="flex-1 text-[10px] sm:text-xs px-2 py-1">Zonen</TabsTrigger>
-                <TabsTrigger value="team" className="flex-1 text-[10px] sm:text-xs px-2 py-1">Mannschaft</TabsTrigger>
-                <TabsTrigger value="spec" className="flex-1 text-[10px] sm:text-xs px-2 py-1">Spezifikation</TabsTrigger>
-                <TabsTrigger value="preview" className="flex-1 text-[10px] sm:text-xs px-2 py-1">Vorschau</TabsTrigger>
+                <TabsTrigger value="zones" className="flex-1 text-xs sm:text-sm">Zonen</TabsTrigger>
+                <TabsTrigger value="preview" className="flex-1 text-xs sm:text-sm">Vorschau</TabsTrigger>
               </TabsList>
 
               {/* Product Details Tab */}
@@ -1590,31 +1579,6 @@ export default function AdminProductEditor() {
                 <p className="text-[10px] sm:text-xs text-muted-foreground text-center px-4">
                   Ziehe die Zonen auf dem Bild, um sie zu positionieren. Klicke eine Zone an, um alle Einstellungen zu sehen.
                 </p>
-              </TabsContent>
-
-              {/* Mannschaft Tab */}
-              <TabsContent value="team" className="space-y-3 mt-3 sm:mt-4">
-                <TeamRosterPanel
-                  selectedTeamId={selectedTeamId}
-                  onTeamSelect={setSelectedTeamId}
-                  orgId={userOrgId}
-                />
-              </TabsContent>
-
-              {/* Spezifikation Tab */}
-              <TabsContent value="spec" className="space-y-3 mt-3 sm:mt-4">
-                <ProductSpecPanel
-                  productId={productId}
-                  productName={name}
-                  zones={localZones}
-                  parts={parts}
-                  templateId={productData?.templateId}
-                  colorPalette={colorPalette}
-                  onExportPdf={() => {
-                    toast.info("PDF-Datenblatt wird generiert...");
-                    // TODO: PDF-Export-Endpunkt aufrufen
-                  }}
-                />
               </TabsContent>
 
               {/* Vorschau Tab mit Beispiel-Daten */}

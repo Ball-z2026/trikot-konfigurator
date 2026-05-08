@@ -2235,3 +2235,33 @@
 ## Versionshistorie & Nummern-Position (08.05.2026)
 - [ ] Versionshistorie: Jedes generierte Design speichern, Thumbnails anzeigen, zurückspringen
 - [ ] Spielernummer-Position: Option Mitte/Rechte Brust, fließt direkt in Prompt ein
+
+## Produktdesigner erweitern: Mannschaftslisten + Design-Funktionen
+
+### Mannschaftslisten im Produktdesigner
+- [ ] Mannschaftslisten-Sektion im Produktdesigner einbauen (erstellen, hochladen, speichern)
+- [ ] CSV/Excel-Import für Mannschaftslisten im Produktdesigner
+- [ ] Mannschaftsliste manuell erstellen (Name, Nummer, Größe, Kürzel)
+- [ ] Mannschaftsliste pro User speichern und bei allen Produkten wiederverwendbar
+- [ ] Rollenbasierter Zugriff: Owner=alle, Spartenleiter=seine Sparte, Trainer=seine Mannschaft
+- [ ] Mannschaftsliste im Konfigurator als Auswahl verfügbar (Light-Version: nur Personalisierung)
+
+### Separate Kopie des Produktdesigners
+- [ ] ProduktDesignerV2.tsx als Kopie angelegt (Route noch nicht registriert)
+- [ ] ProduktEditorV2.tsx als Kopie angelegt (Route noch nicht registriert)
+
+### Sicherung
+- [x] Checkpoint vor Umbau gespeichert (Version: 1920215e)
+
+### Spezifikationsansicht + PDF-Export
+- [ ] Spezifikationsansicht im Produktdesigner: Alle Elemente links/rechts neben dem Produkt mit Details (Farbe, Größe, Schrift, Datei-Verweis)
+- [ ] PDF-Export/Datenblatt für Druckerei mit allen Element-Spezifikationen
+- [ ] Automatische Übernahme aller Änderungen im Produktdesigner in den Druckbogen
+
+## Kontrast-Logik und korrekte Positionierung
+
+- [x] Kontrast-Logik: Automatische Farbanpassung für Wappen (blaues Wappen auf blauem Hintergrund → weiß)
+- [x] Kontrast-Logik: Automatische Textfarbanpassung (Nummer/Name) basierend auf Hintergrund-Luminanz
+- [x] Korrekte Positionierung: FRONT_ZONE_POSITIONS in KI-Designer-Preview und Druckbogen verwenden
+- [x] Korrekte Positionierung: calculateBackPositions für Rückseite in Preview und Druckbogen verwenden
+- [x] Druckbogen-Generator: Kontrast-Logik in printSheet.ts integrieren

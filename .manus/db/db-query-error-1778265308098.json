@@ -1,0 +1,8 @@
+{
+  "query": "SELECT o.id, o.name, o.primaryColor, o.secondaryColor, o.logoUrl, o.address, o.coordinates, o.hashtag, o.landmark, o.landmarkDescription FROM organizations o LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT o.id, o.name, o.primaryColor, o.secondaryColor, o.logoUrl, o.address, o.coordinates, o.hashtag, o.landmark, o.landmarkDescription FROM organizations o LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'o.logourl' in 'field list'"
+  ]
+}

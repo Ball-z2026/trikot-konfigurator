@@ -1,0 +1,9 @@
+{
+  "query": "SELECT s.id, s.companyName, s.contactName FROM sponsors s WHERE s.teamId IN (SELECT id FROM teams WHERE orgId = 450001); SELECT id, teamId, companyName FROM sponsors LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT s.id, s.companyName, s.contactName FROM sponsors s WHERE s.teamId IN (SELECT id FROM teams WHERE orgId = 450001); SELECT id, teamId, companyName FROM sponsors LIMIT 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 264
+}

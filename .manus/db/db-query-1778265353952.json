@@ -1,0 +1,62 @@
+{
+  "query": "SELECT id, name, primaryColor, secondaryColor, street, zip, city, latitude, longitude, hashtag, jerseyName FROM organizations LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name, primaryColor, secondaryColor, street, zip, city, latitude, longitude, hashtag, jerseyName FROM organizations LIMIT 5;",
+  "rows": [
+    {
+      "id": "390001",
+      "name": "HSV ",
+      "primaryColor": "#003399",
+      "secondaryColor": "#ffffff",
+      "street": "Im Dorfe 9",
+      "zip": "21228",
+      "city": "Harmstorf",
+      "latitude": "53.3480706",
+      "longitude": "9.986228599999999",
+      "hashtag": "NULL",
+      "jerseyName": "HSV"
+    },
+    {
+      "id": "420001",
+      "name": "Testverein",
+      "primaryColor": "NULL",
+      "secondaryColor": "NULL",
+      "street": "NULL",
+      "zip": "NULL",
+      "city": "NULL",
+      "latitude": "NULL",
+      "longitude": "NULL",
+      "hashtag": "NULL",
+      "jerseyName": "NULL"
+    },
+    {
+      "id": "450001",
+      "name": "Sc Harmstorf ",
+      "primaryColor": "#fefb41",
+      "secondaryColor": "#012f7b",
+      "street": "Dorfstraße 16",
+      "zip": "21228",
+      "city": "Harmstorf",
+      "latitude": "53.3482958",
+      "longitude": "9.9868598",
+      "hashtag": "#Sch",
+      "jerseyName": "Sc Harmstorf"
+    },
+    {
+      "id": "480001",
+      "name": "VfV Spandau ",
+      "primaryColor": "#00ff00",
+      "secondaryColor": "#ffffff",
+      "street": "NULL",
+      "zip": "NULL",
+      "city": "NULL",
+      "latitude": "NULL",
+      "longitude": "NULL",
+      "hashtag": "NULL",
+      "jerseyName": "VfV Spandau"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tprimaryColor\tsecondaryColor\tstreet\tzip\tcity\tlatitude\tlongitude\thashtag\tjerseyName\n390001\tHSV \t#003399\t#ffffff\tIm Dorfe 9\t21228\tHarmstorf\t53.3480706\t9.986228599999999\tNULL\tHSV\n420001\tTestverein\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n450001\tSc Harmstorf \t#fefb41\t#012f7b\tDorfstraße 16\t21228\tHarmstorf\t53.3482958\t9.9868598\t#Sch\tSc Harmstorf\n480001\tVfV Spandau \t#00ff00\t#ffffff\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tVfV Spandau\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

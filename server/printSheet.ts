@@ -15,6 +15,12 @@
  * 4. Ärmel Rechts (falls vorhanden)
  */
 
+import {
+  ensureTextContrast,
+  getTextOutlineForContrast,
+  colorsAreTooSimilar,
+  isDarkColor,
+} from "../shared/contrastUtils";
 import PDFDocument from "pdfkit";
 import { Buffer } from "node:buffer";
 import {
@@ -108,6 +114,8 @@ export interface PrintJobConfig {
   parts: PrintSheetConfig[];
   /** Beschnitt in mm (Standard: 3mm) */
   bleedMm?: number;
+  /** Primäre Hintergrundfarbe des Designs (für Kontrast-Logik) */
+  bgColor?: string;
   /** DPI für Bildauflösung (Standard: 300) */
   dpi?: number;
 }
@@ -233,6 +241,13 @@ export async function generatePrintSheet(
   );
 
   // ── Zonen rendern ──
+  // bgColor an alle Zonen übergeben (für Kontrast-Logik)
+  const bgColor = config.bgColor;
+  if (bgColor) {
+    for (const zone of part.zones) {
+      (zone as any).bgColor = bgColor;
+    }
+  }
   for (const zone of part.zones) {
     const zoneX = safeX + (zone.posXPercent / 100) * safeWidth;
     const zoneY = safeY + (zone.posYPercent / 100) * safeHeight;
@@ -363,23 +378,18 @@ function renderTextZone(
 ) {
   const text = zone.content;
   if (!text) return;
-
   // Schriftgröße berechnen
   const fontSizePercent = zone.fontSize || 80;
   let fontSize = (fontSizePercent / 100) * h;
-
   // Mindestgröße
   fontSize = Math.max(fontSize, 6);
-
   // Schriftart wählen (PDFKit hat nur Helvetica, Courier, Times eingebaut)
   let fontName = "Helvetica";
   if (zone.fontWeight === "bold") fontName = "Helvetica-Bold";
   if (zone.fontStyle === "serif") fontName = zone.fontWeight === "bold" ? "Times-Bold" : "Times-Roman";
   if (zone.fontStyle === "sans") fontName = zone.fontWeight === "bold" ? "Helvetica-Bold" : "Helvetica";
-
   doc.font(fontName);
   doc.fontSize(fontSize);
-
   // Textbreite prüfen und ggf. Schriftgröße anpassen
   let textWidth = doc.widthOfString(text);
   while (textWidth > w * 0.95 && fontSize > 4) {
@@ -387,11 +397,26 @@ function renderTextZone(
     doc.fontSize(fontSize);
     textWidth = doc.widthOfString(text);
   }
-
   const textHeight = doc.heightOfString(text, { width: w });
 
-  // Textfarbe (CMYK)
-  const fontColor = zone.fontColor || "#000000";
+  // ═══ KONTRAST-LOGIK: Automatische Farbanpassung ═══
+  // Textfarbe bestimmen – wenn bgColor vorhanden, Kontrast prüfen
+  let fontColor = zone.fontColor || "#000000";
+  let effectiveOutlineColor = zone.outlineColor || "none";
+  let effectiveOutlineWidth = zone.outlineWidth || 0;
+
+  if ((zone as any).bgColor) {
+    const bg = (zone as any).bgColor as string;
+    // Prüfe ob Textfarbe genug Kontrast zum Hintergrund hat
+    fontColor = ensureTextContrast(fontColor, bg);
+    // Wenn immer noch grenzwertig: Outline hinzufügen
+    const outlineResult = getTextOutlineForContrast(fontColor, bg);
+    if (outlineResult.needsOutline && (!effectiveOutlineColor || effectiveOutlineColor === "none")) {
+      effectiveOutlineColor = outlineResult.outlineColor;
+      effectiveOutlineWidth = outlineResult.outlineWidth;
+    }
+  }
+
   const cmyk = hexToCmyk(fontColor);
 
   if (zone.textStyle === "arc" && zone.arcDegree && zone.arcDegree !== 0) {
@@ -401,12 +426,10 @@ function renderTextZone(
     // ── Gerader Text rendern ──
     // Vertikale Zentrierung
     const textY = y + (h - textHeight) / 2;
-
-    // Outline zuerst (falls vorhanden)
-    if (zone.outlineColor && zone.outlineColor !== "none" && zone.outlineWidth && zone.outlineWidth > 0) {
-      const outlineCmyk = hexToCmyk(zone.outlineColor);
-      const outlineWidthPt = (zone.outlineWidth / 100) * fontSize;
-
+    // Outline (entweder vom User definiert oder automatisch durch Kontrast-Logik)
+    if (effectiveOutlineColor && effectiveOutlineColor !== "none" && effectiveOutlineWidth > 0) {
+      const outlineCmyk = hexToCmyk(effectiveOutlineColor);
+      const outlineWidthPt = (effectiveOutlineWidth / 100) * fontSize;
       doc.save();
       // PDFKit: Text als Pfad mit Stroke für Outline
       doc.lineWidth(outlineWidthPt);
