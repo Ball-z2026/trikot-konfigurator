@@ -521,7 +521,7 @@ export default function KiDesign() {
           const imgNum = sponsorStartNum + i;
           const pos = sponsorPositions[s.id] || "chest";
           const placement = positionDescriptions[pos] || positionDescriptions.chest;
-          extraPrompt += ` SPONSOR - Reference image ${imgNum} is the logo of "${s.name}". Place it at: ${placement}. Reproduce this logo EXACTLY as shown in reference image ${imgNum} - same shapes, typography, colors. Do NOT write the name as text. Do NOT simplify. Copy the image pixel-perfect.`;
+          extraPrompt += ` SPONSOR-LOGO: Referenzbild ${imgNum} ist ein Sponsor-Logo. Übernimm dieses Bild 1 zu 1 an Position: ${placement}. NICHT als Text schreiben - das BILD übernehmen! Exakt gleiche Form, Farben, Proportionen.`;
         });
       }
 
@@ -781,9 +781,9 @@ export default function KiDesign() {
           if (!imgNum) return;
           
           if (placement === "front") {
-            shortsExtras += ` VORDERSEITE - SPONSOR "${s.name}": Referenzbild ${imgNum} ist das Logo von "${s.name}". Übernimm dieses Logo 1 zu 1 auf dem RECHTEN Hosenbein (aus Betrachtersicht rechts). Position: UNTEN am Bein, nahe am Saum. Größe: ca. ${sizeMap[size]}.`;
+            shortsExtras += ` VORDERSEITE - SPONSOR-LOGO: Referenzbild ${imgNum} ist ein Sponsor-Logo. Übernimm dieses Bild 1 zu 1 auf dem RECHTEN Hosenbein (aus Betrachtersicht rechts). Position: UNTEN am Bein, nahe am Saum. Größe: ca. ${sizeMap[size]}. NICHT als Text schreiben - das BILD übernehmen!`;
           } else {
-            shortsExtras += ` RÜCKSEITE - SPONSOR "${s.name}": Referenzbild ${imgNum} ist das Logo von "${s.name}". Übernimm dieses Logo 1 zu 1 auf der RÜCKSEITE der Hose. Position: UNTEN am Bein, nahe am Saum, zentriert. Größe: ca. ${sizeMap[size]}.`;
+            shortsExtras += ` RÜCKSEITE - SPONSOR-LOGO: Referenzbild ${imgNum} ist ein Sponsor-Logo. Übernimm dieses Bild 1 zu 1 auf der RÜCKSEITE der Hose. Position: UNTEN am Bein, nahe am Saum, zentriert. Größe: ca. ${sizeMap[size]}. NICHT als Text schreiben - das BILD übernehmen!`;
           }
         });
       }
