@@ -254,8 +254,10 @@ export default function KiDesign() {
       const mapUrl = `${forgeUrl}/v1/maps/proxy/maps/api/staticmap?center=${center}&zoom=15&size=600x600&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0x333333&style=feature:road.local|element:geometry|color:0x555555&style=feature:water|element:geometry|color:0x111111&style=feature:landscape|element:geometry|color:0x000000&style=feature:poi|visibility:off&style=feature:transit|visibility:off&key=${apiKey}`;
       
       // Karte herunterladen und in Storage hochladen (damit die KI eine öffentliche URL bekommt)
-      const mapResponse = await fetch(mapUrl);
-      if (!mapResponse.ok) throw new Error("Karte konnte nicht geladen werden");
+      const mapResponse = await fetch(mapUrl, {
+        headers: { "Authorization": `Bearer ${apiKey}` },
+      });
+      if (!mapResponse.ok) throw new Error(`Karte konnte nicht geladen werden (${mapResponse.status})`);
       const mapBlob = await mapResponse.blob();
       const mapReader = new FileReader();
       const mapBase64: string = await new Promise((resolve, reject) => {
