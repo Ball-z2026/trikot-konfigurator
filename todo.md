@@ -2179,3 +2179,9 @@
 ## Später (Feature-Backlog)
 - [ ] Wappen in Rückennummer als optionales Feature (wenn KI-Qualität besser wird)
 
+
+## Bug-Fixes KI-Designer (08.05.2026 - Kritisch)
+- [x] Bug: Brust-Sponsor zeigt nur den Namen als Text statt das echte Logo-Bild (Fix: IMAGE #N Nummerierung)
+- [x] Bug: Wahrzeichen-Silhouette verwendet Sponsor-Daten statt die generierte Silhouette (Fix: IMAGE #1 explizit)
+- [x] Bug: Vereinswappen wird rot eingefärbt wenn Wahrzeichen-Deckkraft geändert wird (Fix: Slider getrennt)
+- [x] Feature: Deckkraft-Slider für Vereinswappen-Wasserzeichen auf Rückseite hinzufügen (backCrestOpacity)

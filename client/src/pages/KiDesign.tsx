@@ -161,6 +161,7 @@ export default function KiDesign() {
   const [isEditing, setIsEditing] = useState(false);
   const [backLayout, setBackLayout] = useState<BackLayoutType>(DEFAULT_BACK_LAYOUT);
   const [useBackCrestWatermark, setUseBackCrestWatermark] = useState(false); // Wappen als großes Wasserzeichen auf Rücken
+  const [backCrestOpacity, setBackCrestOpacity] = useState<number>(20); // Deckkraft für Wappen-Wasserzeichen auf Rücken
 
   // Drag & Drop State
   const [draggingZone, setDraggingZone] = useState<string | null>(null);
@@ -421,17 +422,16 @@ export default function KiDesign() {
       let extraPrompt = "";
       
       // WAHRZEICHEN-SILHOUETTE = Wasserzeichen (je nach Darstellungsart + Platzierung)
+      // WICHTIG: Die Silhouette ist IMMER IMAGE #1 (referenceUrl = originalImages[0])
       if (useLandmark && landmarkSilhouette) {
         const placementText = landmarkPlacement === "both"
           ? "on BOTH the FRONT and BACK of the jersey"
           : "on the FRONT of the jersey ONLY";
         
         if (landmarkStyle === "large") {
-          // Groß als Wasserzeichen
-          extraPrompt += ` [CRITICAL SILHOUETTE WATERMARK]: Among the reference images provided, there is ONE image that shows a DARK SILHOUETTE SHAPE ON A TRANSPARENT/WHITE BACKGROUND (it is the only reference image with a transparent or plain white background - all other reference images show logos/crests with colored backgrounds or detailed designs). This silhouette image is the ONLY shape you must use as a watermark overlay. INSTRUCTIONS: Place this EXACT silhouette shape as a large tonal watermark ${placementText}. Size: 50-60% of jersey surface, centered. Opacity: ${landmarkOpacity}%. Color: same hue as jersey base, slightly lighter or darker. ABSOLUTE RULES: 1) Use ONLY the exact outline from the transparent-background silhouette image - trace it precisely. 2) DO NOT replace it with any other shape (no church, tower, bridge, trophy, ball, star, shield, or any generic icon). 3) DO NOT interpret or simplify the shape. 4) If you cannot identify the silhouette image, leave the jersey surface PLAIN - no substitute. 5) The silhouette goes BEHIND all logos, numbers, and text.`;
+          extraPrompt += ` [CRITICAL - SILHOUETTE WATERMARK - IMAGE #1]: IMAGE #1 (the FIRST reference image) is a SILHOUETTE with a TRANSPARENT/CHECKERED background showing a dark outline shape. This is NOT a logo, NOT a sponsor, NOT a crest - it is a building/landmark silhouette cutout. USE THIS EXACT SHAPE as a large tonal watermark ${placementText}. Size: 50-60% of jersey surface, centered. Opacity: ${landmarkOpacity}%. Color: same hue as jersey base, slightly lighter or darker. ABSOLUTE RULES: 1) Use ONLY the exact outline from IMAGE #1. 2) DO NOT use any sponsor logo, crest, or text as the watermark. 3) DO NOT replace with any other shape. 4) If unclear, leave jersey PLAIN. 5) Silhouette goes BEHIND all logos, numbers, text.`;
         } else {
-          // Kleine zufällige als Muster
-          extraPrompt += ` [CRITICAL SILHOUETTE PATTERN]: Among the reference images provided, there is ONE image that shows a DARK SILHOUETTE SHAPE ON A TRANSPARENT/WHITE BACKGROUND (it is the only reference image with a transparent or plain white background - all other reference images show logos/crests with colored backgrounds or detailed designs). This silhouette image is the ONLY shape you must use in the pattern. INSTRUCTIONS: Take this EXACT silhouette shape and repeat it as a scattered all-over pattern of small copies (2-5cm each) ${placementText}. Scatter many copies at various sizes and slight rotations. Opacity: ${landmarkOpacity}%. Color: same hue as jersey, slightly lighter or darker (tonal). ABSOLUTE RULES: 1) Every single shape in the pattern MUST be an exact copy of the outline from the transparent-background silhouette image. 2) DO NOT use any other shape (no generic icons, trophies, balls, stars, shields, buildings). 3) DO NOT interpret or simplify. 4) If you cannot identify the silhouette image, leave the jersey PLAIN - no substitute pattern. 5) Pattern goes BEHIND all logos, numbers, and text.`;
+          extraPrompt += ` [CRITICAL - SILHOUETTE PATTERN - IMAGE #1]: IMAGE #1 (the FIRST reference image) is a SILHOUETTE with a TRANSPARENT/CHECKERED background showing a dark outline shape. This is NOT a logo, NOT a sponsor, NOT a crest - it is a building/landmark silhouette cutout. Take this EXACT shape and repeat it as a scattered all-over pattern of small copies (2-5cm each) ${placementText}. Scatter many copies at various sizes and slight rotations. Opacity: ${landmarkOpacity}%. Color: same hue as jersey, slightly lighter or darker (tonal). ABSOLUTE RULES: 1) Every shape in the pattern MUST be an exact copy of IMAGE #1 outline. 2) DO NOT use any sponsor logo or crest shape. 3) DO NOT replace with generic icons. 4) If unclear, leave jersey PLAIN. 5) Pattern goes BEHIND all logos, numbers, text.`;
         }
       }
       
@@ -453,7 +453,9 @@ export default function KiDesign() {
       // Herzseite = linke Brust des Trägers = RECHTE Seite im Bild (Betrachter-Perspektive)
       // Auf gleicher Höhe wie Brustnummer (Y=32% = etwas unterhalb Kragen)
       if (defaultLogo?.imageUrl) {
-        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST PLACEMENT [FIXED POSITION - DO NOT MOVE - ZERO CREATIVE FREEDOM]: Place the club crest/badge (provided as reference image) on the VIEWER'S RIGHT SIDE of the front jersey chest area (this is the wearer's left chest / heart side). Position: approximately 60-65% from the LEFT edge of the jersey and 32% from the top. Size: approximately 8-10cm (10% of jersey height). IMPORTANT: The crest goes on the RIGHT side as seen by the viewer, the number goes on the LEFT side as seen by the viewer. These positions are FIXED and must NOT be affected by any watermark, pattern, or background element. [ABSOLUTE CREST RULE]: The crest's SHAPE, DESIGN, TYPOGRAPHY, SYMBOLS, and PROPORTIONS must be IDENTICAL to the reference image. Copy every detail - same circles, same text, same emblems, same layout. You may adjust the crest's COLORS to harmonize with the jersey color scheme, but the FORM/SHAPE/DESIGN must remain PIXEL-PERFECT UNCHANGED. Do NOT simplify, redraw, reinterpret, or create a different version.`;
+        // Berechne die Bildnummer für das Wappen
+        const crestImageNum = (useLandmark && landmarkSilhouette) ? 2 : 1;
+        extraPrompt += ` FRONT VIEW (left jersey) - CLUB CREST [IMAGE #${crestImageNum} - FIXED POSITION - DO NOT MOVE]: IMAGE #${crestImageNum} shows the club crest/badge. Place this crest on the VIEWER'S RIGHT SIDE of the front jersey chest area (wearer's left chest / heart side). Position: approximately 60-65% from LEFT edge, 32% from top. Size: approximately 8-10cm (10% of jersey height). IMPORTANT: Crest on RIGHT side (viewer), number on LEFT side (viewer). These positions are FIXED. [ABSOLUTE CREST RULE]: Copy the EXACT graphic from IMAGE #${crestImageNum} - same shape, same design, same symbols, same proportions. You may adjust COLORS to harmonize with jersey, but FORM/SHAPE must remain PIXEL-PERFECT. Do NOT simplify, redraw, or create a different version.`;
       }
 
       // WAPPEN IN RÜCKENNUMMER = KI soll das Vereinswappen direkt IN die Nummern-Ziffern einbauen
@@ -501,9 +503,10 @@ export default function KiDesign() {
       }
 
       // SPONSOREN = KI platziert die echten Sponsor-Logos basierend auf gewählter Position
+      // Berechne die exakte Bildnummer für jeden Sponsor im Referenzbild-Array:
+      // Position 1 = Silhouette (wenn vorhanden), danach Wappen, danach Sponsoren
       const enabledSponsors = sponsorLogos.filter(s => s.enabled && s.imageUrl);
       if (enabledSponsors.length > 0) {
-        // Positionsbeschreibungen für den Prompt
         const positionDescriptions: Record<string, { view: string; placement: string; size: string }> = {
           chest: { view: "FRONT VIEW (left jersey)", placement: "FRONT CENTER CHEST, below the crest and number area, centered horizontally, approximately 45-55% from top", size: "20cm wide x 8cm tall" },
           back: { view: "BACK VIEW (right jersey)", placement: "LOWER BACK, below the player name area, centered horizontally, approximately 75-80% from top", size: "15cm wide x 6cm tall" },
@@ -514,24 +517,24 @@ export default function KiDesign() {
           collar: { view: "BACK VIEW (right jersey)", placement: "COLLAR/NAPE area, centered below the collar", size: "6cm wide x 3cm tall" },
         };
 
-        // Beschreibe die Referenzbilder: Die KI muss wissen welches Bild welcher Sponsor ist
-        // Reihenfolge im Array: Silhouette (optional), Wappen (optional), dann Sponsoren in Reihenfolge
-        extraPrompt += ` [SPONSOR LOGOS - REFERENCE IMAGE MAPPING]: The reference images contain sponsor logos in this order (after any silhouette/crest images): `;
-        enabledSponsors.forEach((s, i) => {
-          extraPrompt += `Logo ${i + 1} = "${s.name}". `;
-        });
-        extraPrompt += `Each sponsor logo is a distinct image with colored background or white background showing a company logo/text. `;
+        // Berechne den Start-Index der Sponsor-Bilder im Referenz-Array (1-basiert)
+        // referenceUrl (Silhouette) = Image #1, additionalRefs[0] (Wappen) = Image #2, etc.
+        let sponsorStartImageNum = 1; // 1-basiert
+        if (useLandmark && landmarkSilhouette) sponsorStartImageNum++; // Silhouette ist #1
+        if (defaultLogo?.imageUrl) sponsorStartImageNum++; // Wappen ist nächstes
 
         enabledSponsors.forEach((s, i) => {
+          const imageNum = sponsorStartImageNum + i;
           const pos = sponsorPositions[s.id] || "chest";
           const desc = positionDescriptions[pos] || positionDescriptions.chest;
-          extraPrompt += ` ${desc.view} - SPONSOR "${s.name}" [ZERO CREATIVE FREEDOM]: Place the logo of "${s.name}" (sponsor logo ${i + 1} in the reference images) at ${desc.placement}. Size: approximately ${desc.size}. [ABSOLUTE LOGO RULE]: The logo's SHAPE, TYPOGRAPHY, PROPORTIONS must be IDENTICAL to the reference image. Copy every detail - same font, same spacing, same graphic elements. You may adjust COLOR to match jersey, but FORM/SHAPE/TYPOGRAPHY must remain PIXEL-PERFECT UNCHANGED. Do NOT redraw, reinterpret, simplify, or write just the sponsor name as plain text. This is a legally protected trademark that must appear as the ACTUAL LOGO IMAGE.`;
+          extraPrompt += ` ${desc.view} - SPONSOR "${s.name}" [IMAGE #${imageNum} - ZERO CREATIVE FREEDOM]: IMAGE #${imageNum} shows the logo of "${s.name}". You MUST reproduce this logo EXACTLY as it appears in IMAGE #${imageNum} and place it at ${desc.placement}. Size: approximately ${desc.size}. [ABSOLUTE LOGO RULE]: Copy the EXACT graphic from IMAGE #${imageNum} - same shapes, same typography, same proportions, same colors/layout. Do NOT write the sponsor name "${s.name}" as plain text. Do NOT simplify or redraw. The image IS the logo - reproduce it pixel-perfect. This is a legally protected trademark.`;
         });
       }
 
       // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE (groß, halbtransparent, HINTER der Nummer)
       if (useBackCrestWatermark && defaultLogo?.imageUrl) {
-        extraPrompt += ` BACK VIEW (right jersey) - CREST WATERMARK: Place the club crest (from reference image) as a LARGE WATERMARK on the BACK of the jersey. The crest should be centered on the back, approximately 60-70% of the jersey width, and rendered at ${watermarkOpacity}% opacity as a subtle tonal background element. CRITICAL: The crest watermark must be BEHIND/UNDERNEATH all other elements (number, player name, club name). The back number and text must be clearly visible IN FRONT OF the watermark. The watermark is a background layer - all text and numbers are foreground layers on top of it. Think of it as a faded background print with the number printed over it.`;
+        const crestWmImageNum = (useLandmark && landmarkSilhouette) ? 2 : 1;
+        extraPrompt += ` BACK VIEW (right jersey) - CREST WATERMARK [IMAGE #${crestWmImageNum}]: Place the club crest from IMAGE #${crestWmImageNum} as a LARGE WATERMARK on the BACK of the jersey. Centered on back, approximately 60-70% of jersey width, rendered at ${backCrestOpacity}% opacity as a subtle tonal background element. CRITICAL: The crest watermark must be BEHIND/UNDERNEATH all other elements (number, player name, club name). The back number and text must be clearly visible IN FRONT OF the watermark.`;
       }
 
       // STRASSENKARTE ALS WASSERZEICHEN
@@ -1186,23 +1189,42 @@ export default function KiDesign() {
                   </Select>
                   {/* Wappen als Wasserzeichen auf Rücken */}
                   {defaultLogo && (
-                    <div className={`flex items-center justify-between p-2 mt-2 rounded border ${useLandmark && landmarkPlacement === "both" ? "bg-gray-100 opacity-50" : "bg-white"}`}>
-                      <div className="flex items-center gap-2">
-                        <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-40" />
-                        <div>
-                          <span className="text-sm">Wappen als Wasserzeichen (Rücken)</span>
-                          <span className="text-[10px] text-muted-foreground block">
-                            {useLandmark && landmarkPlacement === "both"
-                              ? "Nicht verfügbar: Wahrzeichen auf Rückseite aktiv"
-                              : "Groß, halbtransparent HINTER der Nummer"}
-                          </span>
+                    <div className="mt-2 space-y-2">
+                      <div className={`flex items-center justify-between p-2 rounded border ${useLandmark && landmarkPlacement === "both" ? "bg-gray-100 opacity-50" : "bg-white"}`}>
+                        <div className="flex items-center gap-2">
+                          <img src={storageUrl(defaultLogo.imageUrl) || defaultLogo.imageUrl} alt="Wappen" className="w-4 h-4 object-contain opacity-40" />
+                          <div>
+                            <span className="text-sm">Wappen als Wasserzeichen (Rücken)</span>
+                            <span className="text-[10px] text-muted-foreground block">
+                              {useLandmark && landmarkPlacement === "both"
+                                ? "Nicht verfügbar: Wahrzeichen auf Rückseite aktiv"
+                                : "Groß, halbtransparent HINTER der Nummer"}
+                            </span>
+                          </div>
                         </div>
+                        <Switch
+                          checked={useBackCrestWatermark}
+                          onCheckedChange={setUseBackCrestWatermark}
+                          disabled={useLandmark && landmarkPlacement === "both"}
+                        />
                       </div>
-                      <Switch
-                        checked={useBackCrestWatermark}
-                        onCheckedChange={setUseBackCrestWatermark}
-                        disabled={useLandmark && landmarkPlacement === "both"}
-                      />
+                      {useBackCrestWatermark && (
+                        <div className="pl-6 space-y-1">
+                          <span className="text-xs font-medium text-gray-600">Deckkraft: {backCrestOpacity}%</span>
+                          <Slider
+                            value={[backCrestOpacity]}
+                            onValueChange={(v) => setBackCrestOpacity(v[0])}
+                            min={5}
+                            max={50}
+                            step={5}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between text-[10px] text-gray-400">
+                            <span>5%</span>
+                            <span>50%</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1605,11 +1627,11 @@ export default function KiDesign() {
                   </div>
                 )}
 
-                {/* ═══ WASSERZEICHEN-DECKUNG ═══ */}
-                {(useLandmark || useMapWatermark) && (
+                {/* ═══ STRASSENKARTE-DECKUNG ═══ */}
+                {useMapWatermark && (
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold uppercase text-gray-500">Wasserzeichen-Deckung: {watermarkOpacity}%</Label>
-                    <p className="text-xs text-muted-foreground">Wie stark soll das Wasserzeichen sichtbar sein?</p>
+                    <Label className="text-sm font-semibold uppercase text-gray-500">Karten-Deckung: {watermarkOpacity}%</Label>
+                    <p className="text-xs text-muted-foreground">Wie stark soll die Straßenkarte sichtbar sein?</p>
                     <Slider
                       value={[watermarkOpacity]}
                       onValueChange={(v) => setWatermarkOpacity(v[0])}
