@@ -289,12 +289,11 @@ export default function KiDesign() {
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const dataUrl = ev.target?.result as string;
-      setLandmarkImage(dataUrl);
+      setLandmarkImage(dataUrl); // Vorschau-Bild (Data-URL für UI)
       setUseLandmark(true);
-      // Automatisch Silhouette extrahieren
       setExtractingSilhouette(true);
       try {
-        // Upload und Freistellen
+        // Upload des Bildes
         const base64 = dataUrl.split(",")[1];
         const uploadRes = await fetch("/api/upload", {
           method: "POST",
@@ -303,13 +302,12 @@ export default function KiDesign() {
         });
         const uploadData = await uploadRes.json();
         if (uploadData.url) {
-          // Backend löst Storage-Pfade automatisch zu signierten URLs auf
-          const result = await removeBackgroundMut.mutateAsync({ imageUrl: uploadData.url });
-          setLandmarkSilhouette(result.url);
-          toast.success("Silhouette erkannt!");
+          // Speichere die echte Upload-URL für die KI (nicht die Data-URL)
+          setLandmarkSilhouette(uploadData.url);
+          toast.success("Wahrzeichen hochgeladen!");
         }
       } catch (err: any) {
-        toast.error("Silhouetten-Erkennung fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
+        toast.error("Upload fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
       } finally {
         setExtractingSilhouette(false);
       }
@@ -547,10 +545,9 @@ export default function KiDesign() {
       // Reihenfolge: 1. Wahrzeichen (wenn aktiv), 2. Wappen (wenn da), 3+ Sponsoren, dann Hersteller
       const additionalRefs: string[] = [];
       
-      // Bild 1: Wahrzeichen (das hochgeladene Bild direkt als Wasserzeichen)
-      if (useLandmark && landmarkImage) {
-        const wahrzeichenUrl = landmarkSilhouette || landmarkImage;
-        additionalRefs.push(wahrzeichenUrl);
+      // Bild 1: Wahrzeichen (NUR die Upload-URL verwenden, NICHT die Data-URL)
+      if (useLandmark && landmarkSilhouette) {
+        additionalRefs.push(landmarkSilhouette);
       }
       
       // Nächstes Bild: Vereinswappen
