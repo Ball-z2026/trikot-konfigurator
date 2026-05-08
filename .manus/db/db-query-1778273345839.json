@@ -1,0 +1,138 @@
+{
+  "query": "DESCRIBE design_templates;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute DESCRIBE design_templates;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "name",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "description",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "imageUrl",
+      "Type": "text",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "storageKey",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "positionsConfig",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "orgId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "departmentId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "teamId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sport",
+      "Type": "enum('fussball','handball','volleyball','basketball')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "category",
+      "Type": "enum('Trikot','Bekleidung')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "Trikot",
+      "Extra": ""
+    },
+    {
+      "Field": "visibility",
+      "Type": "enum('private','team','department','org')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "team",
+      "Extra": ""
+    },
+    {
+      "Field": "createdByUserId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "approvalStatus",
+      "Type": "enum('draft','pending','approved','rejected')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "draft",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nname\tvarchar(255)\tNO\t\tNULL\t\ndescription\ttext\tYES\t\tNULL\t\nimageUrl\ttext\tNO\t\tNULL\t\nstorageKey\ttext\tYES\t\tNULL\t\npositionsConfig\tjson\tYES\t\tNULL\t\norgId\tint\tNO\t\tNULL\t\ndepartmentId\tint\tYES\t\tNULL\t\nteamId\tint\tYES\t\tNULL\t\nsport\tenum('fussball','handball','volleyball','basketball')\tYES\t\tNULL\t\ncategory\tenum('Trikot','Bekleidung')\tYES\t\tTrikot\t\nvisibility\tenum('private','team','department','org')\tNO\t\tteam\t\ncreatedByUserId\tint\tNO\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\napprovalStatus\tenum('draft','pending','approved','rejected')\tNO\t\tdraft\t\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

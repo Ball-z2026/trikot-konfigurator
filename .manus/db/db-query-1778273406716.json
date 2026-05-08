@@ -1,0 +1,282 @@
+{
+  "query": "DESCRIBE sponsor_templates;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute DESCRIBE sponsor_templates;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "orgId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "name",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "logoUrl",
+      "Type": "text",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "storageKey",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "category",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sortOrder",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "createdBy",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "sponsorType",
+      "Type": "enum('hauptsponsor','spartensponsor','mannschaftssponsor')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "hauptsponsor",
+      "Extra": ""
+    },
+    {
+      "Field": "obligation",
+      "Type": "enum('alle_produkte','nur_trikot','nicht_verpflichtend')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "nicht_verpflichtend",
+      "Extra": ""
+    },
+    {
+      "Field": "departmentId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "teamId",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "contactFirstName",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "contactLastName",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "contactEmail",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "contactPhone",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "street",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "zip",
+      "Type": "varchar(10)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "city",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "country",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "Deutschland",
+      "Extra": ""
+    },
+    {
+      "Field": "vatId",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "billingDifferent",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "billingStreet",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "billingZip",
+      "Type": "varchar(10)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "billingCity",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "billingCountry",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "logoMimeType",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "logoThumbnailUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sponsoringAmount",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "sponsoringCurrency",
+      "Type": "varchar(3)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "EUR",
+      "Extra": ""
+    },
+    {
+      "Field": "contractStart",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "contractEnd",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\norgId\tint\tNO\t\tNULL\t\nname\tvarchar(255)\tNO\t\tNULL\t\nlogoUrl\ttext\tNO\t\tNULL\t\nstorageKey\ttext\tYES\t\tNULL\t\ncategory\tvarchar(100)\tYES\t\tNULL\t\nsortOrder\tint\tNO\t\t0\t\ncreatedBy\tint\tNO\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\nsponsorType\tenum('hauptsponsor','spartensponsor','mannschaftssponsor')\tNO\t\thauptsponsor\t\nobligation\tenum('alle_produkte','nur_trikot','nicht_verpflichtend')\tNO\t\tnicht_verpflichtend\t\ndepartmentId\tint\tYES\t\tNULL\t\nteamId\tint\tYES\t\tNULL\t\ncontactFirstName\tvarchar(100)\tYES\t\tNULL\t\ncontactLastName\tvarchar(100)\tYES\t\tNULL\t\ncontactEmail\tvarchar(255)\tYES\t\tNULL\t\ncontactPhone\tvarchar(50)\tYES\t\tNULL\t\nstreet\tvarchar(255)\tYES\t\tNULL\t\nzip\tvarchar(10)\tYES\t\tNULL\t\ncity\tvarchar(100)\tYES\t\tNULL\t\ncountry\tvarchar(100)\tYES\t\tDeutschland\t\nvatId\tvarchar(50)\tYES\t\tNULL\t\nbillingDifferent\ttinyint(1)\tYES\t\t0\t\nbillingStreet\tvarchar(255)\tYES\t\tNULL\t\nbillingZip\tvarchar(10)\tYES\t\tNULL\t\nbillingCity\tvarchar(100)\tYES\t\tNULL\t\nbillingCountry\tvarchar(100)\tYES\t\tNULL\t\nlogoMimeType\tvarchar(100)\tYES\t\tNULL\t\nlogoThumbnailUrl\ttext\tYES\t\tNULL\t\nsponsoringAmount\tint\tYES\t\tNULL\t\nsponsoringCurrency\tvarchar(3)\tYES\t\tEUR\t\ncontractStart\ttimestamp\tYES\t\tNULL\t\ncontractEnd\ttimestamp\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 256
+}

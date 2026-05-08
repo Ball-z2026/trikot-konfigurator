@@ -9250,3 +9250,29 @@
 [2026-05-08T20:38:03.495Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-08T20:38:05.251Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-08T20:38:06.022Z] Server running on http://localhost:3000/
+[2026-05-08T21:01:37.385Z] 5:01:37 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:02:51.503Z] 5:02:51 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:03:19.241Z] 5:03:19 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:03:34.651Z] 5:03:34 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:03:54.093Z] 5:03:54 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:04:58.816Z] 5:04:58 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:05:19.753Z] 5:05:19 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:06:02.949Z] 5:06:02 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-08T21:06:27.166Z] [Auth] Missing session cookie
+[2026-05-08T21:06:27.388Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.685Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.763Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.770Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.782Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.789Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.795Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.800Z] [Auth] Missing session cookie
+[2026-05-08T21:06:28.815Z] [Auth] Missing session cookie
+[2026-05-08T21:06:33.403Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-08T21:06:33.407Z] [Auth] Missing session cookie
+[2026-05-08T21:06:33.412Z] [Auth] Missing session cookie
+[2026-05-08T21:06:38.844Z] Dev server process group stopped
+[2026-05-08T21:06:38.892Z] Dev server exited with code -15
+[2026-05-08T21:06:41.856Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T21:06:43.590Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T21:06:44.374Z] Server running on http://localhost:3000/
