@@ -135,6 +135,7 @@ export default function KiDesign() {
 
   // ── Sponsoren-Upload State ──
   const [sponsorLogos, setSponsorLogos] = useState<Array<{ id: string; name: string; imageUrl: string; type: string; enabled: boolean }>>([]);
+  const [sponsorPositions, setSponsorPositions] = useState<Record<string, string>>({}); // id -> position ("chest", "back", "sleeve_left", "sleeve_right", "side", "collar")
   const [uploadingSponsor, setUploadingSponsor] = useState(false);
 
   // ── Straßenkarte als Wasserzeichen State ──
@@ -427,10 +428,10 @@ export default function KiDesign() {
         
         if (landmarkStyle === "large") {
           // Groß als Wasserzeichen
-          extraPrompt += ` [CRITICAL - IMAGE #1 IS THE SILHOUETTE]: The FIRST image in the reference images (image #1) shows a building/landmark silhouette with transparent background. This is the ONLY shape you are allowed to use as watermark overlay. INSTRUCTIONS: Place this EXACT silhouette shape as a large tonal watermark ${placementText}. Size: 50-60% of jersey surface, centered. Opacity: ${landmarkOpacity}%. Color: same hue as jersey base, slightly lighter or darker. ABSOLUTE RULES: 1) Use ONLY the exact outline from image #1 - trace it precisely. 2) DO NOT replace it with any other shape (no church, tower, bridge, trophy, ball, star, shield, or any generic icon). 3) DO NOT interpret or simplify the shape. 4) If you cannot see or reproduce the shape from image #1, leave the jersey surface PLAIN - no substitute. 5) The silhouette goes BEHIND all logos, numbers, and text.`;
+          extraPrompt += ` [CRITICAL SILHOUETTE WATERMARK]: Among the reference images provided, there is ONE image that shows a DARK SILHOUETTE SHAPE ON A TRANSPARENT/WHITE BACKGROUND (it is the only reference image with a transparent or plain white background - all other reference images show logos/crests with colored backgrounds or detailed designs). This silhouette image is the ONLY shape you must use as a watermark overlay. INSTRUCTIONS: Place this EXACT silhouette shape as a large tonal watermark ${placementText}. Size: 50-60% of jersey surface, centered. Opacity: ${landmarkOpacity}%. Color: same hue as jersey base, slightly lighter or darker. ABSOLUTE RULES: 1) Use ONLY the exact outline from the transparent-background silhouette image - trace it precisely. 2) DO NOT replace it with any other shape (no church, tower, bridge, trophy, ball, star, shield, or any generic icon). 3) DO NOT interpret or simplify the shape. 4) If you cannot identify the silhouette image, leave the jersey surface PLAIN - no substitute. 5) The silhouette goes BEHIND all logos, numbers, and text.`;
         } else {
           // Kleine zufällige als Muster
-          extraPrompt += ` [CRITICAL - IMAGE #1 IS THE SILHOUETTE]: The FIRST image in the reference images (image #1) shows a building/landmark silhouette with transparent background. This is the ONLY shape you are allowed to use in the pattern. INSTRUCTIONS: Take this EXACT silhouette shape and repeat it as a scattered all-over pattern of small copies (2-5cm each) ${placementText}. Scatter many copies at various sizes and slight rotations. Opacity: ${landmarkOpacity}%. Color: same hue as jersey, slightly lighter or darker (tonal). ABSOLUTE RULES: 1) Every single shape in the pattern MUST be an exact copy of the outline from image #1. 2) DO NOT use any other shape (no generic icons, trophies, balls, stars, shields, buildings). 3) DO NOT interpret or simplify. 4) If you cannot see or reproduce the shape from image #1, leave the jersey PLAIN - no substitute pattern. 5) Pattern goes BEHIND all logos, numbers, and text.`;
+          extraPrompt += ` [CRITICAL SILHOUETTE PATTERN]: Among the reference images provided, there is ONE image that shows a DARK SILHOUETTE SHAPE ON A TRANSPARENT/WHITE BACKGROUND (it is the only reference image with a transparent or plain white background - all other reference images show logos/crests with colored backgrounds or detailed designs). This silhouette image is the ONLY shape you must use in the pattern. INSTRUCTIONS: Take this EXACT silhouette shape and repeat it as a scattered all-over pattern of small copies (2-5cm each) ${placementText}. Scatter many copies at various sizes and slight rotations. Opacity: ${landmarkOpacity}%. Color: same hue as jersey, slightly lighter or darker (tonal). ABSOLUTE RULES: 1) Every single shape in the pattern MUST be an exact copy of the outline from the transparent-background silhouette image. 2) DO NOT use any other shape (no generic icons, trophies, balls, stars, shields, buildings). 3) DO NOT interpret or simplify. 4) If you cannot identify the silhouette image, leave the jersey PLAIN - no substitute pattern. 5) Pattern goes BEHIND all logos, numbers, and text.`;
         }
       }
       
@@ -499,35 +500,33 @@ export default function KiDesign() {
         extraPrompt += ` MUST include the geographic coordinates "${coordText}" as visible printed text on the jersey. Place this text on the INSIDE OF THE COLLAR or on the SLEEVE CUFF area. The text should read exactly "${coordText}" in a small, clean monospace font (like on luxury/premium sportswear). Make sure the text is clearly readable and correctly formatted as GPS coordinates.`;
       }
 
-      // SPONSOREN = KI platziert die echten Sponsor-Logos
-      // Bei Fußball: max 3 Sponsoren je Seite. Bei 2 Sponsoren: 1 vorne, 1 hinten.
+      // SPONSOREN = KI platziert die echten Sponsor-Logos basierend auf gewählter Position
       const enabledSponsors = sponsorLogos.filter(s => s.enabled && s.imageUrl);
       if (enabledSponsors.length > 0) {
-        const isFootball = selectedSport === "fussball";
-        
-        // Zähle die Position der Sponsor-Logos in der Referenzbild-Liste
-        // Reihenfolge: Silhouette (optional), Wappen, dann Sponsoren
-        const sponsorRefStartIndex = (useLandmark && landmarkSilhouette ? 1 : 0) + (defaultLogo?.imageUrl ? 1 : 0);
-        
-        if (isFootball && enabledSponsors.length === 2) {
-          // Fußball + genau 2 Sponsoren: Erster vorne, Zweiter hinten
-          const ref1 = sponsorRefStartIndex + 1; // 1-basiert
-          const ref2 = sponsorRefStartIndex + 2;
-          extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO [Reference image #${ref1} is this sponsor logo - ZERO CREATIVE FREEDOM]: MUST place the sponsor logo "${enabledSponsors[0].name}" on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. [ABSOLUTE LOGO RULE]: Copy the EXACT shape, typography, proportions, and design of the logo from reference image #${ref1}. The logo's FORM and LETTERING must be IDENTICAL to the reference - same font, same spacing, same proportions, same graphic elements. You may adjust the logo's COLOR to match the jersey's color scheme, but the SHAPE/FORM/TYPOGRAPHY must remain UNCHANGED. Do NOT redraw, reinterpret, simplify, or write just the name as text. This is a legally protected trademark.`;
-          extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO [Reference image #${ref2} is this sponsor logo - ZERO CREATIVE FREEDOM]: MUST place the sponsor logo "${enabledSponsors[1].name}" on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. [ABSOLUTE LOGO RULE]: Copy the EXACT shape, typography, proportions, and design of the logo from reference image #${ref2}. The logo's FORM and LETTERING must be IDENTICAL to the reference - same font, same spacing, same proportions, same graphic elements. You may adjust the logo's COLOR to match the jersey's color scheme, but the SHAPE/FORM/TYPOGRAPHY must remain UNCHANGED. Do NOT redraw, reinterpret, simplify, or write just the name as text. This is a legally protected trademark.`;
-        } else {
-          // Standard-Logik: Haupt vorne, Sparte hinten, Rest Ärmel
-          enabledSponsors.forEach((s, i) => {
-            const refIdx = sponsorRefStartIndex + i + 1; // 1-basiert
-            if (s.type === "hauptsponsor" || i === 0) {
-              extraPrompt += ` FRONT VIEW (left jersey) - MAIN SPONSOR LOGO [Reference image #${refIdx} is this sponsor logo - ZERO CREATIVE FREEDOM]: MUST place the main sponsor logo "${s.name}" on the FRONT CENTER CHEST of the jersey, below the crest and number area. Position: centered horizontally on the chest, approximately at 45-55% from top of jersey. Size: approximately 20cm wide x 8cm tall. [ABSOLUTE LOGO RULE]: Copy the EXACT shape, typography, proportions, and design of the logo from reference image #${refIdx}. The logo's FORM and LETTERING must be IDENTICAL to the reference - same font, same spacing, same proportions, same graphic elements. You may adjust the logo's COLOR to match the jersey's color scheme, but the SHAPE/FORM/TYPOGRAPHY must remain UNCHANGED. Do NOT redraw, reinterpret, simplify, or write just the name as text. This is a legally protected trademark.`;
-            } else if (s.type === "spartensponsor" || i === 1) {
-              extraPrompt += ` BACK VIEW (right jersey) - BACK SPONSOR LOGO [Reference image #${refIdx} is this sponsor logo - ZERO CREATIVE FREEDOM]: MUST place the secondary sponsor logo "${s.name}" on the LOWER BACK of the jersey, below the player name area. Position: centered horizontally, approximately 75-80% from top. Size: approximately 15cm wide x 6cm tall. [ABSOLUTE LOGO RULE]: Copy the EXACT shape, typography, proportions, and design of the logo from reference image #${refIdx}. The logo's FORM and LETTERING must be IDENTICAL to the reference - same font, same spacing, same proportions, same graphic elements. You may adjust the logo's COLOR to match the jersey's color scheme, but the SHAPE/FORM/TYPOGRAPHY must remain UNCHANGED. Do NOT redraw, reinterpret, simplify, or write just the name as text. This is a legally protected trademark.`;
-            } else {
-              extraPrompt += ` SLEEVE SPONSOR [Reference image #${refIdx} - ZERO CREATIVE FREEDOM]: Place the sponsor logo "${s.name}" on the SLEEVE area. Size: approximately 8cm wide x 4cm tall. [ABSOLUTE LOGO RULE]: Copy the EXACT shape, typography, proportions, and design from reference image #${refIdx}. FORM must be IDENTICAL. You may adjust COLOR to match jersey, but SHAPE/TYPOGRAPHY must remain UNCHANGED. Do NOT redraw or write just the name as text.`;
-            }
-          });
-        }
+        // Positionsbeschreibungen für den Prompt
+        const positionDescriptions: Record<string, { view: string; placement: string; size: string }> = {
+          chest: { view: "FRONT VIEW (left jersey)", placement: "FRONT CENTER CHEST, below the crest and number area, centered horizontally, approximately 45-55% from top", size: "20cm wide x 8cm tall" },
+          back: { view: "BACK VIEW (right jersey)", placement: "LOWER BACK, below the player name area, centered horizontally, approximately 75-80% from top", size: "15cm wide x 6cm tall" },
+          sleeve_left: { view: "FRONT VIEW (left jersey)", placement: "LEFT SLEEVE (viewer's left), centered on the sleeve, approximately 35% from top", size: "8cm wide x 4cm tall" },
+          sleeve_right: { view: "FRONT VIEW (left jersey)", placement: "RIGHT SLEEVE (viewer's right), centered on the sleeve, approximately 35% from top", size: "8cm wide x 4cm tall" },
+          side_left: { view: "FRONT VIEW (left jersey)", placement: "LEFT SIDE of the jersey torso (viewer's left), vertically centered", size: "10cm wide x 5cm tall" },
+          side_right: { view: "FRONT VIEW (left jersey)", placement: "RIGHT SIDE of the jersey torso (viewer's right), vertically centered", size: "10cm wide x 5cm tall" },
+          collar: { view: "BACK VIEW (right jersey)", placement: "COLLAR/NAPE area, centered below the collar", size: "6cm wide x 3cm tall" },
+        };
+
+        // Beschreibe die Referenzbilder: Die KI muss wissen welches Bild welcher Sponsor ist
+        // Reihenfolge im Array: Silhouette (optional), Wappen (optional), dann Sponsoren in Reihenfolge
+        extraPrompt += ` [SPONSOR LOGOS - REFERENCE IMAGE MAPPING]: The reference images contain sponsor logos in this order (after any silhouette/crest images): `;
+        enabledSponsors.forEach((s, i) => {
+          extraPrompt += `Logo ${i + 1} = "${s.name}". `;
+        });
+        extraPrompt += `Each sponsor logo is a distinct image with colored background or white background showing a company logo/text. `;
+
+        enabledSponsors.forEach((s, i) => {
+          const pos = sponsorPositions[s.id] || "chest";
+          const desc = positionDescriptions[pos] || positionDescriptions.chest;
+          extraPrompt += ` ${desc.view} - SPONSOR "${s.name}" [ZERO CREATIVE FREEDOM]: Place the logo of "${s.name}" (sponsor logo ${i + 1} in the reference images) at ${desc.placement}. Size: approximately ${desc.size}. [ABSOLUTE LOGO RULE]: The logo's SHAPE, TYPOGRAPHY, PROPORTIONS must be IDENTICAL to the reference image. Copy every detail - same font, same spacing, same graphic elements. You may adjust COLOR to match jersey, but FORM/SHAPE/TYPOGRAPHY must remain PIXEL-PERFECT UNCHANGED. Do NOT redraw, reinterpret, simplify, or write just the sponsor name as plain text. This is a legally protected trademark that must appear as the ACTUAL LOGO IMAGE.`;
+        });
       }
 
       // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE (groß, halbtransparent, HINTER der Nummer)
@@ -1489,26 +1488,45 @@ export default function KiDesign() {
                   <p className="text-xs text-muted-foreground">Sponsorenlogos für das Trikot-Design. Verpflichtende Sponsoren sind automatisch aktiviert.</p>
                   
                   {sponsorLogos.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-2">
                       {sponsorLogos.map((sponsor) => (
-                        <div key={sponsor.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <img 
-                              src={storageUrl(sponsor.imageUrl) || sponsor.imageUrl} 
-                              alt={sponsor.name} 
-                              className="w-8 h-8 object-contain rounded border bg-gray-50" 
-                            />
-                            <div className="min-w-0">
-                              <span className="text-xs font-medium truncate block">{sponsor.name}</span>
-                              <span className="text-[10px] text-muted-foreground capitalize">{sponsor.type.replace('sponsor', '')}</span>
+                        <div key={sponsor.id} className={`p-2 bg-white rounded border ${sponsor.enabled ? 'border-blue-200' : 'border-gray-200 opacity-60'}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img 
+                                src={storageUrl(sponsor.imageUrl) || sponsor.imageUrl} 
+                                alt={sponsor.name} 
+                                className="w-8 h-8 object-contain rounded border bg-gray-50" 
+                              />
+                              <div className="min-w-0">
+                                <span className="text-xs font-medium truncate block">{sponsor.name}</span>
+                                <span className="text-[10px] text-muted-foreground capitalize">{sponsor.type.replace('sponsor', '')}</span>
+                              </div>
                             </div>
+                            <Switch 
+                              checked={sponsor.enabled} 
+                              onCheckedChange={(checked) => {
+                                setSponsorLogos(prev => prev.map(s => s.id === sponsor.id ? { ...s, enabled: checked } : s));
+                              }}
+                            />
                           </div>
-                          <Switch 
-                            checked={sponsor.enabled} 
-                            onCheckedChange={(checked) => {
-                              setSponsorLogos(prev => prev.map(s => s.id === sponsor.id ? { ...s, enabled: checked } : s));
-                            }}
-                          />
+                          {sponsor.enabled && (
+                            <div className="mt-2 pl-10">
+                              <select
+                                className="text-xs border rounded px-2 py-1 w-full bg-gray-50"
+                                value={sponsorPositions[sponsor.id] || "chest"}
+                                onChange={(e) => setSponsorPositions(prev => ({ ...prev, [sponsor.id]: e.target.value }))}
+                              >
+                                <option value="chest">Brust (vorne, mittig)</option>
+                                <option value="back">Rücken (unten)</option>
+                                <option value="sleeve_left">Linker Ärmel</option>
+                                <option value="sleeve_right">Rechter Ärmel</option>
+                                <option value="side_left">Linke Seite</option>
+                                <option value="side_right">Rechte Seite</option>
+                                <option value="collar">Kragen</option>
+                              </select>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

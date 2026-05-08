@@ -2169,6 +2169,13 @@
 - [x] Sponsor-Logo: ABSOLUTE LOGO RULE – Form/Typografie/Proportionen IDENTISCH, nur Farbanpassung erlaubt
 - [x] Vereinswappen: ABSOLUTE CREST RULE – Form/Design/Symbole IDENTISCH, nur Farbanpassung erlaubt
 
+## Sponsoren + Wahrzeichen komplett überarbeiten (08.05.2026)
+- [x] Referenzbilder: Silhouette als referenceUrl (höchste Priorität), Rest in additionalRefs
+- [x] Prompt: Sponsoren durch Name + Reihenfolge identifiziert, Position aus UI-Auswahl
+- [x] Trikot-Sponsorenposition: UI-Dropdown pro Sponsor (Brust, Rücken, Ärmel L/R, Seite L/R, Kragen)
+- [x] Wahrzeichen: Silhouette als Hauptreferenz, durch visuelles Merkmal identifiziert
+- [x] Sponsoren: positionDescriptions-Map mit exakten Platzierungsanweisungen pro Position
+
 ## Später (Feature-Backlog)
 - [ ] Wappen in Rückennummer als optionales Feature (wenn KI-Qualität besser wird)
 
