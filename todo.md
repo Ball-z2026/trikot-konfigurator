@@ -2265,3 +2265,8 @@
 - [x] Korrekte Positionierung: FRONT_ZONE_POSITIONS in KI-Designer-Preview und Druckbogen verwenden
 - [x] Korrekte Positionierung: calculateBackPositions für Rückseite in Preview und Druckbogen verwenden
 - [x] Druckbogen-Generator: Kontrast-Logik in printSheet.ts integrieren
+- [x] KI-Designer Umbau: Separate Schnittmuster-Generierung pro Teil (Vorderseite, Rückseite, Ärmel)
+- [x] KI-Designer Backend: Neuer Endpunkt der pro Schnittteil ein separates KI-Muster generiert
+- [x] KI-Designer Backend: Straßenkarte/Wasserzeichen/Muster korrekt pro Teil integrieren
+- [x] KI-Designer Frontend: Schnittmuster-Ansicht mit allen Teilen (statt nur ein Gesamtbild)
+- [x] KI-Designer: Ergebnis direkt als Druckbogen-Input nutzbar machen

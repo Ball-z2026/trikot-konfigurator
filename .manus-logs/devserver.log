@@ -9224,3 +9224,29 @@
 [2026-05-08T20:02:52.376Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-08T20:02:52.379Z] [Auth] Missing session cookie
 [2026-05-08T20:02:52.384Z] [Auth] Missing session cookie
+[2026-05-08T20:32:24.077Z] Dev server process group stopped
+[2026-05-08T20:32:24.117Z] Dev server exited with code -15
+[2026-05-08T20:32:27.088Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T20:32:28.702Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T20:32:29.496Z] Server running on http://localhost:3000/
+[2026-05-08T20:32:50.950Z] 4:32:50 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-08T20:32:52.874Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T20:32:53.775Z] Server running on http://localhost:3000/
+[2026-05-08T20:37:37.180Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.183Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.795Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.849Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.854Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.858Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.862Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.867Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.870Z] [Auth] Missing session cookie
+[2026-05-08T20:37:37.873Z] [Auth] Missing session cookie
+[2026-05-08T20:37:44.614Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-08T20:37:44.618Z] [Auth] Missing session cookie
+[2026-05-08T20:37:44.623Z] [Auth] Missing session cookie
+[2026-05-08T20:38:00.475Z] Dev server process group stopped
+[2026-05-08T20:38:00.520Z] Dev server exited with code -15
+[2026-05-08T20:38:03.495Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-08T20:38:05.251Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-08T20:38:06.022Z] Server running on http://localhost:3000/
