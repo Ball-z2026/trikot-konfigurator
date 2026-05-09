@@ -9410,3 +9410,41 @@
 [2026-05-09T08:22:50.858Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
 [2026-05-09T08:22:53.308Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-09T08:22:54.419Z] Server running on http://localhost:3000/
+[2026-05-09T10:07:51.440Z] Dev server process group stopped
+[2026-05-09T10:07:51.656Z] Dev server exited with code -15
+[2026-05-09T10:07:54.494Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-09T10:07:56.993Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T10:07:58.186Z] Server running on http://localhost:3000/
+[2026-05-09T10:18:04.286Z] [AI-Design] Sending 1 reference images:
+[2026-05-09T10:18:04.287Z] Image 1: https://d36hbw14aib5lz.cloudfront.net/310519663478683564/3uAVwxvCFYUTTcHvTxGuX2/street-maps/map_1778...
+[2026-05-09T10:18:04.288Z] [AI-Design] Prompt length: 3777 chars
+[2026-05-09T10:18:04.289Z] [AI-Design] Prompt (first 500): Professional product photography of a handball jersey (tight-fit, short sleeves) for Handball, flat lay on white background. Design style: Mutig / Auffällig. Primary color: #003399, secondary color: #ffffff, accent color: #ef4444. Club: HSV. The design must comply with Handball federation rules: Front number: min 10cm height, Back number: min 20cm height. VEREINSWAPPEN: Ein Vereinswappen wird auf der RECHTEN SEITE der Brust (Herzseite) platziert. LASSE DORT PLATZ FREI (ca. 8-10cm Bereich bei 60-
+[2026-05-09T10:20:45.083Z] [Auth] Missing session cookie
+[2026-05-09T10:21:38.605Z] [Auth] Missing session cookie
+[2026-05-09T10:22:21.811Z] [Auth] Missing session cookie
+[2026-05-09T10:49:11.911Z] 6:49:11 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T10:49:47.767Z] 6:49:47 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T10:52:16.047Z] 6:52:15 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-09T10:52:18.776Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T10:52:19.962Z] Server running on http://localhost:3000/
+[2026-05-09T10:54:56.949Z] Dev server process group stopped
+[2026-05-09T10:54:57.021Z] Dev server exited with code -15
+[2026-05-09T10:54:59.980Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-09T10:55:01.727Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T10:55:02.676Z] Server running on http://localhost:3000/
+[2026-05-09T10:55:36.617Z] [Auth] Missing session cookie
+[2026-05-09T10:55:37.063Z] [Auth] Missing session cookie
+[2026-05-09T10:56:36.834Z] 6:56:36 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T10:58:16.870Z] 6:58:16 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T10:58:36.445Z] 6:58:36 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T10:59:39.234Z] 6:59:39 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T10:59:59.555Z] 6:59:59 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T11:00:40.982Z] [Auth] Missing session cookie
+[2026-05-09T11:00:41.607Z] [Auth] Missing session cookie
+[2026-05-09T11:02:44.946Z] 7:02:44 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T11:04:42.472Z] 7:04:42 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T11:07:03.582Z] 7:07:03 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T11:13:50.997Z] 7:13:50 AM [vite] (client) hmr update /src/pages/Register.tsx, /src/pages/AdminProductEditor.tsx, /src/pages/TrainerDashboard.tsx, /src/pages/CustomerConfigurator.tsx, /src/pages/KiAnalyseSublimation.tsx, /src/pages/ZoneEditorPage.tsx, /src/pages/KiAnalyseDtf.tsx, /src/pages/KiDesign.tsx, /src/pages/ProduktEditorV2.tsx
+[2026-05-09T11:13:51.904Z] 7:13:51 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
+[2026-05-09T11:13:54.629Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T11:13:55.752Z] Server running on http://localhost:3000/

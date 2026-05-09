@@ -906,7 +906,7 @@ export function validateZonesAgainstRules(
 
   // 5. Pflicht-Elemente prüfen
   if (rules.number.backRequired) {
-    const hasBackNumber = numberZones.some(z => z.part === "back" || z.part.includes("rück"));
+    const hasBackNumber = numberZones.some(z => z.part === "back" || z.part.includes("rück") || z.part.includes("rueck"));
     if (!hasBackNumber) {
       warnings.push({
         severity: "warning",

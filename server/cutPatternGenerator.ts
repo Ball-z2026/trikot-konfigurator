@@ -1,175 +1,61 @@
 /**
- * Cut Pattern Generator V2 – Schnittmuster-Generierung
+ * Cut Pattern Generator V3 – Korrekter Produktions-Workflow
  * 
- * Korrekter Workflow (wie im erfolgreichen Test):
- * 1. KI generiert EIN großes Stoffmuster (flaches Pattern)
- * 2. Das Muster wird auf die Stoffgröße skaliert/gekachelt
- * 3. Alle 7 Schnittteile werden per Polygon-Maske aus dem SELBEN Stoff ausgeschnitten
- * 4. Durch das Layout passen die Nähte automatisch zusammen
- * 5. Logos/Wappen/Sponsoren werden per Compositing draufgelegt (Post-Processing)
+ * Basiert auf dem funktionierenden full_workflow.py und test_b.py:
+ * 1. KI generiert EIN Stoffmuster (oder nutzt bestehendes Bild als Referenz)
+ * 2. Masken werden aus den echten Schnittmuster-PNGs extrahiert (part_7, part_8, etc.)
+ * 3. Stoffmuster wird auf die Gesamtfläche skaliert (Vorder+Rückseite nebeneinander → Seitennaht passt)
+ * 4. Teile werden mit den Masken zugeschnitten
+ * 5. Post-Processing: Wappen, Nummer, Name, Sponsor per Compositing drauf
+ * 6. Druckbögen mit 1cm Beschnitt und Schnittmarken
  * 
- * Teile: Vorderteil, Rückteil, Ärmel L, Ärmel R, Kragen, Bündchen 1, Bündchen 2
+ * Templates: /home/ubuntu/trikot-parts/part_*.png (Größe L, aus L_aufbereitet.pdf)
+ * Mapping:
+ *   part_7.png = RÜCKTEIL (V-Ausschnitt) – 1679×2260
+ *   part_8.png = VORDERTEIL (U-Rundhals) – 1679×2266
+ *   part_2.png = ÄRMEL 1 – 1380×764
+ *   part_4.png = ÄRMEL 2 – 1380×764
+ *   part_6.png = KRAGEN – 1457×210
+ *   part_3.png = BÜNDCHEN 1 – 1139×223
+ *   part_5.png = BÜNDCHEN 2 – 1139×223
  */
 import sharp from "sharp";
 import { generateImage } from "./_core/imageGeneration";
-import { compositeLogosOnImage, LogoPlacement } from "./logoCompositing";
-import { storagePut, storageGetSignedUrl } from "./storage";
-import {
-  getOptimalCrestDisplay,
-} from "../shared/contrastUtils";
+import { storagePut, storageGet, storageGetSignedUrl } from "./storage";
+import path from "path";
+import fs from "fs";
 
-/** Schnitteil-Typen (7 Teile) */
-export type CutPart = 
-  | "vorderteil" 
-  | "rueckteil" 
-  | "aermel_links" 
-  | "aermel_rechts" 
-  | "kragen" 
-  | "buendchen_1" 
+// ═══════════════════════════════════════════════════════════════
+// TYPEN
+// ═══════════════════════════════════════════════════════════════
+
+export type CutPart =
+  | "vorderteil"
+  | "rueckteil"
+  | "aermel_links"
+  | "aermel_rechts"
+  | "kragen"
+  | "buendchen_1"
   | "buendchen_2";
 
-/** Normalisiertes Polygon (0-1 Koordinaten) */
-type NormalizedPolygon = [number, number][];
-
 /** Konfiguration pro Schnittteil */
-interface PartConfig {
-  size: [number, number]; // [width, height] in Pixeln
-  poly: NormalizedPolygon;
+interface PartTemplate {
+  /** Pfad zur PNG-Datei (Schnittmuster-Template) */
+  templateFile: string;
+  /** Storage-URL des Templates (für deployed Umgebung) */
+  storageUrl: string;
+  /** Breite in Pixel */
+  width: number;
+  /** Höhe in Pixel */
+  height: number;
+  /** Beschreibung */
   label: string;
 }
 
-/** Layout-Position auf dem Stoff */
-interface LayoutPosition {
-  x: number;
-  y: number;
-}
-
-// --- Schnittmuster-Konturen als normalisierte Polygone (0-1) ---
-// Basierend auf den echten Schnittmustern (Größe L)
-
-// Vorderteil (part_7): 1679x2260 - V-Halsausschnitt
-const VORDERTEIL_POLY: NormalizedPolygon = [
-  [0.05, 0.08],   // Schulter links oben
-  [0.05, 0.15],   // Armausschnitt links oben
-  [0.00, 0.25],   // Armausschnitt links tief
-  [0.00, 0.98],   // Saum links unten
-  [1.00, 0.98],   // Saum rechts unten
-  [1.00, 0.25],   // Armausschnitt rechts tief
-  [0.95, 0.15],   // Armausschnitt rechts oben
-  [0.95, 0.08],   // Schulter rechts oben
-  [0.65, 0.02],   // Hals rechts
-  [0.50, 0.05],   // Hals V-Spitze
-  [0.35, 0.02],   // Hals links
-];
-
-// Rückteil (part_8): 1679x2266 - U-Rundhals
-const RUECKTEIL_POLY: NormalizedPolygon = [
-  [0.05, 0.08],   // Schulter links oben
-  [0.05, 0.15],   // Armausschnitt links oben
-  [0.00, 0.25],   // Armausschnitt links tief
-  [0.00, 0.98],   // Saum links unten
-  [1.00, 0.98],   // Saum rechts unten
-  [1.00, 0.25],   // Armausschnitt rechts tief
-  [0.95, 0.15],   // Armausschnitt rechts oben
-  [0.95, 0.08],   // Schulter rechts oben
-  [0.70, 0.03],   // Hals rechts
-  [0.60, 0.07],   // Hals U-Bogen rechts
-  [0.50, 0.09],   // Hals U-Bogen mitte
-  [0.40, 0.07],   // Hals U-Bogen links
-  [0.30, 0.03],   // Hals links
-];
-
-// Ärmel (part_2): 1380x764 - Pentagon mit Bogen oben
-const AERMEL_POLY: NormalizedPolygon = [
-  [0.00, 0.70],   // Unten links
-  [0.00, 0.50],   // Seite links
-  [0.10, 0.30],   // Schulter links
-  [0.25, 0.12],   // Bogen links
-  [0.40, 0.03],   // Bogen oben links
-  [0.50, 0.00],   // Bogen Spitze
-  [0.60, 0.03],   // Bogen oben rechts
-  [0.75, 0.12],   // Bogen rechts
-  [0.90, 0.30],   // Schulter rechts
-  [1.00, 0.50],   // Seite rechts
-  [1.00, 0.70],   // Unten rechts
-  [0.90, 0.95],   // Saum rechts
-  [0.10, 0.95],   // Saum links
-];
-
-// Kragen (part_6): 1457x210 - Rechteck
-const KRAGEN_POLY: NormalizedPolygon = [
-  [0.02, 0.10],
-  [0.98, 0.10],
-  [0.98, 0.90],
-  [0.02, 0.90],
-];
-
-// Bündchen (part_3): 1139x223 - leicht trapezförmig
-const BUENDCHEN_POLY: NormalizedPolygon = [
-  [0.05, 0.10],
-  [0.95, 0.10],
-  [0.98, 0.90],
-  [0.02, 0.90],
-];
-
-// --- Teile-Konfiguration ---
-const PARTS: Record<CutPart, PartConfig> = {
-  vorderteil: {
-    size: [1679, 2260],
-    poly: VORDERTEIL_POLY,
-    label: "Vorderteil",
-  },
-  rueckteil: {
-    size: [1679, 2266],
-    poly: RUECKTEIL_POLY,
-    label: "Rückteil",
-  },
-  aermel_links: {
-    size: [1380, 764],
-    poly: AERMEL_POLY,
-    label: "Ärmel L",
-  },
-  aermel_rechts: {
-    size: [1380, 764],
-    poly: AERMEL_POLY,
-    label: "Ärmel R",
-  },
-  kragen: {
-    size: [1457, 210],
-    poly: KRAGEN_POLY,
-    label: "Kragen",
-  },
-  buendchen_1: {
-    size: [1139, 223],
-    poly: BUENDCHEN_POLY,
-    label: "Bündchen L",
-  },
-  buendchen_2: {
-    size: [1139, 223],
-    poly: BUENDCHEN_POLY,
-    label: "Bündchen R",
-  },
-};
-
-// Layout auf dem Stoff – Teile die an der Naht zusammenpassen liegen nebeneinander
-const LAYOUT: Record<CutPart, LayoutPosition> = {
-  vorderteil: { x: 0, y: 0 },
-  rueckteil: { x: 1679, y: 0 },         // direkt rechts neben Vorderteil (Seitennaht!)
-  aermel_links: { x: 0, y: 2266 },      // unter Vorderteil (Schulternaht!)
-  aermel_rechts: { x: 1679, y: 2266 },  // unter Rückteil (Schulternaht!)
-  kragen: { x: 0, y: 3030 },
-  buendchen_1: { x: 1457, y: 3030 },
-  buendchen_2: { x: 2596, y: 3030 },
-};
-
-const FABRIC_WIDTH = 3358;
-const FABRIC_HEIGHT = 3300;
-
-/** Konfiguration für die Schnittmuster-Generierung */
 export interface CutPatternConfig {
-  /** Sportart (fussball, handball, basketball, volleyball) */
+  /** Sportart */
   sport: string;
-  /** Design-Stil (geometric, organic, gradient, abstract, etc.) */
+  /** Design-Stil */
   designStyle: string;
   /** Primärfarbe (Hex) */
   primaryColor: string;
@@ -187,19 +73,19 @@ export interface CutPatternConfig {
   referenceImageUrls?: string[];
   /** Straßenkarte als Wasserzeichen (URL) */
   streetMapUrl?: string;
-  /** Vereinswappen-URL (für Rückseite als Wasserzeichen) */
+  /** Vereinswappen-URL */
   crestUrl?: string;
   /** Vereinswappen-Deckkraft auf Rückseite (0-100, default 20) */
   crestWatermarkOpacity?: number;
-  /** Dominante Farben des Vereinswappens (für Kontrast-Logik) */
+  /** Dominante Farben des Vereinswappens */
   crestDominantColors?: string[];
-  /** Sublimationsbereiche (Kragen, Bündchen etc.) */
+  /** Sublimationsbereiche */
   sublimationAreas?: string[];
-  /** Hashtag (optional, für Nackenbereich) */
+  /** Hashtag */
   hashtag?: string;
-  /** Bereits generiertes Trikot-Bild als Basis (statt neu zu generieren) */
+  /** Bereits generiertes Trikot-Bild als Referenz für Stil */
   sourceImageUrl?: string;
-  /** Koordinaten-Text (optional) */
+  /** Koordinaten-Text */
   coordinatesText?: string;
   /** Brustsponsor-Logo URL */
   chestSponsorUrl?: string;
@@ -207,9 +93,22 @@ export interface CutPatternConfig {
   backSponsorUrl?: string;
   /** Ärmel-Sponsor-Logo URL */
   sleeveSponsorUrl?: string;
+  /** Spielernummer (für Brust und Rücken) */
+  playerNumber?: string;
+  /** Spielername (für Rücken) */
+  playerName?: string;
+  /** Schriftart für Nummer */
+  numberFont?: string;
+  /** Schriftart für Name */
+  nameFont?: string;
+  /** Schriftfarbe (Hex) */
+  fontColor?: string;
+  /** Wahrzeichen-Silhouette URL (für Wasserzeichen) */
+  landmarkSilhouetteUrl?: string;
+  /** Wahrzeichen-Deckkraft (0-100) */
+  landmarkOpacity?: number;
 }
 
-/** Ergebnis pro Schnittteil */
 export interface CutPatternResult {
   part: CutPart;
   /** URL des generierten Musters (rein, ohne Overlays) */
@@ -220,24 +119,212 @@ export interface CutPatternResult {
   contrastAdjusted: boolean;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// KONSTANTEN
+// ═══════════════════════════════════════════════════════════════
+
+/** Druckparameter */
+const DPI = 200;
+const BESCHNITT_CM = 1.0;
+const BESCHNITT_PX = Math.round(BESCHNITT_CM * DPI / 2.54); // ~79px
+
+/** Template-Dateien (lokal im Sandbox-Dateisystem) */
+const TEMPLATE_DIR = "/home/ubuntu/trikot-parts";
+
+/** Template-Konfiguration */
+const PART_TEMPLATES: Record<CutPart, PartTemplate> = {
+  vorderteil: {
+    templateFile: path.join(TEMPLATE_DIR, "part_8.png"), // U-Rundhals
+    storageUrl: "/manus-storage/part_8_495d6327.png",
+    width: 1679,
+    height: 2266,
+    label: "Vorderteil (U-Rundhals)",
+  },
+  rueckteil: {
+    templateFile: path.join(TEMPLATE_DIR, "part_7.png"), // V-Ausschnitt
+    storageUrl: "/manus-storage/part_7_8670f9e0.png",
+    width: 1679,
+    height: 2260,
+    label: "Rückteil (V-Ausschnitt)",
+  },
+  aermel_links: {
+    templateFile: path.join(TEMPLATE_DIR, "part_2.png"),
+    storageUrl: "/manus-storage/part_2_68af941e.png",
+    width: 1380,
+    height: 764,
+    label: "Ärmel Links",
+  },
+  aermel_rechts: {
+    templateFile: path.join(TEMPLATE_DIR, "part_4.png"),
+    storageUrl: "/manus-storage/part_4_4d71c439.png",
+    width: 1380,
+    height: 764,
+    label: "Ärmel Rechts",
+  },
+  kragen: {
+    templateFile: path.join(TEMPLATE_DIR, "part_6.png"),
+    storageUrl: "/manus-storage/part_6_bd67327a.png",
+    width: 1457,
+    height: 210,
+    label: "Kragen",
+  },
+  buendchen_1: {
+    templateFile: path.join(TEMPLATE_DIR, "part_3.png"),
+    storageUrl: "/manus-storage/part_3_c36fea9e.png",
+    width: 1139,
+    height: 223,
+    label: "Bündchen Links",
+  },
+  buendchen_2: {
+    templateFile: path.join(TEMPLATE_DIR, "part_5.png"),
+    storageUrl: "/manus-storage/part_5_d1d2cb3b.png",
+    width: 1139,
+    height: 223,
+    label: "Bündchen Rechts",
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// HILFSFUNKTIONEN
+// ═══════════════════════════════════════════════════════════════
+
 /**
- * Erstellt eine SVG-Polygon-Maske und gibt sie als Sharp-Buffer zurück.
+ * Erstellt eine Maske aus einem Schnittmuster-PNG.
+ * Die Schnittmuster haben dünne graue Linien auf weißem Hintergrund.
+ * Die INNENFLÄCHE (weiß innerhalb der Kontur) wird als Maske extrahiert.
+ * 
+ * Algorithmus (wie in test_b.py):
+ * 1. Bild in Graustufen laden
+ * 2. Binärisieren: Linien = schwarz, Rest = weiß
+ * 3. Linien verdicken (Dilatation)
+ * 4. Flood-Fill von den Rändern → Außenbereich markieren
+ * 5. Alles was NICHT außen und NICHT Linie ist = Innenfläche = Maske
  */
-function createPolygonMaskSvg(width: number, height: number, poly: NormalizedPolygon): Buffer {
-  const points = poly
-    .map(([x, y]) => `${Math.round(x * width)},${Math.round(y * height)}`)
-    .join(" ");
-  
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-    <polygon points="${points}" fill="white"/>
-  </svg>`;
-  
-  return Buffer.from(svg);
+async function createMaskFromTemplate(templatePath: string): Promise<Buffer> {
+  // Lade das Template als Graustufen-Bild
+  const templateBuffer = fs.readFileSync(templatePath);
+  const { data, info } = await sharp(templateBuffer)
+    .grayscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const width = info.width;
+  const height = info.height;
+  const pixels = new Uint8Array(data);
+
+  // Schritt 1: Binärisieren – Linien (dunkel < 200) vs. Hintergrund (hell > 200)
+  const THRESHOLD = 200;
+  const isLine = new Uint8Array(width * height);
+  for (let i = 0; i < pixels.length; i++) {
+    isLine[i] = pixels[i] < THRESHOLD ? 1 : 0;
+  }
+
+  // Schritt 2: Linien verdicken (3px Radius Dilatation)
+  const DILATE_RADIUS = 4;
+  const thickLines = new Uint8Array(width * height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (isLine[y * width + x] === 1) {
+        // Verdicke diese Linie
+        for (let dy = -DILATE_RADIUS; dy <= DILATE_RADIUS; dy++) {
+          for (let dx = -DILATE_RADIUS; dx <= DILATE_RADIUS; dx++) {
+            const ny = y + dy;
+            const nx = x + dx;
+            if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+              thickLines[ny * width + nx] = 1;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Schritt 3: Flood-Fill von allen Randpixeln → Außenbereich markieren
+  const isOutside = new Uint8Array(width * height); // 0 = unbekannt, 1 = außen
+  const queue: number[] = [];
+
+  // Alle Randpixel die NICHT Linie sind als Startpunkte
+  for (let x = 0; x < width; x++) {
+    if (thickLines[x] === 0) { // Oberer Rand
+      queue.push(x);
+      isOutside[x] = 1;
+    }
+    const bottomIdx = (height - 1) * width + x;
+    if (thickLines[bottomIdx] === 0) { // Unterer Rand
+      queue.push(bottomIdx);
+      isOutside[bottomIdx] = 1;
+    }
+  }
+  for (let y = 0; y < height; y++) {
+    const leftIdx = y * width;
+    if (thickLines[leftIdx] === 0) { // Linker Rand
+      queue.push(leftIdx);
+      isOutside[leftIdx] = 1;
+    }
+    const rightIdx = y * width + (width - 1);
+    if (thickLines[rightIdx] === 0) { // Rechter Rand
+      queue.push(rightIdx);
+      isOutside[rightIdx] = 1;
+    }
+  }
+
+  // BFS Flood-Fill
+  let queueIdx = 0;
+  while (queueIdx < queue.length) {
+    const idx = queue[queueIdx++];
+    const x = idx % width;
+    const y = Math.floor(idx / width);
+
+    const neighbors = [
+      [x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1],
+    ];
+
+    for (const [nx, ny] of neighbors) {
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        const nIdx = ny * width + nx;
+        if (isOutside[nIdx] === 0 && thickLines[nIdx] === 0) {
+          isOutside[nIdx] = 1;
+          queue.push(nIdx);
+        }
+      }
+    }
+  }
+
+  // Schritt 4: Maske erstellen – Innenfläche = NICHT außen UND NICHT Linie
+  const mask = Buffer.alloc(width * height);
+  for (let i = 0; i < width * height; i++) {
+    mask[i] = (isOutside[i] === 0 && thickLines[i] === 0) ? 255 : 0;
+  }
+
+  // Auch die verdickten Linien die INNERHALB liegen zur Maske hinzufügen
+  // (die originalen Linien sollen auch Teil des Druckbereichs sein)
+  for (let i = 0; i < width * height; i++) {
+    if (thickLines[i] === 1 && isOutside[i] === 0) {
+      mask[i] = 255;
+    }
+  }
+
+  // Als PNG-Buffer zurückgeben
+  return sharp(mask, { raw: { width, height, channels: 1 } })
+    .png()
+    .toBuffer();
+}
+
+/**
+ * Löst Storage-URLs auf (signierte URLs holen).
+ */
+async function resolveStorageUrl(url: string): Promise<string> {
+  if (url.includes("/manus-storage/") || url.includes("/api/storage-proxy/")) {
+    const keyMatch = url.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+    if (keyMatch) {
+      return await storageGetSignedUrl(keyMatch[1]);
+    }
+  }
+  return url;
 }
 
 /**
  * Baut den KI-Prompt für das Stoffmuster auf.
- * Die KI generiert NUR ein flaches Stoffmuster – KEINE Trikot-Form, KEINE Texte.
  */
 function buildFabricPrompt(config: CutPatternConfig): string {
   const sportMap: Record<string, string> = {
@@ -255,20 +342,18 @@ function buildFabricPrompt(config: CutPatternConfig): string {
   prompt += `Color palette: Primary ${config.primaryColor}, Secondary ${config.secondaryColor}, Accent ${config.accentColor}. `;
   prompt += `The pattern should be dynamic and bold (stripes, gradients, geometric shapes, or organic flowing patterns). `;
   prompt += `The pattern should work well when applied to different garment pieces (body, sleeves, collar). `;
+  prompt += `The pattern MUST fill the ENTIRE canvas edge to edge with NO empty/white areas. `;
 
-  // Straßenkarte als Textur-Element
   if (config.streetMapUrl) {
     prompt += `Incorporate the street map pattern from the reference image as a subtle texture woven into the fabric design. `;
   }
 
-  // STRIKTE Verbote
   prompt += `\n\nSTRICT RULES: `;
-  prompt += `• ABSOLUTELY NO TEXT (no words, letters, numbers, names, placeholders). `;
-  prompt += `• ABSOLUTELY NO LOGOS (no crests, emblems, brand marks). `;
-  prompt += `• ABSOLUTELY NO WATERMARKS. `;
+  prompt += `• ABSOLUTELY NO TEXT, letters, numbers, names, or placeholders. `;
+  prompt += `• ABSOLUTELY NO LOGOS, crests, emblems, or brand marks. `;
   prompt += `• ABSOLUTELY NO garment shapes or silhouettes – ONLY flat rectangular pattern. `;
-  prompt += `• NO manufacturer branding (no Nike, Adidas, Puma). `;
-  prompt += `• Output is ONLY a flat rectangular fabric pattern/texture. `;
+  prompt += `• NO manufacturer branding. `;
+  prompt += `• Output is ONLY a flat rectangular fabric pattern/texture filling the entire canvas. `;
   prompt += `High resolution, print-ready quality, seamless repeatable pattern. `;
 
   if (config.additionalNotes) {
@@ -279,113 +364,444 @@ function buildFabricPrompt(config: CutPatternConfig): string {
 }
 
 /**
- * Löst Storage-URLs auf (signierte URLs holen).
+ * Erstellt einen Druckbogen mit Beschnitt und Schnittmarken.
+ * Basiert auf create_print_sheet() aus full_workflow.py.
  */
-async function resolveStorageUrl(url: string): Promise<string> {
-  if (url.includes("/manus-storage/") || url.includes("/api/storage-proxy/")) {
-    const keyMatch = url.match(/(?:\/manus-storage\/|\/api\/storage-proxy\/)(.+)/);
+async function createPrintSheet(imageBuffer: Buffer, partWidth: number, partHeight: number): Promise<Buffer> {
+  const sheetWidth = partWidth + 2 * BESCHNITT_PX;
+  const sheetHeight = partHeight + 2 * BESCHNITT_PX;
+
+  // Erstelle weißen Hintergrund
+  const sheet = sharp({
+    create: {
+      width: sheetWidth,
+      height: sheetHeight,
+      channels: 4,
+      background: { r: 255, g: 255, b: 255, alpha: 1 },
+    },
+  }).png();
+
+  // Hauptbild in der Mitte platzieren
+  // Für den Beschnitt: Randpixel des Bildes werden nach außen wiederholt
+  // Das machen wir indem wir das Bild etwas größer skalieren und dann croppen
+  const extendedBuffer = await sharp(imageBuffer)
+    .extend({
+      top: BESCHNITT_PX,
+      bottom: BESCHNITT_PX,
+      left: BESCHNITT_PX,
+      right: BESCHNITT_PX,
+      extendWith: "mirror", // Randpixel spiegeln für nahtlosen Beschnitt
+    })
+    .png()
+    .toBuffer();
+
+  // Schnittmarken als SVG-Overlay
+  const markLen = Math.round(0.5 * DPI / 2.54); // 5mm
+  const markColor = "black";
+  const markWidth = 2;
+
+  const markersSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sheetWidth}" height="${sheetHeight}">
+    <!-- Oben-links -->
+    <line x1="${BESCHNITT_PX}" y1="0" x2="${BESCHNITT_PX}" y2="${markLen}" stroke="${markColor}" stroke-width="${markWidth}"/>
+    <line x1="0" y1="${BESCHNITT_PX}" x2="${markLen}" y2="${BESCHNITT_PX}" stroke="${markColor}" stroke-width="${markWidth}"/>
+    <!-- Oben-rechts -->
+    <line x1="${BESCHNITT_PX + partWidth}" y1="0" x2="${BESCHNITT_PX + partWidth}" y2="${markLen}" stroke="${markColor}" stroke-width="${markWidth}"/>
+    <line x1="${sheetWidth - markLen}" y1="${BESCHNITT_PX}" x2="${sheetWidth}" y2="${BESCHNITT_PX}" stroke="${markColor}" stroke-width="${markWidth}"/>
+    <!-- Unten-links -->
+    <line x1="${BESCHNITT_PX}" y1="${sheetHeight - markLen}" x2="${BESCHNITT_PX}" y2="${sheetHeight}" stroke="${markColor}" stroke-width="${markWidth}"/>
+    <line x1="0" y1="${BESCHNITT_PX + partHeight}" x2="${markLen}" y2="${BESCHNITT_PX + partHeight}" stroke="${markColor}" stroke-width="${markWidth}"/>
+    <!-- Unten-rechts -->
+    <line x1="${BESCHNITT_PX + partWidth}" y1="${sheetHeight - markLen}" x2="${BESCHNITT_PX + partWidth}" y2="${sheetHeight}" stroke="${markColor}" stroke-width="${markWidth}"/>
+    <line x1="${sheetWidth - markLen}" y1="${BESCHNITT_PX + partHeight}" x2="${sheetWidth}" y2="${BESCHNITT_PX + partHeight}" stroke="${markColor}" stroke-width="${markWidth}"/>
+  </svg>`;
+
+  // Zusammensetzen: Erweitertes Bild + Schnittmarken
+  const result = await sharp(extendedBuffer)
+    .resize(sheetWidth, sheetHeight, { fit: "cover" })
+    .composite([{
+      input: Buffer.from(markersSvg),
+      top: 0,
+      left: 0,
+    }])
+    .png()
+    .toBuffer();
+
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POST-PROCESSING: Elemente auf Schnittteile legen
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Lädt ein Bild von einer URL und gibt es als Buffer zurück.
+ */
+async function fetchImageBuffer(url: string): Promise<Buffer> {
+  let resolvedUrl = url;
+  if (url.includes("/manus-storage/")) {
+    const keyMatch = url.match(/\/manus-storage\/(.+)/);
     if (keyMatch) {
-      return await storageGetSignedUrl(keyMatch[1]);
+      resolvedUrl = await storageGetSignedUrl(keyMatch[1]);
     }
   }
-  return url;
+  const response = await fetch(resolvedUrl);
+  if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+  return Buffer.from(await response.arrayBuffer());
 }
 
 /**
- * Berechnet die Logo-Overlay-Positionen für ein Schnittteil.
- * Basiert auf den Regeln aus jerseyRules.ts (FRONT_ZONE_POSITIONS).
- * Positionen sind relativ zum jeweiligen Schnittteil (nicht zum Gesamtstoff).
+ * Erstellt ein Text-Overlay als SVG-Buffer.
+ * Positionierung in Prozent relativ zur Teil-Größe.
  */
-function getOverlaysForPart(config: CutPatternConfig, part: CutPart): LogoPlacement[] {
-  const overlays: LogoPlacement[] = [];
-
-  if (part === "vorderteil") {
-    // Vereinswappen auf der Herzseite (rechts im Bild = links am Träger)
-    if (config.crestUrl) {
-      overlays.push({
-        imageUrl: config.crestUrl,
-        xPercent: 60, // Herzseite
-        yPercent: 8,
-        widthPercent: 15,
-        heightPercent: 14,
-        autoContrast: true,
-        logoDominantColor: config.crestDominantColors?.[0],
-      });
-    }
-
-    // Brustsponsor (Mitte)
-    if (config.chestSponsorUrl) {
-      overlays.push({
-        imageUrl: config.chestSponsorUrl,
-        xPercent: 20,
-        yPercent: 40,
-        widthPercent: 60,
-        heightPercent: 14,
-        autoContrast: true,
-      });
-    }
-  } else if (part === "rueckteil") {
-    // Vereinswappen als Wasserzeichen (groß, dezent)
-    if (config.crestUrl && config.crestWatermarkOpacity && config.crestWatermarkOpacity > 0) {
-      overlays.push({
-        imageUrl: config.crestUrl,
-        xPercent: 20,
-        yPercent: 20,
-        widthPercent: 60,
-        heightPercent: 55,
-        opacity: (config.crestWatermarkOpacity || 20) / 100,
-        autoContrast: false,
-      });
-    }
-
-    // Rückensponsor (unterer Rücken)
-    if (config.backSponsorUrl) {
-      overlays.push({
-        imageUrl: config.backSponsorUrl,
-        xPercent: 25,
-        yPercent: 80,
-        widthPercent: 50,
-        heightPercent: 12,
-        autoContrast: true,
-      });
-    }
-  } else if (part === "aermel_links" || part === "aermel_rechts") {
-    // Ärmel-Sponsor
-    if (config.sleeveSponsorUrl) {
-      overlays.push({
-        imageUrl: config.sleeveSponsorUrl,
-        xPercent: 15,
-        yPercent: 25,
-        widthPercent: 70,
-        heightPercent: 35,
-        autoContrast: true,
-      });
-    }
+function createTextSvg(
+  text: string,
+  width: number,
+  height: number,
+  options: {
+    posXPercent: number; // X-Position (linke Kante) in % der Breite
+    posYPercent: number; // Y-Position (obere Kante) in % der Höhe
+    widthPercent: number; // Breite der Zone in % der Gesamtbreite
+    heightPercent: number; // Höhe der Zone in % der Gesamthöhe
+    color?: string;
+    fontFamily?: string;
+    fontWeight?: string;
+    textAnchor?: "start" | "middle" | "end";
   }
+): Buffer {
+  const x = Math.round(width * options.posXPercent / 100);
+  const y = Math.round(height * options.posYPercent / 100);
+  const zoneW = Math.round(width * options.widthPercent / 100);
+  const zoneH = Math.round(height * options.heightPercent / 100);
+  const fontSize = Math.round(zoneH * 0.85); // 85% der Zonenhöhe als Schriftgröße
+  const color = options.color || "#000000";
+  const fontFamily = options.fontFamily || "Arial, sans-serif";
+  const fontWeight = options.fontWeight || "bold";
+  const anchor = options.textAnchor || "middle";
 
-  return overlays;
+  // Textposition: Mitte der Zone
+  const textX = anchor === "middle" ? x + zoneW / 2 : x;
+  const textY = y + zoneH / 2 + fontSize * 0.35; // Vertikale Zentrierung
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <text x="${textX}" y="${textY}" 
+      font-family="${fontFamily}" font-size="${fontSize}" font-weight="${fontWeight}"
+      fill="${color}" text-anchor="${anchor}" 
+      letter-spacing="2">${escapeXml(text)}</text>
+  </svg>`;
+
+  return Buffer.from(svg);
+}
+
+/** Escaped XML-Sonderzeichen */
+function escapeXml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 /**
- * Generiert ein Stoffmuster und schneidet alle Teile daraus zu.
+ * Wendet pro-Teil-spezifische Overlays auf das zugeschnittene Muster an.
+ * 
+ * VORDERTEIL:
+ * - Vereinswappen (Herzseite, rechts im Bild = links am Träger)
+ * - Brustnummer (links im Bild = rechte Brust des Trägers)
+ * - Brustsponsor (mittig)
+ * - Straßenkarte als Wasserzeichen (wenn gewählt)
+ * - Wahrzeichen-Silhouette (wenn gewählt)
+ * 
+ * RÜCKTEIL:
+ * - Vereinsname (oben)
+ * - Rückennummer (groß, mittig)
+ * - Spielername (unter Nummer)
+ * - Wappen-Wasserzeichen (20% Deckkraft)
+ * - Rückensponsor (unten)
+ * - Koordinaten (wenn gewählt)
+ * 
+ * ÄRMEL:
+ * - Ärmel-Sponsor (wenn vorhanden)
+ * 
+ * KRAGEN/BÜNDCHEN:
+ * - Nur Muster (keine Overlays)
+ */
+async function applyPartOverlays(
+  maskedBuffer: Buffer,
+  partName: CutPart,
+  config: CutPatternConfig,
+  template: PartTemplate
+): Promise<Buffer> {
+  const { width, height } = template;
+  const composites: sharp.OverlayOptions[] = [];
+
+  // ═══ VORDERTEIL ═══
+  if (partName === "vorderteil") {
+    // Straßenkarte als Wasserzeichen (Hintergrund, 15% Deckkraft)
+    if (config.streetMapUrl) {
+      try {
+        const mapBuffer = await fetchImageBuffer(config.streetMapUrl);
+        const mapOverlay = await sharp(mapBuffer)
+          .resize(Math.round(width * 0.6), Math.round(height * 0.5), { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .ensureAlpha()
+          .modulate({ brightness: 1 })
+          .png()
+          .toBuffer();
+        // Deckkraft reduzieren
+        const mapWithOpacity = await sharp(mapOverlay)
+          .composite([{ input: Buffer.from([0, 0, 0, Math.round(255 * 0.15)]), raw: { width: 1, height: 1, channels: 4 }, blend: "dest-in", tile: true }])
+          .png()
+          .toBuffer();
+        composites.push({
+          input: mapWithOpacity,
+          left: Math.round(width * 0.2),
+          top: Math.round(height * 0.25),
+        });
+      } catch (e) { console.warn("[CutPattern] Straßenkarte-Overlay fehlgeschlagen:", e); }
+    }
+
+    // Wahrzeichen-Silhouette als Wasserzeichen
+    if (config.landmarkSilhouetteUrl) {
+      try {
+        const landmarkBuffer = await fetchImageBuffer(config.landmarkSilhouetteUrl);
+        const opacity = (config.landmarkOpacity || 15) / 100;
+        const landmarkOverlay = await sharp(landmarkBuffer)
+          .resize(Math.round(width * 0.4), Math.round(height * 0.35), { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .ensureAlpha()
+          .png()
+          .toBuffer();
+        const landmarkWithOpacity = await sharp(landmarkOverlay)
+          .composite([{ input: Buffer.from([0, 0, 0, Math.round(255 * opacity)]), raw: { width: 1, height: 1, channels: 4 }, blend: "dest-in", tile: true }])
+          .png()
+          .toBuffer();
+        composites.push({
+          input: landmarkWithOpacity,
+          left: Math.round(width * 0.3),
+          top: Math.round(height * 0.55),
+        });
+      } catch (e) { console.warn("[CutPattern] Wahrzeichen-Overlay fehlgeschlagen:", e); }
+    }
+
+    // Vereinswappen (Herzseite = rechts im Bild, posX=60%, posY=26%, 12%×10%)
+    if (config.crestUrl) {
+      try {
+        const crestBuffer = await fetchImageBuffer(config.crestUrl);
+        const crestW = Math.round(width * 0.12);
+        const crestH = Math.round(height * 0.10);
+        const crestOverlay = await sharp(crestBuffer)
+          .resize(crestW, crestH, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .png()
+          .toBuffer();
+        composites.push({
+          input: crestOverlay,
+          left: Math.round(width * 0.60),
+          top: Math.round(height * 0.26),
+        });
+      } catch (e) { console.warn("[CutPattern] Wappen-Overlay fehlgeschlagen:", e); }
+    }
+
+    // Brustnummer (links im Bild = rechte Brust, posX=30%, posY=25%, 15%×12%)
+    if (config.playerNumber) {
+      const numberSvg = createTextSvg(config.playerNumber, width, height, {
+        posXPercent: 30,
+        posYPercent: 25,
+        widthPercent: 15,
+        heightPercent: 12,
+        color: config.fontColor || "#000000",
+        fontFamily: config.numberFont || "Arial Black, sans-serif",
+      });
+      composites.push({ input: numberSvg, top: 0, left: 0 });
+    }
+
+    // Brustsponsor (mittig, posX=25%, posY=45%, 50%×12%)
+    if (config.chestSponsorUrl) {
+      try {
+        const sponsorBuffer = await fetchImageBuffer(config.chestSponsorUrl);
+        const sponsorW = Math.round(width * 0.50);
+        const sponsorH = Math.round(height * 0.12);
+        const sponsorOverlay = await sharp(sponsorBuffer)
+          .resize(sponsorW, sponsorH, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .png()
+          .toBuffer();
+        composites.push({
+          input: sponsorOverlay,
+          left: Math.round(width * 0.25),
+          top: Math.round(height * 0.45),
+        });
+      } catch (e) { console.warn("[CutPattern] Brustsponsor-Overlay fehlgeschlagen:", e); }
+    }
+  }
+
+  // ═══ RÜCKTEIL ═══
+  if (partName === "rueckteil") {
+    // Wappen-Wasserzeichen (mittig, 20% Deckkraft)
+    if (config.crestUrl) {
+      try {
+        const crestBuffer = await fetchImageBuffer(config.crestUrl);
+        const wmW = Math.round(width * 0.35);
+        const wmH = Math.round(height * 0.30);
+        const crestOverlay = await sharp(crestBuffer)
+          .resize(wmW, wmH, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .ensureAlpha()
+          .png()
+          .toBuffer();
+        const opacity = (config.crestWatermarkOpacity || 20) / 100;
+        const crestWithOpacity = await sharp(crestOverlay)
+          .composite([{ input: Buffer.from([0, 0, 0, Math.round(255 * opacity)]), raw: { width: 1, height: 1, channels: 4 }, blend: "dest-in", tile: true }])
+          .png()
+          .toBuffer();
+        composites.push({
+          input: crestWithOpacity,
+          left: Math.round((width - wmW) / 2),
+          top: Math.round((height - wmH) / 2),
+        });
+      } catch (e) { console.warn("[CutPattern] Wappen-Wasserzeichen fehlgeschlagen:", e); }
+    }
+
+    // Vereinsname (oben, Y=21%, zentriert)
+    if (config.clubName) {
+      const clubNameSvg = createTextSvg(config.clubName, width, height, {
+        posXPercent: 28,
+        posYPercent: 21,
+        widthPercent: 45,
+        heightPercent: 9,
+        color: config.fontColor || "#000000",
+        fontFamily: config.nameFont || "Arial, sans-serif",
+        fontWeight: "bold",
+        textAnchor: "middle",
+      });
+      composites.push({ input: clubNameSvg, top: 0, left: 0 });
+    }
+
+    // Rückennummer (groß, mittig, Y=32%, Höhe=29%)
+    if (config.playerNumber) {
+      const numberSvg = createTextSvg(config.playerNumber, width, height, {
+        posXPercent: 30,
+        posYPercent: 32,
+        widthPercent: 40,
+        heightPercent: 29,
+        color: config.fontColor || "#000000",
+        fontFamily: config.numberFont || "Arial Black, sans-serif",
+        textAnchor: "middle",
+      });
+      composites.push({ input: numberSvg, top: 0, left: 0 });
+    }
+
+    // Spielername (unter Nummer, Y=63%)
+    if (config.playerName) {
+      const nameSvg = createTextSvg(config.playerName, width, height, {
+        posXPercent: 28,
+        posYPercent: 63,
+        widthPercent: 45,
+        heightPercent: 9,
+        color: config.fontColor || "#000000",
+        fontFamily: config.nameFont || "Arial, sans-serif",
+        fontWeight: "bold",
+        textAnchor: "middle",
+      });
+      composites.push({ input: nameSvg, top: 0, left: 0 });
+    }
+
+    // Koordinaten (klein, unter dem Spielernamen)
+    if (config.coordinatesText) {
+      const coordSvg = createTextSvg(config.coordinatesText, width, height, {
+        posXPercent: 30,
+        posYPercent: 73,
+        widthPercent: 40,
+        heightPercent: 4,
+        color: config.fontColor || "#000000",
+        fontFamily: "monospace",
+        fontWeight: "normal",
+        textAnchor: "middle",
+      });
+      composites.push({ input: coordSvg, top: 0, left: 0 });
+    }
+
+    // Hashtag (unter Koordinaten)
+    if (config.hashtag) {
+      const hashSvg = createTextSvg(config.hashtag, width, height, {
+        posXPercent: 30,
+        posYPercent: 77,
+        widthPercent: 40,
+        heightPercent: 4,
+        color: config.fontColor || "#000000",
+        fontFamily: "Arial, sans-serif",
+        fontWeight: "normal",
+        textAnchor: "middle",
+      });
+      composites.push({ input: hashSvg, top: 0, left: 0 });
+    }
+
+    // Rückensponsor (unten, Y=82%)
+    if (config.backSponsorUrl) {
+      try {
+        const sponsorBuffer = await fetchImageBuffer(config.backSponsorUrl);
+        const sponsorW = Math.round(width * 0.50);
+        const sponsorH = Math.round(height * 0.10);
+        const sponsorOverlay = await sharp(sponsorBuffer)
+          .resize(sponsorW, sponsorH, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .png()
+          .toBuffer();
+        composites.push({
+          input: sponsorOverlay,
+          left: Math.round(width * 0.25),
+          top: Math.round(height * 0.82),
+        });
+      } catch (e) { console.warn("[CutPattern] Rückensponsor-Overlay fehlgeschlagen:", e); }
+    }
+  }
+
+  // ═══ ÄRMEL ═══
+  if ((partName === "aermel_links" || partName === "aermel_rechts") && config.sleeveSponsorUrl) {
+    try {
+      const sponsorBuffer = await fetchImageBuffer(config.sleeveSponsorUrl);
+      const sponsorW = Math.round(width * 0.50);
+      const sponsorH = Math.round(height * 0.40);
+      const sponsorOverlay = await sharp(sponsorBuffer)
+        .resize(sponsorW, sponsorH, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toBuffer();
+      composites.push({
+        input: sponsorOverlay,
+        left: Math.round((width - sponsorW) / 2),
+        top: Math.round((height - sponsorH) / 2),
+      });
+    } catch (e) { console.warn("[CutPattern] Ärmel-Sponsor-Overlay fehlgeschlagen:", e); }
+  }
+
+  // Wenn keine Overlays → Original zurückgeben
+  if (composites.length === 0) {
+    return maskedBuffer;
+  }
+
+  // Alle Overlays auf das maskierte Bild compositen
+  return sharp(maskedBuffer)
+    .composite(composites)
+    .png()
+    .toBuffer();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HAUPTFUNKTION
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Generiert alle Schnittmuster-Teile.
  * 
  * Workflow:
- * 1. KI generiert EIN großes Stoffmuster
- * 2. Muster wird auf Stoffgröße (3358x3300) skaliert
- * 3. Jedes Teil wird an seiner Layout-Position ausgeschnitten
- * 4. Polygon-Maske wird angewendet (ergibt die Schnittform)
- * 5. Overlays (Logos, Wappen) werden per Compositing draufgelegt
+ * 1. KI generiert Stoffmuster (oder nutzt Referenzbild)
+ * 2. Masken aus echten Schnittmuster-PNGs erstellen
+ * 3. Stoffmuster auf Gesamtfläche skalieren (Vorder+Rückseite nebeneinander)
+ * 4. Teile mit Masken zuschneiden
+ * 5. Post-Processing (Overlays) – wird im Router gemacht
+ * 6. Druckbögen mit Beschnitt
  */
 export async function generateAllCutPatterns(
   config: CutPatternConfig
 ): Promise<CutPatternResult[]> {
-  console.log("[CutPattern V2] Starting cut pattern generation...");
+  console.log("[CutPattern V3] Starting cut pattern generation...");
+  console.log(`[CutPattern V3] Parts: ${config.parts.join(", ")}`);
 
+  // ═══ SCHRITT 1: Stoffmuster generieren oder aus Referenz ableiten ═══
   let fabricBuffer: Buffer;
 
   if (config.sourceImageUrl) {
-    // ═══ NEUER MODUS: Bereits generiertes Trikot-Bild als Basis verwenden ═══
-    console.log("[CutPattern V2] Using existing generated image as source...");
+    console.log("[CutPattern V3] Using source image as reference for fabric pattern...");
     let sourceUrl = config.sourceImageUrl;
     if (sourceUrl.includes("/manus-storage/")) {
       const keyMatch = sourceUrl.match(/\/manus-storage\/(.+)/);
@@ -394,16 +810,13 @@ export async function generateAllCutPatterns(
       }
     }
 
-    // Bild als Referenz an die KI senden um ein passendes Stoffmuster zu generieren
     const fabricPrompt = `Generate a SEAMLESS FLAT FABRIC PATTERN that matches the jersey design shown in the reference image. `
       + `Extract the EXACT same pattern style, colors, and design elements from the reference jersey. `
-      + `Create a FLAT, SEAMLESS fabric texture that fills the ENTIRE canvas. `
+      + `Create a FLAT, SEAMLESS fabric texture that fills the ENTIRE canvas edge to edge. `
       + `Use the EXACT same colors and geometric/organic shapes as on the reference jersey. `
       + `This is a FLAT fabric swatch – NO jersey shape, NO 3D folds, NO shadows, NO text, NO numbers, NO logos. `
-      + `The pattern should cover the ENTIRE surface uniformly (no empty/white areas). `
+      + `The pattern should cover the ENTIRE surface uniformly with NO empty/white areas. `
       + `High resolution, print-ready quality for sublimation printing.`;
-
-    console.log(`[CutPattern V2] Generating fabric from source image reference...`);
 
     const fabricResult = await generateImage({
       prompt: fabricPrompt,
@@ -425,19 +838,17 @@ export async function generateAllCutPatterns(
     fabricBuffer = Buffer.from(await fabricResponse.arrayBuffer());
 
   } else {
-    // ═══ FALLBACK: Neues Stoffmuster generieren (ohne Referenzbild) ═══
+    console.log("[CutPattern V3] Generating new fabric pattern...");
     const fabricPrompt = buildFabricPrompt(config);
-    console.log(`[CutPattern V2] Fabric prompt (${fabricPrompt.length} chars): ${fabricPrompt.substring(0, 200)}...`);
+    console.log(`[CutPattern V3] Prompt: ${fabricPrompt.substring(0, 150)}...`);
 
-    const originalImages: Array<{ url?: string; mimeType: string }> = [];
+    const originalImages: Array<{ url: string; mimeType: string }> = [];
 
-    // Straßenkarte als Referenz
     if (config.streetMapUrl) {
       const resolvedUrl = await resolveStorageUrl(config.streetMapUrl);
       originalImages.push({ url: resolvedUrl, mimeType: "image/png" });
     }
 
-    // Weitere Referenzbilder
     if (config.referenceImageUrls) {
       for (const imgUrl of config.referenceImageUrls) {
         const resolvedUrl = await resolveStorageUrl(imgUrl);
@@ -454,8 +865,6 @@ export async function generateAllCutPatterns(
       throw new Error("KI-Generierung des Stoffmusters fehlgeschlagen");
     }
 
-    console.log("[CutPattern V2] Fabric pattern generated, scaling to layout size...");
-
     let fabricUrl = fabricResult.url;
     if (fabricUrl.includes("/manus-storage/")) {
       const keyMatch = fabricUrl.match(/\/manus-storage\/(.+)/);
@@ -463,122 +872,162 @@ export async function generateAllCutPatterns(
         fabricUrl = await storageGetSignedUrl(keyMatch[1]);
       }
     }
-
     const fabricResponse = await fetch(fabricUrl);
     fabricBuffer = Buffer.from(await fabricResponse.arrayBuffer());
   }
 
-  // Auf Stoffgröße skalieren (cover – das Muster füllt die gesamte Fläche)
-  const scaledFabric = await sharp(fabricBuffer)
-    .resize(FABRIC_WIDTH, FABRIC_HEIGHT, { fit: "cover" })
+  console.log("[CutPattern V3] Fabric pattern obtained, processing parts...");
+
+  // ═══ SCHRITT 2: Stoffmuster auf Gesamtfläche skalieren ═══
+  // Layout: Vorderseite + Rückseite nebeneinander (Seitennaht passt!)
+  // Darunter: Ärmel nebeneinander
+  const vsWidth = PART_TEMPLATES.vorderteil.width;   // 1679
+  const vsHeight = PART_TEMPLATES.vorderteil.height; // 2266
+  const rsWidth = PART_TEMPLATES.rueckteil.width;    // 1679
+  const rsHeight = PART_TEMPLATES.rueckteil.height;  // 2260
+  const aeWidth = PART_TEMPLATES.aermel_links.width; // 1380
+  const aeHeight = PART_TEMPLATES.aermel_links.height; // 764
+
+  // Gesamtfläche: Vorderseite + Rückseite nebeneinander
+  const totalWidth = vsWidth + rsWidth; // 3358
+  const totalHeight = Math.max(vsHeight, rsHeight); // 2266
+
+  // Skaliere Stoffmuster auf die Körper-Gesamtfläche
+  const scaledFabricBody = await sharp(fabricBuffer)
+    .resize(totalWidth, totalHeight, { fit: "cover" })
     .png()
     .toBuffer();
 
-  console.log(`[CutPattern V2] Fabric scaled to ${FABRIC_WIDTH}x${FABRIC_HEIGHT}`);
+  // Separates Muster für Ärmel (gleicher Stil, andere Proportion)
+  const aermelTotalWidth = aeWidth * 2; // 2760 (beide Ärmel nebeneinander)
+  const scaledFabricAermel = await sharp(fabricBuffer)
+    .resize(aermelTotalWidth, aeHeight, { fit: "cover" })
+    .png()
+    .toBuffer();
 
-  // Fabric-Gesamtbild speichern (für Debugging/Vorschau)
+  // Speichere Gesamtmuster für Debugging
   const { url: fullFabricUrl } = await storagePut(
     `ki-designs/fabric-full_${Date.now()}.png`,
-    scaledFabric,
+    scaledFabricBody,
     "image/png"
   );
-  console.log(`[CutPattern V2] Full fabric saved: ${fullFabricUrl}`);
+  console.log(`[CutPattern V3] Full fabric saved: ${fullFabricUrl}`);
 
-  // 3. Jedes Teil ausschneiden
+  // ═══ SCHRITT 3: Masken erstellen und Teile zuschneiden ═══
   const results: CutPatternResult[] = [];
 
   for (const partName of config.parts) {
-    const partConfig = PARTS[partName];
-    if (!partConfig) {
-      console.warn(`[CutPattern V2] Unknown part: ${partName}, skipping`);
+    const template = PART_TEMPLATES[partName];
+    if (!template) {
+      console.warn(`[CutPattern V3] Unknown part: ${partName}, skipping`);
       continue;
     }
 
-    const [partWidth, partHeight] = partConfig.size;
-    const layout = LAYOUT[partName];
+    console.log(`[CutPattern V3] Processing ${partName} (${template.label})...`);
 
-    console.log(`[CutPattern V2] Cutting ${partName} (${partWidth}x${partHeight}) at layout (${layout.x}, ${layout.y})...`);
+    // Maske aus dem echten Schnittmuster-PNG erstellen
+    let maskBuffer: Buffer;
+    try {
+      maskBuffer = await createMaskFromTemplate(template.templateFile);
+      console.log(`[CutPattern V3] Mask created for ${partName}`);
+    } catch (err) {
+      console.error(`[CutPattern V3] Failed to create mask for ${partName}:`, err);
+      continue;
+    }
 
-    // Stoffausschnitt an der Layout-Position
-    const cropBuffer = await sharp(scaledFabric)
-      .extract({
-        left: layout.x,
-        top: layout.y,
-        width: Math.min(partWidth, FABRIC_WIDTH - layout.x),
-        height: Math.min(partHeight, FABRIC_HEIGHT - layout.y),
-      })
-      .resize(partWidth, partHeight, { fit: "fill" })
+    // Stoffausschnitt für dieses Teil bestimmen
+    let cropBuffer: Buffer;
+
+    if (partName === "vorderteil") {
+      // Linke Hälfte des Körper-Musters
+      cropBuffer = await sharp(scaledFabricBody)
+        .extract({ left: 0, top: 0, width: vsWidth, height: vsHeight })
+        .png()
+        .toBuffer();
+    } else if (partName === "rueckteil") {
+      // Rechte Hälfte des Körper-Musters (direkt angrenzend = Seitennaht passt!)
+      cropBuffer = await sharp(scaledFabricBody)
+        .extract({ left: vsWidth, top: 0, width: rsWidth, height: rsHeight })
+        .png()
+        .toBuffer();
+    } else if (partName === "aermel_links") {
+      // Linke Hälfte des Ärmel-Musters
+      cropBuffer = await sharp(scaledFabricAermel)
+        .extract({ left: 0, top: 0, width: aeWidth, height: aeHeight })
+        .png()
+        .toBuffer();
+    } else if (partName === "aermel_rechts") {
+      // Rechte Hälfte des Ärmel-Musters
+      cropBuffer = await sharp(scaledFabricAermel)
+        .extract({ left: aeWidth, top: 0, width: aeWidth, height: aeHeight })
+        .png()
+        .toBuffer();
+    } else if (partName === "kragen") {
+      // Kragen: Aus dem oberen Bereich des Körper-Musters
+      cropBuffer = await sharp(scaledFabricBody)
+        .extract({ left: 0, top: 0, width: template.width, height: template.height })
+        .png()
+        .toBuffer();
+    } else {
+      // Bündchen: Aus dem Ärmel-Muster
+      cropBuffer = await sharp(scaledFabricAermel)
+        .resize(template.width, template.height, { fit: "cover" })
+        .png()
+        .toBuffer();
+    }
+
+    // Maske auf die korrekte Größe bringen und anwenden
+    const resizedMask = await sharp(maskBuffer)
+      .resize(template.width, template.height, { fit: "fill" })
       .png()
       .toBuffer();
 
-    // Polygon-Maske erstellen und anwenden
-    const maskSvg = createPolygonMaskSvg(partWidth, partHeight, partConfig.poly);
-
+    // Muster mit Maske zuschneiden (dest-in: nur wo Maske weiß ist bleibt sichtbar)
     const maskedBuffer = await sharp(cropBuffer)
       .ensureAlpha()
       .composite([{
-        input: maskSvg,
+        input: resizedMask,
         blend: "dest-in",
       }])
       .png()
       .toBuffer();
 
-    // Pattern speichern
+    // Speichern (reines Muster ohne Overlays)
     const patternFileName = `ki-designs/cut-${partName}_${Date.now()}.png`;
     const { url: patternUrl } = await storagePut(patternFileName, maskedBuffer, "image/png");
+    console.log(`[CutPattern V3] ${partName} pattern saved: ${patternUrl}`);
 
-    console.log(`[CutPattern V2] ${partName} cut and saved: ${patternUrl}`);
-
-    // 4. Overlays (Logos, Wappen) per Compositing drauflegen
-    const overlays = getOverlaysForPart(config, partName);
-    let compositeUrl = patternUrl;
+    // ═══ POST-PROCESSING: Pro Teil unterschiedliche Elemente drauflegen ═══
+    let compositeBuffer = maskedBuffer;
     let contrastAdjusted = false;
 
-    if (overlays.length > 0) {
-      try {
-        const resolvedOverlays = await Promise.all(
-          overlays.map(async (overlay) => ({
-            ...overlay,
-            imageUrl: await resolveStorageUrl(overlay.imageUrl),
-          }))
-        );
-
-        // Basis-Bild URL auflösen
-        let baseUrl = patternUrl;
-        if (baseUrl.includes("/manus-storage/")) {
-          const keyMatch = baseUrl.match(/\/manus-storage\/(.+)/);
-          if (keyMatch) {
-            baseUrl = await storageGetSignedUrl(keyMatch[1]);
-          }
-        }
-
-        const compositedBuffer = await compositeLogosOnImage(baseUrl, resolvedOverlays);
-
-        const compositeFileName = `ki-designs/cut-${partName}-composite_${Date.now()}.png`;
-        const { url } = await storagePut(compositeFileName, compositedBuffer, "image/png");
-        compositeUrl = url;
-        contrastAdjusted = true;
-      } catch (err) {
-        console.error(`[CutPattern V2] Compositing for ${partName} failed:`, err);
-        compositeUrl = patternUrl;
-      }
+    try {
+      compositeBuffer = await applyPartOverlays(maskedBuffer, partName, config, template);
+      console.log(`[CutPattern V3] ${partName} overlays applied`);
+    } catch (err) {
+      console.warn(`[CutPattern V3] ${partName} overlay failed, using plain pattern:`, err);
     }
+
+    // Druckbogen mit Beschnitt erstellen
+    const printSheetBuffer = await createPrintSheet(compositeBuffer, template.width, template.height);
+    const printSheetFileName = `ki-designs/print-${partName}_${Date.now()}.png`;
+    const { url: compositeUrl } = await storagePut(printSheetFileName, printSheetBuffer, "image/png");
+    console.log(`[CutPattern V3] ${partName} print sheet saved: ${compositeUrl}`);
 
     results.push({
       part: partName,
       patternUrl,
-      compositeUrl,
+      compositeUrl, // Der Druckbogen mit Beschnitt + Overlays
       contrastAdjusted,
     });
   }
 
-  console.log(`[CutPattern V2] All ${results.length} parts generated successfully`);
+  console.log(`[CutPattern V3] All ${results.length} parts generated successfully`);
   return results;
 }
 
 /**
  * Legacy-Kompatibilität: Generiert ein einzelnes Teil.
- * Intern wird trotzdem das gesamte Stoffmuster generiert.
  */
 export async function generateCutPattern(
   config: CutPatternConfig,

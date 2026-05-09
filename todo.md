@@ -2318,3 +2318,13 @@
 - [x] cutPatternGenerator.ts: Wenn sourceImageUrl vorhanden, wird es als Referenz für KI-Stoffmuster verwendet
 - [x] KiDesign.tsx: generatedImageUrl wird als sourceImageUrl an generateCutPatterns übergeben
 - [x] Workflow: Erst "Trikot generieren", dann "Schnittmuster" nimmt das Bild als Referenz
+
+## Konfigurator-Fehler (E2E-Test 2026-05-09)
+
+- [x] Doppeltes Trikot-Bild im Konfigurator: KI-Design wird jetzt korrekt als Hintergrund mit CSS-Maske angezeigt
+- [x] Gesamtübersicht zeigt KI-Design: DTF-Brand-Image wird jetzt auch in der Gesamtübersicht gerendert
+- [x] Kein mutiges Muster sichtbar: Background-Image zeigt jetzt nur die relevante Hälfte (front/back) des KI-Gesamtbilds
+- [x] Rückennummer-Warnung trotz vorhandener Zone: Validierung erkennt jetzt auch "rueck" (ohne Umlaut) als Rückseite
+- [ ] Falsche Mannschafts-Zuordnung "hockey damen" statt Handball: Daten-Problem in departments-Tabelle (Produkt wird der einzigen vorhandenen Abteilung zugewiesen)
+- [ ] Positionsumrechnung bei KI-Vorlage: Zonen-Positionen werden von Gesamtbild auf Einzelteil umgerechnet (Code implementiert, aber bestehende Daten nicht rückwirkend korrigiert)
+

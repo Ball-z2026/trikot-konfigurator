@@ -1089,6 +1089,11 @@ export const appRouter = router({
         });
 
         // Zonen auf das ausgewählte Produkt übertragen
+        // WICHTIG: Die Zonen-Positionen kommen vom KI-Designer und beziehen sich auf das
+        // GESAMTBILD (Vorder+Rückseite nebeneinander). Für das Produkt müssen sie auf
+        // Einzelteil-Koordinaten umgerechnet werden:
+        // - Front-Zonen: x ist relativ zur linken Hälfte (0-50%) → muss auf 0-100% skaliert werden
+        // - Back-Zonen: x ist relativ zur rechten Hälfte (50-100%) → muss auf 0-100% skaliert werden
         if (productId && zones && zones.length > 0) {
           const parts = await listPartsByProduct(productId);
           for (const zone of zones) {
@@ -1119,6 +1124,24 @@ export const appRouter = router({
             if (textPurposes.includes(dbPurpose)) zoneType = "text";
             else if (imagePurposes.includes(dbPurpose)) zoneType = "image";
 
+            // Positionsumrechnung: Gesamtbild → Einzelteil
+            // Das KI-generierte Bild zeigt Front (links, 0-50%) und Back (rechts, 50-100%)
+            // Im Konfigurator wird jedes Teil separat angezeigt (0-100%)
+            let adjustedX = zone.x;
+            let adjustedWidth = zone.width;
+            if (side === "front") {
+              // Front-Zonen: x war 0-50% im Gesamtbild → skaliere auf 0-100%
+              adjustedX = Math.min(95, zone.x * 2);
+              adjustedWidth = Math.min(100 - adjustedX, zone.width * 2);
+            } else if (side === "back") {
+              // Back-Zonen: x war 50-100% im Gesamtbild → verschiebe und skaliere auf 0-100%
+              adjustedX = Math.min(95, (zone.x - 50) * 2);
+              adjustedWidth = Math.min(100 - adjustedX, zone.width * 2);
+            }
+            // Sicherheits-Clamp: Positionen dürfen nicht negativ oder > 95% sein
+            adjustedX = Math.max(0, Math.min(95, adjustedX));
+            adjustedWidth = Math.max(3, Math.min(100 - adjustedX, adjustedWidth));
+
             await createZone({
               productId,
               partId: matchingPart?.id ?? null,
@@ -1126,9 +1149,9 @@ export const appRouter = router({
               side,
               type: zoneType,
               purpose: dbPurpose as any,
-              posX: zone.x,
+              posX: Math.round(adjustedX * 10) / 10,
               posY: zone.y,
-              width: zone.width,
+              width: Math.round(adjustedWidth * 10) / 10,
               height: zone.height,
               rotation: 0,
               fontColor: zone.fontColor || null,

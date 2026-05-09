@@ -2319,8 +2319,62 @@ export default function CustomerConfigurator() {
                           <div className="relative">
                             {part.imageUrl ? (
                               <>
-                                {/* Farbige Ebene mit Luminanz-Maske */}
-                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                {/* KI-Design als Hintergrund-Textur innerhalb der Trikot-Form (Sublimation) */}
+                                {/* KI-Design: Zeige nur den relevanten Ausschnitt (front=links, back=rechts) */}
+                                {sublimationDesignImage && !isDtf && (() => {
+                                  const isBackPart = part.key.toLowerCase().includes("rueck") || part.key.toLowerCase().includes("back") || part.key.toLowerCase().includes("r\u00fcck");
+                                  return (
+                                    <div
+                                      className="absolute inset-0 pointer-events-none"
+                                      style={{
+                                        maskImage: `url(${storageUrl(part.imageUrl)})`,
+                                        WebkitMaskImage: `url(${storageUrl(part.imageUrl)})`,
+                                        maskSize: "contain",
+                                        WebkitMaskSize: "contain",
+                                        maskRepeat: "no-repeat",
+                                        WebkitMaskRepeat: "no-repeat",
+                                        maskPosition: "center",
+                                        WebkitMaskPosition: "center",
+                                        zIndex: 1,
+                                      }}
+                                    >
+                                      <img
+                                        src={sublimationDesignImage}
+                                        alt="KI-Design"
+                                        className="w-full h-full pointer-events-none"
+                                        style={{
+                                          objectFit: "cover",
+                                          objectPosition: isBackPart ? "100% center" : "0% center",
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                })()}
+                                {/* DTF KI-Vorlage als Hintergrund in Gesamt\u00fcbersicht */}
+                                {isDtf && dtfBrandImage && sublimationDesignImage && (() => {
+                                  const isBackPart = part.key.toLowerCase().includes("rueck") || part.key.toLowerCase().includes("back") || part.key.toLowerCase().includes("r\u00fcck");
+                                  // Nur Front/Back-Teile bekommen das KI-Design, nicht \u00c4rmel
+                                  const isFrontOrBack = part.key.toLowerCase().includes("front") || part.key.toLowerCase().includes("vorder") || isBackPart;
+                                  if (!isFrontOrBack) return null;
+                                  return (
+                                    <div
+                                      className="absolute inset-0 pointer-events-none overflow-hidden"
+                                      style={{ zIndex: 1 }}
+                                    >
+                                      <div
+                                        className="absolute inset-0"
+                                        style={{
+                                          backgroundImage: `url(${dtfBrandImage})`,
+                                          backgroundSize: "200% auto",
+                                          backgroundPosition: isBackPart ? "right center" : "left center",
+                                          backgroundRepeat: "no-repeat",
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                })()}
+                                {/* Farbige Ebene mit Luminanz-Maske (nur wenn kein KI-Design) */}
+                                {!sublimationDesignImage && !hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
                                   <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
@@ -2345,11 +2399,11 @@ export default function CustomerConfigurator() {
                                   style={{
                                     position: "relative",
                                     zIndex: 2,
-                                    mixBlendMode: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
+                                    mixBlendMode: (sublimationDesignImage || (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage)) ? "multiply" as const : undefined,
                                   }}
                                 />
                                 {/* Farb-Overlay für SVG-basierte Bilder: 'hue' blend mode */}
-                                {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                {!sublimationDesignImage && hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
                                   <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
@@ -2553,8 +2607,45 @@ export default function CustomerConfigurator() {
                   {/* CSS-based coloring: Trikot-Bild als Luminanz-Maske, Farbe nur innerhalb der Trikot-Form */}
                   {currentImage ? (
                     <div className="relative w-full" style={{ position: "relative", zIndex: 1 }}>
+                      {/* KI-Design als Hintergrund-Textur innerhalb der Trikot-Form (Sublimation) */}
+                      {/* Das KI-Bild zeigt Front+Back nebeneinander. Wir zeigen nur den relevanten Ausschnitt */}
+                      {/* Ansatz: Verwende clip-path auf dem img um nur eine Hälfte zu zeigen, */}
+                      {/* dann maskiere den Container mit der Trikot-Form */}
+                      {sublimationDesignImage && !isDtf && (() => {
+                        const isBack = hasParts && activePart
+                          ? (activePart.key.toLowerCase().includes("rueck") || activePart.key.toLowerCase().includes("back") || activePart.key.toLowerCase().includes("rück"))
+                          : activeSide === "back";
+                        // Verwende object-position um nur die relevante Hälfte zu zeigen
+                        // Das Bild wird auf 100% Höhe skaliert und mit object-fit: cover + object-position zugeschnitten
+                        return (
+                          <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                              maskImage: `url(${currentImage})`,
+                              WebkitMaskImage: `url(${currentImage})`,
+                              maskSize: "contain",
+                              WebkitMaskSize: "contain",
+                              maskRepeat: "no-repeat",
+                              WebkitMaskRepeat: "no-repeat",
+                              maskPosition: "center",
+                              WebkitMaskPosition: "center",
+                              zIndex: 1,
+                            }}
+                          >
+                            <img
+                              src={sublimationDesignImage}
+                              alt="KI-Design"
+                              className="w-full h-full pointer-events-none"
+                              style={{
+                                objectFit: "cover",
+                                objectPosition: isBack ? "100% center" : "0% center",
+                              }}
+                            />
+                          </div>
+                        );
+                      })()}
                       {/* Farbige Ebene: Farbe wird durch Luminanz-Maske auf Trikot-Form begrenzt */}
-                      {!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                      {!sublimationDesignImage && !hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
@@ -2581,11 +2672,11 @@ export default function CustomerConfigurator() {
                         style={{
                           position: "relative",
                           zIndex: 2,
-                          mixBlendMode: (!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
+                          mixBlendMode: sublimationDesignImage ? "multiply" as const : (!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
                         }}
                       />
                       {/* Farb-Overlay für Bekleidung (farbige PNGs): 'hue' blend mode */}
-                      {hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                      {!sublimationDesignImage && hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
@@ -2604,7 +2695,8 @@ export default function CustomerConfigurator() {
                     </div>
                   )}
                   {/* DTF Brand Image Background */}
-                  {isDtf && dtfBrandImage && (
+                  {/* Wenn sublimationDesignImage gesetzt ist (KI-Vorlage), zeige nur die relevante Hälfte */}
+                  {isDtf && dtfBrandImage && !sublimationDesignImage && (
                     <img
                       src={dtfBrandImage}
                       alt="Markentrikot"
@@ -2613,16 +2705,26 @@ export default function CustomerConfigurator() {
                       draggable={false}
                     />
                   )}
-                  {/* KI-Design Bild als Hintergrund (aus Vorlage) */}
-                  {sublimationDesignImage && !isDtf && (
-                    <img
-                      src={sublimationDesignImage}
-                      alt="KI-Design"
-                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                      style={{ opacity: 0.9, zIndex: 2 }}
-                      draggable={false}
-                    />
-                  )}
+                  {/* KI-Vorlage als DTF-Hintergrund: Zeige nur die relevante Hälfte (Front/Back) */}
+                  {isDtf && dtfBrandImage && sublimationDesignImage && (() => {
+                    const isBack = hasParts && activePart
+                      ? (activePart.key.toLowerCase().includes("rueck") || activePart.key.toLowerCase().includes("back") || activePart.key.toLowerCase().includes("rück"))
+                      : activeSide === "back";
+                    return (
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          zIndex: 2,
+                          opacity: 0.85,
+                          backgroundImage: `url(${dtfBrandImage})`,
+                          backgroundSize: "200% auto",
+                          backgroundPosition: isBack ? "right center" : "left center",
+                          backgroundRepeat: "no-repeat",
+                        }}
+                      />
+                    );
+                  })()}
+                  {/* KI-Design wird jetzt als maskierte Hintergrund-Textur innerhalb der Trikot-Form angezeigt (oben im currentImage-Block) */}
                   {/* Naht-Linien (2cm Mindestabstand) */}
                   {productData?.category === 'Trikot' && productData?.templateId && (() => {
                     const tmpl = TEXTIL_TEMPLATES.find(t => t.id === productData.templateId);
