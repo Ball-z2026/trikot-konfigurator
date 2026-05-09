@@ -1,0 +1,37 @@
+{
+  "query": "SELECT id, productId, `key`, label, imageUrl, realWidthCm, realHeightCm FROM product_parts WHERE productId = 1380006 AND `key` IN ('kragen', 'buendchen_links', 'buendchen_rechts');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, productId, `key`, label, imageUrl, realWidthCm, realHeightCm FROM product_parts WHERE productId = 1380006 AND `key` IN ('kragen', 'buendchen_links', 'buendchen_rechts');",
+  "rows": [
+    {
+      "id": "1770001",
+      "productId": "1380006",
+      "key": "kragen",
+      "label": "Kragen",
+      "imageUrl": "/manus-storage/trikot_kragen_0bd5b194.png",
+      "realWidthCm": "40",
+      "realHeightCm": "8"
+    },
+    {
+      "id": "1770002",
+      "productId": "1380006",
+      "key": "buendchen_links",
+      "label": "Bündchen Links",
+      "imageUrl": "/manus-storage/trikot_buendchen_1_0e0583dd.png",
+      "realWidthCm": "12",
+      "realHeightCm": "8"
+    },
+    {
+      "id": "1770003",
+      "productId": "1380006",
+      "key": "buendchen_rechts",
+      "label": "Bündchen Rechts",
+      "imageUrl": "/manus-storage/trikot_buendchen_2_5cdec8b0.png",
+      "realWidthCm": "12",
+      "realHeightCm": "8"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductId\tkey\tlabel\timageUrl\trealWidthCm\trealHeightCm\n1770001\t1380006\tkragen\tKragen\t/manus-storage/trikot_kragen_0bd5b194.png\t40\t8\n1770002\t1380006\tbuendchen_links\tBündchen Links\t/manus-storage/trikot_buendchen_1_0e0583dd.png\t12\t8\n1770003\t1380006\tbuendchen_rechts\tBündchen Rechts\t/manus-storage/trikot_buendchen_2_5cdec8b0.png\t12\t8\n",
+  "stderr": "",
+  "execution_time_ms": 393
+}

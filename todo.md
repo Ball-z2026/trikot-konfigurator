@@ -2393,3 +2393,10 @@
 - [x] Selbst-Check: Druckbogen visuell prüfen bevor Ergebnis gezeigt wird
 - [x] Druckbogen: Ärmel-Zonen (purpose="logo") bekommen jetzt auch das Vereinswappen (Fix in routers.ts Zeile 4595-4598)
 - [x] Druckbogen: Schnittmuster-Form statt Rechteck - Trikot-Silhouette wird jetzt korrekt angezeigt
+- [ ] Druckbogen: 7 Teile statt 4 (Vorderseite, Rückseite, Ärmel links, Ärmel rechts, Bündchen links, Bündchen rechts, Kragen)
+- [ ] Druckbogen: KI-Muster als Hintergrund auf den Schnittteilen (nicht nur Volltonfarbe)
+- [ ] Druckbogen: Korrekte Positionierung aller Elemente passend zur Trikot-Form
+- [x] Druckbogen: 7 Teile (Vorderteil, Rückteil, Ärmel L/R, Kragen, Bündchen L/R) werden generiert
+- [x] Druckbogen: Kragen/Bündchen-Maße korrekt (40x8cm / 12x8cm statt Fallback 49x68)
+- [x] Druckbogen: Ärmel-Wappen-Zone verkleinert (40x50% statt 80x40%)
+- [x] Druckbogen: Schnittmuster-Silhouette als Trikot-Form verwendet (nicht nur Rechteck)

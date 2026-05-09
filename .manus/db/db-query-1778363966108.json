@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, name, templateId FROM products WHERE id = 1380006;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name, templateId FROM products WHERE id = 1380006;",
+  "rows": [
+    {
+      "id": "1380006",
+      "name": "Handballtrikot – DTF",
+      "templateId": "handball_dtf"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttemplateId\n1380006\tHandballtrikot – DTF\thandball_dtf\n",
+  "stderr": "",
+  "execution_time_ms": 255
+}

@@ -9711,3 +9711,453 @@
 [2026-05-09T20:42:09.939Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
 [2026-05-09T20:42:10.644Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_rechts_44c4a141.png zones: 1
 [2026-05-09T20:42:10.733Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T21:35:52.200Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_front_ee897f3c.png zones: 5
+[2026-05-09T21:35:52.398Z] [PrintSheet] Rendering zone: clubLogo content:  pos: 10 12 size: 16 12
+[2026-05-09T21:35:52.505Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 61 12 size: 20 15
+[2026-05-09T21:35:52.506Z] [PrintSheet] Rendering zone: logo content:  pos: 15 52 size: 70 15
+[2026-05-09T21:35:52.506Z] [PrintSheet] Rendering zone: logo content:  pos: 25 17 size: 50 12
+[2026-05-09T21:35:52.506Z] [PrintSheet] Rendering zone: logo content:  pos: 20 63 size: 60 12
+[2026-05-09T21:35:53.200Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_back_3d1d47cb.png zones: 4
+[2026-05-09T21:35:53.314Z] [PrintSheet] Rendering zone: clubName content: HSV  pos: 15 5 size: 70 7
+[2026-05-09T21:35:53.315Z] [PrintSheet] Rendering zone: playerName content: Müller pos: 15 14 size: 70 11
+[2026-05-09T21:35:53.315Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 22 28 size: 56 32
+[2026-05-09T21:35:53.316Z] [PrintSheet] Rendering zone: logo content:  pos: 15 68 size: 70 12
+[2026-05-09T21:35:53.430Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_links_b61658a7.png zones: 1
+[2026-05-09T21:35:53.542Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T21:35:54.355Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_rechts_44c4a141.png zones: 1
+[2026-05-09T21:35:54.455Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T21:42:15.287Z] 5:42:15 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T21:42:17.091Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T21:42:18.266Z] Server running on http://localhost:3000/
+[2026-05-09T21:42:22.564Z] 5:42:22 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T21:42:24.284Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T21:42:25.108Z] Server running on http://localhost:3000/
+[2026-05-09T21:42:37.062Z] 5:42:37 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T21:42:38.874Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T21:42:39.809Z] Server running on http://localhost:3000/
+[2026-05-09T21:42:57.745Z] [Auth] Failed to sync user from OAuth: AxiosError: Request failed with status code 401
+[2026-05-09T21:42:57.746Z] at settle (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/axios@1.15.2/node_modules/axios/lib/core/settle.js:20:7)
+[2026-05-09T21:42:57.747Z] at IncomingMessage.handleStreamEnd (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/axios@1.15.2/node_modules/axios/lib/adapters/http.js:921:13)
+[2026-05-09T21:42:57.747Z] at IncomingMessage.emit (node:events:536:35)
+[2026-05-09T21:42:57.748Z] at endReadableNT (node:internal/streams/readable:1698:12)
+[2026-05-09T21:42:57.748Z] at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[2026-05-09T21:42:57.748Z] at Axios.request (file:///home/ubuntu/trikot-konfigurator/node_modules/.pnpm/axios@1.15.2/node_modules/axios/lib/core/Axios.js:46:41)
+[2026-05-09T21:42:57.749Z] at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2026-05-09T21:42:57.749Z] at async SDKServer.getUserInfoWithJwt (/home/ubuntu/trikot-konfigurator/server/_core/sdk.ts:243:22)
+[2026-05-09T21:42:57.749Z] at async SDKServer.authenticateRequest (/home/ubuntu/trikot-konfigurator/server/_core/sdk.ts:276:26)
+[2026-05-09T21:42:57.750Z] at async Object.createContext (/home/ubuntu/trikot-konfigurator/server/_core/context.ts:17:12)
+[2026-05-09T21:42:57.750Z] at async Object.createContext (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@trpc+server@11.16.0_typescript@5.9.3/node_modules/@trpc/server/src/adapters/node-http/nodeHTTPRequestHandler.ts:94:18)
+[2026-05-09T21:42:57.751Z] at async Object.create (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@trpc+server@11.16.0_typescript@5.9.3/node_modules/@trpc/server/src/unstable-core-do-not-import/http/resolveResponse.ts:287:23)
+[2026-05-09T21:42:57.751Z] at async resolveResponse (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@trpc+server@11.16.0_typescript@5.9.3/node_modules/@trpc/server/src/unstable-core-do-not-import/http/resolveResponse.ts:326:5)
+[2026-05-09T21:42:57.751Z] at async <anonymous> (/home/ubuntu/trikot-konfigurator/node_modules/.pnpm/@trpc+server@11.16.0_typescript@5.9.3/node_modules/@trpc/server/src/adapters/node-http/nodeHTTPRequestHandler.ts:100:26) {
+[2026-05-09T21:42:57.752Z] isAxiosError: true,
+[2026-05-09T21:42:57.752Z] code: 'ERR_BAD_REQUEST',
+[2026-05-09T21:42:57.752Z] config: [Object: null prototype] {
+[2026-05-09T21:42:57.753Z] transitional: {
+[2026-05-09T21:42:57.753Z] silentJSONParsing: true,
+[2026-05-09T21:42:57.753Z] forcedJSONParsing: true,
+[2026-05-09T21:42:57.754Z] clarifyTimeoutError: false,
+[2026-05-09T21:42:57.754Z] legacyInterceptorReqResOrdering: true
+[2026-05-09T21:42:57.754Z] },
+[2026-05-09T21:42:57.755Z] adapter: [ 'xhr', 'http', 'fetch' ],
+[2026-05-09T21:42:57.755Z] transformRequest: [ [Function: transformRequest] ],
+[2026-05-09T21:42:57.755Z] transformResponse: [ [Function: transformResponse] ],
+[2026-05-09T21:42:57.756Z] timeout: 30000,
+[2026-05-09T21:42:57.756Z] xsrfCookieName: 'XSRF-TOKEN',
+[2026-05-09T21:42:57.756Z] xsrfHeaderName: 'X-XSRF-TOKEN',
+[2026-05-09T21:42:57.757Z] maxContentLength: -1,
+[2026-05-09T21:42:57.757Z] maxBodyLength: -1,
+[2026-05-09T21:42:57.757Z] env: { FormData: [Function], Blob: [class Blob] },
+[2026-05-09T21:42:57.758Z] validateStatus: [Function: validateStatus],
+[2026-05-09T21:42:57.758Z] headers: Object [AxiosHeaders] {
+[2026-05-09T21:42:57.758Z] Accept: 'application/json, text/plain, */*',
+[2026-05-09T21:42:57.759Z] 'Content-Type': 'application/json',
+[2026-05-09T21:42:57.759Z] 'User-Agent': 'axios/1.15.2',
+[2026-05-09T21:42:57.759Z] 'Content-Length': '249',
+[2026-05-09T21:42:57.760Z] 'Accept-Encoding': 'gzip, compress, deflate, br'
+[2026-05-09T21:42:57.760Z] },
+[2026-05-09T21:42:57.760Z] baseURL: 'https://api.manus.im',
+[2026-05-09T21:42:57.761Z] method: 'post',
+[2026-05-09T21:42:57.761Z] url: '/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt',
+[2026-05-09T21:42:57.762Z] data: '{"jwtToken":"eyJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJ0ZXN0X3VzZXJfb3Blbl9pZCIsImFwcElkIjoiM3VBVnd4dkNGWVVUVGNIdlR4R3VYMiIsIm5hbWUiOiJUZXN0IFVzZXIiLCJleHAiOjE3NzgzNjY1Njl9.xQU_aSa5mvhnZ_1mRrsl2If2Ll41o5PKZ0YFkA_jUvc","projectId":"3uAVwxvCFYUTTcHvTxGuX2"}',
+[2026-05-09T21:42:57.762Z] allowAbsoluteUrls: true
+[2026-05-09T21:42:57.762Z] },
+[2026-05-09T21:42:57.763Z] request: <ref *1> ClientRequest {
+[2026-05-09T21:42:57.763Z] _events: [Object: null prototype] {
+[2026-05-09T21:42:57.763Z] abort: [Function (anonymous)],
+[2026-05-09T21:42:57.764Z] aborted: [Function (anonymous)],
+[2026-05-09T21:42:57.764Z] connect: [Function (anonymous)],
+[2026-05-09T21:42:57.764Z] error: [Function (anonymous)],
+[2026-05-09T21:42:57.765Z] socket: [Function (anonymous)],
+[2026-05-09T21:42:57.765Z] timeout: [Function (anonymous)],
+[2026-05-09T21:42:57.765Z] finish: [Function: requestOnFinish]
+[2026-05-09T21:42:57.766Z] },
+[2026-05-09T21:42:57.766Z] _eventsCount: 7,
+[2026-05-09T21:42:57.767Z] _maxListeners: undefined,
+[2026-05-09T21:42:57.767Z] outputData: [],
+[2026-05-09T21:42:57.768Z] outputSize: 0,
+[2026-05-09T21:42:57.768Z] writable: true,
+[2026-05-09T21:42:57.769Z] destroyed: true,
+[2026-05-09T21:42:57.769Z] _last: false,
+[2026-05-09T21:42:57.769Z] chunkedEncoding: false,
+[2026-05-09T21:42:57.770Z] shouldKeepAlive: true,
+[2026-05-09T21:42:57.770Z] maxRequestsOnConnectionReached: false,
+[2026-05-09T21:42:57.770Z] _defaultKeepAlive: true,
+[2026-05-09T21:42:57.771Z] useChunkedEncodingByDefault: true,
+[2026-05-09T21:42:57.771Z] sendDate: false,
+[2026-05-09T21:42:57.771Z] _removedConnection: false,
+[2026-05-09T21:42:57.772Z] _removedContLen: false,
+[2026-05-09T21:42:57.772Z] _removedTE: false,
+[2026-05-09T21:42:57.772Z] strictContentLength: false,
+[2026-05-09T21:42:57.773Z] _contentLength: '249',
+[2026-05-09T21:42:57.773Z] _hasBody: true,
+[2026-05-09T21:42:57.773Z] _trailer: '',
+[2026-05-09T21:42:57.774Z] finished: true,
+[2026-05-09T21:42:57.774Z] _headerSent: true,
+[2026-05-09T21:42:57.774Z] _closed: true,
+[2026-05-09T21:42:57.774Z] _header: 'POST /webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt HTTP/1.1\r\n' +
+[2026-05-09T21:42:57.775Z] 'Accept: application/json, text/plain, */*\r\n' +
+[2026-05-09T21:42:57.775Z] 'Content-Type: application/json\r\n' +
+[2026-05-09T21:42:57.776Z] 'User-Agent: axios/1.15.2\r\n' +
+[2026-05-09T21:42:57.776Z] 'Content-Length: 249\r\n' +
+[2026-05-09T21:42:57.776Z] 'Accept-Encoding: gzip, compress, deflate, br\r\n' +
+[2026-05-09T21:42:57.777Z] 'Host: api.manus.im\r\n' +
+[2026-05-09T21:42:57.777Z] 'Connection: keep-alive\r\n' +
+[2026-05-09T21:42:57.777Z] '\r\n',
+[2026-05-09T21:42:57.778Z] _keepAliveTimeout: 0,
+[2026-05-09T21:42:57.778Z] _onPendingData: [Function: nop],
+[2026-05-09T21:42:57.778Z] agent: Agent {
+[2026-05-09T21:42:57.779Z] _events: [Object: null prototype],
+[2026-05-09T21:42:57.779Z] _eventsCount: 2,
+[2026-05-09T21:42:57.779Z] _maxListeners: undefined,
+[2026-05-09T21:42:57.780Z] defaultPort: 443,
+[2026-05-09T21:42:57.780Z] protocol: 'https:',
+[2026-05-09T21:42:57.780Z] options: [Object: null prototype],
+[2026-05-09T21:42:57.780Z] requests: [Object: null prototype] {},
+[2026-05-09T21:42:57.781Z] sockets: [Object: null prototype] {},
+[2026-05-09T21:42:57.781Z] freeSockets: [Object: null prototype],
+[2026-05-09T21:42:57.782Z] keepAliveMsecs: 1000,
+[2026-05-09T21:42:57.782Z] keepAlive: true,
+[2026-05-09T21:42:57.782Z] maxSockets: Infinity,
+[2026-05-09T21:42:57.783Z] maxFreeSockets: 256,
+[2026-05-09T21:42:57.783Z] scheduling: 'lifo',
+[2026-05-09T21:42:57.783Z] maxTotalSockets: Infinity,
+[2026-05-09T21:42:57.784Z] totalSocketCount: 1,
+[2026-05-09T21:42:57.784Z] maxCachedSessions: 100,
+[2026-05-09T21:42:57.784Z] _sessionCache: [Object],
+[2026-05-09T21:42:57.785Z] [Symbol(shapeMode)]: false,
+[2026-05-09T21:42:57.785Z] [Symbol(kCapture)]: false
+[2026-05-09T21:42:57.785Z] },
+[2026-05-09T21:42:57.785Z] socketPath: undefined,
+[2026-05-09T21:42:57.786Z] method: 'POST',
+[2026-05-09T21:42:57.786Z] maxHeaderSize: undefined,
+[2026-05-09T21:42:57.788Z] insecureHTTPParser: false,
+[2026-05-09T21:42:57.788Z] joinDuplicateHeaders: undefined,
+[2026-05-09T21:42:57.788Z] path: '/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt',
+[2026-05-09T21:42:57.789Z] _ended: true,
+[2026-05-09T21:42:57.789Z] res: IncomingMessage {
+[2026-05-09T21:42:57.789Z] _events: [Object],
+[2026-05-09T21:42:57.789Z] _readableState: [ReadableState],
+[2026-05-09T21:42:57.790Z] _maxListeners: undefined,
+[2026-05-09T21:42:57.790Z] socket: null,
+[2026-05-09T21:42:57.790Z] httpVersionMajor: 1,
+[2026-05-09T21:42:57.791Z] httpVersionMinor: 1,
+[2026-05-09T21:42:57.791Z] httpVersion: '1.1',
+[2026-05-09T21:42:57.791Z] complete: true,
+[2026-05-09T21:42:57.792Z] rawHeaders: [Array],
+[2026-05-09T21:42:57.792Z] rawTrailers: [],
+[2026-05-09T21:42:57.792Z] joinDuplicateHeaders: undefined,
+[2026-05-09T21:42:57.793Z] aborted: false,
+[2026-05-09T21:42:57.793Z] upgrade: false,
+[2026-05-09T21:42:57.793Z] url: '',
+[2026-05-09T21:42:57.793Z] method: null,
+[2026-05-09T21:42:57.794Z] statusCode: 401,
+[2026-05-09T21:42:57.794Z] statusMessage: 'Unauthorized',
+[2026-05-09T21:42:57.794Z] client: [TLSSocket],
+[2026-05-09T21:42:57.795Z] _consuming: false,
+[2026-05-09T21:42:57.795Z] _dumped: false,
+[2026-05-09T21:42:57.795Z] req: [Circular *1],
+[2026-05-09T21:42:57.796Z] _eventsCount: 4,
+[2026-05-09T21:42:57.796Z] responseUrl: 'https://api.manus.im/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt',
+[2026-05-09T21:42:57.796Z] redirects: [],
+[2026-05-09T21:42:57.797Z] [Symbol(shapeMode)]: true,
+[2026-05-09T21:42:57.797Z] [Symbol(kCapture)]: false,
+[2026-05-09T21:42:57.797Z] [Symbol(kHeaders)]: [Object],
+[2026-05-09T21:42:57.797Z] [Symbol(kHeadersCount)]: 20,
+[2026-05-09T21:42:57.798Z] [Symbol(kTrailers)]: null,
+[2026-05-09T21:42:57.798Z] [Symbol(kTrailersCount)]: 0
+[2026-05-09T21:42:57.799Z] },
+[2026-05-09T21:42:57.799Z] aborted: false,
+[2026-05-09T21:42:57.799Z] timeoutCb: null,
+[2026-05-09T21:42:57.800Z] upgradeOrConnect: false,
+[2026-05-09T21:42:57.800Z] parser: null,
+[2026-05-09T21:42:57.800Z] maxHeadersCount: null,
+[2026-05-09T21:42:57.801Z] reusedSocket: false,
+[2026-05-09T21:42:57.801Z] host: 'api.manus.im',
+[2026-05-09T21:42:57.801Z] protocol: 'https:',
+[2026-05-09T21:42:57.801Z] _redirectable: Writable {
+[2026-05-09T21:42:57.802Z] _events: [Object],
+[2026-05-09T21:42:57.802Z] _writableState: [WritableState],
+[2026-05-09T21:42:57.802Z] _maxListeners: undefined,
+[2026-05-09T21:42:57.803Z] _options: [Object],
+[2026-05-09T21:42:57.803Z] _ended: true,
+[2026-05-09T21:42:57.803Z] _ending: true,
+[2026-05-09T21:42:57.804Z] _redirectCount: 0,
+[2026-05-09T21:42:57.804Z] _redirects: [],
+[2026-05-09T21:42:57.804Z] _requestBodyLength: 249,
+[2026-05-09T21:42:57.805Z] _requestBodyBuffers: [],
+[2026-05-09T21:42:57.805Z] _eventsCount: 4,
+[2026-05-09T21:42:57.805Z] _onNativeResponse: [Function (anonymous)],
+[2026-05-09T21:42:57.806Z] _headerFilter: /^(?:Authorization|Proxy-Authorization|Cookie)$/i,
+[2026-05-09T21:42:57.806Z] _currentRequest: [Circular *1],
+[2026-05-09T21:42:57.806Z] _currentUrl: 'https://api.manus.im/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt',
+[2026-05-09T21:42:57.807Z] _timeout: null,
+[2026-05-09T21:42:57.807Z] [Symbol(shapeMode)]: true,
+[2026-05-09T21:42:57.807Z] [Symbol(kCapture)]: false
+[2026-05-09T21:42:57.808Z] },
+[2026-05-09T21:42:57.808Z] [Symbol(shapeMode)]: false,
+[2026-05-09T21:42:57.808Z] [Symbol(kCapture)]: false,
+[2026-05-09T21:42:57.809Z] [Symbol(kBytesWritten)]: 0,
+[2026-05-09T21:42:57.809Z] [Symbol(kNeedDrain)]: false,
+[2026-05-09T21:42:57.809Z] [Symbol(corked)]: 0,
+[2026-05-09T21:42:57.810Z] [Symbol(kChunkedBuffer)]: [],
+[2026-05-09T21:42:57.810Z] [Symbol(kChunkedLength)]: 0,
+[2026-05-09T21:42:57.810Z] [Symbol(kSocket)]: TLSSocket {
+[2026-05-09T21:42:57.810Z] _tlsOptions: [Object],
+[2026-05-09T21:42:57.811Z] _secureEstablished: true,
+[2026-05-09T21:42:57.811Z] _securePending: false,
+[2026-05-09T21:42:57.812Z] _newSessionPending: false,
+[2026-05-09T21:42:57.812Z] _controlReleased: true,
+[2026-05-09T21:42:57.812Z] secureConnecting: false,
+[2026-05-09T21:42:57.813Z] _SNICallback: null,
+[2026-05-09T21:42:57.813Z] servername: 'api.manus.im',
+[2026-05-09T21:42:57.813Z] alpnProtocol: false,
+[2026-05-09T21:42:57.813Z] authorized: true,
+[2026-05-09T21:42:57.814Z] authorizationError: null,
+[2026-05-09T21:42:57.814Z] encrypted: true,
+[2026-05-09T21:42:57.814Z] _events: [Object: null prototype],
+[2026-05-09T21:42:57.815Z] _eventsCount: 9,
+[2026-05-09T21:42:57.815Z] connecting: false,
+[2026-05-09T21:42:57.816Z] _hadError: false,
+[2026-05-09T21:42:57.816Z] _parent: null,
+[2026-05-09T21:42:57.816Z] _host: 'api.manus.im',
+[2026-05-09T21:42:57.817Z] _closeAfterHandlingError: false,
+[2026-05-09T21:42:57.817Z] _readableState: [ReadableState],
+[2026-05-09T21:42:57.817Z] _writableState: [WritableState],
+[2026-05-09T21:42:57.818Z] allowHalfOpen: false,
+[2026-05-09T21:42:57.818Z] _maxListeners: undefined,
+[2026-05-09T21:42:57.818Z] _sockname: null,
+[2026-05-09T21:42:57.818Z] _pendingData: null,
+[2026-05-09T21:42:57.819Z] _pendingEncoding: '',
+[2026-05-09T21:42:57.819Z] server: undefined,
+[2026-05-09T21:42:57.819Z] _server: null,
+[2026-05-09T21:42:57.820Z] ssl: [TLSWrap],
+[2026-05-09T21:42:57.820Z] _requestCert: true,
+[2026-05-09T21:42:57.820Z] _rejectUnauthorized: true,
+[2026-05-09T21:42:57.821Z] timeout: 5000,
+[2026-05-09T21:42:57.821Z] parser: null,
+[2026-05-09T21:42:57.821Z] _httpMessage: null,
+[2026-05-09T21:42:57.821Z] autoSelectFamilyAttemptedAddresses: [Array],
+[2026-05-09T21:42:57.822Z] [Symbol(alpncallback)]: null,
+[2026-05-09T21:42:57.822Z] [Symbol(res)]: [TLSWrap],
+[2026-05-09T21:42:57.822Z] [Symbol(verified)]: true,
+[2026-05-09T21:42:57.823Z] [Symbol(pendingSession)]: null,
+[2026-05-09T21:42:57.823Z] [Symbol(async_id_symbol)]: -1,
+[2026-05-09T21:42:57.823Z] [Symbol(kHandle)]: [TLSWrap],
+[2026-05-09T21:42:57.824Z] [Symbol(lastWriteQueueSize)]: 0,
+[2026-05-09T21:42:57.824Z] [Symbol(timeout)]: Timeout {
+[2026-05-09T21:42:57.824Z] _idleTimeout: 5000,
+[2026-05-09T21:42:57.825Z] _idlePrev: [TimersList],
+[2026-05-09T21:42:57.825Z] _idleNext: [TimersList],
+[2026-05-09T21:42:57.825Z] _idleStart: 20593,
+[2026-05-09T21:42:57.826Z] _onTimeout: [Function: bound ],
+[2026-05-09T21:42:57.826Z] _timerArgs: undefined,
+[2026-05-09T21:42:57.826Z] _repeat: null,
+[2026-05-09T21:42:57.826Z] _destroyed: false,
+[2026-05-09T21:42:57.827Z] [Symbol(refed)]: false,
+[2026-05-09T21:42:57.827Z] [Symbol(kHasPrimitive)]: false,
+[2026-05-09T21:42:57.827Z] [Symbol(asyncId)]: 5501,
+[2026-05-09T21:42:57.828Z] [Symbol(triggerId)]: 5499,
+[2026-05-09T21:42:57.828Z] [Symbol(kAsyncContextFrame)]: undefined
+[2026-05-09T21:42:57.828Z] },
+[2026-05-09T21:42:57.829Z] [Symbol(kBuffer)]: null,
+[2026-05-09T21:42:57.829Z] [Symbol(kBufferCb)]: null,
+[2026-05-09T21:42:57.830Z] [Symbol(kBufferGen)]: null,
+[2026-05-09T21:42:57.830Z] [Symbol(shapeMode)]: true,
+[2026-05-09T21:42:57.830Z] [Symbol(kCapture)]: false,
+[2026-05-09T21:42:57.830Z] [Symbol(kSetNoDelay)]: false,
+[2026-05-09T21:42:57.831Z] [Symbol(kSetKeepAlive)]: true,
+[2026-05-09T21:42:57.831Z] [Symbol(kSetKeepAliveInitialDelay)]: 1,
+[2026-05-09T21:42:57.832Z] [Symbol(kBytesRead)]: 0,
+[2026-05-09T21:42:57.832Z] [Symbol(kBytesWritten)]: 0,
+[2026-05-09T21:42:57.833Z] [Symbol(connect-options)]: [Object],
+[2026-05-09T21:42:57.833Z] [Symbol(axios.http.socketListener)]: true,
+[2026-05-09T21:42:57.833Z] [Symbol(axios.http.currentReq)]: [Writable]
+[2026-05-09T21:42:57.834Z] },
+[2026-05-09T21:42:57.834Z] [Symbol(kOutHeaders)]: [Object: null prototype] {
+[2026-05-09T21:42:57.834Z] accept: [Array],
+[2026-05-09T21:42:57.835Z] 'content-type': [Array],
+[2026-05-09T21:42:57.835Z] 'user-agent': [Array],
+[2026-05-09T21:42:57.835Z] 'content-length': [Array],
+[2026-05-09T21:42:57.836Z] 'accept-encoding': [Array],
+[2026-05-09T21:42:57.836Z] host: [Array]
+[2026-05-09T21:42:57.836Z] },
+[2026-05-09T21:42:57.837Z] [Symbol(errored)]: null,
+[2026-05-09T21:42:57.837Z] [Symbol(kHighWaterMark)]: 65536,
+[2026-05-09T21:42:57.837Z] [Symbol(kRejectNonStandardBodyWrites)]: false,
+[2026-05-09T21:42:57.838Z] [Symbol(kUniqueHeaders)]: null
+[2026-05-09T21:42:57.838Z] },
+[2026-05-09T21:42:57.838Z] response: {
+[2026-05-09T21:42:57.838Z] status: 401,
+[2026-05-09T21:42:57.839Z] statusText: 'Unauthorized',
+[2026-05-09T21:42:57.839Z] headers: Object [AxiosHeaders] {
+[2026-05-09T21:42:57.840Z] 'content-type': 'application/json',
+[2026-05-09T21:42:57.840Z] 'content-length': '113',
+[2026-05-09T21:42:57.840Z] connection: 'keep-alive',
+[2026-05-09T21:42:57.841Z] 'x-ratelimit-limit': '200',
+[2026-05-09T21:42:57.841Z] 'x-ratelimit-remaining': '199',
+[2026-05-09T21:42:57.841Z] 'x-ratelimit-reset': '60',
+[2026-05-09T21:42:57.842Z] 'accept-encoding': 'gzip',
+[2026-05-09T21:42:57.842Z] vary: 'Origin',
+[2026-05-09T21:42:57.842Z] date: 'Sat, 09 May 2026 21:42:57 GMT',
+[2026-05-09T21:42:57.842Z] server: 'APISIX/3.11.0'
+[2026-05-09T21:42:57.843Z] },
+[2026-05-09T21:42:57.843Z] config: [Object: null prototype] {
+[2026-05-09T21:42:57.843Z] transitional: [Object],
+[2026-05-09T21:42:57.844Z] adapter: [Array],
+[2026-05-09T21:42:57.844Z] transformRequest: [Array],
+[2026-05-09T21:42:57.844Z] transformResponse: [Array],
+[2026-05-09T21:42:57.845Z] timeout: 30000,
+[2026-05-09T21:42:57.845Z] xsrfCookieName: 'XSRF-TOKEN',
+[2026-05-09T21:42:57.846Z] xsrfHeaderName: 'X-XSRF-TOKEN',
+[2026-05-09T21:42:57.846Z] maxContentLength: -1,
+[2026-05-09T21:42:57.846Z] maxBodyLength: -1,
+[2026-05-09T21:42:57.846Z] env: [Object],
+[2026-05-09T21:42:57.847Z] validateStatus: [Function: validateStatus],
+[2026-05-09T21:42:57.848Z] headers: [Object [AxiosHeaders]],
+[2026-05-09T21:42:57.848Z] baseURL: 'https://api.manus.im',
+[2026-05-09T21:42:57.848Z] method: 'post',
+[2026-05-09T21:42:57.849Z] url: '/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt',
+[2026-05-09T21:42:57.849Z] data: '{"jwtToken":"eyJhbGciOiJIUzI1NiJ9.eyJvcGVuSWQiOiJ0ZXN0X3VzZXJfb3Blbl9pZCIsImFwcElkIjoiM3VBVnd4dkNGWVVUVGNIdlR4R3VYMiIsIm5hbWUiOiJUZXN0IFVzZXIiLCJleHAiOjE3NzgzNjY1Njl9.xQU_aSa5mvhnZ_1mRrsl2If2Ll41o5PKZ0YFkA_jUvc","projectId":"3uAVwxvCFYUTTcHvTxGuX2"}',
+[2026-05-09T21:42:57.850Z] allowAbsoluteUrls: true
+[2026-05-09T21:42:57.850Z] },
+[2026-05-09T21:42:57.850Z] request: <ref *1> ClientRequest {
+[2026-05-09T21:42:57.851Z] _events: [Object: null prototype],
+[2026-05-09T21:42:57.851Z] _eventsCount: 7,
+[2026-05-09T21:42:57.851Z] _maxListeners: undefined,
+[2026-05-09T21:42:57.852Z] outputData: [],
+[2026-05-09T21:42:57.852Z] outputSize: 0,
+[2026-05-09T21:42:57.852Z] writable: true,
+[2026-05-09T21:42:57.853Z] destroyed: true,
+[2026-05-09T21:42:57.853Z] _last: false,
+[2026-05-09T21:42:57.853Z] chunkedEncoding: false,
+[2026-05-09T21:42:57.853Z] shouldKeepAlive: true,
+[2026-05-09T21:42:57.854Z] maxRequestsOnConnectionReached: false,
+[2026-05-09T21:42:57.854Z] _defaultKeepAlive: true,
+[2026-05-09T21:42:57.854Z] useChunkedEncodingByDefault: true,
+[2026-05-09T21:42:57.855Z] sendDate: false,
+[2026-05-09T21:42:57.855Z] _removedConnection: false,
+[2026-05-09T21:42:57.855Z] _removedContLen: false,
+[2026-05-09T21:42:57.856Z] _removedTE: false,
+[2026-05-09T21:42:57.856Z] strictContentLength: false,
+[2026-05-09T21:42:57.856Z] _contentLength: '249',
+[2026-05-09T21:42:57.857Z] _hasBody: true,
+[2026-05-09T21:42:57.857Z] _trailer: '',
+[2026-05-09T21:42:57.857Z] finished: true,
+[2026-05-09T21:42:57.858Z] _headerSent: true,
+[2026-05-09T21:42:57.858Z] _closed: true,
+[2026-05-09T21:42:57.858Z] _header: 'POST /webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt HTTP/1.1\r\n' +
+[2026-05-09T21:42:57.859Z] 'Accept: application/json, text/plain, */*\r\n' +
+[2026-05-09T21:42:57.859Z] 'Content-Type: application/json\r\n' +
+[2026-05-09T21:42:57.859Z] 'User-Agent: axios/1.15.2\r\n' +
+[2026-05-09T21:42:57.860Z] 'Content-Length: 249\r\n' +
+[2026-05-09T21:42:57.860Z] 'Accept-Encoding: gzip, compress, deflate, br\r\n' +
+[2026-05-09T21:42:57.860Z] 'Host: api.manus.im\r\n' +
+[2026-05-09T21:42:57.861Z] 'Connection: keep-alive\r\n' +
+[2026-05-09T21:42:57.861Z] '\r\n',
+[2026-05-09T21:42:57.861Z] _keepAliveTimeout: 0,
+[2026-05-09T21:42:57.862Z] _onPendingData: [Function: nop],
+[2026-05-09T21:42:57.862Z] agent: [Agent],
+[2026-05-09T21:42:57.862Z] socketPath: undefined,
+[2026-05-09T21:42:57.862Z] method: 'POST',
+[2026-05-09T21:42:57.863Z] maxHeaderSize: undefined,
+[2026-05-09T21:42:57.863Z] insecureHTTPParser: false,
+[2026-05-09T21:42:57.863Z] joinDuplicateHeaders: undefined,
+[2026-05-09T21:42:57.864Z] path: '/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt',
+[2026-05-09T21:42:57.864Z] _ended: true,
+[2026-05-09T21:42:57.865Z] res: [IncomingMessage],
+[2026-05-09T21:42:57.865Z] aborted: false,
+[2026-05-09T21:42:57.866Z] timeoutCb: null,
+[2026-05-09T21:42:57.866Z] upgradeOrConnect: false,
+[2026-05-09T21:42:57.866Z] parser: null,
+[2026-05-09T21:42:57.867Z] maxHeadersCount: null,
+[2026-05-09T21:42:57.867Z] reusedSocket: false,
+[2026-05-09T21:42:57.867Z] host: 'api.manus.im',
+[2026-05-09T21:42:57.868Z] protocol: 'https:',
+[2026-05-09T21:42:57.868Z] _redirectable: [Writable],
+[2026-05-09T21:42:57.868Z] [Symbol(shapeMode)]: false,
+[2026-05-09T21:42:57.868Z] [Symbol(kCapture)]: false,
+[2026-05-09T21:42:57.869Z] [Symbol(kBytesWritten)]: 0,
+[2026-05-09T21:42:57.869Z] [Symbol(kNeedDrain)]: false,
+[2026-05-09T21:42:57.869Z] [Symbol(corked)]: 0,
+[2026-05-09T21:42:57.870Z] [Symbol(kChunkedBuffer)]: [],
+[2026-05-09T21:42:57.870Z] [Symbol(kChunkedLength)]: 0,
+[2026-05-09T21:42:57.870Z] [Symbol(kSocket)]: [TLSSocket],
+[2026-05-09T21:42:57.871Z] [Symbol(kOutHeaders)]: [Object: null prototype],
+[2026-05-09T21:42:57.871Z] [Symbol(errored)]: null,
+[2026-05-09T21:42:57.871Z] [Symbol(kHighWaterMark)]: 65536,
+[2026-05-09T21:42:57.872Z] [Symbol(kRejectNonStandardBodyWrites)]: false,
+[2026-05-09T21:42:57.872Z] [Symbol(kUniqueHeaders)]: null
+[2026-05-09T21:42:57.872Z] },
+[2026-05-09T21:42:57.873Z] data: {
+[2026-05-09T21:42:57.873Z] code: 'unauthenticated',
+[2026-05-09T21:42:57.873Z] message: 'failed to get user info with JWT: auth info not found for given JWT claims'
+[2026-05-09T21:42:57.874Z] }
+[2026-05-09T21:42:57.874Z] },
+[2026-05-09T21:42:57.874Z] status: 401
+[2026-05-09T21:42:57.875Z] }
+[2026-05-09T21:49:28.811Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_front_ee897f3c.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 5
+[2026-05-09T21:49:29.378Z] [PrintSheet] Rendering zone: clubLogo content:  pos: 10 12 size: 16 12
+[2026-05-09T21:49:29.484Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 61 12 size: 20 15
+[2026-05-09T21:49:29.485Z] [PrintSheet] Rendering zone: logo content:  pos: 15 52 size: 70 15
+[2026-05-09T21:49:29.486Z] [PrintSheet] Rendering zone: logo content:  pos: 25 17 size: 50 12
+[2026-05-09T21:49:29.486Z] [PrintSheet] Rendering zone: logo content:  pos: 20 63 size: 60 12
+[2026-05-09T21:49:30.450Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_back_3d1d47cb.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 4
+[2026-05-09T21:49:30.943Z] [PrintSheet] Rendering zone: clubName content: HSV  pos: 15 5 size: 70 7
+[2026-05-09T21:49:30.945Z] [PrintSheet] Rendering zone: playerName content: Müller pos: 15 14 size: 70 11
+[2026-05-09T21:49:30.945Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 22 28 size: 56 32
+[2026-05-09T21:49:30.946Z] [PrintSheet] Rendering zone: logo content:  pos: 15 68 size: 70 12
+[2026-05-09T21:49:31.303Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_links_b61658a7.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 1
+[2026-05-09T21:49:31.720Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T21:49:32.779Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_rechts_44c4a141.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 1
+[2026-05-09T21:49:33.150Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T21:49:34.067Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/trikot_kragen_0bd5b194.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 0
+[2026-05-09T21:49:34.538Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/trikot_buendchen_1_0e0583dd.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 0
+[2026-05-09T21:49:35.011Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/trikot_buendchen_2_5cdec8b0.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 0
+[2026-05-09T21:56:34.179Z] 5:56:34 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T21:56:35.832Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T21:56:36.903Z] Server running on http://localhost:3000/
+[2026-05-09T21:56:46.541Z] 5:56:46 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T21:56:48.244Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T21:56:49.095Z] Server running on http://localhost:3000/
+[2026-05-09T22:00:05.073Z] 6:00:05 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-09T22:00:07.083Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T22:00:07.939Z] Server running on http://localhost:3000/
+[2026-05-09T22:00:48.597Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_front_ee897f3c.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 5
+[2026-05-09T22:00:48.836Z] [PrintSheet] Rendering zone: clubLogo content:  pos: 10 12 size: 16 12
+[2026-05-09T22:00:49.101Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 61 12 size: 20 15
+[2026-05-09T22:00:49.102Z] [PrintSheet] Rendering zone: logo content:  pos: 15 52 size: 70 15
+[2026-05-09T22:00:49.102Z] [PrintSheet] Rendering zone: logo content:  pos: 25 17 size: 50 12
+[2026-05-09T22:00:49.103Z] [PrintSheet] Rendering zone: logo content:  pos: 20 63 size: 60 12
+[2026-05-09T22:00:49.718Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_back_3d1d47cb.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 4
+[2026-05-09T22:00:49.868Z] [PrintSheet] Rendering zone: clubName content: HSV  pos: 15 5 size: 70 7
+[2026-05-09T22:00:49.869Z] [PrintSheet] Rendering zone: playerName content: Müller pos: 15 14 size: 70 11
+[2026-05-09T22:00:49.870Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 22 28 size: 56 32
+[2026-05-09T22:00:49.870Z] [PrintSheet] Rendering zone: logo content:  pos: 15 68 size: 70 12
+[2026-05-09T22:00:50.041Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_links_b61658a7.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 1
+[2026-05-09T22:00:50.175Z] [PrintSheet] Rendering zone: logo content:  pos: 30 25 size: 40 50
+[2026-05-09T22:00:50.950Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_rechts_44c4a141.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 1
+[2026-05-09T22:00:51.067Z] [PrintSheet] Rendering zone: logo content:  pos: 30 25 size: 40 50
+[2026-05-09T22:00:51.847Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/trikot_kragen_0bd5b194.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 0
+[2026-05-09T22:00:52.033Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/trikot_buendchen_1_0e0583dd.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 0
+[2026-05-09T22:00:52.177Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/trikot_buendchen_2_5cdec8b0.png backgroundImageUrl: /manus-storage/generated/1778347069172_b52ba9f9.png zones: 0

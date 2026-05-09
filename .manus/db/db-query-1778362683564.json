@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO product_parts (productId, `key`, label, imageUrl, sortOrder, realWidthCm, realHeightCm) VALUES \n(1380006, 'kragen', 'Kragen', '/manus-storage/trikot_kragen_0bd5b194.png', 5, 40, 8),\n(1380006, 'buendchen_links', 'Bündchen Links', '/manus-storage/trikot_buendchen_1_0e0583dd.png', 6, 12, 8),\n(1380006, 'buendchen_rechts', 'Bündchen Rechts', '/manus-storage/trikot_buendchen_2_5cdec8b0.png', 7, 12, 8);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute INSERT INTO product_parts (productId, `key`, label, imageUrl, sortOrder, realWidthCm, realHeightCm) VALUES \n(1380006, 'kragen', 'Kragen', '/manus-storage/trikot_kragen_0bd5b194.png', 5, 40, 8),\n(1380006, 'buendchen_links', 'Bündchen Links', '/manus-storage/trikot_buendchen_1_0e0583dd.png', 6, 12, 8),\n(1380006, 'buendchen_rechts', 'Bündchen Rechts', '/manus-storage/trikot_buendchen_2_5cdec8b0.png', 7, 12, 8);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 278
+}

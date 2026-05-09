@@ -4559,8 +4559,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         for (const dbPart of dbParts) {
           // Template-Part finden für reale Maße
           const tmplPart = templateParts.find(tp => tp.key === dbPart.key);
-          const baseWidthCm = tmplPart?.realWidthCm || 49;
-          const baseHeightCm = tmplPart?.realHeightCm || 68;
+          const baseWidthCm = tmplPart?.realWidthCm || dbPart.realWidthCm || 49;
+          const baseHeightCm = tmplPart?.realHeightCm || dbPart.realHeightCm || 68;
 
           // Maße für die Spielergröße berechnen
           const dims = getSizeDimensions(sport, playerSize, gender);

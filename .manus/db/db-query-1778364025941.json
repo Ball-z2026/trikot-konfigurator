@@ -1,0 +1,30 @@
+{
+  "query": "SELECT z.id, z.partId, z.purpose, z.posX, z.posY, z.width, z.height, pp.`key` as partKey FROM product_zones z JOIN product_parts pp ON pp.id = z.partId WHERE pp.productId = 1380006 AND pp.`key` LIKE '%aermel%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT z.id, z.partId, z.purpose, z.posX, z.posY, z.width, z.height, pp.`key` as partKey FROM product_zones z JOIN product_parts pp ON pp.id = z.partId WHERE pp.productId = 1380006 AND pp.`key` LIKE '%aermel%';",
+  "rows": [
+    {
+      "id": "1410059",
+      "partId": "1320030",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "partKey": "aermel_links"
+    },
+    {
+      "id": "1410060",
+      "partId": "1320031",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "partKey": "aermel_rechts"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpartId\tpurpose\tposX\tposY\twidth\theight\tpartKey\n1410059\t1320030\tlogo\t10\t10\t80\t40\taermel_links\n1410060\t1320031\tlogo\t10\t10\t80\t40\taermel_rechts\n",
+  "stderr": "",
+  "execution_time_ms": 395
+}
