@@ -4536,6 +4536,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           : design.colorsConfig || {};
 
         // KI-Design-Bild aus colorsConfig extrahieren
+        console.log("[DEBUG] colorsConfig keys:", Object.keys(colorsConfig), "cutPatterns:", colorsConfig.cutPatterns ? Object.keys(colorsConfig.cutPatterns) : "NONE");
         const designImageUrl: string | undefined = colorsConfig.sublimationDesignImage || undefined;
 
         // Part-Farben extrahieren
@@ -4639,7 +4640,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
             realWidthCm: widthCm,
             realHeightCm: heightCm,
             zones: filledZones,
-            backgroundImageUrl: designImageUrl || undefined,
+            backgroundImageUrl: (colorsConfig.cutPatterns && colorsConfig.cutPatterns[dbPart.key]) || designImageUrl || undefined,
             partImageUrl: dbPart.imageUrl || undefined,
           });
         }
@@ -4734,6 +4735,14 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         const zonesConfig: Record<string, any> = typeof design.zonesConfig === "string"
           ? JSON.parse(design.zonesConfig)
           : (design.zonesConfig as Record<string, any>) || {};
+        // colorsConfig aus dem Design parsen (für cutPatterns und bgColor)
+        const colorsConfig2: any = typeof design.colorsConfig === "string"
+          ? JSON.parse(design.colorsConfig as string)
+          : design.colorsConfig || {};
+        const cutPatterns2: Record<string, string> = colorsConfig2.cutPatterns || {};
+        const partColorsMap2: Record<string, string> = colorsConfig2.partColors || {};
+        const orgLogo2 = await getDefaultOrgLogo(input.orgId);
+        const orgLogoUrl2 = orgLogo2?.imageUrl || undefined;
 
         // Produkt-Parts und -Zonen aus der DB laden (einmalig, nicht pro Spieler)
         const dbParts = await listPartsByProduct(product.id);
@@ -4755,8 +4764,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
 
             for (const dbPart of dbParts) {
               const tmplPart = templateParts.find(tp => tp.key === dbPart.key);
-              const baseWidthCm = tmplPart?.realWidthCm || 49;
-              const baseHeightCm = tmplPart?.realHeightCm || 68;
+              const baseWidthCm = tmplPart?.realWidthCm || dbPart.realWidthCm || 49;
+              const baseHeightCm = tmplPart?.realHeightCm || dbPart.realHeightCm || 68;
 
               const dims = getSizeDimensions(sport, playerSize, gender);
               const isBody = dbPart.key === "vorderteil" || dbPart.key === "rueckteil";
@@ -4800,7 +4809,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
                   textAlign: (content.textAlign || dbZone.textAlign || "center") as "left" | "center" | "right",
                   rotation: dbZone.rotation || 0,
                   isImage: content.imageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
-                  imageUrl: content.imageUrl || undefined,
+                  imageUrl: content.imageUrl || ((dbZone.purpose === "clubLogo" && orgLogoUrl2) ? orgLogoUrl2 : ((dbZone.purpose === "logo" && isSleeve && orgLogoUrl2) ? orgLogoUrl2 : undefined)),
                 };
               });
 
@@ -4824,6 +4833,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
                 realWidthCm: widthCm,
                 realHeightCm: heightCm,
                 zones: filledZones,
+                backgroundImageUrl: cutPatterns2[dbPart.key] || undefined,
+                partImageUrl: dbPart.imageUrl || undefined,
               });
             }
 
@@ -4842,6 +4853,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
                   .map((n: string) => n.charAt(0).toUpperCase())
                   .join(""),
               },
+              bgColor: Object.values(partColorsMap2)[0] as string || undefined,
               parts,
               bleedMm: 3,
               dpi: 300,

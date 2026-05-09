@@ -274,86 +274,26 @@ export async function generatePrintSheet(
      .lineTo(pageWidthPt - sidebarWidthPt, headerHeightPt - 2)
      .lineWidth(0.5)
      .stroke();
-  // ── Hintergrund: Schnittmuster-Bild mit KI-Muster oder Farbe als Maske rendern ──
-  console.log("[PrintSheet] bgColor:", config.bgColor, "partImageUrl:", part.partImageUrl, "backgroundImageUrl:", part.backgroundImageUrl, "zones:", part.zones.length);
-  if (part.partImageUrl) {
+  // ── Hintergrund: CutPattern-Bild (mit Muster + Schnittform) oder Fallback ──
+  console.log("[PrintSheet] Rendering background for", part.partKey, "- backgroundImageUrl:", part.backgroundImageUrl, "partImageUrl:", part.partImageUrl);
+  
+  // Priorität 1: backgroundImageUrl = das CutPattern-Bild (bereits mit Muster + Schnittform)
+  // Priorität 2: partImageUrl = leeres Schnittmuster + bgColor als Füllung
+  // Priorität 3: Nur bgColor als Rechteck
+  
+  const bgImageToUse = part.backgroundImageUrl || null;
+  
+  if (bgImageToUse) {
+    // CutPattern-Bild direkt als Hintergrund verwenden (hat bereits Muster + Schnittform)
     try {
-      const patternBuffer = await fetchImageBuffer(part.partImageUrl);
-      if (patternBuffer) {
-        const meta = await sharp(patternBuffer).metadata();
-        const imgW = meta.width!;
-        const imgH = meta.height!;
-        const hasAlpha = meta.channels === 4;
-
-        // Bestimme die Füllung: KI-Muster-Bild oder Volltonfarbe
-        let fillRgbBuffer: Buffer;
-
-        // Verwende immer Volltonfarbe als Füllung (KI-Design-Bild ist ein 3D-Mockup, nicht geeignet für Druckbogen)
-        if (config.bgColor) {
-          // Nur Volltonfarbe
-          const hex = config.bgColor.replace("#", "");
-          const r = parseInt(hex.substring(0, 2), 16);
-          const g = parseInt(hex.substring(2, 4), 16);
-          const b = parseInt(hex.substring(4, 6), 16);
-          fillRgbBuffer = await sharp({ create: { width: imgW, height: imgH, channels: 4, background: { r, g, b, alpha: 255 } } }).raw().toBuffer();
-        } else {
-          // Kein Design, keine Farbe: Grau als Fallback
-          fillRgbBuffer = await sharp({ create: { width: imgW, height: imgH, channels: 4, background: { r: 200, g: 200, b: 200, alpha: 255 } } }).raw().toBuffer();
-        }
-
-        // Maske anwenden
-        let maskedPng: Buffer;
-        if (hasAlpha) {
-          // Schnittmuster hat Alpha-Kanal → als Maske verwenden
-          const alphaChannel = await sharp(patternBuffer).extractChannel(3).raw().toBuffer();
-          const rgbaBuffer = Buffer.alloc(imgW * imgH * 4);
-          for (let i = 0; i < imgW * imgH; i++) {
-            rgbaBuffer[i * 4] = fillRgbBuffer[i * 4];
-            rgbaBuffer[i * 4 + 1] = fillRgbBuffer[i * 4 + 1];
-            rgbaBuffer[i * 4 + 2] = fillRgbBuffer[i * 4 + 2];
-            rgbaBuffer[i * 4 + 3] = alphaChannel[i];
-          }
-          maskedPng = await sharp(rgbaBuffer, { raw: { width: imgW, height: imgH, channels: 4 } }).png().toBuffer();
-        } else {
-          // Kein Alpha (Kragen, Bündchen): Kontur-basierte Maske
-          // Alles was fast-weiß ist (>240 in allen Kanälen) wird transparent
-          const patternRgb = await sharp(patternBuffer).ensureAlpha().raw().toBuffer();
-          const rgbaBuffer = Buffer.alloc(imgW * imgH * 4);
-          for (let i = 0; i < imgW * imgH; i++) {
-            const pr = patternRgb[i * 4];
-            const pg = patternRgb[i * 4 + 1];
-            const pb = patternRgb[i * 4 + 2];
-            const isWhite = pr > 240 && pg > 240 && pb > 240;
-            const isGrayLine = !isWhite && (pr < 200 || pg < 200 || pb < 200);
-            if (isWhite) {
-              // Weißer Bereich → Füllung mit Design/Farbe
-              rgbaBuffer[i * 4] = fillRgbBuffer[i * 4];
-              rgbaBuffer[i * 4 + 1] = fillRgbBuffer[i * 4 + 1];
-              rgbaBuffer[i * 4 + 2] = fillRgbBuffer[i * 4 + 2];
-              rgbaBuffer[i * 4 + 3] = 255;
-            } else if (isGrayLine) {
-              // Graue Konturlinie → beibehalten als dunkle Linie
-              rgbaBuffer[i * 4] = pr;
-              rgbaBuffer[i * 4 + 1] = pg;
-              rgbaBuffer[i * 4 + 2] = pb;
-              rgbaBuffer[i * 4 + 3] = 255;
-            } else {
-              // Übergangsbereich → Mischung
-              rgbaBuffer[i * 4] = fillRgbBuffer[i * 4];
-              rgbaBuffer[i * 4 + 1] = fillRgbBuffer[i * 4 + 1];
-              rgbaBuffer[i * 4 + 2] = fillRgbBuffer[i * 4 + 2];
-              rgbaBuffer[i * 4 + 3] = 255;
-            }
-          }
-          maskedPng = await sharp(rgbaBuffer, { raw: { width: imgW, height: imgH, channels: 4 } }).png().toBuffer();
-        }
-
-        doc.image(maskedPng, safeX, safeY, {
+      const cutPatternBuffer = await fetchImageBuffer(bgImageToUse);
+      if (cutPatternBuffer) {
+        doc.image(cutPatternBuffer, safeX, safeY, {
           width: safeWidth,
           height: safeHeight,
         });
       } else {
-        // Fallback: einfache Farbfläche
+        console.warn("[PrintSheet] CutPattern-Bild konnte nicht geladen werden, Fallback auf Farbe");
         if (config.bgColor) {
           const bgCmykArr = hexToCmyk(config.bgColor);
           doc.save();
@@ -362,7 +302,7 @@ export async function generatePrintSheet(
         }
       }
     } catch (err) {
-      console.warn("[PrintSheet] Schnittmuster konnte nicht geladen werden:", err);
+      console.warn("[PrintSheet] CutPattern-Bild Fehler:", err);
       if (config.bgColor) {
         const bgCmykArr = hexToCmyk(config.bgColor);
         doc.save();
@@ -370,12 +310,54 @@ export async function generatePrintSheet(
         doc.restore();
       }
     }
+  } else if (part.partImageUrl) {
+    // Leeres Schnittmuster + Farbe als Füllung (Fallback wenn kein CutPattern generiert wurde)
+    try {
+      const patternBuffer = await fetchImageBuffer(part.partImageUrl);
+      if (patternBuffer) {
+        const meta = await sharp(patternBuffer).metadata();
+        const imgW = meta.width!;
+        const imgH = meta.height!;
+        const hasAlpha = meta.channels === 4;
+        
+        // Farbe als Füllung
+        const hex = (config.bgColor || "#cccccc").replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        
+        let maskedPng: Buffer;
+        if (hasAlpha) {
+          // Alpha-Kanal als Maske verwenden
+          const alphaChannel = await sharp(patternBuffer).extractChannel(3).raw().toBuffer();
+          const rgbaBuffer = Buffer.alloc(imgW * imgH * 4);
+          for (let i = 0; i < imgW * imgH; i++) {
+            rgbaBuffer[i * 4] = r;
+            rgbaBuffer[i * 4 + 1] = g;
+            rgbaBuffer[i * 4 + 2] = b;
+            rgbaBuffer[i * 4 + 3] = alphaChannel[i];
+          }
+          maskedPng = await sharp(rgbaBuffer, { raw: { width: imgW, height: imgH, channels: 4 } }).png().toBuffer();
+        } else {
+          // Kein Alpha: Einfach Farbe als Rechteck
+          maskedPng = await sharp({ create: { width: imgW, height: imgH, channels: 4, background: { r, g, b, alpha: 255 } } }).png().toBuffer();
+        }
+        doc.image(maskedPng, safeX, safeY, {
+          width: safeWidth,
+          height: safeHeight,
+        });
+      }
+    } catch (err) {
+      console.warn("[PrintSheet] Schnittmuster-Fallback Fehler:", err);
+    }
   } else if (config.bgColor) {
+    // Letzter Fallback: Nur Farbe als Rechteck
     const bgCmykArr = hexToCmyk(config.bgColor);
     doc.save();
     doc.rect(safeX, safeY, safeWidth, safeHeight).fill([bgCmykArr[0], bgCmykArr[1], bgCmykArr[2], bgCmykArr[3]] as any);
     doc.restore();
   }
+
   // ── Druckbereich-Rahmen (gestrichelt) ──
   doc.save();
   doc.dash(3, { space: 3 });
