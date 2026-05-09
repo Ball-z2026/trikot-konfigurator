@@ -3746,6 +3746,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         chestSponsorUrl: z.string().optional(),
         backSponsorUrl: z.string().optional(),
         sleeveSponsorUrl: z.string().optional(),
+        sourceImageUrl: z.string().optional(), // Bereits generiertes Trikot-Bild als Basis
       }))
       .mutation(async ({ input }) => {
         const { generateAllCutPatterns } = await import("./cutPatternGenerator");

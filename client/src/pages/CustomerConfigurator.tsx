@@ -348,6 +348,7 @@ export default function CustomerConfigurator() {
   const [partColors, setPartColors] = useState<Record<number, string>>({});
   const [dtfBaseColor, setDtfBaseColor] = useState<string | null>(null);
   const [dtfBrandImage, setDtfBrandImage] = useState<string | null>(null);
+  const [sublimationDesignImage, setSublimationDesignImage] = useState<string | null>(null);
   // processedImageUrl and processedPartImages removed - using CSS-based coloring instead
 
   // ─── Drag-and-Drop für Sponsor-Vorlagen ──────────────────────────────
@@ -1003,12 +1004,65 @@ export default function CustomerConfigurator() {
   const [templateApplied, setTemplateApplied] = useState(false);
   useEffect(() => {
     if (templateApplied || !designTemplateData || !productData) return;
-    // Zeige Info-Toast dass Vorlage geladen wurde
+    
+    // 1. KI-Bild als Hintergrund auf das Trikot setzen
+    if (designTemplateData.imageUrl) {
+      const imageUrl = storageUrl(designTemplateData.imageUrl) || designTemplateData.imageUrl;
+      // Für DTF-Produkte: als Markentrikot-Bild setzen
+      if (isDtf) {
+        setDtfBrandImage(imageUrl);
+      }
+      // Für Sublimation-Produkte: als Design-Bild auf alle Teile setzen
+      // (Sublimation nutzt partColors, aber das KI-Bild wird als Overlay angezeigt)
+      setSublimationDesignImage(imageUrl);
+    }
+    
+    // 2. Zonen aus der Vorlage auf die Produkt-Zonen mappen
+    const config = designTemplateData.positionsConfig as any;
+    if (config?.zones && Array.isArray(config.zones) && allZones.length > 0) {
+      const templateZones = config.zones as any[];
+      const newContents: Record<number, ZoneContent> = {};
+      
+      for (const tZone of templateZones) {
+        // Finde passende Produkt-Zone nach purpose oder name
+        const matchingProductZone = allZones.find(pz => {
+          if (tZone.purpose && tZone.purpose !== "custom" && pz.purpose === tZone.purpose) return true;
+          if (tZone.name && pz.label?.toLowerCase() === tZone.name?.toLowerCase()) return true;
+          return false;
+        });
+        if (matchingProductZone) {
+          // Übernehme Schrift-Einstellungen aus der Vorlage
+          if (tZone.fontFamily || tZone.fontColor || tZone.fontSize) {
+            newContents[matchingProductZone.id] = {
+              ...zoneContents[matchingProductZone.id],
+              fontFamily: tZone.fontFamily || undefined,
+              fontColor: tZone.fontColor || undefined,
+              fontSize: tZone.fontSize || undefined,
+            };
+          }
+        }
+      }
+      
+      if (Object.keys(newContents).length > 0) {
+        setZoneContents(prev => ({ ...prev, ...newContents }));
+      }
+    }
+    
+    // 3. Farben aus der Vorlage übernehmen
+    if (config?.jerseyColor) {
+      // Setze die Hauptfarbe auf alle Teile
+      const colorMap: Record<number, string> = {};
+      for (const part of parts) {
+        colorMap[part.id] = config.jerseyColor;
+      }
+      setPartColors(prev => ({ ...prev, ...colorMap }));
+    }
+    
     toast.success(`Vorlage "${designTemplateData.name}" wird angewendet`, {
-      description: "Die Zonen aus der Vorlage wurden auf das Produkt übertragen.",
+      description: "Design und Zonen aus der Vorlage wurden übertragen.",
     });
     setTemplateApplied(true);
-  }, [designTemplateData, productData, templateApplied]);
+  }, [designTemplateData, productData, templateApplied, isDtf, allZones, parts]);
 
   // ─── Auto-Ladung: Spieler aus Team laden (wenn teamId-Parameter vorhanden) ───
   // Authentifizierte Variante (mit orgId)
@@ -2556,6 +2610,16 @@ export default function CustomerConfigurator() {
                       alt="Markentrikot"
                       className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                       style={{ opacity: 0.85, zIndex: 2 }}
+                      draggable={false}
+                    />
+                  )}
+                  {/* KI-Design Bild als Hintergrund (aus Vorlage) */}
+                  {sublimationDesignImage && !isDtf && (
+                    <img
+                      src={sublimationDesignImage}
+                      alt="KI-Design"
+                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                      style={{ opacity: 0.9, zIndex: 2 }}
                       draggable={false}
                     />
                   )}

@@ -2299,3 +2299,22 @@
 - [x] printSheet.ts esbuild-Fehler war stale Cache (nach Neustart behoben)
 - [x] Server erfolgreich neugestartet mit V2-Code
 - [ ] User-Test: Schnittmuster-Generierung im Browser testen
+
+## Bug: Combined-Mode Overlay-Positionen verschoben
+- [x] logoOverlays/Compositing aus handleGenerate entfernt – KI platziert alles selbst korrekt
+- [x] Kein nachträgliches Compositing mehr nötig (Test A bestätigt: KI-Positionen korrekt)
+
+## Bug: Schnittmuster-Overlays fehlen/falsch
+- [ ] Schnittmuster zeigt anderes Muster als Combined-Mode (sind separate Generierungen – OK)
+- [ ] Overlays (Wappen, Sponsoren) auf Schnittteilen prüfen – fehlen oder falsch positioniert
+
+## Bug: Vorlage im Konfigurator zeigt nicht das KI-Design
+- [ ] Beim Öffnen einer KI-Vorlage im Konfigurator wird das KI-Bild nicht als Hintergrund gesetzt
+- [ ] Die Zonen aus positionsConfig werden nicht auf die Produkt-Zonen gemappt
+- [ ] Lösung: designTemplateData.imageUrl als dtfBrandImage (DTF) oder sublimationDesignImage (Sublimation) setzen
+
+## Schnittmuster soll bestehendes Design verwenden
+- [x] sourceImageUrl-Feld zum Router und CutPatternConfig hinzugefügt
+- [x] cutPatternGenerator.ts: Wenn sourceImageUrl vorhanden, wird es als Referenz für KI-Stoffmuster verwendet
+- [x] KiDesign.tsx: generatedImageUrl wird als sourceImageUrl an generateCutPatterns übergeben
+- [x] Workflow: Erst "Trikot generieren", dann "Schnittmuster" nimmt das Bild als Referenz

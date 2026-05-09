@@ -197,6 +197,8 @@ export interface CutPatternConfig {
   sublimationAreas?: string[];
   /** Hashtag (optional, für Nackenbereich) */
   hashtag?: string;
+  /** Bereits generiertes Trikot-Bild als Basis (statt neu zu generieren) */
+  sourceImageUrl?: string;
   /** Koordinaten-Text (optional) */
   coordinatesText?: string;
   /** Brustsponsor-Logo URL */
@@ -377,50 +379,94 @@ function getOverlaysForPart(config: CutPatternConfig, part: CutPart): LogoPlacem
 export async function generateAllCutPatterns(
   config: CutPatternConfig
 ): Promise<CutPatternResult[]> {
-  console.log("[CutPattern V2] Starting fabric pattern generation...");
+  console.log("[CutPattern V2] Starting cut pattern generation...");
 
-  // 1. KI generiert EIN Stoffmuster
-  const fabricPrompt = buildFabricPrompt(config);
-  console.log(`[CutPattern V2] Fabric prompt (${fabricPrompt.length} chars): ${fabricPrompt.substring(0, 200)}...`);
+  let fabricBuffer: Buffer;
 
-  const originalImages: Array<{ url?: string; mimeType: string }> = [];
+  if (config.sourceImageUrl) {
+    // ═══ NEUER MODUS: Bereits generiertes Trikot-Bild als Basis verwenden ═══
+    console.log("[CutPattern V2] Using existing generated image as source...");
+    let sourceUrl = config.sourceImageUrl;
+    if (sourceUrl.includes("/manus-storage/")) {
+      const keyMatch = sourceUrl.match(/\/manus-storage\/(.+)/);
+      if (keyMatch) {
+        sourceUrl = await storageGetSignedUrl(keyMatch[1]);
+      }
+    }
 
-  // Straßenkarte als Referenz
-  if (config.streetMapUrl) {
-    const resolvedUrl = await resolveStorageUrl(config.streetMapUrl);
-    originalImages.push({ url: resolvedUrl, mimeType: "image/png" });
-  }
+    // Bild als Referenz an die KI senden um ein passendes Stoffmuster zu generieren
+    const fabricPrompt = `Generate a SEAMLESS FLAT FABRIC PATTERN that matches the jersey design shown in the reference image. `
+      + `Extract the EXACT same pattern style, colors, and design elements from the reference jersey. `
+      + `Create a FLAT, SEAMLESS fabric texture that fills the ENTIRE canvas. `
+      + `Use the EXACT same colors and geometric/organic shapes as on the reference jersey. `
+      + `This is a FLAT fabric swatch – NO jersey shape, NO 3D folds, NO shadows, NO text, NO numbers, NO logos. `
+      + `The pattern should cover the ENTIRE surface uniformly (no empty/white areas). `
+      + `High resolution, print-ready quality for sublimation printing.`;
 
-  // Weitere Referenzbilder
-  if (config.referenceImageUrls) {
-    for (const imgUrl of config.referenceImageUrls) {
-      const resolvedUrl = await resolveStorageUrl(imgUrl);
+    console.log(`[CutPattern V2] Generating fabric from source image reference...`);
+
+    const fabricResult = await generateImage({
+      prompt: fabricPrompt,
+      originalImages: [{ url: sourceUrl, mimeType: "image/png" }],
+    });
+
+    if (!fabricResult.url) {
+      throw new Error("KI-Generierung des Stoffmusters aus Referenz fehlgeschlagen");
+    }
+
+    let fabricUrl = fabricResult.url;
+    if (fabricUrl.includes("/manus-storage/")) {
+      const keyMatch = fabricUrl.match(/\/manus-storage\/(.+)/);
+      if (keyMatch) {
+        fabricUrl = await storageGetSignedUrl(keyMatch[1]);
+      }
+    }
+    const fabricResponse = await fetch(fabricUrl);
+    fabricBuffer = Buffer.from(await fabricResponse.arrayBuffer());
+
+  } else {
+    // ═══ FALLBACK: Neues Stoffmuster generieren (ohne Referenzbild) ═══
+    const fabricPrompt = buildFabricPrompt(config);
+    console.log(`[CutPattern V2] Fabric prompt (${fabricPrompt.length} chars): ${fabricPrompt.substring(0, 200)}...`);
+
+    const originalImages: Array<{ url?: string; mimeType: string }> = [];
+
+    // Straßenkarte als Referenz
+    if (config.streetMapUrl) {
+      const resolvedUrl = await resolveStorageUrl(config.streetMapUrl);
       originalImages.push({ url: resolvedUrl, mimeType: "image/png" });
     }
-  }
 
-  const fabricResult = await generateImage({
-    prompt: fabricPrompt,
-    originalImages: originalImages.length > 0 ? originalImages : undefined,
-  });
-
-  if (!fabricResult.url) {
-    throw new Error("KI-Generierung des Stoffmusters fehlgeschlagen");
-  }
-
-  console.log("[CutPattern V2] Fabric pattern generated, scaling to layout size...");
-
-  // 2. Stoffmuster laden und auf Layout-Größe skalieren
-  let fabricUrl = fabricResult.url;
-  if (fabricUrl.includes("/manus-storage/")) {
-    const keyMatch = fabricUrl.match(/\/manus-storage\/(.+)/);
-    if (keyMatch) {
-      fabricUrl = await storageGetSignedUrl(keyMatch[1]);
+    // Weitere Referenzbilder
+    if (config.referenceImageUrls) {
+      for (const imgUrl of config.referenceImageUrls) {
+        const resolvedUrl = await resolveStorageUrl(imgUrl);
+        originalImages.push({ url: resolvedUrl, mimeType: "image/png" });
+      }
     }
-  }
 
-  const fabricResponse = await fetch(fabricUrl);
-  const fabricBuffer = Buffer.from(await fabricResponse.arrayBuffer());
+    const fabricResult = await generateImage({
+      prompt: fabricPrompt,
+      originalImages: originalImages.length > 0 ? originalImages : undefined,
+    });
+
+    if (!fabricResult.url) {
+      throw new Error("KI-Generierung des Stoffmusters fehlgeschlagen");
+    }
+
+    console.log("[CutPattern V2] Fabric pattern generated, scaling to layout size...");
+
+    let fabricUrl = fabricResult.url;
+    if (fabricUrl.includes("/manus-storage/")) {
+      const keyMatch = fabricUrl.match(/\/manus-storage\/(.+)/);
+      if (keyMatch) {
+        fabricUrl = await storageGetSignedUrl(keyMatch[1]);
+      }
+    }
+
+    const fabricResponse = await fetch(fabricUrl);
+    fabricBuffer = Buffer.from(await fabricResponse.arrayBuffer());
+  }
 
   // Auf Stoffgröße skalieren (cover – das Muster füllt die gesamte Fläche)
   const scaledFabric = await sharp(fabricBuffer)

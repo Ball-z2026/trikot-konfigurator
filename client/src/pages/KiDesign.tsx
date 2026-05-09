@@ -406,6 +406,7 @@ export default function KiDesign() {
         chestSponsorUrl: chestSponsor?.imageUrl || undefined,
         backSponsorUrl: backSponsor?.imageUrl || undefined,
         sleeveSponsorUrl: sleeveSponsor?.imageUrl || undefined,
+        sourceImageUrl: generatedImageUrl || undefined, // Bereits generiertes Trikot als Basis
       });
       if (result.results && result.results.length > 0) {
         setCutPatternResults(result.results);
@@ -498,62 +499,10 @@ export default function KiDesign() {
         imageSlots.push({ slotNum: 1, url: mapImageUrl, description: "Straßenkarte als Stoffmuster" });
       }
       
-      // ═══ LOGO-OVERLAYS aufbauen (werden NACH der Generierung composited) ═══
-      const logoOverlays: { imageUrl: string; xPercent: number; yPercent: number; widthPercent: number; heightPercent: number; opacity?: number }[] = [];
-      
-      // Vereinswappen auf Herzseite (rechte Brust im Bild = 60-65% von links)
-      // WICHTIG: Das Bild zeigt Front+Back side-by-side, also ist die Vorderseite in der linken Hälfte (0-50%)
-      if (defaultLogo?.imageUrl) {
-        logoOverlays.push({
-          imageUrl: defaultLogo.imageUrl,
-          xPercent: 30, // 60% der linken Hälfte = 30% des Gesamtbildes
-          yPercent: 28,
-          widthPercent: 6,
-          heightPercent: 8,
-        });
-      }
-      
-      // Brustsponsor (Mitte der Vorderseite)
-      if (sponsorByPosition.chest?.imageUrl) {
-        logoOverlays.push({
-          imageUrl: sponsorByPosition.chest.imageUrl,
-          xPercent: 12, // Zentriert in der linken Hälfte
-          yPercent: 42,
-          widthPercent: 14,
-          heightPercent: 8,
-        });
-      }
-      
-      // Rücken-Sponsor (unterer Rücken)
-      if (sponsorByPosition.back?.imageUrl) {
-        logoOverlays.push({
-          imageUrl: sponsorByPosition.back.imageUrl,
-          xPercent: 62, // Zentriert in der rechten Hälfte
-          yPercent: 72,
-          widthPercent: 14,
-          heightPercent: 8,
-        });
-      }
-      
-      // Ärmel-Sponsoren
-      if (sponsorByPosition.sleeve_left?.imageUrl) {
-        logoOverlays.push({
-          imageUrl: sponsorByPosition.sleeve_left.imageUrl,
-          xPercent: 2,
-          yPercent: 28,
-          widthPercent: 7,
-          heightPercent: 6,
-        });
-      }
-      if (sponsorByPosition.sleeve_right?.imageUrl) {
-        logoOverlays.push({
-          imageUrl: sponsorByPosition.sleeve_right.imageUrl,
-          xPercent: 41,
-          yPercent: 28,
-          widthPercent: 7,
-          heightPercent: 6,
-        });
-      }
+      // ═══ LOGO-OVERLAYS DEAKTIVIERT ═══
+      // Die KI platziert Wappen, Nummern, Namen etc. direkt im Bild per Prompt.
+      // Nachträgliches Compositing wurde entfernt, da die Positionen unzuverlässig waren.
+      // Logos/Sponsoren/Nummern/Namen kommen später im Konfigurator als separate Druckebenen drauf.
       
       // Nur belegte Bilder an die KI senden (in fester Reihenfolge)
       const additionalRefs: string[] = [];
@@ -611,23 +560,11 @@ export default function KiDesign() {
       });
       
       // VEREINSWAPPEN ALS WASSERZEICHEN AUF DER RÜCKSEITE
-      // Wird jetzt als programmatisches Overlay gemacht (zuverlässiger als KI-Generierung)
+      // Die KI generiert das Wasserzeichen direkt im Bild per Prompt
       if (useBackCrestWatermark && defaultLogo?.imageUrl) {
-        // Overlay auf der Rückseite (rechte Hälfte des Bildes: 50-100%)
-        logoOverlays.push({
-          imageUrl: defaultLogo.imageUrl,
-          xPercent: 60, // Zentriert in der rechten Hälfte
-          yPercent: 30, // Oberer Bereich, hinter Nummer
-          widthPercent: 22, // Groß (60-70% der Rückenbreite)
-          heightPercent: 30,
-          opacity: backCrestOpacity / 100, // z.B. 20% = 0.2
-        });
-        extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: LASSE DEN MITTLEREN BEREICH DER RÜCKSEITE ETWAS HELLER/WENIGER BUSY – ein Wasserzeichen wird dort nachträglich platziert. Generiere dort KEIN Wappen selbst.`;
+        const opacityDesc = backCrestOpacity <= 15 ? "very subtle, barely visible" : backCrestOpacity <= 30 ? "subtle, lightly visible" : "moderately visible";
+        extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: Place the club crest as a LARGE WATERMARK on the BACK of the jersey (right half of image). The watermark should be ${opacityDesc} (${backCrestOpacity}% opacity), centered on the back, covering about 60-70% of the back width. It should be BEHIND the number and player name text. Tone-on-tone, slightly lighter/darker than the fabric color.`;
       }
-      // ALTES VERHALTEN (nur Prompt, unzuverlässig):
-      // if (useBackCrestWatermark && defaultLogo?.imageUrl) {
-      //   extraPrompt += ` WAPPEN-WASSERZEICHEN RÜCKSEITE: ...`;
-      // }
 
       // MUSTER-UPLOAD
       if (usePattern && patternColors.length > 0) {
@@ -700,7 +637,7 @@ export default function KiDesign() {
         customPrompt: prompt,
         referenceImageUrl: undefined,
         referenceImageUrls: additionalRefs.length > 0 ? additionalRefs : undefined,
-        logoOverlays: logoOverlays.length > 0 ? logoOverlays : undefined,
+        // logoOverlays entfernt – KI platziert alles direkt per Prompt
       });
 
       if (result.url) {
