@@ -1,0 +1,8 @@
+{
+  "query": "SELECT pz.id, pz.label, pz.purpose, pz.posX, pz.posY, pz.width, pz.height, pp.label as partLabel, pp.partKey FROM product_zones pz LEFT JOIN product_parts pp ON pz.partId = pp.id WHERE pz.productId = 1380006 ORDER BY pp.partKey, pz.label;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT pz.id, pz.label, pz.purpose, pz.posX, pz.posY, pz.width, pz.height, pp.label as partLabel, pp.partKey FROM product_zones pz LEFT JOIN product_parts pp ON pz.partId = pp.id WHERE pz.productId = 1380006 ORDER BY pp.partKey, pz.label;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'pp.partKey' in 'order clause'"
+  ]
+}

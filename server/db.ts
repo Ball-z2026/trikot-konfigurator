@@ -387,6 +387,12 @@ export async function deleteZone(id: number) {
   await db.delete(productZones).where(eq(productZones.id, id));
 }
 
+export async function deleteZonesByProduct(productId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(productZones).where(eq(productZones.productId, productId));
+}
+
 export async function bulkUpdateZones(
   zones: { id: number; posX: number; posY: number; width: number; height: number; rotation?: number }[]
 ) {

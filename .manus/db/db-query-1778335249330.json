@@ -1,0 +1,13 @@
+{
+  "query": "SELECT pp.id FROM product_parts pp WHERE pp.productId = 1380006 AND pp.`key` = 'vorderteil';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT pp.id FROM product_parts pp WHERE pp.productId = 1380006 AND pp.`key` = 'vorderteil';",
+  "rows": [
+    {
+      "id": "1320028"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n1320028\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

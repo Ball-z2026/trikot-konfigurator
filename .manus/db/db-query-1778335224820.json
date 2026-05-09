@@ -1,0 +1,120 @@
+{
+  "query": "SELECT pz.id, pz.label, pz.purpose, ROUND(pz.posX,1) as posX, ROUND(pz.posY,1) as posY, ROUND(pz.width,1) as w, ROUND(pz.height,1) as h, pp.label as partLabel, pp.`key` as partKey FROM product_zones pz LEFT JOIN product_parts pp ON pz.partId = pp.id WHERE pz.productId = 1380006 ORDER BY pp.`key`, pz.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT pz.id, pz.label, pz.purpose, ROUND(pz.posX,1) as posX, ROUND(pz.posY,1) as posY, ROUND(pz.width,1) as w, ROUND(pz.height,1) as h, pp.label as partLabel, pp.`key` as partKey FROM product_zones pz LEFT JOIN product_parts pp ON pz.partId = pp.id WHERE pz.productId = 1380006 ORDER BY pp.`key`, pz.id;",
+  "rows": [
+    {
+      "id": "1410059",
+      "label": "Ärmel-Logo Links",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "w": "80",
+      "h": "40",
+      "partLabel": "Ärmel Links",
+      "partKey": "aermel_links"
+    },
+    {
+      "id": "1410060",
+      "label": "Ärmel-Logo Rechts",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "w": "80",
+      "h": "40",
+      "partLabel": "Ärmel Rechts",
+      "partKey": "aermel_rechts"
+    },
+    {
+      "id": "1410055",
+      "label": "Vereinsname",
+      "purpose": "clubName",
+      "posX": "10",
+      "posY": "2",
+      "w": "45",
+      "h": "9",
+      "partLabel": "Rückteil",
+      "partKey": "rueckteil"
+    },
+    {
+      "id": "1410056",
+      "label": "Spielername",
+      "purpose": "playerName",
+      "posX": "10",
+      "posY": "12",
+      "w": "45",
+      "h": "9",
+      "partLabel": "Rückteil",
+      "partKey": "rueckteil"
+    },
+    {
+      "id": "1410057",
+      "label": "Spielernummer",
+      "purpose": "playerNumber",
+      "posX": "25",
+      "posY": "25",
+      "w": "50",
+      "h": "30",
+      "partLabel": "Rückteil",
+      "partKey": "rueckteil"
+    },
+    {
+      "id": "1410058",
+      "label": "Rücken-Sponsor",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "65",
+      "w": "70",
+      "h": "15",
+      "partLabel": "Rückteil",
+      "partKey": "rueckteil"
+    },
+    {
+      "id": "1410051",
+      "label": "Vereinswappen",
+      "purpose": "clubLogo",
+      "posX": "5",
+      "posY": "5",
+      "w": "15",
+      "h": "15",
+      "partLabel": "Vorderteil",
+      "partKey": "vorderteil"
+    },
+    {
+      "id": "1410052",
+      "label": "Brustnummer",
+      "purpose": "playerNumber",
+      "posX": "75",
+      "posY": "5",
+      "w": "15",
+      "h": "15",
+      "partLabel": "Vorderteil",
+      "partKey": "vorderteil"
+    },
+    {
+      "id": "1410053",
+      "label": "Brust-Sponsor",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "25",
+      "w": "50",
+      "h": "20",
+      "partLabel": "Vorderteil",
+      "partKey": "vorderteil"
+    },
+    {
+      "id": "1410054",
+      "label": "Bauch-Sponsor",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "60",
+      "w": "60",
+      "h": "15",
+      "partLabel": "Vorderteil",
+      "partKey": "vorderteil"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlabel\tpurpose\tposX\tposY\tw\th\tpartLabel\tpartKey\n1410059\tÄrmel-Logo Links\tlogo\t10\t10\t80\t40\tÄrmel Links\taermel_links\n1410060\tÄrmel-Logo Rechts\tlogo\t10\t10\t80\t40\tÄrmel Rechts\taermel_rechts\n1410055\tVereinsname\tclubName\t10\t2\t45\t9\tRückteil\trueckteil\n1410056\tSpielername\tplayerName\t10\t12\t45\t9\tRückteil\trueckteil\n1410057\tSpielernummer\tplayerNumber\t25\t25\t50\t30\tRückteil\trueckteil\n1410058\tRücken-Sponsor\tlogo\t15\t65\t70\t15\tRückteil\trueckteil\n1410051\tVereinswappen\tclubLogo\t5\t5\t15\t15\tVorderteil\tvorderteil\n1410052\tBrustnummer\tplayerNumber\t75\t5\t15\t15\tVorderteil\tvorderteil\n1410053\tBrust-Sponsor\tlogo\t25\t25\t50\t20\tVorderteil\tvorderteil\n1410054\tBauch-Sponsor\tlogo\t20\t60\t60\t15\tVorderteil\tvorderteil\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

@@ -2328,3 +2328,11 @@
 - [ ] Falsche Mannschafts-Zuordnung "hockey damen" statt Handball: Daten-Problem in departments-Tabelle (Produkt wird der einzigen vorhandenen Abteilung zugewiesen)
 - [ ] Positionsumrechnung bei KI-Vorlage: Zonen-Positionen werden von Gesamtbild auf Einzelteil umgerechnet (Code implementiert, aber bestehende Daten nicht rückwirkend korrigiert)
 
+
+## Tiefgreifende Fehlerkorrektur (2026-05-09 - Runde 2)
+
+- [ ] Zonen-Overlays (gestrichelte Rechtecke) müssen ÜBER dem KI-Design sichtbar sein (z-index Problem)
+- [ ] Mannschafts-Zuordnung "hockey damen" korrigieren - beim Vorlage-Speichern muss die korrekte Sportart/Abteilung zugewiesen werden
+- [ ] Ärmel sollen die Grundfarbe des KI-Designs übernehmen (nicht weiß bleiben)
+- [ ] Positionierung der Zonen validieren und ggf. korrigieren
+- [ ] Konfigurator dient zum Befüllen mit Namen/Nummern - Zonen müssen klar sichtbar und korrekt positioniert sein

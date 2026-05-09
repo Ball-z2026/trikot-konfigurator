@@ -1159,7 +1159,7 @@ export default function CustomerConfigurator() {
 
    // Always process images to make jersey shape visible; use selected color or default light gray
   // DEFAULT_JERSEY_COLOR is defined outside the component
-  const activeColor = isSublimation && activePartId && partColors[activePartId]
+  const activeColor = activePartId && partColors[activePartId]
     ? partColors[activePartId]
     : isDtf && dtfBaseColor && !dtfBrandImage
     ? dtfBaseColor
@@ -1173,7 +1173,9 @@ export default function CustomerConfigurator() {
 
   // Part colors for CSS overlay (no Canvas processing needed)
   const getPartColor = useCallback((partId: number) => {
-    if (isSublimation && partColors[partId]) return partColors[partId];
+    // Wenn eine explizite Part-Farbe gesetzt ist (z.B. aus defaultColor), immer verwenden
+    if (partColors[partId]) return partColors[partId];
+    if (isSublimation) return DEFAULT_JERSEY_COLOR;
     if (isDtf && dtfBaseColor && !dtfBrandImage) return dtfBaseColor;
     return DEFAULT_JERSEY_COLOR;
   }, [isSublimation, isDtf, dtfBaseColor, dtfBrandImage, partColors]);

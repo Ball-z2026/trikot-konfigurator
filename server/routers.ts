@@ -25,6 +25,7 @@ import {
   createZone,
   updateZone,
   deleteZone,
+  deleteZonesByProduct,
   bulkUpdateZones,
   createOrganization,
   getOrganizationById,
@@ -1095,6 +1096,9 @@ export const appRouter = router({
         // - Front-Zonen: x ist relativ zur linken Hälfte (0-50%) → muss auf 0-100% skaliert werden
         // - Back-Zonen: x ist relativ zur rechten Hälfte (50-100%) → muss auf 0-100% skaliert werden
         if (productId && zones && zones.length > 0) {
+          // WICHTIG: Bestehende Zonen des Produkts löschen, bevor neue erstellt werden
+          // Verhindert Duplikate bei mehrfachem Speichern von Vorlagen
+          await deleteZonesByProduct(productId);
           const parts = await listPartsByProduct(productId);
           for (const zone of zones) {
             // Part anhand der Seite zuordnen: front → vorderteil/front, back → rueckteil/back

@@ -9459,3 +9459,17 @@
 [2026-05-09T11:40:07.009Z] 7:40:06 AM [tsx] change in ./server/routers.ts Restarting...
 [2026-05-09T11:40:10.092Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-09T11:40:11.038Z] Server running on http://localhost:3000/
+[2026-05-09T13:29:09.939Z] Dev server process group stopped
+[2026-05-09T13:29:12.101Z] Dev server process group force killed
+[2026-05-09T13:29:13.149Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-09T13:29:23.268Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-09T13:29:25.025Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T13:29:25.922Z] Server running on http://localhost:3000/
+[2026-05-09T14:02:09.287Z] 10:02:09 AM [tsx] change in ./server/db.ts Restarting...
+[2026-05-09T14:02:12.543Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T14:02:13.817Z] Server running on http://localhost:3000/
+[2026-05-09T14:02:23.740Z] 10:02:23 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-09T14:02:26.219Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T14:02:27.041Z] Server running on http://localhost:3000/
+[2026-05-09T14:04:05.371Z] 10:04:05 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T14:04:28.540Z] 10:04:28 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
