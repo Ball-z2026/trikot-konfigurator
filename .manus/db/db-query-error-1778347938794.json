@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO saved_designs (name, team_id, product_id, zones_config, colors_config, category, created_at, updated_at)\nVALUES (\n  'HSV Test Design',\n  120001,\n  1380005,\n  '{}',\n  '{\"partColors\":{},\"dtfBaseColor\":null}',\n  'heim',\n  NOW(),\n  NOW()\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute INSERT INTO saved_designs (name, team_id, product_id, zones_config, colors_config, category, created_at, updated_at)\nVALUES (\n  'HSV Test Design',\n  120001,\n  1380005,\n  '{}',\n  '{\"partColors\":{},\"dtfBaseColor\":null}',\n  'heim',\n  NOW(),\n  NOW()\n);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'team_id' in 'field list'"
+  ]
+}

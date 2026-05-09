@@ -9494,3 +9494,22 @@
 [2026-05-09T15:13:40.403Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
 [2026-05-09T15:13:40.408Z] [Auth] Missing session cookie
 [2026-05-09T15:13:40.412Z] [Auth] Missing session cookie
+[2026-05-09T17:15:05.548Z] Dev server process group stopped
+[2026-05-09T17:15:07.549Z] Dev server process group force killed
+[2026-05-09T17:15:08.573Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-09T17:15:23.952Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-09T17:15:25.689Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T17:15:27.343Z] Server running on http://localhost:3000/
+[2026-05-09T17:17:42.525Z] [AI-Design] Sending 0 reference images:
+[2026-05-09T17:17:42.527Z] [AI-Design] Prompt length: 3514 chars
+[2026-05-09T17:17:42.527Z] [AI-Design] Prompt (first 500): Professional product photography of a handball jersey (tight-fit, short sleeves) for Handball, flat lay on white background. Design style: Mutig / Auffällig. Primary color: #003399, secondary color: #ffffff, accent color: #ef4444. The design must comply with Handball federation rules: Front number: min 10cm height, Back number: min 20cm height. VEREINSWAPPEN: Ein Vereinswappen wird auf der LINKEN BRUST des Trägers (Herzseite = im Bild RECHTS bei Frontalansicht) platziert. LASSE DORT PLATZ FREI (
+[2026-05-09T17:40:06.350Z] 1:40:06 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T17:40:09.452Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T17:40:10.608Z] Server running on http://localhost:3000/
+[2026-05-09T17:40:16.782Z] Dev server process group stopped
+[2026-05-09T17:40:16.925Z] Dev server exited with code -15
+[2026-05-09T17:40:19.835Z] Starting dev server with command: NODE_ENV=development tsx watch server/_core/index.ts
+[2026-05-09T17:40:21.587Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T17:40:22.445Z] Server running on http://localhost:3000/
+[2026-05-09T17:45:12.595Z] [StorageProxy] file fetch error: 403
+[2026-05-09T17:45:39.979Z] [StorageProxy] file fetch error: 403

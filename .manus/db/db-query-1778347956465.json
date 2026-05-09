@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO saved_designs (name, teamId, productId, userId, zonesConfig, colorsConfig, category, orgId)\nVALUES (\n  'HSV Test Design',\n  120001,\n  1380005,\n  1,\n  '{\"front_chest_number\":{\"type\":\"number\",\"content\":\"1\"},\"back_number\":{\"type\":\"number\",\"content\":\"1\"},\"back_player_name\":{\"type\":\"text\",\"content\":\"MÜLLER\"},\"back_club_name\":{\"type\":\"text\",\"content\":\"HSV\"}}',\n  '{\"partColors\":{},\"dtfBaseColor\":null,\"textColor\":\"#1e3a5f\"}',\n  'heimtrikot',\n  390001\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute INSERT INTO saved_designs (name, teamId, productId, userId, zonesConfig, colorsConfig, category, orgId)\nVALUES (\n  'HSV Test Design',\n  120001,\n  1380005,\n  1,\n  '{\"front_chest_number\":{\"type\":\"number\",\"content\":\"1\"},\"back_number\":{\"type\":\"number\",\"content\":\"1\"},\"back_player_name\":{\"type\":\"text\",\"content\":\"MÜLLER\"},\"back_club_name\":{\"type\":\"text\",\"content\":\"HSV\"}}',\n  '{\"partColors\":{},\"dtfBaseColor\":null,\"textColor\":\"#1e3a5f\"}',\n  'heimtrikot',\n  390001\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 412
+}

@@ -1,0 +1,60 @@
+{
+  "query": "SELECT * FROM players WHERE teamId = 120001 LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT * FROM players WHERE teamId = 120001 LIMIT 5;",
+  "rows": [
+    {
+      "id": "90001",
+      "teamId": "120001",
+      "name": "Müller",
+      "number": "1",
+      "position": "Torwart",
+      "createdAt": "2026-05-07 09:24:37",
+      "updatedAt": "2026-05-07 09:24:37",
+      "size": "L"
+    },
+    {
+      "id": "90002",
+      "teamId": "120001",
+      "name": "Schmidt",
+      "number": "2",
+      "position": "Verteidiger",
+      "createdAt": "2026-05-07 09:24:37",
+      "updatedAt": "2026-05-07 09:24:37",
+      "size": "M"
+    },
+    {
+      "id": "90003",
+      "teamId": "120001",
+      "name": "Weber",
+      "number": "3",
+      "position": "Verteidiger",
+      "createdAt": "2026-05-07 09:24:37",
+      "updatedAt": "2026-05-07 09:24:37",
+      "size": "L"
+    },
+    {
+      "id": "90004",
+      "teamId": "120001",
+      "name": "Fischer",
+      "number": "4",
+      "position": "Verteidiger",
+      "createdAt": "2026-05-07 09:24:37",
+      "updatedAt": "2026-05-07 09:24:37",
+      "size": "XL"
+    },
+    {
+      "id": "90005",
+      "teamId": "120001",
+      "name": "Wagner",
+      "number": "5",
+      "position": "Verteidiger",
+      "createdAt": "2026-05-07 09:24:37",
+      "updatedAt": "2026-05-07 09:24:37",
+      "size": "M"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tteamId\tname\tnumber\tposition\tcreatedAt\tupdatedAt\tsize\n90001\t120001\tMüller\t1\tTorwart\t2026-05-07 09:24:37\t2026-05-07 09:24:37\tL\n90002\t120001\tSchmidt\t2\tVerteidiger\t2026-05-07 09:24:37\t2026-05-07 09:24:37\tM\n90003\t120001\tWeber\t3\tVerteidiger\t2026-05-07 09:24:37\t2026-05-07 09:24:37\tL\n90004\t120001\tFischer\t4\tVerteidiger\t2026-05-07 09:24:37\t2026-05-07 09:24:37\tXL\n90005\t120001\tWagner\t5\tVerteidiger\t2026-05-07 09:24:37\t2026-05-07 09:24:37\tM\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

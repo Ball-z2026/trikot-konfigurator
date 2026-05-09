@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, name, orgId FROM teams WHERE orgId = '390001' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name, orgId FROM teams WHERE orgId = '390001' LIMIT 5;",
+  "rows": [
+    {
+      "id": "120001",
+      "name": "Herren 1. Mannschaft",
+      "orgId": "390001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torgId\n120001\tHerren 1. Mannschaft\t390001\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

@@ -204,9 +204,13 @@ export async function generatePrintSheet(
     }
   }
 
-  // PDF-Seitengröße: Part-Maße + 2× Beschnitt
-  const pageWidthPt = partWidthCm * CM_TO_PT + 2 * bleedPt;
-  const pageHeightPt = partHeightCm * CM_TO_PT + 2 * bleedPt;
+  // PDF-Seitengröße: Part-Maße + 2x Beschnitt + Seitenleisten
+  const sidebarWidthCm = 6; // 6cm Seitenleiste links und rechts
+  const sidebarWidthPt = sidebarWidthCm * CM_TO_PT;
+  const headerHeightPt = 40; // 40pt Header oben fuer Titel
+  const footerHeightPt = 20; // 20pt Footer unten
+  const pageWidthPt = partWidthCm * CM_TO_PT + 2 * bleedPt + 2 * sidebarWidthPt;
+  const pageHeightPt = partHeightCm * CM_TO_PT + 2 * bleedPt + headerHeightPt + footerHeightPt;
 
   // PDF-Dokument erstellen
   const doc = new PDFDocument({
@@ -225,33 +229,189 @@ export async function generatePrintSheet(
   const chunks: Uint8Array[] = [];
   doc.on("data", (chunk: Uint8Array) => chunks.push(chunk));
 
-  // ── Beschnittmarken zeichnen ──
-  drawCropMarks(doc, pageWidthPt, pageHeightPt, bleedPt);
+  // ── Beschnittmarken werden nach safeX/safeY gezeichnet ──
 
-  // ── Sicherer Bereich (innerhalb Beschnitt) ──
-  const safeX = bleedPt;
-  const safeY = bleedPt;
+  // ── Sicherer Bereich (innerhalb Beschnitt) – zentriert zwischen Seitenleisten ──
+  const safeX = sidebarWidthPt + bleedPt;
+  const safeY = headerHeightPt + bleedPt;
   const safeWidth = partWidthCm * CM_TO_PT;
   const safeHeight = partHeightCm * CM_TO_PT;
 
-  // ── Info-Zeile außerhalb des Druckbereichs ──
-  doc.fontSize(6);
+  // ── Beschnittmarken zeichnen (um den Druckbereich herum) ──
+  drawCropMarksOffset(doc, safeX - bleedPt, safeY - bleedPt, safeWidth + 2 * bleedPt, safeHeight + 2 * bleedPt, bleedPt);
+
+  // ── Header-Bereich (oben) ──
+  doc.fontSize(10);
+  doc.font("Helvetica-Bold");
   doc.fillColor("black");
   doc.text(
-    `${config.clubName} | ${config.player.playerName} #${config.player.playerNumber} | ${part.partLabel} | Größe ${config.player.size} | ${partWidthCm}×${partHeightCm} cm | Beschnitt ${bleedMm}mm`,
-    bleedPt,
-    2,
-    { width: safeWidth, align: "center" }
+    `DRUCKBOGEN – ${config.clubName}`,
+    sidebarWidthPt,
+    8,
+    { width: safeWidth + 2 * bleedPt, align: "center" }
   );
-  // ── Hintergrundbild rendern (KI-Muster) ──
+  doc.fontSize(7);
+  doc.font("Helvetica");
+  doc.text(
+    `${config.player.playerName} #${config.player.playerNumber} | ${part.partLabel} | Größe ${config.player.size} | ${partWidthCm}×${partHeightCm} cm | Beschnitt ${bleedMm}mm`,
+    sidebarWidthPt,
+    22,
+    { width: safeWidth + 2 * bleedPt, align: "center" }
+  );
+  // ── Trennlinie unter Header ──
+  doc.moveTo(sidebarWidthPt, headerHeightPt - 2)
+     .lineTo(pageWidthPt - sidebarWidthPt, headerHeightPt - 2)
+     .lineWidth(0.5)
+     .stroke();
+
+  // ── Druckbereich-Rahmen (gestrichelt) ──
+  doc.save();
+  doc.dash(3, { space: 3 });
+  doc.lineWidth(0.3);
+  doc.strokeColor("#999999");
+  doc.rect(safeX, safeY, safeWidth, safeHeight).stroke();
+  doc.undash();
+  doc.restore();
+
+  // ── LINKE SEITENLEISTE: Spieler- & Produktionsdaten ──
+  const leftX = 8;
+  let leftY = headerHeightPt + 10;
+  const leftWidth = sidebarWidthPt - 16;
+  doc.fontSize(8);
+  doc.font("Helvetica-Bold");
+  doc.fillColor("black");
+  doc.text("SPIELERDATEN", leftX, leftY, { width: leftWidth });
+  leftY += 14;
+  doc.font("Helvetica");
+  doc.fontSize(6.5);
+  doc.text(`Name: ${config.player.playerName}`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Nummer: ${config.player.playerNumber}`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Größe: ${config.player.size}`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Sportart: ${config.sport}`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Geschlecht: ${config.gender}`, leftX, leftY, { width: leftWidth });
+  leftY += 18;
+
+  doc.font("Helvetica-Bold");
+  doc.fontSize(8);
+  doc.text("ABMESSUNGEN", leftX, leftY, { width: leftWidth });
+  leftY += 14;
+  doc.font("Helvetica");
+  doc.fontSize(6.5);
+  doc.text(`Teil: ${part.partLabel}`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Breite: ${partWidthCm} cm`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Höhe: ${partHeightCm} cm`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Beschnitt: ${bleedMm} mm`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Auflösung: 300 DPI`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Farbraum: CMYK`, leftX, leftY, { width: leftWidth });
+  leftY += 18;
+
+  doc.font("Helvetica-Bold");
+  doc.fontSize(8);
+  doc.text("PRODUKTION", leftX, leftY, { width: leftWidth });
+  leftY += 14;
+  doc.font("Helvetica");
+  doc.fontSize(6.5);
+  doc.text(`Verfahren: Sublimation`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Verein: ${config.clubName}`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  const now = new Date();
+  doc.text(`Datum: ${now.toLocaleDateString("de-DE")}`, leftX, leftY, { width: leftWidth });
+  leftY += 10;
+  doc.text(`Seite: ${partIndex + 1} von ${config.parts.length}`, leftX, leftY, { width: leftWidth });
+
+  // ── RECHTE SEITENLEISTE: Zonen-Details & Farben ──
+  const rightX = pageWidthPt - sidebarWidthPt + 8;
+  let rightY = headerHeightPt + 10;
+  const rightWidth = sidebarWidthPt - 16;
+  doc.font("Helvetica-Bold");
+  doc.fontSize(8);
+  doc.fillColor("black");
+  doc.text("ELEMENTE", rightX, rightY, { width: rightWidth });
+  rightY += 14;
+  doc.font("Helvetica");
+  doc.fontSize(6.5);
+  for (const zone of part.zones) {
+    if (rightY > pageHeightPt - 60) break;
+    const label = zone.purpose === "playerNumber" ? "Nummer"
+      : zone.purpose === "playerName" ? "Name"
+      : zone.purpose === "clubName" ? "Verein"
+      : zone.purpose === "logo" ? "Logo/Wappen"
+      : zone.purpose === "sponsor" ? "Sponsor"
+      : zone.purpose;
+    const zoneHCm = ((zone.heightPercent / 100) * partHeightCm).toFixed(1);
+    const zoneWCm = ((zone.widthPercent / 100) * partWidthCm).toFixed(1);
+    doc.font("Helvetica-Bold");
+    doc.text(`${label}`, rightX, rightY, { width: rightWidth });
+    rightY += 9;
+    doc.font("Helvetica");
+    doc.text(`  Inhalt: ${zone.content || "(Bild)"}`, rightX, rightY, { width: rightWidth });
+    rightY += 9;
+    doc.text(`  Größe: ${zoneWCm} x ${zoneHCm} cm`, rightX, rightY, { width: rightWidth });
+    rightY += 9;
+    if (zone.fontColor) {
+      const cmyk = hexToCmyk(zone.fontColor);
+      doc.text(`  Farbe: ${zone.fontColor}`, rightX, rightY, { width: rightWidth });
+      rightY += 9;
+      doc.text(`  CMYK: C${cmyk[0]} M${cmyk[1]} Y${cmyk[2]} K${cmyk[3]}`, rightX, rightY, { width: rightWidth });
+      rightY += 9;
+    }
+    if (zone.fontFamily || zone.fontStyle) {
+      doc.text(`  Schrift: ${zone.fontFamily || zone.fontStyle || "Standard"}`, rightX, rightY, { width: rightWidth });
+      rightY += 9;
+    }
+    rightY += 5;
+  }
+
+  // Hintergrundfarbe-Info
+  if (config.bgColor) {
+    rightY += 5;
+    doc.font("Helvetica-Bold");
+    doc.fontSize(8);
+    doc.text("HINTERGRUND", rightX, rightY, { width: rightWidth });
+    rightY += 14;
+    doc.font("Helvetica");
+    doc.fontSize(6.5);
+    doc.text(`Farbe: ${config.bgColor}`, rightX, rightY, { width: rightWidth });
+    rightY += 9;
+    const bgCmyk = hexToCmyk(config.bgColor);
+    doc.text(`CMYK: C${bgCmyk[0]} M${bgCmyk[1]} Y${bgCmyk[2]} K${bgCmyk[3]}`, rightX, rightY, { width: rightWidth });
+    rightY += 9;
+  }
+
+  // ── Vertikale Trennlinien ──
+  doc.lineWidth(0.5);
+  doc.strokeColor("black");
+  doc.moveTo(sidebarWidthPt, headerHeightPt).lineTo(sidebarWidthPt, pageHeightPt - footerHeightPt).stroke();
+  doc.moveTo(pageWidthPt - sidebarWidthPt, headerHeightPt).lineTo(pageWidthPt - sidebarWidthPt, pageHeightPt - footerHeightPt).stroke();
+
+  // ── Footer ──
+  doc.fontSize(5);
+  doc.fillColor("#666666");
+  doc.text(
+    "Textil-Konfigurator – Druckbogen – Alle Maße in cm – CMYK-Farbraum – 300 DPI – Vektorgrafiken",
+    sidebarWidthPt,
+    pageHeightPt - footerHeightPt + 6,
+    { width: safeWidth + 2 * bleedPt, align: "center" }
+  );
+  // ── Hintergrundbild rendern (KI-Muster) – nur im Druckbereich ──
   const bgImageUrl = part.backgroundImageUrl || config.backgroundImageUrl;
   if (bgImageUrl) {
     try {
       const bgImageBuffer = await fetchImageBuffer(bgImageUrl);
       if (bgImageBuffer) {
-        doc.image(bgImageBuffer, 0, 0, {
-          width: pageWidthPt,
-          height: pageHeightPt,
+        doc.image(bgImageBuffer, safeX, safeY, {
+          width: safeWidth,
+          height: safeHeight,
         });
       }
     } catch (err) {
@@ -335,6 +495,43 @@ export async function generateAllPrintSheets(
 // ═══════════════════════════════════════════════════════════════════
 // Hilfsfunktionen
 // ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Zeichnet Beschnittmarken (Crop Marks) an den Ecken eines Bereichs (mit Offset).
+ */
+function drawCropMarksOffset(
+  doc: PDFKit.PDFDocument,
+  areaX: number,
+  areaY: number,
+  areaW: number,
+  areaH: number,
+  bleed: number
+) {
+  const markLen = 10;
+  const offset = 2;
+  doc.lineWidth(0.25);
+  doc.strokeColor("black");
+  doc.moveTo(areaX + bleed - offset, areaY).lineTo(areaX + bleed - offset, areaY + markLen).stroke();
+  doc.moveTo(areaX, areaY + bleed - offset).lineTo(areaX + markLen, areaY + bleed - offset).stroke();
+  doc.moveTo(areaX + areaW - bleed + offset, areaY).lineTo(areaX + areaW - bleed + offset, areaY + markLen).stroke();
+  doc.moveTo(areaX + areaW, areaY + bleed - offset).lineTo(areaX + areaW - markLen, areaY + bleed - offset).stroke();
+  doc.moveTo(areaX + bleed - offset, areaY + areaH).lineTo(areaX + bleed - offset, areaY + areaH - markLen).stroke();
+  doc.moveTo(areaX, areaY + areaH - bleed + offset).lineTo(areaX + markLen, areaY + areaH - bleed + offset).stroke();
+  doc.moveTo(areaX + areaW - bleed + offset, areaY + areaH).lineTo(areaX + areaW - bleed + offset, areaY + areaH - markLen).stroke();
+  doc.moveTo(areaX + areaW, areaY + areaH - bleed + offset).lineTo(areaX + areaW - markLen, areaY + areaH - bleed + offset).stroke();
+  const crossSize = 5;
+  const positions = [
+    { x: areaX + areaW / 2, y: areaY + bleed / 2 },
+    { x: areaX + areaW / 2, y: areaY + areaH - bleed / 2 },
+    { x: areaX + bleed / 2, y: areaY + areaH / 2 },
+    { x: areaX + areaW - bleed / 2, y: areaY + areaH / 2 },
+  ];
+  for (const pos of positions) {
+    doc.moveTo(pos.x - crossSize, pos.y).lineTo(pos.x + crossSize, pos.y).stroke();
+    doc.moveTo(pos.x, pos.y - crossSize).lineTo(pos.x, pos.y + crossSize).stroke();
+    doc.circle(pos.x, pos.y, 3).stroke();
+  }
+}
 
 /**
  * Zeichnet Beschnittmarken (Crop Marks) an den Ecken.
