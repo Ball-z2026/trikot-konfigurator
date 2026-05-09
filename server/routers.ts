@@ -4640,6 +4640,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
             realHeightCm: heightCm,
             zones: filledZones,
             backgroundImageUrl: designImageUrl || undefined,
+            partImageUrl: dbPart.imageUrl || undefined,
           });
         }
 

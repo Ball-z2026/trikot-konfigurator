@@ -23,6 +23,7 @@ import {
 } from "../shared/contrastUtils";
 import PDFDocument from "pdfkit";
 import { Buffer } from "node:buffer";
+import sharp from "sharp";
 import {
   getSizeDimensions,
   type SizeCode,
@@ -88,6 +89,8 @@ export interface PrintSheetConfig {
   zones: PrintZone[];
   /** Hintergrundbild-URL für dieses Part (KI-generiertes Muster) */
   backgroundImageUrl?: string;
+  /** Schnittmuster-Bild-URL (Form des Trikotteils mit Alpha-Kanal) */
+  partImageUrl?: string;
 }
 
 export interface PlayerPrintData {
@@ -263,9 +266,65 @@ export async function generatePrintSheet(
      .lineTo(pageWidthPt - sidebarWidthPt, headerHeightPt - 2)
      .lineWidth(0.5)
      .stroke();
-  // ── Hintergrundfarbe als Fläche im Druckbereich rendern ──
-  console.log("[PrintSheet] bgColor:", config.bgColor, "zones:", part.zones.length, "sidebarWidthPt:", sidebarWidthPt, "pageWidthPt:", pageWidthPt);
-  if (config.bgColor) {
+  // ── Hintergrund: Schnittmuster-Bild mit Farbe als Maske rendern ──
+  console.log("[PrintSheet] bgColor:", config.bgColor, "partImageUrl:", part.partImageUrl, "zones:", part.zones.length);
+  if (part.partImageUrl && config.bgColor) {
+    // Schnittmuster-Bild laden (hat Alpha-Kanal = Form des Trikotteils)
+    try {
+      const patternBuffer = await fetchImageBuffer(part.partImageUrl);
+      if (patternBuffer) {
+        const meta = await sharp(patternBuffer).metadata();
+        const imgW = meta.width!;
+        const imgH = meta.height!;
+        // Farbe als RGB
+        const hex = config.bgColor.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        // Alpha-Kanal des Schnittmusters extrahieren
+        const alphaChannel = await sharp(patternBuffer).extractChannel(3).raw().toBuffer();
+        // Farbfläche in RGB erstellen
+        const colorRaw = await sharp({
+          create: { width: imgW, height: imgH, channels: 3, background: { r, g, b } }
+        }).raw().toBuffer();
+        // RGBA zusammenbauen: Farbe + Alpha-Maske des Schnittmusters
+        const rgbaBuffer = Buffer.alloc(imgW * imgH * 4);
+        for (let i = 0; i < imgW * imgH; i++) {
+          rgbaBuffer[i * 4] = colorRaw[i * 3];
+          rgbaBuffer[i * 4 + 1] = colorRaw[i * 3 + 1];
+          rgbaBuffer[i * 4 + 2] = colorRaw[i * 3 + 2];
+          rgbaBuffer[i * 4 + 3] = alphaChannel[i];
+        }
+        // PNG erstellen für PDFKit
+        const maskedPng = await sharp(rgbaBuffer, { raw: { width: imgW, height: imgH, channels: 4 } })
+          .png()
+          .toBuffer();
+        // Bild im Druckbereich platzieren (füllt den gesamten safeArea)
+        doc.image(maskedPng, safeX, safeY, {
+          width: safeWidth,
+          height: safeHeight,
+        });
+      } else {
+        // Fallback: einfache Farbfläche wenn Schnittmuster nicht geladen werden kann
+        const bgCmykArr = hexToCmyk(config.bgColor);
+        doc.save();
+        doc.rect(safeX, safeY, safeWidth, safeHeight)
+          .fill([bgCmykArr[0], bgCmykArr[1], bgCmykArr[2], bgCmykArr[3]] as any);
+        doc.restore();
+      }
+    } catch (err) {
+      console.warn("[PrintSheet] Schnittmuster konnte nicht geladen werden:", err);
+      // Fallback: einfache Farbfläche
+      if (config.bgColor) {
+        const bgCmykArr = hexToCmyk(config.bgColor);
+        doc.save();
+        doc.rect(safeX, safeY, safeWidth, safeHeight)
+          .fill([bgCmykArr[0], bgCmykArr[1], bgCmykArr[2], bgCmykArr[3]] as any);
+        doc.restore();
+      }
+    }
+  } else if (config.bgColor) {
+    // Kein Schnittmuster vorhanden: Fallback auf einfache Farbfläche
     const bgCmykArr = hexToCmyk(config.bgColor);
     doc.save();
     doc.rect(safeX, safeY, safeWidth, safeHeight)

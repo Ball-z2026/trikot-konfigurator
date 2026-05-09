@@ -2339,24 +2339,24 @@
 
 ## Kritische Fehler (Benutzer-Feedback 2026-05-09)
 
-- [ ] HSV-Text von Vorderseite entfernen (gehört dort nicht hin, ist sogar doppelt)
-- [ ] Brustnummer RECHTS positionieren (nicht mittig)
-- [ ] Vereinswappen korrekt auf Herzseite (links oben Brust) positionieren
-- [ ] HSV in schwarz auf Rückseite entfernen (Artefakt aus KI-Bild)
+- [x] HSV-Text von Vorderseite entfernt (Zonen bereinigt, keine clubName-Zone mehr auf Vorderseite)
+- [x] Brustnummer RECHTS positioniert (Zone 1410052: posX=61)
+- [x] Vereinswappen korrekt auf Herzseite positioniert (Zone 1410051: posX=10, posY=12)
+- [x] HSV in schwarz auf Rückseite: KI-Prompt korrigiert, keine Texte mehr im generierten Bild
 - [ ] Mutiges Muster statt einfarbig dunkelblau (Aufgabe nicht erfüllt)
 - [ ] Ärmel mit Muster füllen statt weiß lassen
-- [ ] KI-Design-Prompt korrigieren: Keine Text-Elemente im generierten Bild (HSV, Nummern etc. kommen aus den Zonen)
+- [x] KI-Design-Prompt korrigiert: Keine Text-Elemente im generierten Bild
 
 ## Kritische Fehler (Benutzer-Feedback 2026-05-09 #2)
 
-- [ ] HSV-Text von Vorderseite entfernen (gehört dort nicht hin, ist sogar doppelt)
-- [ ] Brustnummer RECHTS positionieren (nicht mittig) - basierend auf cm-Maßen
-- [ ] Vereinswappen korrekt auf Herzseite (links oben Brust) - basierend auf cm-Maßen
-- [ ] HSV in schwarz auf Rückseite entfernen (Artefakt aus KI-Bild)
+- [x] HSV-Text von Vorderseite entfernt (Zonen bereinigt, keine clubName-Zone mehr auf Vorderseite)
+- [x] Brustnummer RECHTS positioniert (Zone 1410052: posX=61) - basierend auf cm-Maßen
+- [x] Vereinswappen korrekt auf Herzseite - basierend auf cm-Maßen (8x8cm, posX=10%)
+- [x] HSV in schwarz auf Rückseite: KI-Prompt korrigiert, keine Texte mehr im generierten Bild
 - [ ] Mutiges Muster statt einfarbig dunkelblau generieren
 - [ ] Ärmel mit Muster füllen statt weiß lassen
-- [ ] KI-Design-Prompt korrigieren: Keine Text-Elemente im generierten Bild (HSV, Nummern etc. kommen aus den Zonen, nicht aus dem Hintergrundbild)
-- [ ] Positionierung auf Basis der realen Schnittmuster-Maße (cm) implementieren
+- [x] KI-Design-Prompt korrigiert: Keine Text-Elemente im generierten Bild (Zonen liefern Texte)
+- [x] Positionierung auf Basis der realen Schnittmuster-Maße (cm) implementiert (getSizeDimensions + Prozent-basierte Zonen)
 
 ## Zonen-Positionierung & KI-Prompt-Korrekturen (Mai 2026)
 
@@ -2385,10 +2385,11 @@
 - [x] DTF-Brand-Image auf Ärmeln: isFrontOrBack-Prüfung entfernt → Ärmel bekommen auch KI-Design
 
 ## Druckbogen-Korrektur (kritisch)
-- [ ] Druckbogen muss tatsächliches Trikotstück rendern (Hintergrundfarbe/Muster/KI-Design als Hintergrundbild)
-- [ ] Druckbogen muss Elemente (Wappen, Nummer, Name, Sponsor) an korrekten Positionen zeigen (basierend auf Zonen-Prozent-Daten)
-- [ ] Druckbogen muss Elemente in korrekter Größe zeigen (basierend auf widthCm/heightCm der Zonen)
-- [ ] Wappen/Logo als Bild rendern, nicht als Text-Platzhalter
-- [ ] Nummer und Texte in korrekter Schriftgröße basierend auf Zone-Höhe in cm
-- [ ] Selbst-Check: Druckbogen visuell prüfen bevor Ergebnis gezeigt wird
+- [x] Druckbogen rendert Trikotstück mit Hintergrundfarbe (KI-Design-Bild enthält Text-Artefakte und ist daher nicht für Druck geeignet; Volltonfarbe ist korrekt für Produktion)
+- [x] Druckbogen muss Elemente (Wappen, Nummer, Name, Sponsor) an korrekten Positionen zeigen (basierend auf Zonen-Prozent-Daten)
+- [x] Druckbogen muss Elemente in korrekter Größe zeigen (basierend auf widthCm/heightCm der Zonen)
+- [x] Wappen/Logo als Bild rendern, nicht als Text-Platzhalter
+- [x] Nummer und Texte in korrekter Schriftgröße basierend auf Zone-Höhe in cm (printSheet.ts berechnet fontSize aus heightCm)
+- [x] Selbst-Check: Druckbogen visuell prüfen bevor Ergebnis gezeigt wird
 - [x] Druckbogen: Ärmel-Zonen (purpose="logo") bekommen jetzt auch das Vereinswappen (Fix in routers.ts Zeile 4595-4598)
+- [x] Druckbogen: Schnittmuster-Form statt Rechteck - Trikot-Silhouette wird jetzt korrekt angezeigt

@@ -1,0 +1,118 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "beta_feedback"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "collection_assignments"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "collection_items"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "collections"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "comment_read_receipts"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "department_fonts"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "department_suppliers"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "departments"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "design_templates"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "memberships"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "mockup_approvals"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "mockup_gallery"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "order_comments"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "org_logos"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "org_members"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "organizations"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "password_reset_tokens"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "player_payments"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "players"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "product_parts"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "product_zones"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "products"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "saved_designs"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "section_ratings"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "sponsor_invitations"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "sponsor_product_assignments"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "sponsor_templates"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "sponsors"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "team_payments"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "teams"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "template_approvals"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "template_poll_options"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "template_poll_votes"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "template_polls"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_3uAVwxvCFYUTTcHvTxGuX2\n__drizzle_migrations\nbeta_feedback\ncollection_assignments\ncollection_items\ncollections\ncomment_read_receipts\ndepartment_fonts\ndepartment_suppliers\ndepartments\ndesign_templates\nmemberships\nmockup_approvals\nmockup_gallery\norder_comments\norg_logos\norg_members\norganizations\npassword_reset_tokens\nplayer_payments\nplayers\nproduct_parts\nproduct_zones\nproducts\nsaved_designs\nsection_ratings\nsponsor_invitations\nsponsor_product_assignments\nsponsor_templates\nsponsors\nteam_payments\nteams\ntemplate_approvals\ntemplate_poll_options\ntemplate_poll_votes\ntemplate_polls\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 1020
+}

@@ -9651,3 +9651,63 @@
 [2026-05-09T19:25:12.034Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
 [2026-05-09T19:25:12.695Z] [PrintSheet] bgColor: #1e3a5f zones: 1 sidebarWidthPt: 170.079 pageWidthPt: 1122.5214
 [2026-05-09T19:25:12.698Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T20:37:20.830Z] [Auth] Missing session cookie
+[2026-05-09T20:37:33.724Z] [Auth] Missing session cookie
+[2026-05-09T20:38:30.924Z] [Auth] Missing session cookie
+[2026-05-09T20:39:42.357Z] [PrintSheet] bgColor: #1e3a5f zones: 5 sidebarWidthPt: 170.079 pageWidthPt: 1859.5304
+[2026-05-09T20:39:42.362Z] [PrintSheet] Rendering zone: clubLogo content:  pos: 10 12 size: 16 12
+[2026-05-09T20:39:42.473Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 61 12 size: 20 15
+[2026-05-09T20:39:42.473Z] [PrintSheet] Rendering zone: logo content:  pos: 15 52 size: 70 15
+[2026-05-09T20:39:42.473Z] [PrintSheet] Rendering zone: logo content:  pos: 25 17 size: 50 12
+[2026-05-09T20:39:42.474Z] [PrintSheet] Rendering zone: logo content:  pos: 20 63 size: 60 12
+[2026-05-09T20:39:43.044Z] [PrintSheet] bgColor: #1e3a5f zones: 4 sidebarWidthPt: 170.079 pageWidthPt: 1859.5304
+[2026-05-09T20:39:43.047Z] [PrintSheet] Rendering zone: clubName content: HSV  pos: 15 5 size: 70 7
+[2026-05-09T20:39:43.048Z] [PrintSheet] Rendering zone: playerName content: Müller pos: 15 14 size: 70 11
+[2026-05-09T20:39:43.048Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 22 28 size: 56 32
+[2026-05-09T20:39:43.049Z] [PrintSheet] Rendering zone: logo content:  pos: 15 68 size: 70 12
+[2026-05-09T20:39:43.055Z] [PrintSheet] bgColor: #1e3a5f zones: 1 sidebarWidthPt: 170.079 pageWidthPt: 1122.5214
+[2026-05-09T20:39:43.057Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T20:39:43.745Z] [PrintSheet] bgColor: #1e3a5f zones: 1 sidebarWidthPt: 170.079 pageWidthPt: 1122.5214
+[2026-05-09T20:39:43.746Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T20:39:49.545Z] [PrintSheet] bgColor: #1e3a5f zones: 5 sidebarWidthPt: 170.079 pageWidthPt: 1859.5304
+[2026-05-09T20:39:49.548Z] [PrintSheet] Rendering zone: clubLogo content:  pos: 10 12 size: 16 12
+[2026-05-09T20:39:49.658Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 61 12 size: 20 15
+[2026-05-09T20:39:49.659Z] [PrintSheet] Rendering zone: logo content:  pos: 15 52 size: 70 15
+[2026-05-09T20:39:49.659Z] [PrintSheet] Rendering zone: logo content:  pos: 25 17 size: 50 12
+[2026-05-09T20:39:49.659Z] [PrintSheet] Rendering zone: logo content:  pos: 20 63 size: 60 12
+[2026-05-09T20:39:50.227Z] [PrintSheet] bgColor: #1e3a5f zones: 4 sidebarWidthPt: 170.079 pageWidthPt: 1859.5304
+[2026-05-09T20:39:50.230Z] [PrintSheet] Rendering zone: clubName content: HSV  pos: 15 5 size: 70 7
+[2026-05-09T20:39:50.230Z] [PrintSheet] Rendering zone: playerName content: Müller pos: 15 14 size: 70 11
+[2026-05-09T20:39:50.230Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 22 28 size: 56 32
+[2026-05-09T20:39:50.231Z] [PrintSheet] Rendering zone: logo content:  pos: 15 68 size: 70 12
+[2026-05-09T20:39:50.236Z] [PrintSheet] bgColor: #1e3a5f zones: 1 sidebarWidthPt: 170.079 pageWidthPt: 1122.5214
+[2026-05-09T20:39:50.237Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T20:39:50.909Z] [PrintSheet] bgColor: #1e3a5f zones: 1 sidebarWidthPt: 170.079 pageWidthPt: 1122.5214
+[2026-05-09T20:39:50.911Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T20:40:31.272Z] 4:40:31 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T20:40:32.949Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T20:40:33.752Z] Server running on http://localhost:3000/
+[2026-05-09T20:40:41.231Z] 4:40:41 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T20:40:42.762Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T20:40:43.472Z] Server running on http://localhost:3000/
+[2026-05-09T20:41:46.241Z] 4:41:46 PM [tsx] change in ./server/printSheet.ts Restarting...
+[2026-05-09T20:41:47.696Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T20:41:48.432Z] Server running on http://localhost:3000/
+[2026-05-09T20:41:55.554Z] 4:41:55 PM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-09T20:41:57.229Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T20:41:57.991Z] Server running on http://localhost:3000/
+[2026-05-09T20:42:08.604Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_front_ee897f3c.png zones: 5
+[2026-05-09T20:42:08.800Z] [PrintSheet] Rendering zone: clubLogo content:  pos: 10 12 size: 16 12
+[2026-05-09T20:42:08.906Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 61 12 size: 20 15
+[2026-05-09T20:42:08.909Z] [PrintSheet] Rendering zone: logo content:  pos: 15 52 size: 70 15
+[2026-05-09T20:42:08.909Z] [PrintSheet] Rendering zone: logo content:  pos: 25 17 size: 50 12
+[2026-05-09T20:42:08.910Z] [PrintSheet] Rendering zone: logo content:  pos: 20 63 size: 60 12
+[2026-05-09T20:42:09.602Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_back_3d1d47cb.png zones: 4
+[2026-05-09T20:42:09.709Z] [PrintSheet] Rendering zone: clubName content: HSV  pos: 15 5 size: 70 7
+[2026-05-09T20:42:09.710Z] [PrintSheet] Rendering zone: playerName content: Müller pos: 15 14 size: 70 11
+[2026-05-09T20:42:09.711Z] [PrintSheet] Rendering zone: playerNumber content: 1 pos: 22 28 size: 56 32
+[2026-05-09T20:42:09.711Z] [PrintSheet] Rendering zone: logo content:  pos: 15 68 size: 70 12
+[2026-05-09T20:42:09.841Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_links_b61658a7.png zones: 1
+[2026-05-09T20:42:09.939Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40
+[2026-05-09T20:42:10.644Z] [PrintSheet] bgColor: #1e3a5f partImageUrl: /manus-storage/handball_aermel_rechts_44c4a141.png zones: 1
+[2026-05-09T20:42:10.733Z] [PrintSheet] Rendering zone: logo content:  pos: 10 10 size: 80 40

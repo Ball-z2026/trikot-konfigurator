@@ -1,0 +1,22 @@
+{
+  "query": "SHOW TABLES LIKE '%part%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SHOW TABLES LIKE '%part%';",
+  "rows": [
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2 (%part%)": "department_fonts"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2 (%part%)": "department_suppliers"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2 (%part%)": "departments"
+    },
+    {
+      "Tables_in_3uAVwxvCFYUTTcHvTxGuX2 (%part%)": "product_parts"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_3uAVwxvCFYUTTcHvTxGuX2 (%part%)\ndepartment_fonts\ndepartment_suppliers\ndepartments\nproduct_parts\n",
+  "stderr": "",
+  "execution_time_ms": 323
+}
