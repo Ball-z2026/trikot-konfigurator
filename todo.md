@@ -2383,3 +2383,12 @@
 - [x] Farb-Overlay in Gesamtübersicht: !dtfBrandImage entfernt → Farbe wird überall angezeigt
 - [x] Farb-Overlay in Einzelteil-Ansicht: !dtfBrandImage entfernt → Farbe wird überall angezeigt
 - [x] DTF-Brand-Image auf Ärmeln: isFrontOrBack-Prüfung entfernt → Ärmel bekommen auch KI-Design
+
+## Druckbogen-Korrektur (kritisch)
+- [ ] Druckbogen muss tatsächliches Trikotstück rendern (Hintergrundfarbe/Muster/KI-Design als Hintergrundbild)
+- [ ] Druckbogen muss Elemente (Wappen, Nummer, Name, Sponsor) an korrekten Positionen zeigen (basierend auf Zonen-Prozent-Daten)
+- [ ] Druckbogen muss Elemente in korrekter Größe zeigen (basierend auf widthCm/heightCm der Zonen)
+- [ ] Wappen/Logo als Bild rendern, nicht als Text-Platzhalter
+- [ ] Nummer und Texte in korrekter Schriftgröße basierend auf Zone-Höhe in cm
+- [ ] Selbst-Check: Druckbogen visuell prüfen bevor Ergebnis gezeigt wird
+- [x] Druckbogen: Ärmel-Zonen (purpose="logo") bekommen jetzt auch das Vereinswappen (Fix in routers.ts Zeile 4595-4598)

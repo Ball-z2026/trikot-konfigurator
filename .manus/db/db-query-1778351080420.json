@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, productId, zonesConfig FROM saved_designs WHERE id = 60001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, productId, zonesConfig FROM saved_designs WHERE id = 60001;",
+  "rows": [
+    {
+      "id": "60001",
+      "productId": "1380005",
+      "zonesConfig": "{\"back_club_name\": {\"content\": \"HSV\", \"type\": \"text\"}, \"back_number\": {\"content\": \"1\", \"type\": \"number\"}, \"back_player_name\": {\"content\": \"MÜLLER\", \"type\": \"text\"}, \"front_chest_number\": {\"content\": \"1\", \"type\": \"number\"}}"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductId\tzonesConfig\n60001\t1380005\t{\"back_club_name\": {\"content\": \"HSV\", \"type\": \"text\"}, \"back_number\": {\"content\": \"1\", \"type\": \"number\"}, \"back_player_name\": {\"content\": \"MÜLLER\", \"type\": \"text\"}, \"front_chest_number\": {\"content\": \"1\", \"type\": \"number\"}}\n",
+  "stderr": "",
+  "execution_time_ms": 256
+}

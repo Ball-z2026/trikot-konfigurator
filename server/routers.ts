@@ -4535,6 +4535,16 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           ? JSON.parse(design.colorsConfig as string)
           : design.colorsConfig || {};
 
+        // KI-Design-Bild aus colorsConfig extrahieren
+        const designImageUrl: string | undefined = colorsConfig.sublimationDesignImage || undefined;
+
+        // Part-Farben extrahieren
+        const partColorsMap: Record<string, string> = colorsConfig.partColors || {};
+
+        // Vereins-Logo laden (für clubLogo-Zonen)
+        const orgLogo = await getDefaultOrgLogo(input.orgId);
+        const orgLogoUrl = orgLogo?.imageUrl || undefined;
+
         // Produkt-Parts aus der DB laden
         const dbParts = await listPartsByProduct(product.id);
         // Produkt-Zonen aus der DB laden
@@ -4576,6 +4586,16 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           // Zonen zusammenbauen: DB-Zone (Position) + zonesConfig (Inhalt)
           const rawZones: PrintZone[] = partZones.map((dbZone) => {
             const content = zonesConfig[String(dbZone.id)] || {};
+            // Für clubLogo-Zonen: Logo-URL aus org_logos verwenden
+            let zoneImageUrl = content.imageUrl || undefined;
+            if (!zoneImageUrl && dbZone.purpose === "clubLogo" && orgLogoUrl) {
+              // Für clubLogo automatisch das Vereinslogo setzen
+              zoneImageUrl = orgLogoUrl;
+            }
+            // Auf Ärmeln: logo-Zonen bekommen auch das Vereinswappen (keine Sponsoren auf Ärmeln)
+            if (!zoneImageUrl && dbZone.purpose === "logo" && isSleeve && orgLogoUrl) {
+              zoneImageUrl = orgLogoUrl;
+            }
             return {
               purpose: dbZone.purpose || "custom",
               content: content.text || "",
@@ -4594,8 +4614,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
               fontSize: content.fontSize || dbZone.fontSize || 80,
               textAlign: (content.textAlign || dbZone.textAlign || "center") as "left" | "center" | "right",
               rotation: dbZone.rotation || 0,
-              isImage: content.imageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
-              imageUrl: content.imageUrl || undefined,
+              isImage: zoneImageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
+              imageUrl: zoneImageUrl,
             };
           });
 
@@ -4619,9 +4639,12 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
             realWidthCm: widthCm,
             realHeightCm: heightCm,
             zones: filledZones,
-            backgroundImageUrl: dbPart.key === "vorderteil" ? ((design as any).frontImageUrl || undefined) : dbPart.key === "rueckteil" ? ((design as any).backImageUrl || undefined) : undefined,
+            backgroundImageUrl: designImageUrl || undefined,
           });
         }
+
+        // Primäre Hintergrundfarbe ermitteln (erste Part-Farbe oder Fallback)
+        const primaryBgColor = Object.values(partColorsMap)[0] as string | undefined;
 
         // Druckbögen generieren
         const printConfig: PrintJobConfig = {
@@ -4641,6 +4664,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           parts,
           bleedMm: 3,
           dpi: 300,
+          bgColor: primaryBgColor || undefined,
         };
 
         const sheets = await generateAllPrintSheets(printConfig);

@@ -1,0 +1,109 @@
+{
+  "query": "SELECT id, purpose, posX, posY, width, height, side FROM product_zones WHERE productId = 1380006 AND side = 'front' ORDER BY purpose;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, purpose, posX, posY, width, height, side FROM product_zones WHERE productId = 1380006 AND side = 'front' ORDER BY purpose;",
+  "rows": [
+    {
+      "id": "1410053",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "52",
+      "width": "70",
+      "height": "15",
+      "side": "front"
+    },
+    {
+      "id": "1410058",
+      "purpose": "logo",
+      "posX": "15",
+      "posY": "68",
+      "width": "70",
+      "height": "12",
+      "side": "front"
+    },
+    {
+      "id": "1410059",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "side": "front"
+    },
+    {
+      "id": "1410060",
+      "purpose": "logo",
+      "posX": "10",
+      "posY": "10",
+      "width": "80",
+      "height": "40",
+      "side": "front"
+    },
+    {
+      "id": "2100001",
+      "purpose": "logo",
+      "posX": "25",
+      "posY": "17",
+      "width": "50",
+      "height": "12",
+      "side": "front"
+    },
+    {
+      "id": "2100002",
+      "purpose": "logo",
+      "posX": "20",
+      "posY": "63",
+      "width": "60",
+      "height": "12",
+      "side": "front"
+    },
+    {
+      "id": "1410051",
+      "purpose": "clubLogo",
+      "posX": "10",
+      "posY": "12",
+      "width": "16",
+      "height": "12",
+      "side": "front"
+    },
+    {
+      "id": "1410056",
+      "purpose": "playerName",
+      "posX": "15",
+      "posY": "14",
+      "width": "70",
+      "height": "11",
+      "side": "front"
+    },
+    {
+      "id": "1410052",
+      "purpose": "playerNumber",
+      "posX": "61",
+      "posY": "12",
+      "width": "20",
+      "height": "15",
+      "side": "front"
+    },
+    {
+      "id": "1410057",
+      "purpose": "playerNumber",
+      "posX": "22",
+      "posY": "28",
+      "width": "56",
+      "height": "32",
+      "side": "front"
+    },
+    {
+      "id": "1410055",
+      "purpose": "clubName",
+      "posX": "15",
+      "posY": "5",
+      "width": "70",
+      "height": "7",
+      "side": "front"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpurpose\tposX\tposY\twidth\theight\tside\n1410053\tlogo\t15\t52\t70\t15\tfront\n1410058\tlogo\t15\t68\t70\t12\tfront\n1410059\tlogo\t10\t10\t80\t40\tfront\n1410060\tlogo\t10\t10\t80\t40\tfront\n2100001\tlogo\t25\t17\t50\t12\tfront\n2100002\tlogo\t20\t63\t60\t12\tfront\n1410051\tclubLogo\t10\t12\t16\t12\tfront\n1410056\tplayerName\t15\t14\t70\t11\tfront\n1410052\tplayerNumber\t61\t12\t20\t15\tfront\n1410057\tplayerNumber\t22\t28\t56\t32\tfront\n1410055\tclubName\t15\t5\t70\t7\tfront\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

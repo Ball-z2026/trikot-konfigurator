@@ -1550,7 +1550,7 @@ export default function CustomerConfigurator() {
         updateMutation.mutate({
           id: currentDesignId,
           zonesConfig: zoneContents,
-          colorsConfig: { partColors, dtfBaseColor },
+          colorsConfig: { partColors, dtfBaseColor, sublimationDesignImage },
           thumbnailBase64,
         });
       });
@@ -1558,7 +1558,7 @@ export default function CustomerConfigurator() {
       // Neues Design - Dialog öffnen für Namen
       setSaveDialogOpen(true);
     }
-  }, [teamIdParam, currentDesignId, zoneContents, partColors, dtfBaseColor, updateMutation, captureThumbnail]);
+  }, [teamIdParam, currentDesignId, zoneContents, partColors, dtfBaseColor, sublimationDesignImage, updateMutation, captureThumbnail]);
 
   const handleSaveAsNew = useCallback(async () => {
     if (!designName.trim()) {
@@ -1572,11 +1572,11 @@ export default function CustomerConfigurator() {
       teamId: teamIdParam!,
       productId,
       zonesConfig: zoneContents,
-      colorsConfig: { partColors, dtfBaseColor },
+      colorsConfig: { partColors, dtfBaseColor, sublimationDesignImage },
       thumbnailBase64,
       category: designCategory,
     });
-  }, [designName, teamIdParam, productId, zoneContents, partColors, dtfBaseColor, saveMutation, captureThumbnail, designCategory]);
+  }, [designName, teamIdParam, productId, zoneContents, partColors, dtfBaseColor, sublimationDesignImage, saveMutation, captureThumbnail, designCategory]);
 
   const handleLoadDesign = useCallback((design: any) => {
     // Zonen-Konfiguration laden
@@ -1588,6 +1588,7 @@ export default function CustomerConfigurator() {
       const colors = design.colorsConfig as any;
       if (colors.partColors) setPartColors(colors.partColors);
       if (colors.dtfBaseColor) setDtfBaseColor(colors.dtfBaseColor);
+      if (colors.sublimationDesignImage) setSublimationDesignImage(colors.sublimationDesignImage);
     }
     setCurrentDesignId(design.id);
     setCurrentDesignName(design.name);

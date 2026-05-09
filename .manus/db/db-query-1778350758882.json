@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, imageUrl, sport, orgId FROM design_templates ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, name, imageUrl, sport, orgId FROM design_templates ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "450001",
+      "name": "HSV Heimtrikot Test 2025",
+      "imageUrl": "/manus-storage/generated/1778347069172_b52ba9f9.png",
+      "sport": "handball",
+      "orgId": "390001"
+    },
+    {
+      "id": "420001",
+      "name": "E2E-Test HSV Handball Heimtrikot 2025",
+      "imageUrl": "/manus-storage/generated/1778321893792_6f9ccae8.png",
+      "sport": "handball",
+      "orgId": "390001"
+    },
+    {
+      "id": "390001",
+      "name": "KI-Design Handball 9.5.2026",
+      "imageUrl": "/manus-storage/ki-designs/composited_1778310889319_65d43769.png",
+      "sport": "handball",
+      "orgId": "450001"
+    },
+    {
+      "id": "360003",
+      "name": "KI-Design Handball 8.5.2026",
+      "imageUrl": "/manus-storage/generated/1778272872175_3fee4865.png",
+      "sport": "handball",
+      "orgId": "450001"
+    },
+    {
+      "id": "360002",
+      "name": "KI-Design Fußball 8.5.2026",
+      "imageUrl": "/manus-storage/generated/1778271796338_9530ecc5.png",
+      "sport": "fussball",
+      "orgId": "450001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\timageUrl\tsport\torgId\n450001\tHSV Heimtrikot Test 2025\t/manus-storage/generated/1778347069172_b52ba9f9.png\thandball\t390001\n420001\tE2E-Test HSV Handball Heimtrikot 2025\t/manus-storage/generated/1778321893792_6f9ccae8.png\thandball\t390001\n390001\tKI-Design Handball 9.5.2026\t/manus-storage/ki-designs/composited_1778310889319_65d43769.png\thandball\t450001\n360003\tKI-Design Handball 8.5.2026\t/manus-storage/generated/1778272872175_3fee4865.png\thandball\t450001\n360002\tKI-Design Fußball 8.5.2026\t/manus-storage/generated/1778271796338_9530ecc5.png\tfussball\t450001\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

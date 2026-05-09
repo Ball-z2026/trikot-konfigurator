@@ -1,0 +1,25 @@
+{
+  "query": "SELECT * FROM saved_designs WHERE id = 60001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT * FROM saved_designs WHERE id = 60001;",
+  "rows": [
+    {
+      "id": "60001",
+      "name": "HSV Test Design",
+      "teamId": "120001",
+      "productId": "1380005",
+      "userId": "1",
+      "zonesConfig": "{\"back_club_name\": {\"content\": \"HSV\", \"type\": \"text\"}, \"back_number\": {\"content\": \"1\", \"type\": \"number\"}, \"back_player_name\": {\"content\": \"MÜLLER\", \"type\": \"text\"}, \"front_chest_number\": {\"content\": \"1\", \"type\": \"number\"}}",
+      "colorsConfig": "{\"dtfBaseColor\": null, \"partColors\": {}, \"textColor\": \"#1e3a5f\"}",
+      "createdAt": "2026-05-09 17:32:36",
+      "updatedAt": "2026-05-09 17:32:36",
+      "thumbnailUrl": "NULL",
+      "isOrgTemplate": "0",
+      "orgId": "390001",
+      "category": "heimtrikot"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tteamId\tproductId\tuserId\tzonesConfig\tcolorsConfig\tcreatedAt\tupdatedAt\tthumbnailUrl\tisOrgTemplate\torgId\tcategory\n60001\tHSV Test Design\t120001\t1380005\t1\t{\"back_club_name\": {\"content\": \"HSV\", \"type\": \"text\"}, \"back_number\": {\"content\": \"1\", \"type\": \"number\"}, \"back_player_name\": {\"content\": \"MÜLLER\", \"type\": \"text\"}, \"front_chest_number\": {\"content\": \"1\", \"type\": \"number\"}}\t{\"dtfBaseColor\": null, \"partColors\": {}, \"textColor\": \"#1e3a5f\"}\t2026-05-09 17:32:36\t2026-05-09 17:32:36\tNULL\t0\t390001\theimtrikot\n",
+  "stderr": "",
+  "execution_time_ms": 1140
+}

@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, purpose, label, posX, posY, width, height FROM product_zones WHERE partId = 1320028 ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, purpose, label, posX, posY, width, height FROM product_zones WHERE partId = 1320028 ORDER BY id;",
+  "rows": [
+    {
+      "id": "1410051",
+      "purpose": "clubLogo",
+      "label": "Vereinswappen",
+      "posX": "10",
+      "posY": "12",
+      "width": "16",
+      "height": "12"
+    },
+    {
+      "id": "1410052",
+      "purpose": "playerNumber",
+      "label": "Brustnummer",
+      "posX": "61",
+      "posY": "12",
+      "width": "20",
+      "height": "15"
+    },
+    {
+      "id": "1410053",
+      "purpose": "logo",
+      "label": "Brust-Sponsor",
+      "posX": "15",
+      "posY": "52",
+      "width": "70",
+      "height": "15"
+    },
+    {
+      "id": "2100001",
+      "purpose": "logo",
+      "label": "Brust-Sponsor",
+      "posX": "25",
+      "posY": "17",
+      "width": "50",
+      "height": "12"
+    },
+    {
+      "id": "2100002",
+      "purpose": "logo",
+      "label": "Bauch-Sponsor",
+      "posX": "20",
+      "posY": "63",
+      "width": "60",
+      "height": "12"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpurpose\tlabel\tposX\tposY\twidth\theight\n1410051\tclubLogo\tVereinswappen\t10\t12\t16\t12\n1410052\tplayerNumber\tBrustnummer\t61\t12\t20\t15\n1410053\tlogo\tBrust-Sponsor\t15\t52\t70\t15\n2100001\tlogo\tBrust-Sponsor\t25\t17\t50\t12\n2100002\tlogo\tBauch-Sponsor\t20\t63\t60\t12\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

@@ -263,7 +263,15 @@ export async function generatePrintSheet(
      .lineTo(pageWidthPt - sidebarWidthPt, headerHeightPt - 2)
      .lineWidth(0.5)
      .stroke();
-
+  // ── Hintergrundfarbe als Fläche im Druckbereich rendern ──
+  console.log("[PrintSheet] bgColor:", config.bgColor, "zones:", part.zones.length, "sidebarWidthPt:", sidebarWidthPt, "pageWidthPt:", pageWidthPt);
+  if (config.bgColor) {
+    const bgCmykArr = hexToCmyk(config.bgColor);
+    doc.save();
+    doc.rect(safeX, safeY, safeWidth, safeHeight)
+      .fill([bgCmykArr[0], bgCmykArr[1], bgCmykArr[2], bgCmykArr[3]] as any);
+    doc.restore();
+  }
   // ── Druckbereich-Rahmen (gestrichelt) ──
   doc.save();
   doc.dash(3, { space: 3 });
@@ -403,21 +411,59 @@ export async function generatePrintSheet(
     pageHeightPt - footerHeightPt + 6,
     { width: safeWidth + 2 * bleedPt, align: "center" }
   );
-  // ── Hintergrundbild rendern (KI-Muster) – nur im Druckbereich ──
-  const bgImageUrl = part.backgroundImageUrl || config.backgroundImageUrl;
-  if (bgImageUrl) {
-    try {
-      const bgImageBuffer = await fetchImageBuffer(bgImageUrl);
-      if (bgImageBuffer) {
-        doc.image(bgImageBuffer, safeX, safeY, {
-          width: safeWidth,
-          height: safeHeight,
-        });
-      }
-    } catch (err) {
-      console.warn(`[PrintSheet] Hintergrundbild konnte nicht geladen werden: ${bgImageUrl}`, err);
-    }
-  }
+  // DEAKTIVIERT:   // ── Hintergrundbild rendern (KI-Design) – nur im Druckbereich ──
+  // DEAKTIVIERT:   // Das KI-Bild zeigt Vorder- und Rückseite nebeneinander.
+  // DEAKTIVIERT:   // Für den Druckbogen schneiden wir die richtige Hälfte aus:
+  // DEAKTIVIERT:   // - Vorderteil: linke Hälfte des Bildes
+  // DEAKTIVIERT:   // - Rückteil: rechte Hälfte des Bildes
+  // DEAKTIVIERT:   // - Ärmel: Seitenbereich des Bildes
+  // DEAKTIVIERT:   const bgImageUrl = part.backgroundImageUrl || config.backgroundImageUrl;
+  // DEAKTIVIERT:   if (bgImageUrl) {
+  // DEAKTIVIERT:     try {
+  // DEAKTIVIERT:       const bgImageBuffer = await fetchImageBuffer(bgImageUrl);
+  // DEAKTIVIERT:       if (bgImageBuffer) {
+  // DEAKTIVIERT:         const sharp = (await import("sharp")).default;
+  // DEAKTIVIERT:         const metadata = await sharp(bgImageBuffer).metadata();
+  // DEAKTIVIERT:         const imgWidth = metadata.width || 1024;
+  // DEAKTIVIERT:         const imgHeight = metadata.height || 1024;
+  // DEAKTIVIERT:         
+  // DEAKTIVIERT:         let croppedBuffer: Buffer;
+  // DEAKTIVIERT:         const isBack = part.partKey.includes("rueck") || part.partKey.includes("back");
+  // DEAKTIVIERT:         const isSleeve = part.partKey.includes("aermel") || part.partKey.includes("sleeve");
+  // DEAKTIVIERT:         
+  // DEAKTIVIERT:         if (isSleeve) {
+  // DEAKTIVIERT:           // Ärmel: Seitenbereich des Bildes (oberer Rand, seitlich)
+  // DEAKTIVIERT:           const isLeft = part.partKey.includes("links") || part.partKey.includes("left");
+  // DEAKTIVIERT:           const sleeveW = Math.round(imgWidth * 0.25);
+  // DEAKTIVIERT:           const sleeveH = Math.round(imgHeight * 0.35);
+  // DEAKTIVIERT:           const sleeveX = isLeft ? 0 : Math.round(imgWidth * 0.25);
+  // DEAKTIVIERT:           const sleeveY = Math.round(imgHeight * 0.05);
+  // DEAKTIVIERT:           croppedBuffer = await sharp(bgImageBuffer)
+  // DEAKTIVIERT:             .extract({ left: sleeveX, top: sleeveY, width: Math.min(sleeveW, imgWidth - sleeveX), height: Math.min(sleeveH, imgHeight - sleeveY) })
+  // DEAKTIVIERT:             .toBuffer();
+  // DEAKTIVIERT:         } else if (isBack) {
+  // DEAKTIVIERT:           // Rückteil: rechte Hälfte des Bildes
+  // DEAKTIVIERT:           const halfW = Math.round(imgWidth / 2);
+  // DEAKTIVIERT:           croppedBuffer = await sharp(bgImageBuffer)
+  // DEAKTIVIERT:             .extract({ left: halfW, top: 0, width: imgWidth - halfW, height: imgHeight })
+  // DEAKTIVIERT:             .toBuffer();
+  // DEAKTIVIERT:         } else {
+  // DEAKTIVIERT:           // Vorderteil: linke Hälfte des Bildes
+  // DEAKTIVIERT:           const halfW = Math.round(imgWidth / 2);
+  // DEAKTIVIERT:           croppedBuffer = await sharp(bgImageBuffer)
+  // DEAKTIVIERT:             .extract({ left: 0, top: 0, width: halfW, height: imgHeight })
+  // DEAKTIVIERT:             .toBuffer();
+  // DEAKTIVIERT:         }
+  // DEAKTIVIERT:         
+  // DEAKTIVIERT:         doc.image(croppedBuffer, safeX, safeY, {
+  // DEAKTIVIERT:           width: safeWidth,
+  // DEAKTIVIERT:           height: safeHeight,
+  // DEAKTIVIERT:         });
+  // DEAKTIVIERT:       }
+  // DEAKTIVIERT:     } catch (err) {
+  // DEAKTIVIERT:       console.warn(`[PrintSheet] Hintergrundbild konnte nicht geladen werden: ${bgImageUrl}`, err);
+  // DEAKTIVIERT:     }
+  // DEAKTIVIERT:   }
   // ── Zonen rendern ──
   // bgColor an alle Zonen übergeben (für Kontrast-Logik)
   const bgColor = config.bgColor;
@@ -427,6 +473,7 @@ export async function generatePrintSheet(
     }
   }
   for (const zone of part.zones) {
+    console.log("[PrintSheet] Rendering zone:", zone.purpose, "content:", zone.content, "pos:", zone.posXPercent, zone.posYPercent, "size:", zone.widthPercent, zone.heightPercent);
     const zoneX = safeX + (zone.posXPercent / 100) * safeWidth;
     const zoneY = safeY + (zone.posYPercent / 100) * safeHeight;
     const zoneW = (zone.widthPercent / 100) * safeWidth;
@@ -760,11 +807,11 @@ async function fetchImageBuffer(url: string): Promise<Buffer | null> {
   try {
     // Lokale Storage-URLs
     if (url.startsWith("/manus-storage/")) {
-      const { storageGet } = await import("./storage");
+      const { storageGetSignedUrl } = await import("./storage");
       const key = url.replace("/manus-storage/", "");
-      const result = await storageGet(key);
-      if (result?.url) {
-        const response = await fetch(result.url);
+      const signedUrl = await storageGetSignedUrl(key);
+      if (signedUrl) {
+        const response = await fetch(signedUrl);
         if (!response.ok) return null;
         const arrayBuffer = await response.arrayBuffer();
         return Buffer.from(arrayBuffer);

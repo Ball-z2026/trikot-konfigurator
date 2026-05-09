@@ -1,0 +1,13 @@
+{
+  "query": "SELECT zonesConfig FROM saved_designs WHERE id = 60001",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT zonesConfig FROM saved_designs WHERE id = 60001",
+  "rows": [
+    {
+      "zonesConfig": "{\"1410052\": {\"fontColor\": \"#FFFFFF\", \"fontSize\": 40, \"text\": \"1\"}, \"1410055\": {\"text\": \"HSV\"}, \"1410056\": {\"text\": \"MÜLLER\"}, \"1410057\": {\"fontColor\": \"#FFFFFF\", \"fontSize\": 80, \"text\": \"1\"}}"
+    }
+  ],
+  "messages": [],
+  "stdout": "zonesConfig\n{\"1410052\": {\"fontColor\": \"#FFFFFF\", \"fontSize\": 40, \"text\": \"1\"}, \"1410055\": {\"text\": \"HSV\"}, \"1410056\": {\"text\": \"MÜLLER\"}, \"1410057\": {\"fontColor\": \"#FFFFFF\", \"fontSize\": 80, \"text\": \"1\"}}\n",
+  "stderr": "",
+  "execution_time_ms": 255
+}

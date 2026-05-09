@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, purpose, label, posX, posY, widthPercent, heightPercent FROM product_zones WHERE productId = 1380006 AND partId = (SELECT id FROM product_parts WHERE productId = 1380006 AND name LIKE '%vorder%' LIMIT 1) ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, purpose, label, posX, posY, widthPercent, heightPercent FROM product_zones WHERE productId = 1380006 AND partId = (SELECT id FROM product_parts WHERE productId = 1380006 AND name LIKE '%vorder%' LIMIT 1) ORDER BY id;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'name' in 'where clause'"
+  ]
+}
