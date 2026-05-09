@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE product_zones SET posX = 5, posY = 12.5, width = 10.7, height = 12.5, widthCm = 8, heightCm = 8 WHERE id = 1410051;\nUPDATE product_zones SET posX = 62, posY = 12.5, width = 13.3, height = 15.6, widthCm = 10, heightCm = 10 WHERE id = 1410052;\nUPDATE product_zones SET posX = 25, posY = 5, width = 50, height = 9, widthCm = 37.5, heightCm = 5.8 WHERE id = 1410053;\nUPDATE product_zones SET posX = 20, posY = 63, width = 60, height = 12, widthCm = 45, heightCm = 7.7 WHERE id = 2100002;\nUPDATE product_zones SET posX = 25, posY = 17, width = 50, height = 12, widthCm = 37.5, heightCm = 7.7 WHERE id = 2100001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute UPDATE product_zones SET posX = 5, posY = 12.5, width = 10.7, height = 12.5, widthCm = 8, heightCm = 8 WHERE id = 1410051;\nUPDATE product_zones SET posX = 62, posY = 12.5, width = 13.3, height = 15.6, widthCm = 10, heightCm = 10 WHERE id = 1410052;\nUPDATE product_zones SET posX = 25, posY = 5, width = 50, height = 9, widthCm = 37.5, heightCm = 5.8 WHERE id = 1410053;\nUPDATE product_zones SET posX = 20, posY = 63, width = 60, height = 12, widthCm = 45, heightCm = 7.7 WHERE id = 2100002;\nUPDATE product_zones SET posX = 25, posY = 17, width = 50, height = 12, widthCm = 37.5, heightCm = 7.7 WHERE id = 2100001;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 304
+}

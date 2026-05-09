@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, partKey, name, widthCm, heightCm, imageUrl FROM product_parts WHERE productId = 1380006;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, partKey, name, widthCm, heightCm, imageUrl FROM product_parts WHERE productId = 1380006;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'partkey' in 'field list'"
+  ]
+}

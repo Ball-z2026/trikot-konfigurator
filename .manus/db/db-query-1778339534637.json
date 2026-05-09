@@ -1,0 +1,42 @@
+{
+  "query": "SELECT id, label, `key`, realWidthCm, realHeightCm, defaultColor FROM product_parts WHERE productId = 1380006;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT id, label, `key`, realWidthCm, realHeightCm, defaultColor FROM product_parts WHERE productId = 1380006;",
+  "rows": [
+    {
+      "id": "1320028",
+      "label": "Vorderteil",
+      "key": "vorderteil",
+      "realWidthCm": "75",
+      "realHeightCm": "64",
+      "defaultColor": "NULL"
+    },
+    {
+      "id": "1320029",
+      "label": "Rückteil",
+      "key": "rueckteil",
+      "realWidthCm": "75",
+      "realHeightCm": "64",
+      "defaultColor": "NULL"
+    },
+    {
+      "id": "1320030",
+      "label": "Ärmel Links",
+      "key": "aermel_links",
+      "realWidthCm": "55",
+      "realHeightCm": "25.5",
+      "defaultColor": "#1a2744"
+    },
+    {
+      "id": "1320031",
+      "label": "Ärmel Rechts",
+      "key": "aermel_rechts",
+      "realWidthCm": "55",
+      "realHeightCm": "25.5",
+      "defaultColor": "#1a2744"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlabel\tkey\trealWidthCm\trealHeightCm\tdefaultColor\n1320028\tVorderteil\tvorderteil\t75\t64\tNULL\n1320029\tRückteil\trueckteil\t75\t64\tNULL\n1320030\tÄrmel Links\taermel_links\t55\t25.5\t#1a2744\n1320031\tÄrmel Rechts\taermel_rechts\t55\t25.5\t#1a2744\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}

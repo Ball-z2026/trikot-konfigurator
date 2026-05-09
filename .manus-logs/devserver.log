@@ -9473,3 +9473,24 @@
 [2026-05-09T14:02:27.041Z] Server running on http://localhost:3000/
 [2026-05-09T14:04:05.371Z] 10:04:05 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
 [2026-05-09T14:04:28.540Z] 10:04:28 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T15:06:43.841Z] 11:06:43 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-09T15:07:01.338Z] 11:07:01 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-09T15:07:55.176Z] 11:07:55 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T15:10:19.065Z] 11:10:19 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T15:10:46.829Z] 11:10:46 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T15:11:06.672Z] 11:11:06 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T15:11:24.170Z] 11:11:24 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T15:11:52.193Z] 11:11:52 AM [vite] (client) hmr update /src/pages/CustomerConfigurator.tsx, /src/index.css
+[2026-05-09T15:13:32.171Z] [Auth] Missing session cookie
+[2026-05-09T15:13:32.176Z] [Auth] Missing session cookie
+[2026-05-09T15:13:32.898Z] [Auth] Missing session cookie
+[2026-05-09T15:13:32.964Z] [Auth] Missing session cookie
+[2026-05-09T15:13:32.977Z] [Auth] Missing session cookie
+[2026-05-09T15:13:32.989Z] [Auth] Missing session cookie
+[2026-05-09T15:13:33.051Z] [Auth] Missing session cookie
+[2026-05-09T15:13:33.064Z] [Auth] Missing session cookie
+[2026-05-09T15:13:33.073Z] [Auth] Missing session cookie
+[2026-05-09T15:13:33.079Z] [Auth] Missing session cookie
+[2026-05-09T15:13:40.403Z] [Auth] Session verification failed JWSInvalid: Invalid Compact JWS
+[2026-05-09T15:13:40.408Z] [Auth] Missing session cookie
+[2026-05-09T15:13:40.412Z] [Auth] Missing session cookie

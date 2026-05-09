@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE product_parts SET realWidthCm = 75, realHeightCm = 64 WHERE id = 1320028;\nUPDATE product_parts SET realWidthCm = 75, realHeightCm = 64 WHERE id = 1320029;\nUPDATE product_parts SET realWidthCm = 55, realHeightCm = 25.5 WHERE id = 1320030;\nUPDATE product_parts SET realWidthCm = 55, realHeightCm = 25.5 WHERE id = 1320031;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute UPDATE product_parts SET realWidthCm = 75, realHeightCm = 64 WHERE id = 1320028;\nUPDATE product_parts SET realWidthCm = 75, realHeightCm = 64 WHERE id = 1320029;\nUPDATE product_parts SET realWidthCm = 55, realHeightCm = 25.5 WHERE id = 1320030;\nUPDATE product_parts SET realWidthCm = 55, realHeightCm = 25.5 WHERE id = 1320031;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 299
+}

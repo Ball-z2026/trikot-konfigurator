@@ -2336,3 +2336,50 @@
 - [ ] Ärmel sollen die Grundfarbe des KI-Designs übernehmen (nicht weiß bleiben)
 - [ ] Positionierung der Zonen validieren und ggf. korrigieren
 - [ ] Konfigurator dient zum Befüllen mit Namen/Nummern - Zonen müssen klar sichtbar und korrekt positioniert sein
+
+## Kritische Fehler (Benutzer-Feedback 2026-05-09)
+
+- [ ] HSV-Text von Vorderseite entfernen (gehört dort nicht hin, ist sogar doppelt)
+- [ ] Brustnummer RECHTS positionieren (nicht mittig)
+- [ ] Vereinswappen korrekt auf Herzseite (links oben Brust) positionieren
+- [ ] HSV in schwarz auf Rückseite entfernen (Artefakt aus KI-Bild)
+- [ ] Mutiges Muster statt einfarbig dunkelblau (Aufgabe nicht erfüllt)
+- [ ] Ärmel mit Muster füllen statt weiß lassen
+- [ ] KI-Design-Prompt korrigieren: Keine Text-Elemente im generierten Bild (HSV, Nummern etc. kommen aus den Zonen)
+
+## Kritische Fehler (Benutzer-Feedback 2026-05-09 #2)
+
+- [ ] HSV-Text von Vorderseite entfernen (gehört dort nicht hin, ist sogar doppelt)
+- [ ] Brustnummer RECHTS positionieren (nicht mittig) - basierend auf cm-Maßen
+- [ ] Vereinswappen korrekt auf Herzseite (links oben Brust) - basierend auf cm-Maßen
+- [ ] HSV in schwarz auf Rückseite entfernen (Artefakt aus KI-Bild)
+- [ ] Mutiges Muster statt einfarbig dunkelblau generieren
+- [ ] Ärmel mit Muster füllen statt weiß lassen
+- [ ] KI-Design-Prompt korrigieren: Keine Text-Elemente im generierten Bild (HSV, Nummern etc. kommen aus den Zonen, nicht aus dem Hintergrundbild)
+- [ ] Positionierung auf Basis der realen Schnittmuster-Maße (cm) implementieren
+
+## Zonen-Positionierung & KI-Prompt-Korrekturen (Mai 2026)
+
+### Zonen-Positionen korrigiert (Produkt 1380006)
+- [x] Vorderseite: Wappen auf Herzseite (links), Brustnummer rechts, Sponsor mittig unten
+- [x] Rückseite: Vereinsname oben, Spielername darunter, Rückennummer groß mittig, Sponsor unten
+- [x] Vereinsname von Vorderseite entfernt (gehört nur auf die Rückseite)
+- [x] realWidthCm/realHeightCm korrigiert: Vorder-/Rückteil 49x68cm, Ärmel 28.5x24cm (Größe L)
+- [x] Zonen-Maße in cm korrekt eingetragen (basierend auf HBF-Werberichtlinien und Schnittmuster)
+
+### KI-Prompt-Korrekturen (KiDesign.tsx)
+- [x] Vereinsname NICHT mehr auf Vorderseite im Prompt (nur Rückseite)
+- [x] Wappen-Position korrigiert: Herzseite = LINKS des Trägers = RECHTS im Bild
+- [x] Brustnummer-Position korrigiert: RECHTS des Trägers = LINKS im Bild
+- [x] Prompt fordert jetzt BOLD/STRIKING Muster (nie einfarbig)
+- [x] Prompt fordert: Ärmel MÜSSEN gleiches Muster wie Body haben (nicht weiß/einfarbig)
+- [x] Trikot-Maße im Prompt korrigiert: 75cm Breite (gesamt), 64cm Höhe → jetzt 49cm Breite (Teil), 68cm Höhe
+- [x] Kein Club-Name-Text auf der Vorderseite erlaubt
+
+### Ärmel-Farbe & DTF-Brand-Image Fix (CustomerConfigurator.tsx)
+- [x] getPartColor: !dtfBrandImage-Bedingung entfernt → Ärmel-Farbe wird auch bei DTF-Brand-Image angezeigt
+- [x] activeColor: !dtfBrandImage-Bedingung entfernt → Einzelteil-Ansicht zeigt Farbe
+- [x] Farb-Overlay in Part-Tabs: !dtfBrandImage entfernt → Farbe wird überall angezeigt
+- [x] Farb-Overlay in Gesamtübersicht: !dtfBrandImage entfernt → Farbe wird überall angezeigt
+- [x] Farb-Overlay in Einzelteil-Ansicht: !dtfBrandImage entfernt → Farbe wird überall angezeigt
+- [x] DTF-Brand-Image auf Ärmeln: isFrontOrBack-Prüfung entfernt → Ärmel bekommen auch KI-Design

@@ -1161,7 +1161,7 @@ export default function CustomerConfigurator() {
   // DEFAULT_JERSEY_COLOR is defined outside the component
   const activeColor = activePartId && partColors[activePartId]
     ? partColors[activePartId]
-    : isDtf && dtfBaseColor && !dtfBrandImage
+    : isDtf && dtfBaseColor
     ? dtfBaseColor
     : DEFAULT_JERSEY_COLOR;
   // CSS-based coloring: no Canvas/CORS needed. The image is shown directly and
@@ -1176,9 +1176,9 @@ export default function CustomerConfigurator() {
     // Wenn eine explizite Part-Farbe gesetzt ist (z.B. aus defaultColor), immer verwenden
     if (partColors[partId]) return partColors[partId];
     if (isSublimation) return DEFAULT_JERSEY_COLOR;
-    if (isDtf && dtfBaseColor && !dtfBrandImage) return dtfBaseColor;
+    if (isDtf && dtfBaseColor) return dtfBaseColor;
     return DEFAULT_JERSEY_COLOR;
-  }, [isSublimation, isDtf, dtfBaseColor, dtfBrandImage, partColors]);
+  }, [isSublimation, isDtf, dtfBaseColor, partColors]);
 
   // Im freeZoneMode verwende localZones für Echtzeit-Drag-Updates
   const zonesSource = isFreeZoneMode ? localZones : allZones;
@@ -2084,7 +2084,7 @@ export default function CustomerConfigurator() {
                             {part.imageUrl ? (
                               <>
                                 {/* Farbige Ebene mit Luminanz-Maske */}
-                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                {!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && (
                                   <div className="absolute inset-0 pointer-events-none" style={{
                                     backgroundColor: getPartColor(part.id),
                                     maskImage: `url(${storageUrl(part.imageUrl)})`,
@@ -2105,11 +2105,11 @@ export default function CustomerConfigurator() {
                                   style={{
                                     position: "relative",
                                     zIndex: 2,
-                                    mixBlendMode: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
+                                    mixBlendMode: (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF") ? "multiply" as const : undefined,
                                   }}
                                 />
                                 {/* Farb-Overlay für transparente Bilder (SVG): hue blend mode */}
-                                {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                {hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && (
                                   <div className="absolute inset-0 pointer-events-none" style={{
                                     backgroundColor: getPartColor(part.id),
                                     mixBlendMode: "hue" as const,
@@ -2355,9 +2355,7 @@ export default function CustomerConfigurator() {
                                 {/* DTF KI-Vorlage als Hintergrund in Gesamt\u00fcbersicht */}
                                 {isDtf && dtfBrandImage && sublimationDesignImage && (() => {
                                   const isBackPart = part.key.toLowerCase().includes("rueck") || part.key.toLowerCase().includes("back") || part.key.toLowerCase().includes("r\u00fcck");
-                                  // Nur Front/Back-Teile bekommen das KI-Design, nicht \u00c4rmel
-                                  const isFrontOrBack = part.key.toLowerCase().includes("front") || part.key.toLowerCase().includes("vorder") || isBackPart;
-                                  if (!isFrontOrBack) return null;
+                                  // Alle Teile (inkl. \u00c4rmel) bekommen das KI-Design als Hintergrund
                                   return (
                                     <div
                                       className="absolute inset-0 pointer-events-none overflow-hidden"
@@ -2376,7 +2374,7 @@ export default function CustomerConfigurator() {
                                   );
                                 })()}
                                 {/* Farbige Ebene mit Luminanz-Maske (nur wenn kein KI-Design) */}
-                                {!sublimationDesignImage && !hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                {!sublimationDesignImage && !hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && (
                                   <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
@@ -2401,11 +2399,11 @@ export default function CustomerConfigurator() {
                                   style={{
                                     position: "relative",
                                     zIndex: 2,
-                                    mixBlendMode: (sublimationDesignImage || (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage)) ? "multiply" as const : undefined,
+                                    mixBlendMode: (sublimationDesignImage || (!hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF")) ? "multiply" as const : undefined,
                                   }}
                                 />
                                 {/* Farb-Overlay für SVG-basierte Bilder: 'hue' blend mode */}
-                                {!sublimationDesignImage && hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && !dtfBrandImage && (
+                                {!sublimationDesignImage && hasTransparentImages && getPartColor(part.id) !== "#ffffff" && getPartColor(part.id) !== "#FFFFFF" && (
                                   <div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{
@@ -2647,7 +2645,7 @@ export default function CustomerConfigurator() {
                         );
                       })()}
                       {/* Farbige Ebene: Farbe wird durch Luminanz-Maske auf Trikot-Form begrenzt */}
-                      {!sublimationDesignImage && !hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                      {!sublimationDesignImage && !hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
@@ -2674,11 +2672,11 @@ export default function CustomerConfigurator() {
                         style={{
                           position: "relative",
                           zIndex: 2,
-                          mixBlendMode: sublimationDesignImage ? "multiply" as const : (!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage) ? "multiply" as const : undefined,
+                          mixBlendMode: sublimationDesignImage ? "multiply" as const : (!hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF") ? "multiply" as const : undefined,
                         }}
                       />
                       {/* Farb-Overlay für Bekleidung (farbige PNGs): 'hue' blend mode */}
-                      {!sublimationDesignImage && hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && !dtfBrandImage && (
+                      {!sublimationDesignImage && hasTransparentImages && activeColor && activeColor !== "#ffffff" && activeColor !== "#FFFFFF" && (
                         <div
                           className="absolute inset-0 pointer-events-none"
                           style={{
