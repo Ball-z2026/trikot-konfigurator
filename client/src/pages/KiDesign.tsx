@@ -191,10 +191,7 @@ export default function KiDesign() {
   const generateAiMockup = trpc.mockup.generateAi.useMutation();
   const removeBackgroundMut = trpc.mockup.removeBackground.useMutation();
   const compositeCrestInNumberMut = trpc.mockup.compositeCrestInNumber.useMutation();
-  const generateCutPatternsMut = trpc.mockup.generateCutPatterns.useMutation();
-  // ── Schnittmuster-Modus State ──
-  const [generationMode, setGenerationMode] = useState<"combined" | "cutPatterns">("combined");
-  const [cutPatternResults, setCutPatternResults] = useState<Array<{ part: string; patternUrl: string; compositeUrl: string; contrastAdjusted: boolean }>>([]);
+
 
   // Membership für orgId / deptId
   const { data: memberships } = trpc.membership.mine.useQuery();
@@ -356,85 +353,12 @@ export default function KiDesign() {
     return map[sportId] || "sports jersey";
   };
 
-   // ── Schnittmuster-Generierung (separate Teile) ──
-  const handleGenerateCutPatterns = async () => {
-    if (!selectedSport) { toast.error("Bitte eine Sportart wählen"); return; }
-    setGenerating(true);
-    try {
-      const activeParts: ("vorderteil" | "rueckteil" | "aermel_links" | "aermel_rechts" | "kragen" | "buendchen_1" | "buendchen_2")[] = [];
-      if (sublimationAreas["body_front"]) activeParts.push("vorderteil");
-      if (sublimationAreas["body_back"]) activeParts.push("rueckteil");
-      if (sublimationAreas["sleeve_left"]) activeParts.push("aermel_links");
-      if (sublimationAreas["sleeve_right"]) activeParts.push("aermel_rechts");
-      if (sublimationAreas["collar"]) activeParts.push("kragen");
-      if (sublimationAreas["cuff_left"]) activeParts.push("buendchen_1");
-      if (sublimationAreas["cuff_right"]) activeParts.push("buendchen_2");
-      if (activeParts.length === 0) {
-        toast.error("Bitte mindestens einen Sublimationsbereich aktivieren");
-        return;
-      }
-      // Brustsponsor ermitteln
-      const chestSponsor = sponsorLogos.find(s => s.enabled && sponsorPositions[s.id] === "chest");
-      const backSponsor = sponsorLogos.find(s => s.enabled && sponsorPositions[s.id] === "back");
-      const sleeveSponsor = sponsorLogos.find(s => s.enabled && (sponsorPositions[s.id] === "sleeve_left" || sponsorPositions[s.id] === "sleeve_right"));
-      // Koordinaten-Text
-      let coordinatesText: string | undefined;
-      if (useCoordinates && orgData?.latitude && orgData?.longitude) {
-        const lat = Number(orgData.latitude).toFixed(4);
-        const lng = Number(orgData.longitude).toFixed(4);
-        const latDir = Number(orgData.latitude) >= 0 ? "N" : "S";
-        const lngDir = Number(orgData.longitude) >= 0 ? "E" : "W";
-        coordinatesText = `${Math.abs(Number(lat))}°${latDir} ${Math.abs(Number(lng))}°${lngDir}`;
-      }
-      const result = await generateCutPatternsMut.mutateAsync({
-        sport: selectedSport,
-        designStyle,
-        primaryColor,
-        secondaryColor,
-        accentColor,
-        clubName: clubName || orgData?.name || undefined,
-        additionalNotes: additionalNotes || undefined,
-        parts: activeParts,
-        referenceImageUrls: undefined,
-        streetMapUrl: useMapWatermark && mapImageUrl ? mapImageUrl : undefined,
-        crestUrl: useClubLogo && defaultLogo ? defaultLogo.imageUrl : undefined,
-        crestWatermarkOpacity: useBackCrestWatermark ? backCrestOpacity : 0,
-        crestDominantColors: undefined,
-        sublimationAreas: SUBLIMATION_AREAS.filter(a => sublimationAreas[a.id]).map(a => a.id),
-        hashtag: useHashtag && orgData?.hashtag ? orgData.hashtag : undefined,
-        coordinatesText,
-        chestSponsorUrl: chestSponsor?.imageUrl || undefined,
-        backSponsorUrl: backSponsor?.imageUrl || undefined,
-        sleeveSponsorUrl: sleeveSponsor?.imageUrl || undefined,
-        sourceImageUrl: generatedImageUrl || undefined, // Bereits generiertes Trikot als Basis
-      });
-      if (result.results && result.results.length > 0) {
-        setCutPatternResults(result.results);
-        // Erstes Ergebnis als Hauptbild setzen
-        const firstResult = result.results[0];
-        setGeneratedImageUrl(firstResult.compositeUrl);
-        setDesignHistory(prev => {
-          const newHistory = [...prev.slice(0, historyIndex + 1), { url: firstResult.compositeUrl, timestamp: Date.now(), label: "Schnittmuster V1" }];
-          setHistoryIndex(newHistory.length - 1);
-          return newHistory;
-        });
-        toast.success(`${result.results.length} Schnittmuster generiert!`);
-        setStep("generate");
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Schnittmuster-Generierung fehlgeschlagen");
-    } finally {
-      setGenerating(false);
-    }
-  };
+
 
   // ── KI-Design generieren ──
   const handleGenerate = async () => {
     if (!selectedSport) { toast.error("Bitte eine Sportart wählen"); return; }
-    // Wenn Schnittmuster-Modus aktiv, den neuen Endpunkt nutzen
-    if (generationMode === "cutPatterns") {
-      return handleGenerateCutPatterns();
-    }
+
     setGenerating(true);
     try {
       const sportInfo = SPORT_TYPES.find(s => s.id === selectedSport);
@@ -1765,37 +1689,6 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
                   </div>
                 )}
 
-                {/* Generierungs-Modus Auswahl */}
-                <div className="p-3 bg-gray-50 rounded-lg border space-y-2">
-                  <Label className="text-sm font-semibold">Generierungs-Modus</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => setGenerationMode("combined")}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        generationMode === "combined"
-                          ? "border-purple-500 bg-purple-50 ring-2 ring-purple-200"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="text-sm font-medium">Gesamtansicht</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">Front + Rücken in einem Bild</div>
-                    </button>
-                    <button
-                      onClick={() => setGenerationMode("cutPatterns")}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        generationMode === "cutPatterns"
-                          ? "border-purple-500 bg-purple-50 ring-2 ring-purple-200"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="text-sm font-medium flex items-center gap-1">
-                        <Layers className="w-3 h-3" />
-                        Schnittmuster
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">Separate Teile (Druckbogen-fertig)</div>
-                    </button>
-                  </div>
-                </div>
                 {/* Generieren-Button */}
                 <Button
                   size="lg"
@@ -1804,9 +1697,9 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
                   className="w-full bg-purple-600 hover:bg-purple-700"
                 >
                   {generating ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{generationMode === "cutPatterns" ? "Schnittmuster werden generiert..." : "Design wird generiert..."}</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Design wird generiert...</>
                   ) : (
-                    <><Wand2 className="w-4 h-4 mr-2" />{generationMode === "cutPatterns" ? "Schnittmuster generieren" : "Trikot-Design generieren"}</>
+                    <><Wand2 className="w-4 h-4 mr-2" />Trikot-Design generieren</>
                   )}
                 </Button>
               </div>
@@ -1929,50 +1822,7 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
                   })}
                 </div>
 
-                {/* ═══ SCHNITTMUSTER-GALERIE ═══ */}
-                {cutPatternResults.length > 0 && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-semibold text-blue-800">Schnittmuster-Teile ({cutPatternResults.length})</span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {cutPatternResults.map((cp) => {
-                        const partLabels: Record<string, string> = {
-                          front: "Vorderseite",
-                          back: "R\u00fcckseite",
-                          sleeve_left: "\u00c4rmel L",
-                          sleeve_right: "\u00c4rmel R",
-                        };
-                        const isActive = generatedImageUrl === cp.compositeUrl;
-                        return (
-                          <button
-                            key={cp.part}
-                            onClick={() => setGeneratedImageUrl(cp.compositeUrl)}
-                            className={`relative rounded-lg border-2 overflow-hidden transition-all ${
-                              isActive ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200 hover:border-blue-300"
-                            }`}
-                          >
-                            <img
-                              src={storageUrl(cp.compositeUrl) || cp.compositeUrl}
-                              alt={partLabels[cp.part] || cp.part}
-                              className="w-full aspect-[3/4] object-contain bg-white"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs py-1 px-2 text-center">
-                              {partLabels[cp.part] || cp.part}
-                              {cp.contrastAdjusted && (
-                                <span className="ml-1 text-yellow-300" title="Kontrast angepasst">⚡</span>
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <p className="text-xs text-blue-600">
-                      Klicken Sie auf ein Teil um es in der Hauptansicht anzuzeigen. Diese Teile sind direkt als Druckbogen-Hintergrund nutzbar.
-                    </p>
-                  </div>
-                )}
+
                 {/* ═══ ÄNDERUNGEN AM DESIGN ═══ */}
                 {generatedImageUrl && (
                   <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 space-y-2">

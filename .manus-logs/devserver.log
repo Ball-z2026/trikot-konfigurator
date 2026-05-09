@@ -9448,3 +9448,14 @@
 [2026-05-09T11:13:51.904Z] 7:13:51 AM [tsx] change in ./shared/jerseyRules.ts Restarting...
 [2026-05-09T11:13:54.629Z] c[OAuth] Initialized with baseURL: https://api.manus.im
 [2026-05-09T11:13:55.752Z] Server running on http://localhost:3000/
+[2026-05-09T11:37:17.519Z] 7:37:17 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-09T11:37:19.984Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T11:37:22.076Z] Server running on http://localhost:3000/
+[2026-05-09T11:37:36.439Z] 7:37:36 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-09T11:38:02.216Z] 7:38:02 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-09T11:38:19.340Z] 7:38:19 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-09T11:38:53.365Z] 7:38:53 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-09T11:39:28.089Z] 7:39:28 AM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-05-09T11:40:07.009Z] 7:40:06 AM [tsx] change in ./server/routers.ts Restarting...
+[2026-05-09T11:40:10.092Z] c[OAuth] Initialized with baseURL: https://api.manus.im
+[2026-05-09T11:40:11.038Z] Server running on http://localhost:3000/

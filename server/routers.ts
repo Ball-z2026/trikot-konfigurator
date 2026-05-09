@@ -3682,7 +3682,6 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
       .query(() => {
         return { configured: isPhotoroomConfigured() };
       }),
-    /** Schnittmuster-Generierung: Separate KI-Muster pro Schnittteil */
     /** Straßenkarte als Bild generieren und in Storage speichern */
     generateStreetMap: protectedProcedure
       .input(z.object({
@@ -3748,34 +3747,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         
         return { url, lat, lng };
       }),
-    generateCutPatterns: protectedProcedure
-      .input(z.object({
-        sport: z.string(),
-        designStyle: z.string(),
-        primaryColor: z.string(),
-        secondaryColor: z.string(),
-        accentColor: z.string(),
-        clubName: z.string().optional(),
-        additionalNotes: z.string().optional(),
-        parts: z.array(z.enum(["vorderteil", "rueckteil", "aermel_links", "aermel_rechts", "kragen", "buendchen_1", "buendchen_2"])),
-        referenceImageUrls: z.array(z.string()).optional(),
-        streetMapUrl: z.string().optional(),
-        crestUrl: z.string().optional(),
-        crestWatermarkOpacity: z.number().min(0).max(100).optional(),
-        crestDominantColors: z.array(z.string()).optional(),
-        sublimationAreas: z.array(z.string()).optional(),
-        hashtag: z.string().optional(),
-        coordinatesText: z.string().optional(),
-        chestSponsorUrl: z.string().optional(),
-        backSponsorUrl: z.string().optional(),
-        sleeveSponsorUrl: z.string().optional(),
-        sourceImageUrl: z.string().optional(), // Bereits generiertes Trikot-Bild als Basis
-      }))
-      .mutation(async ({ input }) => {
-        const { generateAllCutPatterns } = await import("./cutPatternGenerator");
-        const results = await generateAllCutPatterns(input);
-        return { results };
-      }),
+
   }),
 
   // ─── Kollektions-System ──────────────────────────────────────────────────
