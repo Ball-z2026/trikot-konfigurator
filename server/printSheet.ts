@@ -1,20 +1,21 @@
 /**
- * Druckbogen-Generator: Erzeugt druckfertige CMYK-PDFs mit Vektorgrafiken.
+ * Druckbogen-Generator: Erzeugt druckfertige PDFs für Sublimationsdruck.
  *
- * Jeder Druckbogen enthält:
- * - Alle Texte als Vektoren (kein Rastertext)
- * - CMYK-Farbraum für professionellen Druck
- * - Exakte Positionierung basierend auf Konfektionsgröße
- * - Beschnittmarken und Passermarken
- * - 300 DPI Auflösung für Bilder
+ * Prozess pro Schnittteil:
+ * 1. cutPattern-Bild laden (KI-generiertes Muster in der exakten Schnittform, mit Alpha-Kanal)
+ * 2. Auf weiße Seite (Druckgröße + Beschnitt) compositen
+ * 3. Overlay: Nummer, Name, Wappen, Sponsor als Vektoren darüber
+ * 4. Beschnittmarken und Passermarken
  *
- * Pro Spieler werden bis zu 4 Druckbögen erzeugt:
- * 1. Vorderseite
- * 2. Rückseite
- * 3. Ärmel Links (falls vorhanden)
- * 4. Ärmel Rechts (falls vorhanden)
+ * Pro Spieler werden bis zu 7 Druckbögen erzeugt:
+ * 1. Vorderteil
+ * 2. Rückteil
+ * 3. Ärmel Links
+ * 4. Ärmel Rechts
+ * 5. Kragen
+ * 6. Bündchen Links
+ * 7. Bündchen Rechts
  */
-
 import {
   ensureTextContrast,
   getTextOutlineForContrast,
@@ -77,7 +78,7 @@ export interface PrintZone {
 }
 
 export interface PrintSheetConfig {
-  /** Part-Bezeichnung: vorderteil, rueckteil, aermel_links, aermel_rechts */
+  /** Part-Bezeichnung: vorderteil, rueckteil, aermel_links, aermel_rechts, kragen, buendchen_links, buendchen_rechts */
   partKey: string;
   /** Part-Label für die Anzeige */
   partLabel: string;
@@ -87,10 +88,10 @@ export interface PrintSheetConfig {
   realHeightCm: number;
   /** Zonen auf diesem Part */
   zones: PrintZone[];
-  /** Hintergrundbild-URL für dieses Part (KI-generiertes Muster) */
+  /** cutPattern-URL: KI-generiertes Muster in der Schnittform (mit Alpha-Kanal) */
+  cutPatternUrl?: string;
+  /** Fallback: Hintergrundbild-URL (volles Rechteck, ohne Schnittform) */
   backgroundImageUrl?: string;
-  /** Schnittmuster-Bild-URL (Form des Trikotteils mit Alpha-Kanal) */
-  partImageUrl?: string;
 }
 
 export interface PlayerPrintData {
@@ -121,8 +122,6 @@ export interface PrintJobConfig {
   bleedMm?: number;
   /** Primäre Hintergrundfarbe des Designs (für Kontrast-Logik) */
   bgColor?: string;
-  /** Hintergrundbild-URL (KI-generiertes Muster) pro Part */
-  backgroundImageUrl?: string;
   /** DPI für Bildauflösung (Standard: 300) */
   dpi?: number;
 }
@@ -144,15 +143,12 @@ function rgbToCmyk(r: number, g: number, b: number): [number, number, number, nu
   const rNorm = r / 255;
   const gNorm = g / 255;
   const bNorm = b / 255;
-
   const k = 1 - Math.max(rNorm, gNorm, bNorm);
   if (k >= 1) return [0, 0, 0, 100];
-
   const c = ((1 - rNorm - k) / (1 - k)) * 100;
   const m = ((1 - gNorm - k) / (1 - k)) * 100;
   const y = ((1 - bNorm - k) / (1 - k)) * 100;
   const kPercent = k * 100;
-
   return [
     Math.round(c * 10) / 10,
     Math.round(m * 10) / 10,
@@ -172,12 +168,17 @@ function hexToCmyk(hex: string): [number, number, number, number] {
 
 /** Konvertiert cm in PDF-Punkte (1 cm = 28.3465 pt) */
 const CM_TO_PT = 28.3465;
-
 /** Konvertiert mm in PDF-Punkte */
 const MM_TO_PT = 2.83465;
 
 /**
  * Erzeugt einen einzelnen Druckbogen (PDF) für einen Part eines Spielers.
+ *
+ * Der Druckbogen zeigt:
+ * - Weißer Hintergrund (= unbedruckter Stoff)
+ * - Das cutPattern-Bild (KI-Muster in Schnittform) darauf
+ * - Overlay-Elemente (Nummer, Name, Wappen) als Vektoren
+ * - Beschnittmarken an den Ecken
  */
 export async function generatePrintSheet(
   config: PrintJobConfig,
@@ -188,6 +189,7 @@ export async function generatePrintSheet(
 
   const bleedMm = config.bleedMm ?? 3;
   const bleedPt = bleedMm * MM_TO_PT;
+  const dpi = config.dpi ?? 300;
 
   // Reale Maße für die Spielergröße berechnen
   const sizeDims = getSizeDimensions(config.sport, config.player.size, config.gender);
@@ -197,8 +199,9 @@ export async function generatePrintSheet(
   if (sizeDims) {
     const isBody = part.partKey === "vorderteil" || part.partKey === "rueckteil";
     const isSleeve = part.partKey.includes("aermel");
-    const isCollar = part.partKey.includes("kragen") || part.partKey.includes("collar");
-    const isCuff = part.partKey.includes("buendchen") || part.partKey.includes("cuff");
+    const isCollar = part.partKey === "kragen";
+    const isCuff = part.partKey.includes("buendchen");
+
     if (isBody) {
       partWidthCm = sizeDims.body.widthCm;
       partHeightCm = sizeDims.body.heightCm;
@@ -212,16 +215,11 @@ export async function generatePrintSheet(
       partWidthCm = sizeDims.cuff.widthCm;
       partHeightCm = sizeDims.cuff.heightCm;
     }
-    // Kragen/Bündchen: Wenn keine Größendaten, Template-Werte verwenden (realWidthCm/realHeightCm)}
   }
 
-  // PDF-Seitengröße: Part-Maße + 2x Beschnitt + Seitenleisten
-  const sidebarWidthCm = 6; // 6cm Seitenleiste links und rechts
-  const sidebarWidthPt = sidebarWidthCm * CM_TO_PT;
-  const headerHeightPt = 40; // 40pt Header oben fuer Titel
-  const footerHeightPt = 20; // 20pt Footer unten
-  const pageWidthPt = partWidthCm * CM_TO_PT + 2 * bleedPt + 2 * sidebarWidthPt;
-  const pageHeightPt = partHeightCm * CM_TO_PT + 2 * bleedPt + headerHeightPt + footerHeightPt;
+  // PDF-Seitengröße: Part-Maße + 2× Beschnitt
+  const pageWidthPt = partWidthCm * CM_TO_PT + 2 * bleedPt;
+  const pageHeightPt = partHeightCm * CM_TO_PT + 2 * bleedPt;
 
   // PDF-Dokument erstellen
   const doc = new PDFDocument({
@@ -231,7 +229,7 @@ export async function generatePrintSheet(
       Title: `Druckbogen – ${config.player.playerName} – ${part.partLabel} – Größe ${config.player.size}`,
       Author: "Textil-Konfigurator",
       Subject: `${config.clubName} – ${config.sport}`,
-      Keywords: `Druckbogen, ${config.sport}, ${config.player.size}, CMYK`,
+      Keywords: `Druckbogen, ${config.sport}, ${config.player.size}, Sublimation`,
       Creator: "Textil-Konfigurator Druckbogen-Generator",
     },
   });
@@ -240,333 +238,72 @@ export async function generatePrintSheet(
   const chunks: Uint8Array[] = [];
   doc.on("data", (chunk: Uint8Array) => chunks.push(chunk));
 
-  // ── Beschnittmarken werden nach safeX/safeY gezeichnet ──
+  // ── Weißer Hintergrund (= unbedruckter Stoff) ──
+  doc.rect(0, 0, pageWidthPt, pageHeightPt).fill("white");
 
-  // ── Sicherer Bereich (innerhalb Beschnitt) – zentriert zwischen Seitenleisten ──
-  const safeX = sidebarWidthPt + bleedPt;
-  const safeY = headerHeightPt + bleedPt;
+  // ── cutPattern-Bild rendern (KI-Muster in Schnittform) ──
+  const cutPatternUrl = part.cutPatternUrl || part.backgroundImageUrl;
+  if (cutPatternUrl) {
+    try {
+      const imageBuffer = await fetchImageBuffer(cutPatternUrl);
+      if (imageBuffer) {
+        // Bild mit Sharp auf die exakte Druckgröße skalieren
+        const targetWidthPx = Math.round(partWidthCm * dpi / 2.54);
+        const targetHeightPx = Math.round(partHeightCm * dpi / 2.54);
+
+        // cutPattern auf weißem Hintergrund compositen (Alpha → Weiß)
+        const resizedPattern = await sharp(imageBuffer)
+          .resize(targetWidthPx, targetHeightPx, { fit: "fill" })
+          .flatten({ background: { r: 255, g: 255, b: 255 } })
+          .png()
+          .toBuffer();
+
+        // In PDF einbetten (im sicheren Bereich, innerhalb Beschnitt)
+        doc.image(resizedPattern, bleedPt, bleedPt, {
+          width: partWidthCm * CM_TO_PT,
+          height: partHeightCm * CM_TO_PT,
+        });
+      }
+    } catch (err) {
+      console.warn(`[PrintSheet] cutPattern konnte nicht geladen werden: ${cutPatternUrl}`, err);
+    }
+  }
+
+  // ── Beschnittmarken zeichnen ──
+  drawCropMarks(doc, pageWidthPt, pageHeightPt, bleedPt);
+
+  // ── Sicherer Bereich (innerhalb Beschnitt) ──
+  const safeX = bleedPt;
+  const safeY = bleedPt;
   const safeWidth = partWidthCm * CM_TO_PT;
   const safeHeight = partHeightCm * CM_TO_PT;
 
-  // ── Beschnittmarken zeichnen (um den Druckbereich herum) ──
-  drawCropMarksOffset(doc, safeX - bleedPt, safeY - bleedPt, safeWidth + 2 * bleedPt, safeHeight + 2 * bleedPt, bleedPt);
-
-  // ── Header-Bereich (oben) ──
-  doc.fontSize(10);
-  doc.font("Helvetica-Bold");
+  // ── Info-Zeile außerhalb des Druckbereichs ──
+  doc.fontSize(6);
   doc.fillColor("black");
   doc.text(
-    `DRUCKBOGEN – ${config.clubName}`,
-    sidebarWidthPt,
-    8,
-    { width: safeWidth + 2 * bleedPt, align: "center" }
+    `${config.clubName} | ${config.player.playerName} #${config.player.playerNumber} | ${part.partLabel} | Größe ${config.player.size} | ${partWidthCm}×${partHeightCm} cm | Beschnitt ${bleedMm}mm`,
+    bleedPt,
+    2,
+    { width: safeWidth, align: "center" }
   );
-  doc.fontSize(7);
-  doc.font("Helvetica");
-  doc.text(
-    `${config.player.playerName} #${config.player.playerNumber} | ${part.partLabel} | Größe ${config.player.size} | ${partWidthCm}×${partHeightCm} cm | Beschnitt ${bleedMm}mm`,
-    sidebarWidthPt,
-    22,
-    { width: safeWidth + 2 * bleedPt, align: "center" }
-  );
-  // ── Trennlinie unter Header ──
-  doc.moveTo(sidebarWidthPt, headerHeightPt - 2)
-     .lineTo(pageWidthPt - sidebarWidthPt, headerHeightPt - 2)
-     .lineWidth(0.5)
-     .stroke();
-  // ── Hintergrund: CutPattern-Bild (mit Muster + Schnittform) oder Fallback ──
-  console.log("[PrintSheet] Rendering background for", part.partKey, "- backgroundImageUrl:", part.backgroundImageUrl, "partImageUrl:", part.partImageUrl);
-  
-  // Priorität 1: backgroundImageUrl = das CutPattern-Bild (bereits mit Muster + Schnittform)
-  // Priorität 2: partImageUrl = leeres Schnittmuster + bgColor als Füllung
-  // Priorität 3: Nur bgColor als Rechteck
-  
-  const bgImageToUse = part.backgroundImageUrl || null;
-  
-  if (bgImageToUse) {
-    // CutPattern-Bild direkt als Hintergrund verwenden (hat bereits Muster + Schnittform)
-    try {
-      const cutPatternBuffer = await fetchImageBuffer(bgImageToUse);
-      if (cutPatternBuffer) {
-        doc.image(cutPatternBuffer, safeX, safeY, {
-          width: safeWidth,
-          height: safeHeight,
-        });
-      } else {
-        console.warn("[PrintSheet] CutPattern-Bild konnte nicht geladen werden, Fallback auf Farbe");
-        if (config.bgColor) {
-          const bgCmykArr = hexToCmyk(config.bgColor);
-          doc.save();
-          doc.rect(safeX, safeY, safeWidth, safeHeight).fill([bgCmykArr[0], bgCmykArr[1], bgCmykArr[2], bgCmykArr[3]] as any);
-          doc.restore();
-        }
-      }
-    } catch (err) {
-      console.warn("[PrintSheet] CutPattern-Bild Fehler:", err);
-      if (config.bgColor) {
-        const bgCmykArr = hexToCmyk(config.bgColor);
-        doc.save();
-        doc.rect(safeX, safeY, safeWidth, safeHeight).fill([bgCmykArr[0], bgCmykArr[1], bgCmykArr[2], bgCmykArr[3]] as any);
-        doc.restore();
-      }
-    }
-  } else if (part.partImageUrl) {
-    // Leeres Schnittmuster + Farbe als Füllung (Fallback wenn kein CutPattern generiert wurde)
-    try {
-      const patternBuffer = await fetchImageBuffer(part.partImageUrl);
-      if (patternBuffer) {
-        const meta = await sharp(patternBuffer).metadata();
-        const imgW = meta.width!;
-        const imgH = meta.height!;
-        const hasAlpha = meta.channels === 4;
-        
-        // Farbe als Füllung
-        const hex = (config.bgColor || "#cccccc").replace("#", "");
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        
-        let maskedPng: Buffer;
-        if (hasAlpha) {
-          // Alpha-Kanal als Maske verwenden
-          const alphaChannel = await sharp(patternBuffer).extractChannel(3).raw().toBuffer();
-          const rgbaBuffer = Buffer.alloc(imgW * imgH * 4);
-          for (let i = 0; i < imgW * imgH; i++) {
-            rgbaBuffer[i * 4] = r;
-            rgbaBuffer[i * 4 + 1] = g;
-            rgbaBuffer[i * 4 + 2] = b;
-            rgbaBuffer[i * 4 + 3] = alphaChannel[i];
-          }
-          maskedPng = await sharp(rgbaBuffer, { raw: { width: imgW, height: imgH, channels: 4 } }).png().toBuffer();
-        } else {
-          // Kein Alpha: Einfach Farbe als Rechteck
-          maskedPng = await sharp({ create: { width: imgW, height: imgH, channels: 4, background: { r, g, b, alpha: 255 } } }).png().toBuffer();
-        }
-        doc.image(maskedPng, safeX, safeY, {
-          width: safeWidth,
-          height: safeHeight,
-        });
-      }
-    } catch (err) {
-      console.warn("[PrintSheet] Schnittmuster-Fallback Fehler:", err);
-    }
-  } else if (config.bgColor) {
-    // Letzter Fallback: Nur Farbe als Rechteck
-    const bgCmykArr = hexToCmyk(config.bgColor);
-    doc.save();
-    doc.rect(safeX, safeY, safeWidth, safeHeight).fill([bgCmykArr[0], bgCmykArr[1], bgCmykArr[2], bgCmykArr[3]] as any);
-    doc.restore();
-  }
 
-  // ── Druckbereich-Rahmen (gestrichelt) ──
-  doc.save();
-  doc.dash(3, { space: 3 });
-  doc.lineWidth(0.3);
-  doc.strokeColor("#999999");
-  doc.rect(safeX, safeY, safeWidth, safeHeight).stroke();
-  doc.undash();
-  doc.restore();
-
-  // ── LINKE SEITENLEISTE: Spieler- & Produktionsdaten ──
-  const leftX = 8;
-  let leftY = headerHeightPt + 10;
-  const leftWidth = sidebarWidthPt - 16;
-  doc.fontSize(8);
-  doc.font("Helvetica-Bold");
-  doc.fillColor("black");
-  doc.text("SPIELERDATEN", leftX, leftY, { width: leftWidth });
-  leftY += 14;
-  doc.font("Helvetica");
-  doc.fontSize(6.5);
-  doc.text(`Name: ${config.player.playerName}`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Nummer: ${config.player.playerNumber}`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Größe: ${config.player.size}`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Sportart: ${config.sport}`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Geschlecht: ${config.gender}`, leftX, leftY, { width: leftWidth });
-  leftY += 18;
-
-  doc.font("Helvetica-Bold");
-  doc.fontSize(8);
-  doc.text("ABMESSUNGEN", leftX, leftY, { width: leftWidth });
-  leftY += 14;
-  doc.font("Helvetica");
-  doc.fontSize(6.5);
-  doc.text(`Teil: ${part.partLabel}`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Breite: ${partWidthCm} cm`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Höhe: ${partHeightCm} cm`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Beschnitt: ${bleedMm} mm`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Auflösung: 300 DPI`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Farbraum: CMYK`, leftX, leftY, { width: leftWidth });
-  leftY += 18;
-
-  doc.font("Helvetica-Bold");
-  doc.fontSize(8);
-  doc.text("PRODUKTION", leftX, leftY, { width: leftWidth });
-  leftY += 14;
-  doc.font("Helvetica");
-  doc.fontSize(6.5);
-  doc.text(`Verfahren: Sublimation`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Verein: ${config.clubName}`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  const now = new Date();
-  doc.text(`Datum: ${now.toLocaleDateString("de-DE")}`, leftX, leftY, { width: leftWidth });
-  leftY += 10;
-  doc.text(`Seite: ${partIndex + 1} von ${config.parts.length}`, leftX, leftY, { width: leftWidth });
-
-  // ── RECHTE SEITENLEISTE: Zonen-Details & Farben ──
-  const rightX = pageWidthPt - sidebarWidthPt + 8;
-  let rightY = headerHeightPt + 10;
-  const rightWidth = sidebarWidthPt - 16;
-  doc.font("Helvetica-Bold");
-  doc.fontSize(8);
-  doc.fillColor("black");
-  doc.text("ELEMENTE", rightX, rightY, { width: rightWidth });
-  rightY += 14;
-  doc.font("Helvetica");
-  doc.fontSize(6.5);
-  for (const zone of part.zones) {
-    if (rightY > pageHeightPt - 60) break;
-    const label = zone.purpose === "playerNumber" ? "Nummer"
-      : zone.purpose === "playerName" ? "Name"
-      : zone.purpose === "clubName" ? "Verein"
-      : zone.purpose === "logo" ? "Logo/Wappen"
-      : zone.purpose === "sponsor" ? "Sponsor"
-      : zone.purpose;
-    const zoneHCm = ((zone.heightPercent / 100) * partHeightCm).toFixed(1);
-    const zoneWCm = ((zone.widthPercent / 100) * partWidthCm).toFixed(1);
-    doc.font("Helvetica-Bold");
-    doc.text(`${label}`, rightX, rightY, { width: rightWidth });
-    rightY += 9;
-    doc.font("Helvetica");
-    doc.text(`  Inhalt: ${zone.content || "(Bild)"}`, rightX, rightY, { width: rightWidth });
-    rightY += 9;
-    doc.text(`  Größe: ${zoneWCm} x ${zoneHCm} cm`, rightX, rightY, { width: rightWidth });
-    rightY += 9;
-    if (zone.fontColor) {
-      const cmyk = hexToCmyk(zone.fontColor);
-      doc.text(`  Farbe: ${zone.fontColor}`, rightX, rightY, { width: rightWidth });
-      rightY += 9;
-      doc.text(`  CMYK: C${cmyk[0]} M${cmyk[1]} Y${cmyk[2]} K${cmyk[3]}`, rightX, rightY, { width: rightWidth });
-      rightY += 9;
-    }
-    if (zone.fontFamily || zone.fontStyle) {
-      doc.text(`  Schrift: ${zone.fontFamily || zone.fontStyle || "Standard"}`, rightX, rightY, { width: rightWidth });
-      rightY += 9;
-    }
-    rightY += 5;
-  }
-
-  // Hintergrundfarbe-Info
-  if (config.bgColor) {
-    rightY += 5;
-    doc.font("Helvetica-Bold");
-    doc.fontSize(8);
-    doc.text("HINTERGRUND", rightX, rightY, { width: rightWidth });
-    rightY += 14;
-    doc.font("Helvetica");
-    doc.fontSize(6.5);
-    doc.text(`Farbe: ${config.bgColor}`, rightX, rightY, { width: rightWidth });
-    rightY += 9;
-    const bgCmyk = hexToCmyk(config.bgColor);
-    doc.text(`CMYK: C${bgCmyk[0]} M${bgCmyk[1]} Y${bgCmyk[2]} K${bgCmyk[3]}`, rightX, rightY, { width: rightWidth });
-    rightY += 9;
-  }
-
-  // ── Vertikale Trennlinien ──
-  doc.lineWidth(0.5);
-  doc.strokeColor("black");
-  doc.moveTo(sidebarWidthPt, headerHeightPt).lineTo(sidebarWidthPt, pageHeightPt - footerHeightPt).stroke();
-  doc.moveTo(pageWidthPt - sidebarWidthPt, headerHeightPt).lineTo(pageWidthPt - sidebarWidthPt, pageHeightPt - footerHeightPt).stroke();
-
-  // ── Footer ──
-  doc.fontSize(5);
-  doc.fillColor("#666666");
-  doc.text(
-    "Textil-Konfigurator – Druckbogen – Alle Maße in cm – CMYK-Farbraum – 300 DPI – Vektorgrafiken",
-    sidebarWidthPt,
-    pageHeightPt - footerHeightPt + 6,
-    { width: safeWidth + 2 * bleedPt, align: "center" }
-  );
-  // DEAKTIVIERT:   // ── Hintergrundbild rendern (KI-Design) – nur im Druckbereich ──
-  // DEAKTIVIERT:   // Das KI-Bild zeigt Vorder- und Rückseite nebeneinander.
-  // DEAKTIVIERT:   // Für den Druckbogen schneiden wir die richtige Hälfte aus:
-  // DEAKTIVIERT:   // - Vorderteil: linke Hälfte des Bildes
-  // DEAKTIVIERT:   // - Rückteil: rechte Hälfte des Bildes
-  // DEAKTIVIERT:   // - Ärmel: Seitenbereich des Bildes
-  // DEAKTIVIERT:   const bgImageUrl = part.backgroundImageUrl || config.backgroundImageUrl;
-  // DEAKTIVIERT:   if (bgImageUrl) {
-  // DEAKTIVIERT:     try {
-  // DEAKTIVIERT:       const bgImageBuffer = await fetchImageBuffer(bgImageUrl);
-  // DEAKTIVIERT:       if (bgImageBuffer) {
-  // DEAKTIVIERT:         const sharp = (await import("sharp")).default;
-  // DEAKTIVIERT:         const metadata = await sharp(bgImageBuffer).metadata();
-  // DEAKTIVIERT:         const imgWidth = metadata.width || 1024;
-  // DEAKTIVIERT:         const imgHeight = metadata.height || 1024;
-  // DEAKTIVIERT:         
-  // DEAKTIVIERT:         let croppedBuffer: Buffer;
-  // DEAKTIVIERT:         const isBack = part.partKey.includes("rueck") || part.partKey.includes("back");
-  // DEAKTIVIERT:         const isSleeve = part.partKey.includes("aermel") || part.partKey.includes("sleeve");
-  // DEAKTIVIERT:         
-  // DEAKTIVIERT:         if (isSleeve) {
-  // DEAKTIVIERT:           // Ärmel: Seitenbereich des Bildes (oberer Rand, seitlich)
-  // DEAKTIVIERT:           const isLeft = part.partKey.includes("links") || part.partKey.includes("left");
-  // DEAKTIVIERT:           const sleeveW = Math.round(imgWidth * 0.25);
-  // DEAKTIVIERT:           const sleeveH = Math.round(imgHeight * 0.35);
-  // DEAKTIVIERT:           const sleeveX = isLeft ? 0 : Math.round(imgWidth * 0.25);
-  // DEAKTIVIERT:           const sleeveY = Math.round(imgHeight * 0.05);
-  // DEAKTIVIERT:           croppedBuffer = await sharp(bgImageBuffer)
-  // DEAKTIVIERT:             .extract({ left: sleeveX, top: sleeveY, width: Math.min(sleeveW, imgWidth - sleeveX), height: Math.min(sleeveH, imgHeight - sleeveY) })
-  // DEAKTIVIERT:             .toBuffer();
-  // DEAKTIVIERT:         } else if (isBack) {
-  // DEAKTIVIERT:           // Rückteil: rechte Hälfte des Bildes
-  // DEAKTIVIERT:           const halfW = Math.round(imgWidth / 2);
-  // DEAKTIVIERT:           croppedBuffer = await sharp(bgImageBuffer)
-  // DEAKTIVIERT:             .extract({ left: halfW, top: 0, width: imgWidth - halfW, height: imgHeight })
-  // DEAKTIVIERT:             .toBuffer();
-  // DEAKTIVIERT:         } else {
-  // DEAKTIVIERT:           // Vorderteil: linke Hälfte des Bildes
-  // DEAKTIVIERT:           const halfW = Math.round(imgWidth / 2);
-  // DEAKTIVIERT:           croppedBuffer = await sharp(bgImageBuffer)
-  // DEAKTIVIERT:             .extract({ left: 0, top: 0, width: halfW, height: imgHeight })
-  // DEAKTIVIERT:             .toBuffer();
-  // DEAKTIVIERT:         }
-  // DEAKTIVIERT:         
-  // DEAKTIVIERT:         doc.image(croppedBuffer, safeX, safeY, {
-  // DEAKTIVIERT:           width: safeWidth,
-  // DEAKTIVIERT:           height: safeHeight,
-  // DEAKTIVIERT:         });
-  // DEAKTIVIERT:       }
-  // DEAKTIVIERT:     } catch (err) {
-  // DEAKTIVIERT:       console.warn(`[PrintSheet] Hintergrundbild konnte nicht geladen werden: ${bgImageUrl}`, err);
-  // DEAKTIVIERT:     }
-  // DEAKTIVIERT:   }
-  // ── Zonen rendern ──
-  // bgColor an alle Zonen übergeben (für Kontrast-Logik)
+  // ── Zonen rendern (Overlay: Nummer, Name, Wappen, Sponsor) ──
   const bgColor = config.bgColor;
   if (bgColor) {
     for (const zone of part.zones) {
       (zone as any).bgColor = bgColor;
     }
   }
+
   for (const zone of part.zones) {
-    console.log("[PrintSheet] Rendering zone:", zone.purpose, "content:", zone.content, "pos:", zone.posXPercent, zone.posYPercent, "size:", zone.widthPercent, zone.heightPercent);
     const zoneX = safeX + (zone.posXPercent / 100) * safeWidth;
     const zoneY = safeY + (zone.posYPercent / 100) * safeHeight;
     const zoneW = (zone.widthPercent / 100) * safeWidth;
     const zoneH = (zone.heightPercent / 100) * safeHeight;
 
     if (zone.isImage && zone.imageUrl) {
-      // Bild-Zone: Bild laden und platzieren
+      // Bild-Zone: Logo/Wappen laden und platzieren
       try {
         const imageBuffer = await fetchImageBuffer(zone.imageUrl);
         if (imageBuffer) {
@@ -585,7 +322,7 @@ export async function generatePrintSheet(
         });
       }
     } else if (zone.content) {
-      // Text-Zone
+      // Text-Zone (Nummer, Name, Vereinsname)
       renderTextZone(doc, zone, zoneX, zoneY, zoneW, zoneH);
     }
   }
@@ -602,7 +339,7 @@ export async function generatePrintSheet(
 }
 
 /**
- * Erzeugt alle Druckbögen für einen Spieler (bis zu 4 PDFs).
+ * Erzeugt alle Druckbögen für einen Spieler (alle 7 Teile).
  */
 export async function generateAllPrintSheets(
   config: PrintJobConfig
@@ -611,8 +348,7 @@ export async function generateAllPrintSheets(
 
   for (let i = 0; i < config.parts.length; i++) {
     const part = config.parts[i];
-    // Alle Parts generieren (auch ohne Zonen, z.B. Kragen/Bündchen)
-
+    // Generiere ALLE Parts – auch ohne Zonen (die haben trotzdem ein cutPattern)
     const pdf = await generatePrintSheet(config, i);
     results.push({
       partKey: part.partKey,
@@ -627,43 +363,6 @@ export async function generateAllPrintSheets(
 // ═══════════════════════════════════════════════════════════════════
 // Hilfsfunktionen
 // ═══════════════════════════════════════════════════════════════════
-
-/**
- * Zeichnet Beschnittmarken (Crop Marks) an den Ecken eines Bereichs (mit Offset).
- */
-function drawCropMarksOffset(
-  doc: PDFKit.PDFDocument,
-  areaX: number,
-  areaY: number,
-  areaW: number,
-  areaH: number,
-  bleed: number
-) {
-  const markLen = 10;
-  const offset = 2;
-  doc.lineWidth(0.25);
-  doc.strokeColor("black");
-  doc.moveTo(areaX + bleed - offset, areaY).lineTo(areaX + bleed - offset, areaY + markLen).stroke();
-  doc.moveTo(areaX, areaY + bleed - offset).lineTo(areaX + markLen, areaY + bleed - offset).stroke();
-  doc.moveTo(areaX + areaW - bleed + offset, areaY).lineTo(areaX + areaW - bleed + offset, areaY + markLen).stroke();
-  doc.moveTo(areaX + areaW, areaY + bleed - offset).lineTo(areaX + areaW - markLen, areaY + bleed - offset).stroke();
-  doc.moveTo(areaX + bleed - offset, areaY + areaH).lineTo(areaX + bleed - offset, areaY + areaH - markLen).stroke();
-  doc.moveTo(areaX, areaY + areaH - bleed + offset).lineTo(areaX + markLen, areaY + areaH - bleed + offset).stroke();
-  doc.moveTo(areaX + areaW - bleed + offset, areaY + areaH).lineTo(areaX + areaW - bleed + offset, areaY + areaH - markLen).stroke();
-  doc.moveTo(areaX + areaW, areaY + areaH - bleed + offset).lineTo(areaX + areaW - markLen, areaY + areaH - bleed + offset).stroke();
-  const crossSize = 5;
-  const positions = [
-    { x: areaX + areaW / 2, y: areaY + bleed / 2 },
-    { x: areaX + areaW / 2, y: areaY + areaH - bleed / 2 },
-    { x: areaX + bleed / 2, y: areaY + areaH / 2 },
-    { x: areaX + areaW - bleed / 2, y: areaY + areaH / 2 },
-  ];
-  for (const pos of positions) {
-    doc.moveTo(pos.x - crossSize, pos.y).lineTo(pos.x + crossSize, pos.y).stroke();
-    doc.moveTo(pos.x, pos.y - crossSize).lineTo(pos.x, pos.y + crossSize).stroke();
-    doc.circle(pos.x, pos.y, 3).stroke();
-  }
-}
 
 /**
  * Zeichnet Beschnittmarken (Crop Marks) an den Ecken.
@@ -725,40 +424,36 @@ function renderTextZone(
 ) {
   const text = zone.content;
   if (!text) return;
+
   // Schriftgröße berechnen
   const fontSizePercent = zone.fontSize || 80;
-  let fontSize = (fontSizePercent / 100) * h;
-  // Mindestgröße
-  fontSize = Math.max(fontSize, 6);
-  // Schriftart wählen (PDFKit hat nur Helvetica, Courier, Times eingebaut)
-  let fontName = "Helvetica";
-  if (zone.fontWeight === "bold") fontName = "Helvetica-Bold";
-  if (zone.fontStyle === "serif") fontName = zone.fontWeight === "bold" ? "Times-Bold" : "Times-Roman";
-  if (zone.fontStyle === "sans") fontName = zone.fontWeight === "bold" ? "Helvetica-Bold" : "Helvetica";
-  doc.font(fontName);
-  doc.fontSize(fontSize);
-  // Textbreite prüfen und ggf. Schriftgröße anpassen
-  let textWidth = doc.widthOfString(text);
-  while (textWidth > w * 0.95 && fontSize > 4) {
-    fontSize -= 0.5;
-    doc.fontSize(fontSize);
-    textWidth = doc.widthOfString(text);
-  }
-  const textHeight = doc.heightOfString(text, { width: w });
+  const fontSize = (fontSizePercent / 100) * h;
 
-  // ═══ KONTRAST-LOGIK: Automatische Farbanpassung ═══
-  // Textfarbe bestimmen – wenn bgColor vorhanden, Kontrast prüfen
+  // Schriftart setzen
+  doc.fontSize(fontSize);
+
+  // Textbreite messen
+  const textWidth = doc.widthOfString(text);
+  const textHeight = doc.currentLineHeight();
+
+  // Schriftfarbe
   let fontColor = zone.fontColor || "#000000";
+
+  // Kontrast-Logik: Automatische Farbanpassung
+  const bgColor = (zone as any).bgColor;
+  if (bgColor) {
+    const adjusted = ensureTextContrast(fontColor, bgColor);
+    fontColor = adjusted;
+  }
+
+  // Outline-Farbe und -Breite
   let effectiveOutlineColor = zone.outlineColor || "none";
   let effectiveOutlineWidth = zone.outlineWidth || 0;
 
-  if ((zone as any).bgColor) {
-    const bg = (zone as any).bgColor as string;
-    // Prüfe ob Textfarbe genug Kontrast zum Hintergrund hat
-    fontColor = ensureTextContrast(fontColor, bg);
-    // Wenn immer noch grenzwertig: Outline hinzufügen
-    const outlineResult = getTextOutlineForContrast(fontColor, bg);
-    if (outlineResult.needsOutline && (!effectiveOutlineColor || effectiveOutlineColor === "none")) {
+  // Automatische Outline bei schlechtem Kontrast
+  if (bgColor && (!effectiveOutlineColor || effectiveOutlineColor === "none")) {
+    const outlineResult = getTextOutlineForContrast(fontColor, bgColor);
+    if (outlineResult && outlineResult.outlineColor && !(outlineResult.outlineColor === "none")) {
       effectiveOutlineColor = outlineResult.outlineColor;
       effectiveOutlineWidth = outlineResult.outlineWidth;
     }
@@ -773,12 +468,13 @@ function renderTextZone(
     // ── Gerader Text rendern ──
     // Vertikale Zentrierung
     const textY = y + (h - textHeight) / 2;
-    // Outline (entweder vom User definiert oder automatisch durch Kontrast-Logik)
+
+    // Outline
     if (effectiveOutlineColor && effectiveOutlineColor !== "none" && effectiveOutlineWidth > 0) {
       const outlineCmyk = hexToCmyk(effectiveOutlineColor);
       const outlineWidthPt = (effectiveOutlineWidth / 100) * fontSize;
+
       doc.save();
-      // PDFKit: Text als Pfad mit Stroke für Outline
       doc.lineWidth(outlineWidthPt);
       doc.strokeColor(outlineCmyk as any);
       doc.fillColor(cmyk as any);
@@ -819,7 +515,7 @@ function renderArcText(
   const cx = x + w / 2;
   const cy = y + h / 2;
 
-  // Bogenradius berechnen (je größer der Grad, desto kleiner der Radius)
+  // Bogenradius berechnen
   const arcRad = (Math.abs(arcDegree) * Math.PI) / 180;
   const radius = w / (2 * Math.sin(arcRad / 2 || 0.01));
 
@@ -829,7 +525,7 @@ function renderArcText(
 
   // Zeichenbreiten messen
   const charWidths = chars.map((ch) => doc.widthOfString(ch));
-  const totalWidth = charWidths.reduce((sum, w) => sum + w, 0);
+  const totalWidth = charWidths.reduce((sum, cw) => sum + cw, 0);
 
   // Winkel pro Zeichen proportional zur Breite
   const anglePerUnit = totalAngle / totalWidth;
@@ -837,10 +533,10 @@ function renderArcText(
   // Startwinkel (zentriert)
   let currentAngle = -Math.PI / 2 - totalAngle / 2;
 
-  // Bogenzentrum (oberhalb oder unterhalb der Zone)
+  // Bogenzentrum
   const arcCenterY = arcDegree > 0
-    ? cy + radius - h / 2  // Bogen nach oben
-    : cy - radius + h / 2; // Bogen nach unten
+    ? cy + radius - h / 2
+    : cy - radius + h / 2;
 
   doc.save();
   doc.fillColor(cmyk as any);
@@ -892,11 +588,11 @@ async function fetchImageBuffer(url: string): Promise<Buffer | null> {
   try {
     // Lokale Storage-URLs
     if (url.startsWith("/manus-storage/")) {
-      const { storageGetSignedUrl } = await import("./storage");
+      const { storageGet } = await import("./storage");
       const key = url.replace("/manus-storage/", "");
-      const signedUrl = await storageGetSignedUrl(key);
-      if (signedUrl) {
-        const response = await fetch(signedUrl);
+      const result = await storageGet(key);
+      if (result?.url) {
+        const response = await fetch(result.url);
         if (!response.ok) return null;
         const arrayBuffer = await response.arrayBuffer();
         return Buffer.from(arrayBuffer);
@@ -916,7 +612,6 @@ async function fetchImageBuffer(url: string): Promise<Buffer | null> {
 
 /**
  * Validiert die Zonen eines Druckbogens gegen die Verbandsregeln.
- * Prüft Mindestgrößen für Nummern, Namen, Vereinsname etc.
  */
 export function validatePrintZonesForSize(
   zones: PrintZone[],
@@ -949,18 +644,14 @@ export function validatePrintZonesForSize(
 
   for (const zone of zones) {
     const zoneHeightCm = (zone.heightPercent / 100) * partHeightCm;
-    const zoneWidthCm = (zone.widthPercent / 100) * partWidthCm;
 
-    // Mindestgrößen nach Sportart prüfen
     if (zone.purpose === "playerNumber") {
-      // Rückennummer: Mindesthöhe je nach Sportart
       const minHeights: Record<string, number> = {
-        fussball: 20,  // DFB: mind. 20 cm Rückennummer
-        handball: 20,  // IHF: mind. 20 cm
-        volleyball: 15, // FIVB: mind. 15 cm Rücken, 8 cm Brust
-        basketball: 20, // FIBA: mind. 20 cm Rücken, 10 cm Brust
+        fussball: 20,
+        handball: 20,
+        volleyball: 15,
+        basketball: 20,
       };
-
       if (partKey === "rueckteil") {
         const minH = minHeights[sport] || 15;
         if (zoneHeightCm < minH) {
@@ -970,7 +661,6 @@ export function validatePrintZonesForSize(
           });
         }
       }
-
       if (partKey === "vorderteil") {
         const minFrontHeights: Record<string, number> = {
           fussball: 10,
@@ -1005,7 +695,6 @@ export function validatePrintZonesForSize(
     }
 
     if (zone.purpose === "clubName") {
-      // Vereinsname: Mindesthöhe
       if (zoneHeightCm < 2) {
         warnings.push({
           zone,
@@ -1020,7 +709,6 @@ export function validatePrintZonesForSize(
 
 /**
  * Befüllt die Zonen eines Parts mit spielerspezifischen Daten.
- * Ersetzt Platzhalter wie playerName, playerNumber, clubName etc.
  */
 export function fillZonesForPlayer(
   zones: PrintZone[],
@@ -1029,7 +717,6 @@ export function fillZonesForPlayer(
 ): PrintZone[] {
   return zones.map((zone) => {
     const filled = { ...zone };
-
     switch (zone.purpose) {
       case "playerName":
         filled.content = player.playerName;
@@ -1045,7 +732,6 @@ export function fillZonesForPlayer(
         break;
       // logo, sponsor, custom: Inhalt bleibt wie konfiguriert
     }
-
     return filled;
   });
 }

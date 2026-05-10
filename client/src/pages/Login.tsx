@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Shirt, Mail, Lock, Eye, EyeOff, ArrowLeft, ShieldCheck } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Login() {
   const [, navigate] = useLocation();
@@ -19,6 +21,7 @@ export default function Login() {
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const { t } = useLanguage();
 
   // 2FA state
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
@@ -39,25 +42,19 @@ export default function Login() {
           window.location.href = `/verwaltung/trainer/${first.orgId}/${first.departmentId}`;
           return;
         }
-        if (first.role === "department_lead") {
-          window.location.href = `/verwaltung/org/${first.orgId}`;
-          return;
-        }
-        if (first.role === "owner") {
+        if (first.role === "department_lead" || first.role === "owner") {
           window.location.href = `/verwaltung/org/${first.orgId}`;
           return;
         }
       }
-    } catch {
-      // Fallback
-    }
+    } catch {}
     window.location.href = "/verwaltung/org";
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error("Bitte E-Mail und Passwort eingeben");
+      toast.error(t("login.fillFields", "Bitte E-Mail und Passwort eingeben"));
       return;
     }
 
@@ -73,28 +70,27 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || "Anmeldung fehlgeschlagen");
+        toast.error(data.error || t("login.error"));
         return;
       }
 
-      // 2FA erforderlich
       if (data.requiresTwoFactor) {
         setRequiresTwoFactor(true);
         setTwoFactorToken(data.twoFactorToken);
-        toast.info("Bitte geben Sie Ihren 2FA-Code ein");
+        toast.info(t("login.enter2fa", "Bitte geben Sie Ihren 2FA-Code ein"));
         return;
       }
 
       if (data.mustChangePassword) {
         setMustChangePassword(true);
-        toast.info("Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung");
+        toast.info(t("login.mustChangePassword", "Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung"));
         return;
       }
 
-      toast.success("Erfolgreich angemeldet");
+      toast.success(t("login.success", "Erfolgreich angemeldet"));
       await redirectAfterLogin();
     } catch (error) {
-      toast.error("Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.");
+      toast.error(t("login.error"));
     } finally {
       setLoading(false);
     }
@@ -104,7 +100,7 @@ export default function Login() {
     e?.preventDefault();
     const code = isBackupCode ? backupCodeInput.trim() : twoFactorCode;
     if (!code) {
-      toast.error(isBackupCode ? "Bitte Backup-Code eingeben" : "Bitte 6-stelligen Code eingeben");
+      toast.error(isBackupCode ? t("login.enterBackupCode", "Bitte Backup-Code eingeben") : t("login.enter6digit", "Bitte 6-stelligen Code eingeben"));
       return;
     }
 
@@ -120,9 +116,8 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || "Verifizierung fehlgeschlagen");
-        if (data.error?.includes("abgelaufen")) {
-          // Token abgelaufen, zurück zum Login
+        toast.error(data.error || t("login.verifyFailed", "Verifizierung fehlgeschlagen"));
+        if (data.error?.includes("abgelaufen") || data.error?.includes("expired")) {
           setRequiresTwoFactor(false);
           setTwoFactorToken("");
           setTwoFactorCode("");
@@ -133,14 +128,14 @@ export default function Login() {
       if (data.mustChangePassword) {
         setMustChangePassword(true);
         setRequiresTwoFactor(false);
-        toast.info("Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung");
+        toast.info(t("login.mustChangePassword", "Bitte ändern Sie Ihr Passwort bei der ersten Anmeldung"));
         return;
       }
 
-      toast.success("Erfolgreich angemeldet");
+      toast.success(t("login.success", "Erfolgreich angemeldet"));
       await redirectAfterLogin();
     } catch (error) {
-      toast.error("Verifizierung fehlgeschlagen");
+      toast.error(t("login.verifyFailed", "Verifizierung fehlgeschlagen"));
     } finally {
       setVerifying2FA(false);
     }
@@ -149,11 +144,11 @@ export default function Login() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || newPassword.length < 6) {
-      toast.error("Neues Passwort muss mindestens 6 Zeichen lang sein");
+      toast.error(t("login.passwordMinLength", "Neues Passwort muss mindestens 6 Zeichen lang sein"));
       return;
     }
     if (newPassword !== newPasswordConfirm) {
-      toast.error("Passwörter stimmen nicht überein");
+      toast.error(t("login.passwordMismatch", "Passwörter stimmen nicht überein"));
       return;
     }
 
@@ -169,14 +164,14 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || "Passwort-Änderung fehlgeschlagen");
+        toast.error(data.error || t("login.changePasswordFailed", "Passwort-Änderung fehlgeschlagen"));
         return;
       }
 
-      toast.success("Passwort erfolgreich geändert");
+      toast.success(t("login.passwordChanged", "Passwort erfolgreich geändert"));
       await redirectAfterLogin();
     } catch (error) {
-      toast.error("Passwort-Änderung fehlgeschlagen");
+      toast.error(t("login.changePasswordFailed", "Passwort-Änderung fehlgeschlagen"));
     } finally {
       setChangingPassword(false);
     }
@@ -186,23 +181,24 @@ export default function Login() {
   if (requiresTwoFactor) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4"><LanguageSwitcher /></div>
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
               <ShieldCheck className="h-7 w-7" />
             </div>
-            <CardTitle className="text-2xl">Zwei-Faktor-Authentifizierung</CardTitle>
+            <CardTitle className="text-2xl">{t("twoFactor.title")}</CardTitle>
             <CardDescription>
               {isBackupCode
-                ? "Geben Sie einen Ihrer Backup-Codes ein."
-                : "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein."}
+                ? t("login.enterBackupCodeDesc", "Geben Sie einen Ihrer Backup-Codes ein.")
+                : t("login.enter6digitDesc", "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleVerify2FA} className="space-y-6">
               {isBackupCode ? (
                 <div className="space-y-2">
-                  <Label htmlFor="backupCode">Backup-Code</Label>
+                  <Label htmlFor="backupCode">{t("login.backupCode", "Backup-Code")}</Label>
                   <Input
                     id="backupCode"
                     value={backupCodeInput}
@@ -214,13 +210,12 @@ export default function Login() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center space-y-2">
-                  <Label>Authentifizierungscode</Label>
+                  <Label>{t("login.authCode", "Authentifizierungscode")}</Label>
                   <InputOTP
                     maxLength={6}
                     value={twoFactorCode}
                     onChange={(value) => {
                       setTwoFactorCode(value);
-                      // Auto-submit bei 6 Zeichen
                       if (value.length === 6) {
                         setTimeout(() => {
                           const code = value;
@@ -237,18 +232,18 @@ export default function Login() {
                                 if (data.mustChangePassword) {
                                   setMustChangePassword(true);
                                   setRequiresTwoFactor(false);
-                                  toast.info("Bitte ändern Sie Ihr Passwort");
+                                  toast.info(t("login.mustChangePassword", "Bitte ändern Sie Ihr Passwort"));
                                 } else {
-                                  toast.success("Erfolgreich angemeldet");
+                                  toast.success(t("login.success", "Erfolgreich angemeldet"));
                                   await redirectAfterLogin();
                                 }
                               } else {
-                                toast.error(data.error || "Ungültiger Code");
+                                toast.error(data.error || t("login.invalidCode", "Ungültiger Code"));
                                 setTwoFactorCode("");
                               }
                             })
                             .catch(() => {
-                              toast.error("Verifizierung fehlgeschlagen");
+                              toast.error(t("login.verifyFailed", "Verifizierung fehlgeschlagen"));
                               setTwoFactorCode("");
                             })
                             .finally(() => setVerifying2FA(false));
@@ -270,7 +265,7 @@ export default function Login() {
               )}
 
               <Button type="submit" className="w-full" disabled={verifying2FA}>
-                {verifying2FA ? "Wird verifiziert..." : "Verifizieren"}
+                {verifying2FA ? t("login.verifying", "Wird verifiziert...") : t("login.verify", "Verifizieren")}
               </Button>
 
               <div className="text-center">
@@ -283,7 +278,7 @@ export default function Login() {
                   }}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {isBackupCode ? "Authenticator-App verwenden" : "Backup-Code verwenden"}
+                  {isBackupCode ? t("login.useAuthApp", "Authenticator-App verwenden") : t("login.useBackupCode", "Backup-Code verwenden")}
                 </button>
               </div>
 
@@ -300,7 +295,7 @@ export default function Login() {
                 }}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Zurück zum Login
+                {t("login.backToLogin", "Zurück zum Login")}
               </Button>
             </form>
           </CardContent>
@@ -309,32 +304,32 @@ export default function Login() {
     );
   }
 
-  // Password change form (shown after first login)
+  // Password change form
   if (mustChangePassword) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4"><LanguageSwitcher /></div>
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
               <Lock className="h-7 w-7" />
             </div>
-            <CardTitle className="text-2xl">Passwort ändern</CardTitle>
+            <CardTitle className="text-2xl">{t("login.changePassword", "Passwort ändern")}</CardTitle>
             <CardDescription>
-              Bitte wählen Sie ein neues Passwort für Ihren Account.
-              Das Passwort muss mindestens 6 Zeichen lang sein.
+              {t("login.changePasswordDesc", "Bitte wählen Sie ein neues Passwort für Ihren Account. Das Passwort muss mindestens 6 Zeichen lang sein.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="newPassword">Neues Passwort</Label>
+                <Label htmlFor="newPassword">{t("login.newPassword", "Neues Passwort")}</Label>
                 <div className="relative">
                   <Input
                     id="newPassword"
                     type={showPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Mindestens 6 Zeichen"
+                    placeholder={t("login.minChars", "Mindestens 6 Zeichen")}
                     className="pr-10"
                     autoFocus
                   />
@@ -348,17 +343,17 @@ export default function Login() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPasswordConfirm">Passwort bestätigen</Label>
+                <Label htmlFor="newPasswordConfirm">{t("login.confirmNewPassword", "Passwort bestätigen")}</Label>
                 <Input
                   id="newPasswordConfirm"
                   type={showPassword ? "text" : "password"}
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                  placeholder="Passwort wiederholen"
+                  placeholder={t("login.repeatPassword", "Passwort wiederholen")}
                 />
               </div>
               <Button type="submit" className="w-full" disabled={changingPassword}>
-                {changingPassword ? "Wird geändert..." : "Passwort ändern"}
+                {changingPassword ? t("login.changingPassword", "Wird geändert...") : t("login.changePassword", "Passwort ändern")}
               </Button>
             </form>
           </CardContent>
@@ -370,21 +365,21 @@ export default function Login() {
   // Main login form
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4"><LanguageSwitcher /></div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
             <Shirt className="h-7 w-7" />
           </div>
-          <CardTitle className="text-2xl">Textil-Konfigurator</CardTitle>
+          <CardTitle className="text-2xl">{t("app.title")}</CardTitle>
           <CardDescription>
-            Melden Sie sich an, um Ihre Textilien zu gestalten.
+            {t("login.loginDesc", "Melden Sie sich an, um Ihre Textilien zu gestalten.")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Local login form */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">E-Mail</Label>
+              <Label htmlFor="email">{t("app.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -392,14 +387,14 @@ export default function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ihre@email.de"
+                  placeholder={t("login.emailPlaceholder", "ihre@email.de")}
                   className="pl-10"
                   autoFocus
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Passwort</Label>
+              <Label htmlFor="password">{t("app.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -407,7 +402,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Ihr Passwort"
+                  placeholder={t("login.passwordPlaceholder", "Ihr Passwort")}
                   className="pl-10 pr-10"
                 />
                 <button
@@ -420,28 +415,26 @@ export default function Login() {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Wird angemeldet..." : "Anmelden"}
+              {loading ? t("login.loggingIn", "Wird angemeldet...") : t("app.login")}
             </Button>
             <button
               type="button"
               onClick={() => navigate("/forgot-password")}
               className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Passwort vergessen?
+              {t("login.forgotPassword")}
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">oder</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("login.or", "oder")}</span>
             </div>
           </div>
 
-          {/* Google/OAuth Login */}
           <Button
             variant="outline"
             className="w-full"
@@ -453,21 +446,21 @@ export default function Login() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Mit Google anmelden
+            {t("login.googleLogin", "Mit Google anmelden")}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Noch kein Konto?{" "}
+            {t("login.noAccount")}{" "}
             <button
               type="button"
               onClick={() => navigate("/register")}
               className="text-primary hover:underline font-medium"
             >
-              Jetzt registrieren
+              {t("login.registerNow", "Jetzt registrieren")}
             </button>
           </p>
           <p className="text-center text-xs text-muted-foreground">
-            Alle Benutzer (Vereinsverantwortliche, Spartenleiter, Trainer) melden sich mit E-Mail und Passwort an.
+            {t("login.allUsersInfo", "Alle Benutzer (Vereinsverantwortliche, Spartenleiter, Trainer) melden sich mit E-Mail und Passwort an.")}
           </p>
 
           <Button
@@ -477,7 +470,7 @@ export default function Login() {
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Zurück zur Startseite
+            {t("login.backToHome", "Zurück zur Startseite")}
           </Button>
         </CardContent>
       </Card>

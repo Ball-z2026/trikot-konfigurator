@@ -25,7 +25,6 @@ import {
   createZone,
   updateZone,
   deleteZone,
-  deleteZonesByProduct,
   bulkUpdateZones,
   createOrganization,
   getOrganizationById,
@@ -1090,15 +1089,7 @@ export const appRouter = router({
         });
 
         // Zonen auf das ausgewählte Produkt übertragen
-        // WICHTIG: Die Zonen-Positionen kommen vom KI-Designer und beziehen sich auf das
-        // GESAMTBILD (Vorder+Rückseite nebeneinander). Für das Produkt müssen sie auf
-        // Einzelteil-Koordinaten umgerechnet werden:
-        // - Front-Zonen: x ist relativ zur linken Hälfte (0-50%) → muss auf 0-100% skaliert werden
-        // - Back-Zonen: x ist relativ zur rechten Hälfte (50-100%) → muss auf 0-100% skaliert werden
         if (productId && zones && zones.length > 0) {
-          // WICHTIG: Bestehende Zonen des Produkts löschen, bevor neue erstellt werden
-          // Verhindert Duplikate bei mehrfachem Speichern von Vorlagen
-          await deleteZonesByProduct(productId);
           const parts = await listPartsByProduct(productId);
           for (const zone of zones) {
             // Part anhand der Seite zuordnen: front → vorderteil/front, back → rueckteil/back
@@ -1128,24 +1119,6 @@ export const appRouter = router({
             if (textPurposes.includes(dbPurpose)) zoneType = "text";
             else if (imagePurposes.includes(dbPurpose)) zoneType = "image";
 
-            // Positionsumrechnung: Gesamtbild → Einzelteil
-            // Das KI-generierte Bild zeigt Front (links, 0-50%) und Back (rechts, 50-100%)
-            // Im Konfigurator wird jedes Teil separat angezeigt (0-100%)
-            let adjustedX = zone.x;
-            let adjustedWidth = zone.width;
-            if (side === "front") {
-              // Front-Zonen: x war 0-50% im Gesamtbild → skaliere auf 0-100%
-              adjustedX = Math.min(95, zone.x * 2);
-              adjustedWidth = Math.min(100 - adjustedX, zone.width * 2);
-            } else if (side === "back") {
-              // Back-Zonen: x war 50-100% im Gesamtbild → verschiebe und skaliere auf 0-100%
-              adjustedX = Math.min(95, (zone.x - 50) * 2);
-              adjustedWidth = Math.min(100 - adjustedX, zone.width * 2);
-            }
-            // Sicherheits-Clamp: Positionen dürfen nicht negativ oder > 95% sein
-            adjustedX = Math.max(0, Math.min(95, adjustedX));
-            adjustedWidth = Math.max(3, Math.min(100 - adjustedX, adjustedWidth));
-
             await createZone({
               productId,
               partId: matchingPart?.id ?? null,
@@ -1153,9 +1126,9 @@ export const appRouter = router({
               side,
               type: zoneType,
               purpose: dbPurpose as any,
-              posX: Math.round(adjustedX * 10) / 10,
+              posX: zone.x,
               posY: zone.y,
-              width: Math.round(adjustedWidth * 10) / 10,
+              width: zone.width,
               height: zone.height,
               rotation: 0,
               fontColor: zone.fontColor || null,
@@ -3686,72 +3659,34 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
       .query(() => {
         return { configured: isPhotoroomConfigured() };
       }),
-    /** Straßenkarte als Bild generieren und in Storage speichern */
-    generateStreetMap: protectedProcedure
+    /** Schnittmuster-Generierung: Separate KI-Muster pro Schnittteil */
+    generateCutPatterns: protectedProcedure
       .input(z.object({
-        address: z.string(),
-        style: z.enum(["roads_only", "minimal", "standard"]).optional().default("roads_only"),
+        sport: z.string(),
+        designStyle: z.string(),
+        primaryColor: z.string(),
+        secondaryColor: z.string(),
+        accentColor: z.string(),
+        clubName: z.string().optional(),
+        additionalNotes: z.string().optional(),
+        parts: z.array(z.enum(["vorderteil", "rueckteil", "aermel_links", "aermel_rechts", "kragen", "buendchen_1", "buendchen_2"])),
+        referenceImageUrls: z.array(z.string()).optional(),
+        streetMapUrl: z.string().optional(),
+        crestUrl: z.string().optional(),
+        crestWatermarkOpacity: z.number().min(0).max(100).optional(),
+        crestDominantColors: z.array(z.string()).optional(),
+        sublimationAreas: z.array(z.string()).optional(),
+        hashtag: z.string().optional(),
+        coordinatesText: z.string().optional(),
+        chestSponsorUrl: z.string().optional(),
+        backSponsorUrl: z.string().optional(),
+        sleeveSponsorUrl: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        const { makeRequest } = await import("./_core/map");
-        const { ENV } = await import("./_core/env");
-        const { storagePut } = await import("./storage");
-        
-        // 1. Geocode die Adresse um Koordinaten zu bekommen
-        const geocodeResult = await makeRequest<{
-          results: Array<{ geometry: { location: { lat: number; lng: number } } }>;
-          status: string;
-        }>("/maps/api/geocode/json", { address: input.address });
-        
-        if (!geocodeResult.results || geocodeResult.results.length === 0) {
-          throw new Error(`Adresse nicht gefunden: ${input.address}`);
-        }
-        
-        const { lat, lng } = geocodeResult.results[0].geometry.location;
-        
-        // 2. Static Map Bild generieren (nur Straßen, keine Labels)
-        const baseUrl = ENV.forgeApiUrl.replace(/\/+$/, "");
-        const apiKey = ENV.forgeApiKey;
-        
-        // Stil: Nur Straßennetz sichtbar, Rest ausgeblendet
-        const mapStyle = [
-          "feature:all|element:labels|visibility:off",
-          "feature:administrative|visibility:off",
-          "feature:poi|visibility:off",
-          "feature:water|color:0xffffff",
-          "feature:landscape|color:0xffffff",
-          "feature:road|element:geometry|color:0x333333|weight:1",
-          "feature:road.highway|element:geometry|color:0x222222|weight:2",
-          "feature:transit|visibility:off",
-        ];
-        
-        const params = new URLSearchParams({
-          center: `${lat},${lng}`,
-          zoom: "15",
-          size: "1024x1024",
-          scale: "2",
-          maptype: "roadmap",
-          key: apiKey,
-        });
-        
-        mapStyle.forEach(s => params.append("style", s));
-        
-        const mapUrl = `${baseUrl}/v1/maps/proxy/maps/api/staticmap?${params.toString()}`;
-        
-        const response = await fetch(mapUrl);
-        if (!response.ok) {
-          throw new Error(`Static Map API failed: ${response.status} ${response.statusText}`);
-        }
-        
-        const imageBuffer = Buffer.from(await response.arrayBuffer());
-        
-        // 3. In Storage speichern
-        const fileName = `street-maps/map_${Date.now()}.png`;
-        const { url } = await storagePut(fileName, imageBuffer, "image/png");
-        
-        return { url, lat, lng };
+        const { generateAllCutPatterns } = await import("./cutPatternGenerator");
+        const results = await generateAllCutPatterns(input);
+        return { results };
       }),
-
   }),
 
   // ─── Kollektions-System ──────────────────────────────────────────────────
@@ -4535,17 +4470,6 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           ? JSON.parse(design.colorsConfig as string)
           : design.colorsConfig || {};
 
-        // KI-Design-Bild aus colorsConfig extrahieren
-        console.log("[DEBUG] colorsConfig keys:", Object.keys(colorsConfig), "cutPatterns:", colorsConfig.cutPatterns ? Object.keys(colorsConfig.cutPatterns) : "NONE");
-        const designImageUrl: string | undefined = colorsConfig.sublimationDesignImage || undefined;
-
-        // Part-Farben extrahieren
-        const partColorsMap: Record<string, string> = colorsConfig.partColors || {};
-
-        // Vereins-Logo laden (für clubLogo-Zonen)
-        const orgLogo = await getDefaultOrgLogo(input.orgId);
-        const orgLogoUrl = orgLogo?.imageUrl || undefined;
-
         // Produkt-Parts aus der DB laden
         const dbParts = await listPartsByProduct(product.id);
         // Produkt-Zonen aus der DB laden
@@ -4560,8 +4484,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         for (const dbPart of dbParts) {
           // Template-Part finden für reale Maße
           const tmplPart = templateParts.find(tp => tp.key === dbPart.key);
-          const baseWidthCm = tmplPart?.realWidthCm || dbPart.realWidthCm || 49;
-          const baseHeightCm = tmplPart?.realHeightCm || dbPart.realHeightCm || 68;
+          const baseWidthCm = tmplPart?.realWidthCm || 49;
+          const baseHeightCm = tmplPart?.realHeightCm || 68;
 
           // Maße für die Spielergröße berechnen
           const dims = getSizeDimensions(sport, playerSize, gender);
@@ -4587,16 +4511,6 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           // Zonen zusammenbauen: DB-Zone (Position) + zonesConfig (Inhalt)
           const rawZones: PrintZone[] = partZones.map((dbZone) => {
             const content = zonesConfig[String(dbZone.id)] || {};
-            // Für clubLogo-Zonen: Logo-URL aus org_logos verwenden
-            let zoneImageUrl = content.imageUrl || undefined;
-            if (!zoneImageUrl && dbZone.purpose === "clubLogo" && orgLogoUrl) {
-              // Für clubLogo automatisch das Vereinslogo setzen
-              zoneImageUrl = orgLogoUrl;
-            }
-            // Auf Ärmeln: logo-Zonen bekommen auch das Vereinswappen (keine Sponsoren auf Ärmeln)
-            if (!zoneImageUrl && dbZone.purpose === "logo" && isSleeve && orgLogoUrl) {
-              zoneImageUrl = orgLogoUrl;
-            }
             return {
               purpose: dbZone.purpose || "custom",
               content: content.text || "",
@@ -4615,8 +4529,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
               fontSize: content.fontSize || dbZone.fontSize || 80,
               textAlign: (content.textAlign || dbZone.textAlign || "center") as "left" | "center" | "right",
               rotation: dbZone.rotation || 0,
-              isImage: zoneImageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
-              imageUrl: zoneImageUrl,
+              isImage: content.imageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
+              imageUrl: content.imageUrl || undefined,
             };
           });
 
@@ -4640,13 +4554,9 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
             realWidthCm: widthCm,
             realHeightCm: heightCm,
             zones: filledZones,
-            backgroundImageUrl: (colorsConfig.cutPatterns && colorsConfig.cutPatterns[dbPart.key]) || designImageUrl || undefined,
-            partImageUrl: dbPart.imageUrl || undefined,
+            cutPatternUrl: colorsConfig?.cutPatterns?.[dbPart.key] || undefined,
           });
         }
-
-        // Primäre Hintergrundfarbe ermitteln (erste Part-Farbe oder Fallback)
-        const primaryBgColor = Object.values(partColorsMap)[0] as string | undefined;
 
         // Druckbögen generieren
         const printConfig: PrintJobConfig = {
@@ -4666,7 +4576,6 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
           parts,
           bleedMm: 3,
           dpi: 300,
-          bgColor: primaryBgColor || undefined,
         };
 
         const sheets = await generateAllPrintSheets(printConfig);
@@ -4735,14 +4644,10 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         const zonesConfig: Record<string, any> = typeof design.zonesConfig === "string"
           ? JSON.parse(design.zonesConfig)
           : (design.zonesConfig as Record<string, any>) || {};
-        // colorsConfig aus dem Design parsen (für cutPatterns und bgColor)
-        const colorsConfig2: any = typeof design.colorsConfig === "string"
-          ? JSON.parse(design.colorsConfig as string)
-          : design.colorsConfig || {};
-        const cutPatterns2: Record<string, string> = colorsConfig2.cutPatterns || {};
-        const partColorsMap2: Record<string, string> = colorsConfig2.partColors || {};
-        const orgLogo2 = await getDefaultOrgLogo(input.orgId);
-        const orgLogoUrl2 = orgLogo2?.imageUrl || undefined;
+        // colorsConfig aus dem Design parsen (enthält cutPatterns)
+        const colorsConfig: Record<string, any> = typeof design.colorsConfig === "string"
+          ? JSON.parse(design.colorsConfig)
+          : (design.colorsConfig as Record<string, any>) || {};
 
         // Produkt-Parts und -Zonen aus der DB laden (einmalig, nicht pro Spieler)
         const dbParts = await listPartsByProduct(product.id);
@@ -4764,8 +4669,8 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
 
             for (const dbPart of dbParts) {
               const tmplPart = templateParts.find(tp => tp.key === dbPart.key);
-              const baseWidthCm = tmplPart?.realWidthCm || dbPart.realWidthCm || 49;
-              const baseHeightCm = tmplPart?.realHeightCm || dbPart.realHeightCm || 68;
+              const baseWidthCm = tmplPart?.realWidthCm || 49;
+              const baseHeightCm = tmplPart?.realHeightCm || 68;
 
               const dims = getSizeDimensions(sport, playerSize, gender);
               const isBody = dbPart.key === "vorderteil" || dbPart.key === "rueckteil";
@@ -4809,7 +4714,7 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
                   textAlign: (content.textAlign || dbZone.textAlign || "center") as "left" | "center" | "right",
                   rotation: dbZone.rotation || 0,
                   isImage: content.imageUrl ? true : (dbZone.purpose === "logo" || dbZone.purpose === "clubLogo"),
-                  imageUrl: content.imageUrl || ((dbZone.purpose === "clubLogo" && orgLogoUrl2) ? orgLogoUrl2 : ((dbZone.purpose === "logo" && isSleeve && orgLogoUrl2) ? orgLogoUrl2 : undefined)),
+                  imageUrl: content.imageUrl || undefined,
                 };
               });
 
@@ -4831,10 +4736,9 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
                 partKey: dbPart.key,
                 partLabel: dbPart.label,
                 realWidthCm: widthCm,
+                cutPatternUrl: colorsConfig?.cutPatterns?.[dbPart.key] || undefined,
                 realHeightCm: heightCm,
                 zones: filledZones,
-                backgroundImageUrl: cutPatterns2[dbPart.key] || undefined,
-                partImageUrl: dbPart.imageUrl || undefined,
               });
             }
 
@@ -4853,7 +4757,6 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
                   .map((n: string) => n.charAt(0).toUpperCase())
                   .join(""),
               },
-              bgColor: Object.values(partColorsMap2)[0] as string || undefined,
               parts,
               bleedMm: 3,
               dpi: 300,

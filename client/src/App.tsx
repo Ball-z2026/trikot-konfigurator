@@ -37,6 +37,7 @@ import KiDesign from "./pages/KiDesign";
 import ProduktDesignerV2 from "./pages/ProduktDesignerV2";
 import ProduktEditorV2 from "./pages/ProduktEditorV2";
 import { ZoneEditorProvider } from "./contexts/ZoneEditorContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 
 function Router() {
   return (
@@ -114,16 +115,18 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
-        <ZoneEditorProvider>
-          <TooltipProvider>
+      <LanguageProvider>
+        <ThemeProvider defaultTheme="light">
+          <ZoneEditorProvider>
+            <TooltipProvider>
             <Toaster duration={2500} />
             <Router />
             <BetaFeedbackGlobal />
             <FeedbackTestBar />
-          </TooltipProvider>
-        </ZoneEditorProvider>
-      </ThemeProvider>
+            </TooltipProvider>
+          </ZoneEditorProvider>
+        </ThemeProvider>
+      </LanguageProvider>
     </ErrorBoundary>
   );
 }

@@ -2400,3 +2400,15 @@
 - [x] Druckbogen: Kragen/Bündchen-Maße korrekt (40x8cm / 12x8cm statt Fallback 49x68)
 - [x] Druckbogen: Ärmel-Wappen-Zone verkleinert (40x50% statt 80x40%)
 - [x] Druckbogen: Schnittmuster-Silhouette als Trikot-Form verwendet (nicht nur Rechteck)
+
+## Sprachumschaltung DE/EN
+- [ ] i18n-System mit LanguageContext und Übersetzungsdateien (DE/EN) aufbauen
+- [ ] Permanenter Sprachumschalter-Button in der Oberfläche (Header/Navigation)
+- [ ] Alle Seiten und Komponenten mit Übersetzungen versehen
+- [ ] Sprachauswahl wird gespeichert (localStorage)
+
+## Druckbogen-Generator → "KI Designer für Sublimation Trikots"
+- [ ] RoundnecksizeL.pdf als 1:1 Template-Grundlage verwenden
+- [ ] cutPattern-Bilder exakt in die Template-Konturen einsetzen
+- [ ] Im Frontend als "KI Designer für Sublimation Trikots" benennen (nicht "Druckbogen")
+- [ ] KI-Design vom Designer direkt in den Druckbogen überführen
