@@ -3687,6 +3687,49 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         const results = await generateAllCutPatterns(input);
         return { results };
       }),
+
+    /** Straßenkarte generieren – nutzt Google Static Maps API */
+    generateStreetMap: protectedProcedure
+      .input(z.object({
+        address: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        const { makeRequest } = await import("./_core/map");
+        
+        // 1. Adresse geocoden um Koordinaten zu bekommen
+        const geocodeResult = await makeRequest<any>("/maps/api/geocode/json", {
+          address: input.address,
+        });
+        
+        if (!geocodeResult.results || geocodeResult.results.length === 0) {
+          throw new Error(`Adresse nicht gefunden: ${input.address}`);
+        }
+        
+        const location = geocodeResult.results[0].geometry.location;
+        const lat = location.lat;
+        const lng = location.lng;
+        
+        // 2. Static Map Bild generieren
+        const { ENV } = await import("./_core/env");
+        const baseUrl = ENV.forgeApiUrl.replace(/\/+$/, "");
+        const apiKey = ENV.forgeApiKey;
+        
+        const staticMapUrl = `${baseUrl}/v1/maps/proxy/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=800x800&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0x333333&style=feature:landscape|element:geometry|color:0xffffff&style=feature:water|element:geometry|color:0xcccccc&style=feature:poi|visibility:off&style=feature:transit|visibility:off&key=${apiKey}`;
+        
+        // 3. Bild herunterladen
+        const response = await fetch(staticMapUrl);
+        if (!response.ok) {
+          throw new Error(`Static Map API Fehler: ${response.status}`);
+        }
+        const imageBuffer = Buffer.from(await response.arrayBuffer());
+        
+        // 4. In Storage hochladen
+        const { storagePut } = await import("./storage");
+        const key = `street-maps/map_${Date.now()}.png`;
+        const { url } = await storagePut(key, imageBuffer, "image/png");
+        
+        return { url, lat, lng };
+      }),
   }),
 
   // ─── Kollektions-System ──────────────────────────────────────────────────

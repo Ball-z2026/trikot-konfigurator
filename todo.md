@@ -2402,13 +2402,18 @@
 - [x] Druckbogen: Schnittmuster-Silhouette als Trikot-Form verwendet (nicht nur Rechteck)
 
 ## Sprachumschaltung DE/EN
-- [ ] i18n-System mit LanguageContext und Übersetzungsdateien (DE/EN) aufbauen
-- [ ] Permanenter Sprachumschalter-Button in der Oberfläche (Header/Navigation)
-- [ ] Alle Seiten und Komponenten mit Übersetzungen versehen
-- [ ] Sprachauswahl wird gespeichert (localStorage)
+- [x] i18n-System mit LanguageContext und Übersetzungsdateien (DE/EN) aufgebaut
+- [x] Permanenter Sprachumschalter-Button in der Navigation (EN/DE Toggle)
+- [x] Home, Login, ForgotPassword, NotFound mit Übersetzungen versehen
+- [x] Sprachauswahl wird im localStorage gespeichert
 
 ## Druckbogen-Generator → "KI Designer für Sublimation Trikots"
 - [ ] RoundnecksizeL.pdf als 1:1 Template-Grundlage verwenden
 - [ ] cutPattern-Bilder exakt in die Template-Konturen einsetzen
 - [ ] Im Frontend als "KI Designer für Sublimation Trikots" benennen (nicht "Druckbogen")
 - [ ] KI-Design vom Designer direkt in den Druckbogen überführen
+
+## KI-Designer Bugs (10.05.2026)
+- [x] Bug: Vereinswappen - KMS Logo neu hochgeladen und in DB aktualisiert
+- [x] Bug: Brustnummer Default auf 'Rechte Brust' (right) gesetzt
+- [x] Bug: generateStreetMap Backend-Prozedur implementiert (Google Static Maps API + Storage)

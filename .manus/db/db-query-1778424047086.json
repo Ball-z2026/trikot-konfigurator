@@ -1,0 +1,28 @@
+{
+  "query": "SELECT m.userId, m.orgId, m.role, m.departmentId, u.name, u.email, o.name as orgName FROM memberships m JOIN users u ON m.userId = u.id JOIN organizations o ON m.orgId = o.id WHERE u.name LIKE '%Assemacher%' OR u.name = 'Markus Assemacher' OR u.email LIKE '%assemacher%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT m.userId, m.orgId, m.role, m.departmentId, u.name, u.email, o.name as orgName FROM memberships m JOIN users u ON m.userId = u.id JOIN organizations o ON m.orgId = o.id WHERE u.name LIKE '%Assemacher%' OR u.name = 'Markus Assemacher' OR u.email LIKE '%assemacher%';",
+  "rows": [
+    {
+      "userId": "540037",
+      "orgId": "450001",
+      "role": "owner",
+      "departmentId": "NULL",
+      "name": "Assemacher Test",
+      "email": "assemacher@icloud.com",
+      "orgName": "Sc Harmstorf "
+    },
+    {
+      "userId": "2010057",
+      "orgId": "390001",
+      "role": "owner",
+      "departmentId": "NULL",
+      "name": "Markus Assemacher",
+      "email": "teichterrasse@googlemail.com",
+      "orgName": "HSV "
+    }
+  ],
+  "messages": [],
+  "stdout": "userId\torgId\trole\tdepartmentId\tname\temail\torgName\n540037\t450001\towner\tNULL\tAssemacher Test\tassemacher@icloud.com\tSc Harmstorf \n2010057\t390001\towner\tNULL\tMarkus Assemacher\tteichterrasse@googlemail.com\tHSV \n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

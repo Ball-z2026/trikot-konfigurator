@@ -159,7 +159,7 @@ export default function KiDesign() {
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
   // ── Spielernummer-Position (Vorderseite) ──
-  const [frontNumberPosition, setFrontNumberPosition] = useState<"center" | "right">("center");
+  const [frontNumberPosition, setFrontNumberPosition] = useState<"center" | "right">("right");
 
   // Änderungsfunktion nach Generierung
   const [editDescription, setEditDescription] = useState("");

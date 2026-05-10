@@ -1,0 +1,38 @@
+{
+  "query": "SELECT o.id, o.name, o.ownerId, u.name as ownerName, u.email as ownerEmail FROM organizations o LEFT JOIN users u ON o.ownerId = u.id ORDER BY o.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT o.id, o.name, o.ownerId, u.name as ownerName, u.email as ownerEmail FROM organizations o LEFT JOIN users u ON o.ownerId = u.id ORDER BY o.id;",
+  "rows": [
+    {
+      "id": "390001",
+      "name": "HSV ",
+      "ownerId": "2070005",
+      "ownerName": "tt",
+      "ownerEmail": "tt@tt.de"
+    },
+    {
+      "id": "420001",
+      "name": "Testverein",
+      "ownerId": "2220010",
+      "ownerName": "Test User",
+      "ownerEmail": "test@test.de"
+    },
+    {
+      "id": "450001",
+      "name": "Sc Harmstorf ",
+      "ownerId": "540037",
+      "ownerName": "Assemacher Test",
+      "ownerEmail": "assemacher@icloud.com"
+    },
+    {
+      "id": "480001",
+      "name": "VfV Spandau ",
+      "ownerId": "4290001",
+      "ownerName": "Carsten Zander ",
+      "ownerEmail": "carsten.zander@yahoo.de"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\townerId\townerName\townerEmail\n390001\tHSV \t2070005\ttt\ttt@tt.de\n420001\tTestverein\t2220010\tTest User\ttest@test.de\n450001\tSc Harmstorf \t540037\tAssemacher Test\tassemacher@icloud.com\n480001\tVfV Spandau \t4290001\tCarsten Zander \tcarsten.zander@yahoo.de\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}
