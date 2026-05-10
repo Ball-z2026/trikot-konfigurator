@@ -415,12 +415,29 @@ export default function KiDesign() {
         }
       });
       
-      // Bilder-Array aufbauen: NUR Straßenkarte als Referenz senden (für Stoff-Muster)
-      // Wappen + Sponsoren werden NICHT mehr als Referenzbilder gesendet → per logoCompositing nachträglich
+      // Bilder-Array aufbauen: Wappen, Sponsoren und Straßenkarte als Referenzbilder senden
       const imageSlots: { url: string | null; slotNum: number; description: string }[] = [];
-      // Straßenkarte als Referenzbild senden (die KI braucht sie als visuelles Muster)
+      
+      // Slot 1: Vereinswappen als Referenzbild
+      if (defaultLogo?.imageUrl) {
+        const logoUrl = defaultLogo.imageUrl.startsWith("/manus-storage/")
+          ? `${window.location.origin}${storageUrl(defaultLogo.imageUrl)}`
+          : defaultLogo.imageUrl;
+        imageSlots.push({ slotNum: 1, url: logoUrl, description: "Vereinswappen" });
+      }
+      
+      // Slot 2: Brustsponsor als Referenzbild
+      const chestSponsor = sponsorByPosition["chest"];
+      if (chestSponsor?.imageUrl) {
+        const sponsorUrl = chestSponsor.imageUrl.startsWith("/manus-storage/")
+          ? `${window.location.origin}${storageUrl(chestSponsor.imageUrl)}`
+          : chestSponsor.imageUrl;
+        imageSlots.push({ slotNum: 2, url: sponsorUrl, description: "Brustsponsor" });
+      }
+      
+      // Slot 3: Straßenkarte als Referenzbild senden (für Stoff-Muster)
       if (useMapWatermark && mapImageUrl) {
-        imageSlots.push({ slotNum: 1, url: mapImageUrl, description: "Straßenkarte als Stoffmuster" });
+        imageSlots.push({ slotNum: 3, url: mapImageUrl, description: "Straßenkarte als Stoffmuster" });
       }
       
       // ═══ LOGO-OVERLAYS DEAKTIVIERT ═══
@@ -441,11 +458,12 @@ export default function KiDesign() {
       // PROMPT aufbauen
       let extraPrompt = "";
       
-      // SLOT 1: Vereinswappen → wird NICHT mehr als Referenzbild gesendet
-      // Stattdessen wird es nachträglich per logoCompositing platziert (garantiert korrekte Position + freigestellt)
+      // SLOT 1: Vereinswappen als Referenzbild gesendet → KI soll es 1:1 übernehmen
       if (defaultLogo?.imageUrl) {
-        // Wappen wird per Overlay platziert, aber im Prompt erwähnen damit KI Platz lässt
-        extraPrompt += ` VEREINSWAPPEN: Ein Vereinswappen wird auf der LINKEN BRUST des Trägers (Herzseite = im Bild RECHTS bei Frontalansicht) platziert. LASSE DORT PLATZ FREI (ca. 8cm Bereich bei 5-15% von links im Bild, 12-25% von oben). Platziere KEIN Logo dort – es wird nachträglich eingefügt.`;
+        const crestSlotIdx = sentSlots.indexOf(1);
+        if (crestSlotIdx >= 0) {
+          extraPrompt += ` VEREINSWAPPEN (Referenzbild ${crestSlotIdx + 1}): Übernimm dieses Wappen/Logo EXAKT 1 zu 1 auf die LINKE BRUST des Trägers (Herzseite = im Bild RECHTS bei Frontalansicht). Position: obere Brust, ca. 8cm groß. Das Bild NICHT verändern, NICHT als Text schreiben – das BILD übernehmen!`;
+        }
       }
       
       // SLOT 2: Wahrzeichen (per Textbeschreibung im Prompt, kein Referenzbild)
@@ -461,23 +479,28 @@ export default function KiDesign() {
       
       // STRASSENKARTE: Als Referenzbild gesendet
       if (useMapWatermark && mapImageUrl) {
-        extraPrompt += ` STRASSENKARTE (Referenzbild 1): Das Straßennetz aus dem Referenzbild ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Übernimm das Linienmuster der Straßen und Wege als feines Muster im Stoff. Ton-in-Ton, ${watermarkOpacity}% heller/dunkler als Trikotfarbe. Bedeckt den gesamten Stoff. Liegt HINTER allen Nummern und Text.`;
+        const mapSlotIdx = sentSlots.indexOf(3);
+        extraPrompt += ` STRASSENKARTE (Referenzbild ${mapSlotIdx + 1}): Das Straßennetz aus dem Referenzbild ist DIREKT IN DEN STOFF EINGEARBEITET wie ein Sublimationsdruck. Übernimm das Linienmuster der Straßen und Wege als feines Muster im Stoff. Ton-in-Ton, ${watermarkOpacity}% heller/dunkler als Trikotfarbe. Bedeckt den gesamten Stoff. Liegt HINTER allen Nummern und Text.`;
       }
       
-      // SLOT 4-10: Sponsoren → werden NICHT mehr als Referenzbilder gesendet
-      // Stattdessen werden sie nachträglich per logoCompositing platziert (garantiert freigestellt + korrekte Position)
-      const sponsorSlotDescriptions: { slot: number; pos: string; placement: string }[] = [
-        { slot: 4, pos: "chest", placement: "front center chest, below crest and number" },
-        { slot: 5, pos: "back", placement: "lower back, below player name" },
-        { slot: 6, pos: "sleeve_left", placement: "left sleeve" },
-        { slot: 7, pos: "sleeve_right", placement: "right sleeve" },
-        { slot: 8, pos: "side_left", placement: "left side of torso" },
-        { slot: 9, pos: "side_right", placement: "right side of torso" },
-        { slot: 10, pos: "collar", placement: "back collar/nape area" },
-      ];
+      // SLOT 2: Brustsponsor als Referenzbild gesendet → KI soll es 1:1 übernehmen
+      if (chestSponsor?.imageUrl) {
+        const sponsorSlotIdx = sentSlots.indexOf(2);
+        if (sponsorSlotIdx >= 0) {
+          extraPrompt += ` BRUSTSPONSOR (Referenzbild ${sponsorSlotIdx + 1}): Übernimm dieses Sponsor-Logo EXAKT 1 zu 1 auf die VORDERSEITE des Trikots, MITTIG auf der Brust, UNTERHALB des Vereinswappens und der Brustnummer. Größe: ca. 12-15cm breit. Das Bild NICHT verändern, NICHT als Text schreiben – das BILD übernehmen!`;
+        }
+      }
       
-      // Im Prompt nur erwähnen dass Platz freigehalten werden soll
-      sponsorSlotDescriptions.forEach(({ slot, pos, placement }) => {
+      // Weitere Sponsoren: Platz freihalten (werden nicht als Referenzbild gesendet)
+      const otherSponsorPositions: { pos: string; placement: string }[] = [
+        { pos: "back", placement: "lower back, below player name" },
+        { pos: "sleeve_left", placement: "left sleeve" },
+        { pos: "sleeve_right", placement: "right sleeve" },
+        { pos: "side_left", placement: "left side of torso" },
+        { pos: "side_right", placement: "right side of torso" },
+        { pos: "collar", placement: "back collar/nape area" },
+      ];
+      otherSponsorPositions.forEach(({ pos, placement }) => {
         if (sponsorByPosition[pos]?.imageUrl) {
           extraPrompt += ` SPONSOR-BEREICH (${placement}): Ein Sponsor-Logo wird dort nachträglich platziert. LASSE DORT PLATZ FREI – kein Muster/Design in diesem Bereich.`;
         }
@@ -752,7 +775,7 @@ export default function KiDesign() {
       
       // POSITIONIERUNG: Alle Elemente UNTEN am Hosenbein-Saum
       if (shortsIncludeNumber) {
-        shortsExtras += ` VORDERSEITE - NUMMER: Spielernummer "23" auf der Vorderseite der Hose. Position: MITTLERER Bereich des linken Hosenbeins (ca. 50-60% von oben, auf Oberschenkelhöhe), NICHT oben am Bund. Größe: ca. 8cm. Gleiche Schriftart und Farbe wie die Rücken-Nummer des Trikots.`;
+        shortsExtras += ` VORDERSEITE - NUMMER: Spielernummer "23" auf der Vorderseite der Hose. Position: UNTERER Bereich des linken Hosenbeins (ca. 65-75% von oben, auf Kniehöhe), NICHT oben am Bund und NICHT auf Oberschenkelhöhe. Größe: ca. 8cm. Gleiche Schriftart und Farbe wie die Rücken-Nummer des Trikots.`;
       }
       
       // Wappen nur wenn gewählt UND kein Sponsor vorne

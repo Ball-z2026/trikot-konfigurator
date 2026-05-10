@@ -2417,3 +2417,8 @@
 - [x] Bug: Vereinswappen - KMS Logo neu hochgeladen und in DB aktualisiert
 - [x] Bug: Brustnummer Default auf 'Rechte Brust' (right) gesetzt
 - [x] Bug: generateStreetMap Backend-Prozedur implementiert (Google Static Maps API + Storage)
+
+## KI-Designer Bugs (10.05.2026 - Runde 2)
+- [ ] Bug: Vereinswappen wird nicht ins generierte Trikot-Bild übernommen (fehlt als Referenzbild im KI-Prompt)
+- [ ] Bug: Brustsponsor fehlt im generierten Trikot-Bild
+- [ ] Bug: Hose - Nummer zu hoch positioniert
