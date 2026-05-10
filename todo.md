@@ -2422,3 +2422,13 @@
 - [ ] Bug: Vereinswappen wird nicht ins generierte Trikot-Bild übernommen (fehlt als Referenzbild im KI-Prompt)
 - [ ] Bug: Brustsponsor fehlt im generierten Trikot-Bild
 - [ ] Bug: Hose - Nummer zu hoch positioniert
+
+## Koordinaten-Platzierung (10.05.2026 19:00)
+- [ ] Checkboxen für Koordinaten-Platzierung: Ärmel, Bündchen, Kragen
+- [ ] Prompt anpassen: Koordinaten an gewählten Stellen platzieren
+
+## Outline-Funktion unter generiertem Trikot (10.05.2026 19:15)
+- [ ] UI: Outline-Bereich unter generiertem Trikot mit Checkboxen (Rückennummer=Pflicht, Spielername, Vereinsname, Brustnummer, Vereinswappen)
+- [ ] UI: Farbpicker für Outline-Farbe
+- [ ] Automatisierter Prompt-Generator für Outlines um ausgewählte Elemente
+- [ ] Anpassungs-Prompt an KI senden mit Outline-Anweisungen

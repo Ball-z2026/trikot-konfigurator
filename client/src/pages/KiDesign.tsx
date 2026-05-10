@@ -116,6 +116,22 @@ export default function KiDesign() {
   const [useClubFont, setUseClubFont] = useState(true);
   const [useHashtag, setUseHashtag] = useState(false);
   const [useCoordinates, setUseCoordinates] = useState(false);
+  const [coordPlacement, setCoordPlacement] = useState<{ sleeve: boolean; cuff: boolean; collar: boolean }>({
+    sleeve: true, cuff: false, collar: false
+  });
+
+  // ── Outline-Funktion State ──
+  const [outlineColor, setOutlineColor] = useState("#FFFFFF");
+  const [outlineElements, setOutlineElements] = useState<{
+    backNumber: boolean; playerName: boolean; clubName: boolean;
+    frontNumber: boolean; crest: boolean;
+  }>({
+    backNumber: true, // Pflicht
+    playerName: false,
+    clubName: false,
+    frontNumber: false,
+    crest: false,
+  });
 
   // ── Wahrzeichen State (per Textbeschreibung, kein Upload) ──
   const [landmarkDescription, setLandmarkDescription] = useState<string>("");
@@ -558,14 +574,19 @@ export default function KiDesign() {
         extraPrompt += ` Text "${orgData.hashtag}" on BACK NECK/NAPE area, small but visible.`;
       }
       
-      // KOORDINATEN
+      // KOORDINATEN mit Platzierungsauswahl
       if (useCoordinates && orgData?.latitude && orgData?.longitude) {
         const lat = Number(orgData.latitude).toFixed(4);
         const lng = Number(orgData.longitude).toFixed(4);
         const latDir = Number(orgData.latitude) >= 0 ? "N" : "S";
         const lngDir = Number(orgData.longitude) >= 0 ? "E" : "W";
         const coordText = `${Math.abs(Number(lat))}°${latDir} ${Math.abs(Number(lng))}°${lngDir}`;
-        extraPrompt += ` Coordinates "${coordText}" on RIGHT SHOULDER area (front view, upper right), CLEARLY LEGIBLE, bold monospace font, high contrast color against fabric. Size: large enough to read easily (at least 1.5cm height).`;
+        const placements: string[] = [];
+        if (coordPlacement.sleeve) placements.push("on the SLEEVE (outer upper arm area, clearly visible, horizontal text)");
+        if (coordPlacement.cuff) placements.push("on the ARM CUFF/BAND (Bündchen, small text along the cuff edge)");
+        if (coordPlacement.collar) placements.push("on the COLLAR/NECK BAND (Kragen, small text inside or along the collar)");
+        if (placements.length === 0) placements.push("on RIGHT SHOULDER area (front view, upper right)");
+        extraPrompt += ` Coordinates "${coordText}" placed ${placements.join(" AND ")}. CLEARLY LEGIBLE, bold monospace font, high contrast color against fabric. Size: appropriate for the placement area.`;
       }
 
       // Markenrecht-Schutz: Keine ERFUNDENEN Logos oder Marken!
@@ -1119,14 +1140,33 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
                         </div>
                       )}
 
-                      {/* Koordinaten Toggle */}
+                      {/* Koordinaten Toggle + Platzierung */}
                       {orgData.latitude && orgData.longitude && (
-                        <div className="flex items-center justify-between p-2 bg-white rounded border">
-                          <div className="flex items-center gap-2">
-                            <Mountain className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm">Koordinaten</span>
+                        <div className="p-2 bg-white rounded border space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Mountain className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm">Koordinaten</span>
+                            </div>
+                            <Switch checked={useCoordinates} onCheckedChange={setUseCoordinates} />
                           </div>
-                          <Switch checked={useCoordinates} onCheckedChange={setUseCoordinates} />
+                          {useCoordinates && (
+                            <div className="pl-6 space-y-1">
+                              <p className="text-xs text-muted-foreground mb-1">Platzierung:</p>
+                              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                                <input type="checkbox" checked={coordPlacement.sleeve} onChange={(e) => setCoordPlacement(p => ({...p, sleeve: e.target.checked}))} className="rounded" />
+                                Ärmel
+                              </label>
+                              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                                <input type="checkbox" checked={coordPlacement.cuff} onChange={(e) => setCoordPlacement(p => ({...p, cuff: e.target.checked}))} className="rounded" />
+                                Bündchen
+                              </label>
+                              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                                <input type="checkbox" checked={coordPlacement.collar} onChange={(e) => setCoordPlacement(p => ({...p, collar: e.target.checked}))} className="rounded" />
+                                Kragen
+                              </label>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -1874,6 +1914,102 @@ FINAL REMINDER: ABSOLUTELY NO manufacturer logos, NO brand names, NO trademark s
                       </Button>
                     </div>
                     <p className="text-[10px] text-amber-600">Beschreibe was geändert werden soll. Das aktuelle Design wird als Basis verwendet.</p>
+                  </div>
+                )}
+
+                {/* ═══ OUTLINE-FUNKTION ═══ */}
+                {generatedImageUrl && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
+                    <span className="text-sm text-blue-800 font-semibold">Outline / Kontur für bessere Lesbarkeit</span>
+                    <p className="text-[10px] text-blue-600">Wähle Elemente aus, die eine farbige Outline bekommen sollen.</p>
+                    
+                    {/* Outline-Farbe */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-blue-700">Outline-Farbe:</span>
+                      <input
+                        type="color"
+                        value={outlineColor}
+                        onChange={(e) => setOutlineColor(e.target.value)}
+                        className="w-8 h-8 rounded border border-blue-300 cursor-pointer"
+                      />
+                      <span className="text-[10px] text-blue-500 font-mono">{outlineColor}</span>
+                    </div>
+
+                    {/* Element-Checkboxen */}
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <input type="checkbox" checked={outlineElements.backNumber} disabled className="rounded opacity-70" />
+                        <span className="text-blue-800">Rückennummer</span>
+                        <span className="text-[9px] text-blue-500 ml-auto">(Pflicht)</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <input type="checkbox" checked={outlineElements.playerName} onChange={(e) => setOutlineElements(p => ({...p, playerName: e.target.checked}))} className="rounded" />
+                        <span className="text-blue-800">Spielername</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <input type="checkbox" checked={outlineElements.clubName} onChange={(e) => setOutlineElements(p => ({...p, clubName: e.target.checked}))} className="rounded" />
+                        <span className="text-blue-800">Vereinsname</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <input type="checkbox" checked={outlineElements.frontNumber} onChange={(e) => setOutlineElements(p => ({...p, frontNumber: e.target.checked}))} className="rounded" />
+                        <span className="text-blue-800">Brustnummer</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <input type="checkbox" checked={outlineElements.crest} onChange={(e) => setOutlineElements(p => ({...p, crest: e.target.checked}))} className="rounded" />
+                        <span className="text-blue-800">Vereinswappen</span>
+                      </label>
+                    </div>
+
+                    {/* Outline anwenden Button */}
+                    <Button
+                      size="sm"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                      onClick={async () => {
+                        const elements: string[] = [];
+                        elements.push("back number (Rückennummer)");
+                        if (outlineElements.playerName) elements.push("player name (Spielername)");
+                        if (outlineElements.clubName) elements.push("club name (Vereinsname)");
+                        if (outlineElements.frontNumber) elements.push("front/chest number (Brustnummer)");
+                        if (outlineElements.crest) elements.push("club crest/badge (Vereinswappen)");
+                        const outlinePrompt = `Add a clearly visible ${outlineColor} colored OUTLINE/STROKE/CONTOUR around the following elements to improve readability: ${elements.join(", ")}. The outline should be approximately 2-3px thick, consistent on all selected elements. The outline color is ${outlineColor}. Keep EVERYTHING else exactly the same - same design, same pattern, same colors, same positions. ONLY add the outline stroke around the specified text/elements.`;
+                        setEditDescription(outlinePrompt);
+                        // Direkt die Anpassung starten
+                        if (!generatedImageUrl) return;
+                        setIsEditing(true);
+                        try {
+                          const editPromptFull = `Modify this existing jersey design based on the following instruction: "${outlinePrompt}". Keep everything else EXACTLY the same - same colors, same layout, same logos, same numbers, same overall style. ONLY change what is explicitly requested. The result must still be a professional flat-lay product photo on white background showing front and back view side by side.`;
+                          const result = await generateAiMockup.mutateAsync({
+                            productName: "Trikot (Outline)",
+                            productType: "trikot",
+                            side: "front",
+                            customPrompt: editPromptFull,
+                            referenceImageUrl: generatedImageUrl.startsWith("http") ? generatedImageUrl : `${window.location.origin}${generatedImageUrl}`,
+                          });
+                          if (result.url) {
+                            setGeneratedImageUrl(result.url);
+                            setDesignHistory(prev => {
+                              const newHistory = [...prev.slice(0, historyIndex + 1), { url: result.url!, timestamp: Date.now(), label: `Outline ${prev.length + 1}` }];
+                              setHistoryIndex(newHistory.length - 1);
+                              return newHistory;
+                            });
+                            setEditDescription("");
+                            toast.success("Outline angewendet!");
+                          }
+                        } catch (error: any) {
+                          console.error("Outline fehlgeschlagen:", error);
+                          toast.error("Outline fehlgeschlagen: " + (error.message || "Unbekannter Fehler"));
+                        } finally {
+                          setIsEditing(false);
+                        }
+                      }}
+                      disabled={isEditing}
+                    >
+                      {isEditing ? (
+                        <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Outline wird angewendet...</>
+                      ) : (
+                        "Outline anwenden"
+                      )}
+                    </Button>
                   </div>
                 )}
 
