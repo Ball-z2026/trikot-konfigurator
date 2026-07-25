@@ -1132,7 +1132,7 @@ function buildTorso(isTank) {
   const rAt=v=>{ for(let i=1;i<prof.length;i++){ if(v<=prof[i][0]){ const a=prof[i-1],b=prof[i],k=(v-a[0])/(b[0]-a[0]); return a[1]+(b[1]-a[1])*k; } } return prof[prof.length-1][1]; };
   const yAt=v=>0.98 - v*2.02;
   const pos=[],uv=[],grid=[];
-  for(let i=0;i<=NV;i++){ const v=i/NV, r=rAt(v), rx=r, rz=r*0.40, y=yAt(v); const row=[];
+  for(let i=0;i<=NV;i++){ const v=i/NV, r=rAt(v), rx=r, rz=r*0.46, y=yAt(v); const row=[];
     for(let j=0;j<=NU;j++){ const th=j/NU*Math.PI*2; const x=rx*Math.sin(th), z=rz*Math.cos(th);
       let u=0.25 + th/(Math.PI*2); u=u-Math.floor(u);
       row.push(pos.length/3); pos.push(x,y,z); uv.push(u, v);
@@ -1154,40 +1154,56 @@ function buildTorso(isTank) {
   for(let i=0;i<nrm.length;i+=3){ const l=Math.hypot(nrm[i],nrm[i+1],nrm[i+2])||1; nrm[i]/=l;nrm[i+1]/=l;nrm[i+2]/=l; }
   return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array(uv), idx:new Uint16Array(idx), tex:true };
 }
-// Konus (Ärmel) entlang dir*X, an der Schulter platziert
-function buildCone(dir, len, r0, r1) {
-  const NU=32, pos=[],nrm=[],idx=[]; const rings=[[0,r0],[len,r1]];
-  const base=[];
-  for(const [xx,r] of rings){ const row=[]; for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; const y=r*Math.cos(a), z=r*Math.sin(a);
-    row.push(pos.length/3); pos.push(dir*xx,y,z); nrm.push(dir*0.25, Math.cos(a), Math.sin(a)); } base.push(row); }
-  for(let j=0;j<NU;j++){ const a=base[0][j],b=base[0][j+1],c=base[1][j],d=base[1][j+1]; idx.push(a,c,b, b,c,d); }
-  // Kappe am Ärmelende
-  const capC=pos.length/3; pos.push(dir*len,0,0); nrm.push(dir,0,0);
-  for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; pos.push(dir*len, r1*Math.cos(a), r1*Math.sin(a)); nrm.push(dir,0,0); }
-  for(let j=0;j<NU;j++){ idx.push(capC, capC+1+j, capC+1+j+1); }
-  const N=pos.length/3, uv=new Float32Array(N*2);
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false };
+const V = {
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
+  norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];},
+};
+// Ärmel als gebogener Sweep entlang einer Bézier-Kurve (natürlicher Fall, an Schulter angebunden)
+function buildSleeveSeg(side, t0, t1, colorKey, rOff, cap) {
+  const NU=30, NL=12;
+  const P0=[side*0.46,0.70,0.02], P1=[side*0.82,0.52,0.0], P2=[side*0.90,0.14,-0.05];
+  const bez=t=>{const u=1-t;return [u*u*P0[0]+2*u*t*P1[0]+t*t*P2[0], u*u*P0[1]+2*u*t*P1[1]+t*t*P2[1], u*u*P0[2]+2*u*t*P1[2]+t*t*P2[2]];};
+  const dbz=t=>V.norm([2*(1-t)*(P1[0]-P0[0])+2*t*(P2[0]-P1[0]), 2*(1-t)*(P1[1]-P0[1])+2*t*(P2[1]-P1[1]), 2*(1-t)*(P1[2]-P0[2])+2*t*(P2[2]-P1[2])]);
+  const radAt=t=>0.27*(1-t)+0.15*t + rOff;
+  const pos=[],nrm=[],grid=[];
+  for(let i=0;i<=NL;i++){ const t=t0+(t1-t0)*i/NL; const c=bez(t), T=dbz(t);
+    const sdv=V.norm(V.cross(T,[0,1,0])), up=V.cross(sdv,T); const r=radAt(t), row=[];
+    for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2, ca=Math.cos(a), sa=Math.sin(a);
+      const n=[ca*sdv[0]+sa*up[0], ca*sdv[1]+sa*up[1], ca*sdv[2]+sa*up[2]];
+      row.push(pos.length/3); pos.push(c[0]+r*n[0], c[1]+r*n[1], c[2]+r*n[2]); nrm.push(n[0],n[1],n[2]);
+    } grid.push(row);
+  }
+  const idx=[];
+  for(let i=0;i<NL;i++)for(let j=0;j<NU;j++){ const a=grid[i][j],b=grid[i][j+1],cc=grid[i+1][j],d=grid[i+1][j+1]; idx.push(a,cc,b,b,cc,d); }
+  if(cap){ const c=bez(t1),T=dbz(t1),capC=pos.length/3; pos.push(c[0],c[1],c[2]); nrm.push(side*T[0],T[1],T[2]);
+    for(let j=0;j<NU;j++) idx.push(capC, grid[NL][j], grid[NL][j+1]); }
+  const uv=new Float32Array((pos.length/3)*2);
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false, colorKey };
 }
-// Hals-Füllung (flache Disc), verdeckt das Innere des Trikots
+// Hals-Füllung (flache Disc) verdeckt das Innere
 function buildNeckFill() {
-  const NU=40, rx=0.31, rz=0.135, cy=0.955, pos=[0,cy,0], nrm=[0,1,0], idx=[];
+  const NU=40, rx=0.30, rz=0.16, cy=0.955, pos=[0,cy,0], nrm=[0,1,0], idx=[];
   for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; pos.push(rx*Math.sin(a), cy, rz*Math.cos(a)); nrm.push(0,1,0); }
   for(let j=0;j<NU;j++) idx.push(0, 1+j, 1+j+1);
-  const uv=new Float32Array((pos.length/3)*2);
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false };
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array((pos.length/3)*2), idx:new Uint16Array(idx), tex:false, colorKey:"neck" };
 }
-// Kragen-Ring (elliptischer Torus)
-function buildCollar() {
-  const NA=52, NB=14, rx=0.33, rz=0.15, tube=0.05, cy=0.94, pos=[],nrm=[],idx=[],grid=[];
-  for(let i=0;i<=NA;i++){ const a=i/NA*Math.PI*2, row=[];
-    for(let j=0;j<=NB;j++){ const b=j/NB*Math.PI*2; const cb=Math.cos(b),sb=Math.sin(b);
-      row.push(pos.length/3);
-      pos.push((rx+tube*cb)*Math.sin(a), cy+tube*sb, (rz+tube*cb)*Math.cos(a));
-      nrm.push(cb*Math.sin(a), sb, cb*Math.cos(a));
-    } grid.push(row); }
-  for(let i=0;i<NA;i++)for(let j=0;j<NB;j++){ const a=grid[i][j],b=grid[i][j+1],c=grid[i+1][j],d=grid[i+1][j+1]; idx.push(a,c,b,b,c,d); }
-  const uv=new Float32Array((pos.length/3)*2);
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false };
+// Stehender Rundkragen (Rippe) um die Halsöffnung
+function buildCollarRib() {
+  const NA=56, rxB=0.31, rzB=0.16, bY=0.95, tY=1.02, fl=1.06, pos=[],nrm=[],idx=[],grid=[];
+  const rings=[[bY,1.0],[tY,fl]];
+  for(const [y,sc] of rings){ const row=[]; for(let j=0;j<=NA;j++){ const a=j/NA*Math.PI*2;
+    row.push(pos.length/3); pos.push(rxB*sc*Math.sin(a), y, rzB*sc*Math.cos(a)); nrm.push(Math.sin(a),0.15,Math.cos(a)); } grid.push(row); }
+  for(let j=0;j<NA;j++){ const a=grid[0][j],b=grid[0][j+1],c=grid[1][j],d=grid[1][j+1]; idx.push(a,c,b,b,c,d); }
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array((pos.length/3)*2), idx:new Uint16Array(idx), tex:false, colorKey:"neck" };
+}
+// Saumband (kurzer Ring am unteren Trikotrand)
+function buildHemBand() {
+  const NA=64, rx=0.607, rz=0.279, y0=-1.10, y1=-0.99, pos=[],nrm=[],idx=[],grid=[];
+  for(const y of [y0,y1]){ const row=[]; for(let j=0;j<=NA;j++){ const a=j/NA*Math.PI*2;
+    row.push(pos.length/3); pos.push(rx*Math.sin(a), y, rz*Math.cos(a)); nrm.push(Math.sin(a),0,Math.cos(a)); } grid.push(row); }
+  for(let j=0;j<NA;j++){ const a=grid[0][j],b=grid[0][j+1],c=grid[1][j],d=grid[1][j+1]; idx.push(a,c,b,b,c,d); }
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array((pos.length/3)*2), idx:new Uint16Array(idx), tex:false, colorKey:"band" };
 }
 
 // Design-Atlas (links Vorderteil, rechts Rückteil) als 2D-Canvas -> Textur
@@ -1222,10 +1238,12 @@ async function buildAtlas() {
 const Jersey3D = (() => {
   let gl, prog, loc, cv, raf=0, meshes=[], tex, yaw=-0.35, pitch=0.06, zoom=4.3, style=null;
   let drag=false, lx=0, ly=0;
+  const hexv = h => { const x=hexToRgb(h); return [x.r/255,x.g/255,x.b/255]; };
   const attrBuf = m => { const b={};
     for(const k of ["pos","nrm","uv"]){ const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER, m[k], gl.STATIC_DRAW); b[k]=buf; }
     const ib=gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.idx, gl.STATIC_DRAW);
-    return { ...b, ib, n:m.idx.length, tex:m.tex, local:m.local||M4.ident(), color:m.color||[0.5,0.5,0.5] };
+    const color = m.colorKey ? hexv(state.partColors[m.colorKey]) : (m.color||[0.5,0.5,0.5]);
+    return { ...b, ib, n:m.idx.length, tex:m.tex, local:m.local||M4.ident(), color, colorKey:m.colorKey||null };
   };
   function sh(type,src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
     if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
@@ -1240,10 +1258,11 @@ const Jersey3D = (() => {
       void main(){ vec3 N=normalize(vN);
         vec3 L1=normalize(vec3(0.35,0.65,0.85)), L2=normalize(vec3(-0.5,0.2,0.4));
         float d1=max(dot(N,L1),0.0), d2=max(dot(N,L2),0.0);
-        float hemi=0.5+0.5*N.y; float amb=mix(0.5,0.72,hemi);   // weicher Himmel/Boden-Ambient
+        float hemi=0.5+0.5*N.y; float amb=mix(0.52,0.74,hemi);       // weicher Himmel/Boden-Ambient
+        float ao=mix(0.82,1.0, smoothstep(0.0,0.55,abs(N.z)));       // Seiten/Achseln leicht abschatten (Rundung)
         vec3 base = uUseTex==1 ? texture2D(uTex,vUv).rgb : uColor;
-        float rim=pow(1.0-max(dot(N,vec3(0.0,0.0,1.0)),0.0),3.0)*0.14;
-        float light=amb + d1*0.42 + d2*0.16;
+        float rim=pow(1.0-max(dot(N,vec3(0.0,0.0,1.0)),0.0),3.2)*0.10;  // matter, weniger Glanz
+        float light=(amb + d1*0.38 + d2*0.14)*ao;
         gl_FragColor=vec4(base*light+rim, 1.0); }`;
     prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(prog);
     gl.useProgram(prog);
@@ -1258,13 +1277,15 @@ const Jersey3D = (() => {
   function buildMeshes(){
     for(const m of meshes){ gl.deleteBuffer(m.pos); gl.deleteBuffer(m.nrm); gl.deleteBuffer(m.uv); gl.deleteBuffer(m.ib); }
     meshes=[]; const isTank = tpl().style==="tank"; style=tpl().style;
-    const c=state.partColors, hex=h=>{const x=hexToRgb(h);return [x.r/255,x.g/255,x.b/255];};
-    meshes.push(attrBuf(buildTorso(isTank)));
-    const fill=buildNeckFill(); fill.color=hex(c.neck); meshes.push(attrBuf(fill));
-    const collar=buildCollar(); collar.color=hex(c.neck); meshes.push(attrBuf(collar));
+    meshes.push(attrBuf(buildTorso(isTank)));      // Textur (Design)
+    meshes.push(attrBuf(buildNeckFill()));         // Hals-Füllung
+    meshes.push(attrBuf(buildCollarRib()));        // Rundkragen-Rippe
+    meshes.push(attrBuf(buildHemBand()));          // Saumband
     if(!isTank){
-      const rS=buildCone(1,0.60,0.30,0.21); rS.local=M4.mul(M4.trans(0.47,0.66,0), rotZ(-0.46)); rS.color=hex(c.sleeveR); meshes.push(attrBuf(rS));
-      const lS=buildCone(-1,0.60,0.30,0.21); lS.local=M4.mul(M4.trans(-0.47,0.66,0), rotZ(0.46)); lS.color=hex(c.sleeveL); meshes.push(attrBuf(lS));
+      meshes.push(attrBuf(buildSleeveSeg(1, 0.0, 1.0, "sleeveR", 0.0, true)));    // Ärmel rechts
+      meshes.push(attrBuf(buildSleeveSeg(1, 0.82, 1.0, "band", 0.015, true)));    // Bündchen rechts
+      meshes.push(attrBuf(buildSleeveSeg(-1, 0.0, 1.0, "sleeveL", 0.0, true)));   // Ärmel links
+      meshes.push(attrBuf(buildSleeveSeg(-1, 0.82, 1.0, "band", 0.015, true)));   // Bündchen links
     }
   }
   function rotZ(a){ const c=Math.cos(a),s=Math.sin(a); return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]; }
@@ -1294,8 +1315,8 @@ const Jersey3D = (() => {
   function loop(){ render(); raf=requestAnimationFrame(loop); }
   function bindPointer(){
     cv.addEventListener("pointerdown", e=>{ drag=true; lx=e.clientX; ly=e.clientY; cv.setPointerCapture(e.pointerId); });
-    cv.addEventListener("pointermove", e=>{ if(!drag) return; yaw+=(e.clientX-lx)*0.01; pitch+=(e.clientY-ly)*0.01;
-      pitch=Math.max(-0.9,Math.min(0.9,pitch)); lx=e.clientX; ly=e.clientY; });
+    cv.addEventListener("pointermove", e=>{ if(!drag) return; yaw+=(e.clientX-lx)*0.009; pitch+=(e.clientY-ly)*0.006;
+      pitch=Math.max(-0.5,Math.min(0.5,pitch)); lx=e.clientX; ly=e.clientY; });
     cv.addEventListener("pointerup", ()=>drag=false);
     cv.addEventListener("wheel", e=>{ e.preventDefault(); zoom=Math.max(3.0,Math.min(7.0, zoom+e.deltaY*0.003)); }, {passive:false});
   }
@@ -1303,12 +1324,9 @@ const Jersey3D = (() => {
     active:false,
     ensure(canvas){ if(this.active && gl) return true; cv=canvas; try{ if(!initGL()) return false; }catch(e){ console.error(e); return false; }
       this.active=true; buildMeshes(); loop(); return true; },
-    update(){ if(!this.active) return; if(tpl().style!==style) buildMeshes(); else {
-        const c=state.partColors, hex=h=>{const x=hexToRgb(h);return [x.r/255,x.g/255,x.b/255];};
-        // Farben der Solid-Teile aktualisieren: [1]=Hals-Füllung, [2]=Kragen, [3]=Ärmel R, [4]=Ärmel L
-        meshes[1].color=hex(c.neck); meshes[2].color=hex(c.neck);
-        if(tpl().style!=="tank"){ meshes[3].color=hex(c.sleeveR); meshes[4].color=hex(c.sleeveL); }
-      }
+    update(){ if(!this.active) return;
+      if(tpl().style!==style) buildMeshes();
+      else for(const m of meshes){ if(m.colorKey) m.color = hexv(state.partColors[m.colorKey]); }  // Solid-Farben aktualisieren
       uploadTex();
     },
     stop(){ if(raf) cancelAnimationFrame(raf); raf=0; this.active=false; gl=null; },
