@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ballz Trikot-Konfigurator – Standalone Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Oswald:wght@400;600;700&family=Bebas+Neue&family=Anton&family=Teko:wght@500;700&family=Archivo+Black&family=Montserrat:wght@600;800&family=Russo+One&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0f17;
+    --panel: #131a26;
+    --panel-2: #1a2434;
+    --line: #263243;
+    --text: #e7ecf3;
+    --muted: #8c9bb0;
+    --primary: #ff5a1f;
+    --primary-2: #ff7a45;
+    --accent: #3b82f6;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    background: radial-gradient(1200px 800px at 80% -10%, #17203000, #0b0f17 60%), var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 20px; border-bottom: 1px solid var(--line);
+    background: rgba(19,26,38,0.7); backdrop-filter: blur(8px);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: .5px; font-size: 18px; }
+  .logo .mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    display: grid; place-items: center; font-size: 18px;
+  }
+  .logo small { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
+  header .spacer { flex: 1; }
+  .pill { font-size: 11px; color: var(--muted); border: 1px solid var(--line); padding: 4px 10px; border-radius: 999px; }
+
+  /* Main layout */
+  .main { flex: 1; display: grid; grid-template-columns: 1fr 400px; min-height: 0; }
+  @media (max-width: 980px) { .main { grid-template-columns: 1fr; } }
+
+  /* Stage */
+  .stage { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overflow: auto; }
+  .stage-toolbar { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; background: var(--panel); border: 1px solid var(--line); padding: 5px; border-radius: 999px; z-index: 5; }
+  .seg { border: none; background: transparent; color: var(--muted); font-weight: 700; font-size: 13px; padding: 7px 16px; border-radius: 999px; cursor: pointer; }
+  .seg.active { background: var(--primary); color: #fff; }
+  .jersey-wrap { width: min(560px, 90%); aspect-ratio: 1000 / 1200; margin-top: 20px; filter: drop-shadow(0 24px 40px rgba(0,0,0,.5)); }
+  svg.jersey { width: 100%; height: 100%; display: block; }
+  .zone-hit { cursor: pointer; }
+  .zone-outline { fill: none; stroke: var(--accent); stroke-dasharray: 6 5; stroke-width: 2.5; opacity: 0; transition: opacity .15s; }
+  .zone-hit:hover .zone-outline { opacity: .7; }
+  .zone-hit.selected .zone-outline { opacity: 1; stroke: var(--primary); stroke-dasharray: none; }
+  .zone-empty-bg { fill: rgba(255,255,255,.06); stroke: rgba(255,255,255,.25); stroke-dasharray: 5 5; stroke-width: 2; }
+  .zone-label { fill: var(--muted); font: 700 22px "Inter", sans-serif; }
+  .stage-caption { margin-top: 14px; color: var(--muted); font-size: 12px; }
+
+  /* Sidebar */
+  .sidebar { border-left: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tab { flex: 1; min-width: max-content; border: none; background: transparent; color: var(--muted); font-weight: 700; font-size: 12.5px; padding: 12px 10px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; display: flex; align-items: center; gap: 6px; justify-content: center; }
+  .tab.active { color: var(--text); border-bottom-color: var(--primary); }
+  .tab svg { width: 15px; height: 15px; }
+  .panel-body { padding: 18px; overflow-y: auto; flex: 1; }
+
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 800; margin: 4px 0 12px; }
+  .field { margin-bottom: 16px; }
+  .field > label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  input[type="text"], select, textarea {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+    padding: 9px 11px; border-radius: 9px; font-size: 13.5px; font-family: inherit; outline: none;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--primary); }
+  input[type="range"] { width: 100%; accent-color: var(--primary); }
+
+  .card-tpl { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .tpl { text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; cursor: pointer; transition: .15s; }
+  .tpl:hover { border-color: #3a4a60; }
+  .tpl.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
+  .tpl .ic { font-size: 22px; }
+  .tpl .nm { font-weight: 700; font-size: 13px; margin-top: 6px; }
+  .tpl .sp { font-size: 11px; color: var(--muted); }
+
+  .part-row { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; background: var(--panel-2); }
+  .swatch { width: 40px; height: 40px; border-radius: 8px; border: 2px solid rgba(255,255,255,.15); cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0; }
+  .swatch input { position: absolute; inset: -6px; opacity: 0; cursor: pointer; }
+  .part-meta { flex: 1; min-width: 0; }
+  .part-meta .pn { font-weight: 700; font-size: 13px; }
+  .cmyk { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .preset { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); cursor: pointer; padding: 0; }
+
+  .zone-item { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; overflow: hidden; background: var(--panel-2); }
+  .zone-head { display: flex; align-items: center; gap: 8px; padding: 11px 12px; cursor: pointer; }
+  .zone-head .badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); background: rgba(255,255,255,.06); padding: 2px 7px; border-radius: 999px; }
+  .zone-head .zt { font-weight: 700; font-size: 13px; flex: 1; }
+  .zone-body { padding: 0 12px 14px; border-top: 1px solid var(--line); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .mini-label { font-size: 11px; color: var(--muted); margin: 12px 0 5px; font-weight: 600; }
+  .color-input { display: flex; align-items: center; gap: 8px; }
+  .color-input input[type=color] { width: 34px; height: 34px; border: none; background: none; padding: 0; border-radius: 8px; cursor: pointer; }
+  .auto-tag { font-size: 10.5px; color: var(--accent); background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.3); padding: 2px 7px; border-radius: 999px; }
+
+  table.players { width: 100%; border-collapse: collapse; }
+  table.players th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); padding: 6px 6px; }
+  table.players td { padding: 4px 4px; }
+  table.players input { padding: 7px 8px; font-size: 12.5px; }
+  table.players input.num { width: 52px; text-align: center; }
+  .prow.active td input { border-color: var(--primary); }
+  .radio-cell { width: 26px; text-align: center; }
+  .del-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 6px; border-radius: 6px; }
+  .del-btn:hover { color: #ff6b6b; background: rgba(255,107,107,.1); }
+
+  button.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 10px; font-weight: 700; font-size: 13.5px; padding: 11px 16px; cursor: pointer; }
+  button.btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; width: 100%; }
+  button.btn.primary:hover { filter: brightness(1.05); }
+  button.btn.ghost { background: var(--panel-2); border: 1px solid var(--line); color: var(--text); }
+  button.btn.ghost:hover { border-color: #3a4a60; }
+  .btn-full { width: 100%; }
+  .hint { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .upload-zone { border: 1.5px dashed var(--line); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; color: var(--muted); font-size: 12.5px; }
+  .upload-zone:hover { border-color: var(--primary); color: var(--text); }
+  .divider { height: 1px; background: var(--line); margin: 18px 0; }
+  .swatch-preview-img { width: 100%; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <span class="mark">🏀</span>
+      <div>Ballz <small>Trikot-Konfigurator</small></div>
+    </div>
+    <div class="spacer"></div>
+    <span class="pill">Standalone Demo · Mock-Daten · kein Backend</span>
+  </header>
+
+  <div class="main">
+    <!-- Preview stage -->
+    <div class="stage">
+      <div class="stage-toolbar">
+        <button class="seg" data-view="front" id="segFront">Vorderseite</button>
+        <button class="seg" data-view="back" id="segBack">Rückseite</button>
+      </div>
+      <div class="jersey-wrap">
+        <div id="preview"></div>
+      </div>
+      <div class="stage-caption" id="caption"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="tabs" id="tabs"></div>
+      <div class="panel-body" id="panel"></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   Ballz Trikot-Konfigurator — Standalone Demo
+   Eigenständige, offline lauffähige Nachbildung des CustomerConfigurator.
+   Kernmodell 1:1 übernommen: Parts (einfärbbar, CMYK), Zonen (posX/posY/
+   width/height in %, Purposes), Spielerliste, Google-Fonts, Front/Back,
+   PNG-Export. Alle Daten sind Mock-Daten – es wird kein Server benötigt.
+   ========================================================================= */
+
+/* ---------- Farb-Helfer (portiert aus client/src/lib/cmyk.ts) ---------- */
+function hexToRgb(hex) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  return { r: parseInt(hex.slice(0,2),16), g: parseInt(hex.slice(2,4),16), b: parseInt(hex.slice(4,6),16) };
+}
+function rgbToCmyk(r, g, b) {
+  const rn=r/255, gn=g/255, bn=b/255;
+  const k = 1 - Math.max(rn, gn, bn);
+  if (k === 1) return { c:0, m:0, y:0, k:100 };
+  return {
+    c: Math.round((1-rn-k)/(1-k)*100),
+    m: Math.round((1-gn-k)/(1-k)*100),
+    y: Math.round((1-bn-k)/(1-k)*100),
+    k: Math.round(k*100),
+  };
+}
+function hexToCmyk(hex) { const {r,g,b} = hexToRgb(hex); return rgbToCmyk(r,g,b); }
+function formatCmyk(c) { return `C${c.c} M${c.m} Y${c.y} K${c.k}`; }
+function initials(name) {
+  return (name||'').trim().split(/\s+/).map(w => w[0]||'').join('').slice(0,3).toUpperCase();
+}
+
+/* ---------- Purpose-Labels (aus CustomerConfigurator.tsx) ---------- */
+const PURPOSE_LABELS = {
+  logo: "Logo",
+  clubLogo: "Vereinswappen",
+  playerName: "Spielername",
+  playerNumber: "Nummer",
+  playerInitials: "Kürzel",
+  clubName: "Vereinsname",
+  custom: "Freitext / Sponsor",
+};
+// Purposes, die automatisch aus Team-/Vereinsdaten gefüllt werden
+const AUTO_PURPOSES = new Set(["playerName", "playerNumber", "playerInitials", "clubName"]);
+const IMAGE_PURPOSES = new Set(["logo", "clubLogo"]);
+
+const FONTS = ["Inter","Oswald","Bebas Neue","Anton","Teko","Archivo Black","Montserrat","Russo One","Rajdhani"];
+const SIZES = ["XS","S","M","L","XL","XXL","3XL"];
+const COLOR_PRESETS = ["#ffffff","#111827","#dc2626","#ea580c","#f59e0b","#16a34a","#0ea5e9","#1d4ed8","#4f46e5","#7c3aed","#db2777","#facc15"];
+
+/* ---------- Mock-Templates (Struktur wie shared/templates.ts) ---------- */
+// Zonen: x/y/w/h in % der Vorschaufläche (viewBox 1000x1200), analog posX/posY/width/height.
+function baseZones() {
+  return {
+    front: [
+      { id:"f-logo", label:"Vereinswappen", purpose:"clubLogo",   x:57, y:20, w:15, h:12 },
+      { id:"f-num",  label:"Brustnummer",   purpose:"playerNumber",x:26, y:21, w:12, h:9,  font:"Anton" },
+      { id:"f-spon1",label:"Brust Sponsor", purpose:"custom",      x:30, y:47, w:40, h:8,  font:"Montserrat", text:"HAUPTSPONSOR" },
+      { id:"f-spon2",label:"Bauch Sponsor", purpose:"custom",      x:33, y:64, w:34, h:7,  font:"Montserrat", text:"" },
+    ],
+    back: [
+      { id:"b-club", label:"Vereinsname",   purpose:"clubName",    x:24, y:19, w:52, h:7,  font:"Bebas Neue" },
+      { id:"b-name", label:"Spielername",   purpose:"playerName",  x:22, y:26, w:56, h:6,  font:"Oswald" },
+      { id:"b-num",  label:"Rückennummer",  purpose:"playerNumber",x:35, y:33, w:30, h:27, font:"Anton" },
+      { id:"b-spon", label:"Rücken Sponsor",purpose:"custom",      x:30, y:74, w:40, h:6,  font:"Montserrat", text:"" },
+    ],
+  };
+}
+
+const TEMPLATES = [
+  { id:"fb-sub",  name:"Fußball Home",   sport:"Fußball",    icon:"⚽", style:"shirt",
+    colors:{ body:"#c81e2b", sleeveL:"#111827", sleeveR:"#111827", collar:"#111827" }, zones: baseZones() },
+  { id:"hb-sub",  name:"Handball Away",  sport:"Handball",   icon:"🤾", style:"shirt",
+    colors:{ body:"#1d4ed8", sleeveL:"#f8fafc", sleeveR:"#f8fafc", collar:"#facc15" }, zones: baseZones() },
+  { id:"bb-tank", name:"Basketball Pro", sport:"Basketball", icon:"🏀", style:"tank",
+    colors:{ body:"#0f172a", sleeveL:"#ff5a1f", sleeveR:"#ff5a1f", collar:"#ff5a1f" }, zones: baseZones() },
+  { id:"vb-sub",  name:"Volleyball",     sport:"Volleyball", icon:"🏐", style:"shirt",
+    colors:{ body:"#16a34a", sleeveL:"#052e16", sleeveR:"#052e16", collar:"#f8fafc" }, zones: baseZones() },
+];
+
+/* ---------- Jersey-Geometrie (SVG-Pfade, viewBox 0 0 1000 1200) ---------- */
+function jerseyPaths(style, view) {
+  const neckDip = view === "front" ? 250 : 205; // Vorne tiefer, hinten runder/höher
+  if (style === "tank") {
+    const body = `M 385 205 L 470 205 Q 500 ${neckDip} 530 205 L 615 205 L 655 470 L 690 1050 L 310 1050 L 345 470 Z`;
+    const collar = `M 462 202 Q 500 ${neckDip+18} 538 202 L 548 226 Q 500 ${neckDip+46} 452 226 Z`;
+    return { body, sleeveL:null, sleeveR:null, collar };
+  }
+  const body    = `M 340 185 L 430 180 Q 500 ${neckDip} 570 180 L 660 185 L 700 360 L 690 1050 L 310 1050 L 300 360 Z`;
+  const sleeveL = `M 340 185 L 205 255 L 238 445 L 300 360 Z`;
+  const sleeveR = `M 660 185 L 795 255 L 762 445 L 700 360 Z`;
+  const collar  = `M 425 177 Q 500 ${neckDip+22} 575 177 L 588 202 Q 500 ${neckDip+52} 412 202 Z`;
+  return { body, sleeveL, sleeveR, collar };
+}
+const PART_DEFS = [
+  { key:"body",    label:"Korpus (Vorder-/Rückteil)" },
+  { key:"sleeveL", label:"Ärmel links" },
+  { key:"sleeveR", label:"Ärmel rechts" },
+  { key:"collar",  label:"Kragen" },
+];
+
+/* ---------- State ---------- */
+const state = {
+  templateId: TEMPLATES[0].id,
+  view: "front",
+  tab: "vorlage",
+  partColors: { ...TEMPLATES[0].colors },
+  zoneContent: {},                 // zoneId -> { text, imageDataUrl, font, size, color, weight }
+  clubName: "SV MUSTERSTADT",
+  clubLogo: null,                  // dataURL
+  players: [
+    { number:"10", name:"Mustermann", size:"L" },
+    { number:"7",  name:"Schmidt",    size:"M" },
+    { number:"23", name:"Yildiz",     size:"XL" },
+  ],
+  selectedPlayer: 0,
+  selectedZoneId: null,
+};
+
+function tpl() { return TEMPLATES.find(t => t.id === state.templateId); }
+function currentZones() { return tpl().zones[state.view]; }
+function allZones() { return [...tpl().zones.front, ...tpl().zones.back]; }
+function zc(zoneId) { return state.zoneContent[zoneId] || {}; }
+function selPlayer() { return state.players[state.selectedPlayer] || null; }
+
+/* ---------- Effektiver Text/Font einer Zone (Auto-Fill wie im Original) ---------- */
+function zoneText(z) {
+  const c = zc(z.id);
+  switch (z.purpose) {
+    case "playerName":    return (selPlayer()?.name || "").toUpperCase();
+    case "playerNumber":  return selPlayer()?.number || "";
+    case "playerInitials":return initials(selPlayer()?.name);
+    case "clubName":      return state.clubName || "";
+    default:              return c.text !== undefined ? c.text : (z.text || "");
+  }
+}
+function zoneFont(z)   { return zc(z.id).font   || z.font   || "Oswald"; }
+function zoneColor(z)  { return zc(z.id).color  || z.color  || "#ffffff"; }
+function zoneWeight(z) { return zc(z.id).weight || z.weight || "900"; }
+function zoneSize(z)   { return zc(z.id).size   != null ? zc(z.id).size : 1; } // Skalierungsfaktor
+function zoneImage(z)  {
+  if (z.purpose === "clubLogo") return zc(z.id).imageDataUrl || state.clubLogo;
+  return zc(z.id).imageDataUrl || null;
+}
+
+/* =========================================================================
+   PREVIEW (SVG)
+   ========================================================================= */
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function renderPreview() {
+  const t = tpl();
+  const p = jerseyPaths(t.style, state.view);
+  const c = state.partColors;
+  const stroke = "#00000022";
+
+  let parts = "";
+  parts += `<path d="${p.body}" fill="${c.body}" stroke="${stroke}" stroke-width="2"/>`;
+  if (p.sleeveL) parts += `<path d="${p.sleeveL}" fill="${c.sleeveL}" stroke="${stroke}" stroke-width="2"/>`;
+  if (p.sleeveR) parts += `<path d="${p.sleeveR}" fill="${c.sleeveR}" stroke="${stroke}" stroke-width="2"/>`;
+  parts += `<path d="${p.collar}" fill="${c.collar}" stroke="${stroke}" stroke-width="2"/>`;
+  // dezente Seitennaht-Andeutung
+  parts += `<path d="${p.body}" fill="none" stroke="#ffffff10" stroke-width="1"/>`;
+
+  let zonesSvg = "";
+  for (const z of currentZones()) {
+    zonesSvg += renderZoneSvg(z);
+  }
+
+  document.getElementById("preview").innerHTML =
+    `<svg class="jersey" viewBox="0 0 1000 1200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+       ${parts}
+       ${zonesSvg}
+     </svg>`;
+
+  // Klick auf Zone selektiert sie
+  document.querySelectorAll(".zone-hit").forEach(el => {
+    el.addEventListener("click", () => {
+      state.selectedZoneId = el.getAttribute("data-zone");
+      if (state.tab !== "zonen") { state.tab = "zonen"; renderTabs(); renderPanel(); }
+      else renderPanel();
+      renderPreview();
+    });
+  });
+
+  document.getElementById("caption").textContent =
+    `${t.name} · ${t.sport} · ${state.view === "front" ? "Vorderseite" : "Rückseite"}`;
+}
+
+function renderZoneSvg(z) {
+  const x = z.x/100*1000, y = z.y/100*1200, w = z.w/100*1000, h = z.h/100*1200;
+  const cx = x + w/2, cy = y + h/2;
+  const selected = state.selectedZoneId === z.id ? " selected" : "";
+  const img = zoneImage(z);
+  const txt = zoneText(z);
+
+  let content = "";
+  if (IMAGE_PURPOSES.has(z.purpose)) {
+    if (img) {
+      content = `<image x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" href="${img}" xlink:href="${img}"/>`;
+    } else {
+      content = `<rect class="zone-empty-bg" x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/>
+                 <text class="zone-label" x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central">${esc(z.label)}</text>`;
+    }
+  } else if (txt) {
+    // Text skaliert in die Zone (analog SVG-Text-Rendering im Original)
+    const fontPx = h * 0.82 * zoneSize(z);
+    const tl = w * 0.94;
+    content =
+      `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central"
+             textLength="${tl}" lengthAdjust="spacingAndGlyphs"
+             font-family="${esc(zoneFont(z))}" font-weight="${zoneWeight(z)}"
+             font-size="${fontPx}" fill="${zoneColor(z)}"
+             style="paint-order:stroke; stroke:#00000030; stroke-width:${fontPx*0.03}px;">${esc(txt)}</text>`;
+  } else {
+    content = `<rect class="zone-empty-bg" x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/>
+               <text class="zone-label" x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central">${esc(z.label)}</text>`;
+  }
+
+  return `<g class="zone-hit${selected}" data-zone="${z.id}">
+            ${content}
+            <rect class="zone-outline" x="${x}" y="${y}" width="${w}" height="${h}" rx="6"/>
+          </g>`;
+}
+
+/* =========================================================================
+   SIDEBAR
+   ========================================================================= */
+const TAB_DEFS = [
+  { id:"vorlage", label:"Vorlage",  icon:'<path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>' },
+  { id:"farben",  label:"Farben",   icon:'<circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1 .9-1.5 2-1.5h2.5A4 4 0 0 0 21 11c0-5-4-9-9-9z" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
+  { id:"zonen",   label:"Text & Zonen", icon:'<path d="M4 7V4h16v3M9 20h6M12 4v16" fill="none" stroke="currentColor" stroke-width="2"/>' },
+  { id:"team",    label:"Team",     icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2"/>' },
+  { id:"export",  label:"Export",   icon:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2"/>' },
+];
+
+function renderTabs() {
+  document.getElementById("tabs").innerHTML = TAB_DEFS.map(t =>
+    `<button class="tab ${state.tab===t.id?'active':''}" data-tab="${t.id}">
+       <svg viewBox="0 0 24 24" fill="currentColor">${t.icon}</svg>${t.label}
+     </button>`).join("");
+  document.querySelectorAll(".tab").forEach(b =>
+    b.addEventListener("click", () => { state.tab = b.dataset.tab; renderTabs(); renderPanel(); }));
+}
+
+function renderPanel() {
+  const el = document.getElementById("panel");
+  if (state.tab === "vorlage") el.innerHTML = panelVorlage();
+  else if (state.tab === "farben") el.innerHTML = panelFarben();
+  else if (state.tab === "zonen") el.innerHTML = panelZonen();
+  else if (state.tab === "team") el.innerHTML = panelTeam();
+  else if (state.tab === "export") el.innerHTML = panelExport();
+  wirePanel();
+}
+
+/* ---- Vorlage ---- */
+function panelVorlage() {
+  const cards = TEMPLATES.map(t =>
+    `<button class="tpl ${t.id===state.templateId?'active':''}" data-tpl="${t.id}">
+       <div class="ic">${t.icon}</div>
+       <div class="nm">${t.name}</div>
+       <div class="sp">${t.sport} · ${t.style==='tank'?'Ärmellos':'Kurzarm'}</div>
+     </button>`).join("");
+  return `<div class="section-title">Vorlage wählen</div>
+          <div class="card-tpl">${cards}</div>
+          <div class="divider"></div>
+          <div class="field">
+            <label>Vereinsname</label>
+            <input type="text" id="clubName" value="${esc(state.clubName)}" />
+          </div>
+          <div class="field">
+            <label>Vereinswappen / Logo</label>
+            <div class="upload-zone" id="clubLogoUp">
+              ${state.clubLogo ? '<img src="'+state.clubLogo+'" style="max-height:60px" />' : '⬆︎ Logo hochladen (PNG/SVG) – wird automatisch auf die Wappen-Zone gelegt'}
+            </div>
+          </div>
+          <p class="hint">Die Auswahl der Vorlage setzt Standardfarben und Zonen zurück – analog zum Template-System (<code>shared/templates.ts</code>).</p>`;
+}
+
+/* ---- Farben ---- */
+function panelFarben() {
+  const rows = PART_DEFS.filter(pd => state.partColors[pd.key] !== undefined && (pd.key!=="sleeveL"&&pd.key!=="sleeveR" ? true : tpl().style!=="tank"))
+    .map(pd => {
+      const col = state.partColors[pd.key];
+      const cmyk = formatCmyk(hexToCmyk(col));
+      const presets = COLOR_PRESETS.map(p =>
+        `<button class="preset" style="background:${p}" data-part="${pd.key}" data-col="${p}"></button>`).join("");
+      return `<div class="part-row">
+                <label class="swatch" style="background:${col}">
+                  <input type="color" value="${col}" data-partcolor="${pd.key}" />
+                </label>
+                <div class="part-meta">
+                  <div class="pn">${pd.label}</div>
+                  <div class="cmyk">${col.toUpperCase()} · ${cmyk}</div>
+                  <div class="presets">${presets}</div>
+                </div>
+              </div>`;
+    }).join("");
+  return `<div class="section-title">Farben pro Teil (CMYK)</div>${rows}
+          <p class="hint">Jedes Teil wird einzeln eingefärbt. Die CMYK-Werte entsprechen der Umrechnung für den Textildruck (portiert aus <code>lib/cmyk.ts</code>).</p>`;
+}
+
+/* ---- Text & Zonen ---- */
+function panelZonen() {
+  const zones = currentZones();
+  const items = zones.map(z => zoneEditor(z)).join("");
+  return `<div class="section-title">Zonen · ${state.view==='front'?'Vorderseite':'Rückseite'}</div>${items}
+          <p class="hint">Zonen mit <span class="auto-tag">auto</span> werden aus Spielerliste / Vereinsdaten befüllt. Klicke eine Zone im Trikot an, um sie hier zu öffnen.</p>`;
+}
+function zoneEditor(z) {
+  const open = state.selectedZoneId === z.id;
+  const isAuto = AUTO_PURPOSES.has(z.purpose);
+  const isImg = IMAGE_PURPOSES.has(z.purpose);
+  let body = "";
+  if (open) {
+    if (isImg) {
+      const img = zoneImage(z);
+      body = `<div class="zone-body">
+        <div class="mini-label">Bild / Logo</div>
+        <div class="upload-zone" data-zoneup="${z.id}">
+          ${img ? '<img src="'+img+'" style="max-height:56px"/>' : '⬆︎ Bild hochladen'}
+        </div>
+      </div>`;
+    } else {
+      const disabledText = isAuto;
+      const val = zoneText(z);
+      body = `<div class="zone-body">
+        <div class="mini-label">Text ${isAuto?'<span class="auto-tag">auto aus Team/Verein</span>':''}</div>
+        <input type="text" data-zonetext="${z.id}" value="${esc(val)}" ${disabledText?'disabled style="opacity:.6"':''} placeholder="Text eingeben…" />
+        <div class="row2">
+          <div>
+            <div class="mini-label">Schriftart</div>
+            <select data-zonefont="${z.id}">
+              ${FONTS.map(f => `<option ${zoneFont(z)===f?'selected':''}>${f}</option>`).join("")}
+            </select>
+          </div>
+          <div>
+            <div class="mini-label">Stärke</div>
+            <select data-zoneweight="${z.id}">
+              ${["400","600","700","900"].map(w => `<option value="${w}" ${zoneWeight(z)===w?'selected':''}>${({"400":"Regular","600":"Semibold","700":"Bold","900":"Black"})[w]}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div class="mini-label">Größe</div>
+        <input type="range" min="0.5" max="1.4" step="0.05" value="${zoneSize(z)}" data-zonesize="${z.id}" />
+        <div class="mini-label">Farbe</div>
+        <div class="color-input">
+          <input type="color" value="${zoneColor(z)}" data-zonecolor="${z.id}" />
+          <span class="cmyk">${zoneColor(z).toUpperCase()} · ${formatCmyk(hexToCmyk(zoneColor(z)))}</span>
+        </div>
+      </div>`;
+    }
+  }
+  return `<div class="zone-item">
+    <div class="zone-head" data-zonehead="${z.id}">
+      <span class="badge">${PURPOSE_LABELS[z.purpose]||z.purpose}</span>
+      <span class="zt">${esc(z.label)}</span>
+      <span style="color:var(--muted);font-size:12px">${open?'▾':'▸'}</span>
+    </div>
+    ${body}
+  </div>`;
+}
+
+/* ---- Team ---- */
+function panelTeam() {
+  const rows = state.players.map((p, i) => `
+    <tr class="prow ${i===state.selectedPlayer?'active':''}">
+      <td class="radio-cell"><input type="radio" name="selp" ${i===state.selectedPlayer?'checked':''} data-selp="${i}" /></td>
+      <td><input class="num" type="text" value="${esc(p.number)}" data-pnum="${i}" /></td>
+      <td><input type="text" value="${esc(p.name)}" data-pname="${i}" /></td>
+      <td>
+        <select data-psize="${i}">
+          ${SIZES.map(s => `<option ${p.size===s?'selected':''}>${s}</option>`).join("")}
+        </select>
+      </td>
+      <td><button class="del-btn" data-pdel="${i}">✕</button></td>
+    </tr>`).join("");
+  return `<div class="section-title">Mannschaft · Spielerliste</div>
+    <table class="players">
+      <thead><tr><th></th><th>Nr.</th><th>Name</th><th>Größe</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:12px"><button class="btn ghost btn-full" id="addPlayer">＋ Spieler hinzufügen</button></div>
+    <p class="hint" style="margin-top:14px">Der ausgewählte Spieler (◉) wird live auf dem Trikot dargestellt – Nummer, Name und Kürzel-Zonen aktualisieren sich automatisch.</p>`;
+}
+
+/* ---- Export ---- */
+function panelExport() {
+  return `<div class="section-title">Export</div>
+    <div class="field">
+      <button class="btn primary" id="exportPng">⬇︎ Druckdatei als PNG exportieren</button>
+    </div>
+    <div class="field">
+      <button class="btn ghost btn-full" id="exportBoth">⬇︎ Vorder- & Rückseite exportieren</button>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <button class="btn ghost btn-full" id="resetAll">↺ Konfiguration zurücksetzen</button>
+    </div>
+    <p class="hint">Der Export rendert das aktuelle Trikot als hochauflösende PNG-Datei (2000×2400 px) inklusive Farben, Zonen und Schriften – analog zum Druckdatei-Export des Originals.</p>`;
+}
+
+/* =========================================================================
+   EVENT-WIRING
+   ========================================================================= */
+function wirePanel() {
+  // Vorlage
+  document.querySelectorAll("[data-tpl]").forEach(b => b.addEventListener("click", () => {
+    const t = TEMPLATES.find(x => x.id === b.dataset.tpl);
+    state.templateId = t.id;
+    state.partColors = { ...t.colors };
+    state.zoneContent = {};
+    state.selectedZoneId = null;
+    renderPreview(); renderPanel();
+  }));
+  bindText("clubName", v => { state.clubName = v; renderPreview(); });
+  wireUpload("clubLogoUp", dataUrl => { state.clubLogo = dataUrl; renderPreview(); renderPanel(); });
+
+  // Farben
+  document.querySelectorAll("[data-partcolor]").forEach(inp => inp.addEventListener("input", e => {
+    state.partColors[inp.dataset.partcolor] = e.target.value;
+    renderPreview();
+    // CMYK-Anzeige aktualisieren ohne Fokusverlust der Farbwähler
+    const row = inp.closest(".part-row"); const col = e.target.value;
+    row.querySelector(".swatch").style.background = col;
+    row.querySelector(".cmyk").textContent = col.toUpperCase() + " · " + formatCmyk(hexToCmyk(col));
+  }));
+  document.querySelectorAll(".preset[data-part]").forEach(b => b.addEventListener("click", () => {
+    state.partColors[b.dataset.part] = b.dataset.col; renderPreview(); renderPanel();
+  }));
+
+  // Zonen
+  document.querySelectorAll("[data-zonehead]").forEach(h => h.addEventListener("click", () => {
+    const id = h.dataset.zonehead;
+    state.selectedZoneId = state.selectedZoneId === id ? null : id;
+    renderPreview(); renderPanel();
+  }));
+  document.querySelectorAll("[data-zonetext]").forEach(inp => inp.addEventListener("input", e => {
+    ensureZC(inp.dataset.zonetext).text = e.target.value; renderPreview();
+  }));
+  document.querySelectorAll("[data-zonefont]").forEach(s => s.addEventListener("change", e => {
+    ensureZC(s.dataset.zonefont).font = e.target.value; renderPreview();
+  }));
+  document.querySelectorAll("[data-zoneweight]").forEach(s => s.addEventListener("change", e => {
+    ensureZC(s.dataset.zoneweight).weight = e.target.value; renderPreview();
+  }));
+  document.querySelectorAll("[data-zonesize]").forEach(s => s.addEventListener("input", e => {
+    ensureZC(s.dataset.zonesize).size = parseFloat(e.target.value); renderPreview();
+  }));
+  document.querySelectorAll("[data-zonecolor]").forEach(s => s.addEventListener("input", e => {
+    ensureZC(s.dataset.zonecolor).color = e.target.value; renderPreview();
+    const span = s.parentElement.querySelector(".cmyk");
+    if (span) span.textContent = e.target.value.toUpperCase() + " · " + formatCmyk(hexToCmyk(e.target.value));
+  }));
+  document.querySelectorAll("[data-zoneup]").forEach(z => wireUploadEl(z, dataUrl => {
+    ensureZC(z.dataset.zoneup).imageDataUrl = dataUrl; renderPreview(); renderPanel();
+  }));
+
+  // Team
+  document.querySelectorAll("[data-selp]").forEach(r => r.addEventListener("change", () => {
+    state.selectedPlayer = parseInt(r.dataset.selp); renderPreview(); renderPanel();
+  }));
+  document.querySelectorAll("[data-pnum]").forEach(inp => inp.addEventListener("input", e => {
+    state.players[inp.dataset.pnum].number = e.target.value; renderPreview();
+  }));
+  document.querySelectorAll("[data-pname]").forEach(inp => inp.addEventListener("input", e => {
+    state.players[inp.dataset.pname].name = e.target.value; renderPreview();
+  }));
+  document.querySelectorAll("[data-psize]").forEach(s => s.addEventListener("change", e => {
+    state.players[s.dataset.psize].size = e.target.value;
+  }));
+  document.querySelectorAll("[data-pdel]").forEach(b => b.addEventListener("click", () => {
+    const i = parseInt(b.dataset.pdel); state.players.splice(i,1);
+    if (state.selectedPlayer >= state.players.length) state.selectedPlayer = Math.max(0, state.players.length-1);
+    renderPreview(); renderPanel();
+  }));
+  const add = document.getElementById("addPlayer");
+  if (add) add.addEventListener("click", () => {
+    state.players.push({ number:"", name:"", size:"L" }); renderPanel();
+  });
+
+  // Export
+  bindClick("exportPng", () => exportPng(state.view));
+  bindClick("exportBoth", async () => { await exportPng("front"); await exportPng("back"); });
+  bindClick("resetAll", () => {
+    const t = tpl(); state.partColors = {...t.colors}; state.zoneContent = {}; state.selectedZoneId = null;
+    renderPreview(); renderPanel();
+  });
+}
+
+function ensureZC(id) { return (state.zoneContent[id] = state.zoneContent[id] || {}); }
+function bindText(id, fn) { const el = document.getElementById(id); if (el) el.addEventListener("input", e => fn(e.target.value)); }
+function bindClick(id, fn) { const el = document.getElementById(id); if (el) el.addEventListener("click", fn); }
+
+function wireUpload(id, cb) { const el = document.getElementById(id); if (el) wireUploadEl(el, cb); }
+function wireUploadEl(el, cb) {
+  el.addEventListener("click", () => {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "image/*";
+    inp.onchange = () => {
+      const f = inp.files[0]; if (!f) return;
+      const rd = new FileReader(); rd.onload = () => cb(rd.result); rd.readAsDataURL(f);
+    };
+    inp.click();
+  });
+}
+
+/* =========================================================================
+   PNG-EXPORT (Canvas — nutzt geladene Fonts via document.fonts)
+   ========================================================================= */
+async function exportPng(view) {
+  await (document.fonts ? document.fonts.ready : Promise.resolve());
+  const SCALE = 2;
+  const W = 1000*SCALE, H = 1200*SCALE;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(SCALE, SCALE);
+
+  const t = tpl();
+  const p = jerseyPaths(t.style, view);
+  const c = state.partColors;
+
+  function fillPath(d, color) {
+    if (!d) return;
+    const path = new Path2D(d);
+    ctx.fillStyle = color; ctx.fill(path);
+    ctx.strokeStyle = "#00000022"; ctx.lineWidth = 2; ctx.stroke(path);
+  }
+  fillPath(p.body, c.body);
+  fillPath(p.sleeveL, c.sleeveL);
+  fillPath(p.sleeveR, c.sleeveR);
+  fillPath(p.collar, c.collar);
+
+  const zones = t.zones[view];
+  // Bilder vorab laden
+  const imgs = await Promise.all(zones.map(z => {
+    const src = zoneImage(z); if (!src || !IMAGE_PURPOSES.has(z.purpose)) return null;
+    return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+  }));
+
+  zones.forEach((z, i) => {
+    const x = z.x/100*1000, y = z.y/100*1200, w = z.w/100*1000, h = z.h/100*1200;
+    if (IMAGE_PURPOSES.has(z.purpose)) {
+      const im = imgs[i];
+      if (im) {
+        const r = Math.min(w/im.width, h/im.height);
+        const dw = im.width*r, dh = im.height*r;
+        ctx.drawImage(im, x+(w-dw)/2, y+(h-dh)/2, dw, dh);
+      }
+      return;
+    }
+    const txt = zoneText(z); if (!txt) return;
+    let fontPx = h*0.82*zoneSize(z);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = `${zoneWeight(z)} ${fontPx}px "${zoneFont(z)}", sans-serif`;
+    // Breite einpassen (analog textLength)
+    let m = ctx.measureText(txt);
+    const maxW = w*0.94;
+    if (m.width > maxW) { fontPx *= maxW/m.width; ctx.font = `${zoneWeight(z)} ${fontPx}px "${zoneFont(z)}", sans-serif`; }
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#00000030"; ctx.lineWidth = fontPx*0.04; ctx.strokeText(txt, x+w/2, y+h/2);
+    ctx.fillStyle = zoneColor(z); ctx.fillText(txt, x+w/2, y+h/2);
+  });
+
+  const url = canvas.toDataURL("image/png");
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${t.id}_${view}_druckdatei.png`;
+  a.click();
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+function wireStage() {
+  document.querySelectorAll(".seg").forEach(b => b.addEventListener("click", () => {
+    state.view = b.dataset.view; state.selectedZoneId = null;
+    updateSeg(); renderPreview(); if (state.tab === "zonen") renderPanel();
+  }));
+}
+function updateSeg() {
+  document.getElementById("segFront").classList.toggle("active", state.view === "front");
+  document.getElementById("segBack").classList.toggle("active", state.view === "back");
+}
+
+function init() {
+  wireStage(); updateSeg();
+  renderTabs(); renderPanel(); renderPreview();
+  if (document.fonts) document.fonts.ready.then(renderPreview); // Fonts nachladen -> Preview auffrischen
+}
+init();
+</script>
+</body>
+</html>
