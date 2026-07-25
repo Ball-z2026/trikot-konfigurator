@@ -52,6 +52,8 @@
     .app { height: auto; min-height: 100vh; }
     .main { grid-template-columns: 1fr; }
     .stage { padding: 14px 12px 4px; overflow: visible; }
+    .stage-toolbar { flex-wrap: wrap; justify-content: center; max-width: 100%; }
+    .seg { padding: 7px 12px; font-size: 12px; }
     .jersey-wrap { width: min(340px, 78%); margin-top: 2px; }
     .jersey-wrap.sheet { width: 97%; }
     .sidebar { border-left: none; border-top: 1px solid var(--line); }
@@ -165,6 +167,7 @@
         <button class="seg" data-view="front">Vorderteil</button>
         <button class="seg" data-view="back">Rückteil</button>
         <button class="seg" data-view="sheet">Schnittbogen</button>
+        <button class="seg" data-view="mockup">Mockup</button>
       </div>
       <div class="jersey-wrap">
         <div id="preview"></div>
@@ -322,10 +325,12 @@ function neckPiece(b) {
 // Maßlinie (Doppelpfeil mit cm-Beschriftung)
 function dim(x1,y1,x2,y2,label) { return { x1,y1,x2,y2, label }; }
 
-// Baut die komplette Szene für eine Ansicht: front | back | sheet
+// Baut die komplette Szene für eine Ansicht: front | back | sheet | mockup
 function buildScene(view) {
   const t = tpl(), isTank = t.style === "tank", s = sizeSpec();
   const ratio = s.len / s.chest;               // Höhe/Breite exakt aus Maßtabelle
+
+  if (view === "mockup") return buildMockup();
 
   if (view === "front" || view === "back") {
     const CM = 9, pw = s.chest*CM, ph = s.len*CM;
@@ -394,6 +399,60 @@ function buildScene(view) {
   return { vbW:1200, vbH, pieces, zones, labels, dims };
 }
 
+/* ---------- Mockup: zusammengesetztes Trikot (Vorschau, generisch) ----------
+   Die Zuschnitt-Teile werden zu einem getragenen Trikot zusammengesetzt und mit
+   Stoff-Schattierung versehen. Vorne + Hinten nebeneinander. */
+function mockupJersey(tx, ty, sc, side, isTank) {
+  const T = (x,y) => `${(tx+x*sc).toFixed(1)} ${(ty+y*sc).toFixed(1)}`;
+  const bodyKey = side === "front" ? "front" : "back";
+  const pieces = [], seams = [];
+  if (isTank) {
+    const nd = side==="front" ? 250 : 212, outer = 2*nd-182, inner = 2*(nd-20)-188;
+    const body = `M ${T(360,185)} L ${T(430,182)} Q ${T(500,outer)} ${T(570,182)} L ${T(640,185)}`
+      + ` C ${T(706,200)} ${T(700,340)} ${T(708,445)} C ${T(728,590)} ${T(726,725)} ${T(720,868)}`
+      + ` Q ${T(500,894)} ${T(280,868)} C ${T(274,725)} ${T(272,590)} ${T(292,445)} C ${T(300,340)} ${T(294,200)} ${T(360,185)} Z`;
+    const collar = `M ${T(430,182)} Q ${T(500,outer)} ${T(570,182)} L ${T(555,188)} Q ${T(500,inner)} ${T(445,188)} Z`;
+    pieces.push({ d:body, colorKey:bodyKey, grad:true }, { d:collar, colorKey:"neck", grad:true });
+  } else {
+    const nd = side==="front" ? 230 : 190;
+    const body = `M ${T(335,160)} L ${T(415,150)} Q ${T(500,nd)} ${T(585,150)} L ${T(665,160)} L ${T(712,405)}`
+      + ` C ${T(730,560)} ${T(728,720)} ${T(720,865)} Q ${T(500,892)} ${T(280,865)} C ${T(272,720)} ${T(270,560)} ${T(288,405)} Z`;
+    const sleeveL = `M ${T(335,160)} L ${T(198,208)} Q ${T(162,296)} ${T(220,382)} L ${T(302,393)} Q ${T(305,260)} ${T(335,160)} Z`;
+    const sleeveR = `M ${T(665,160)} L ${T(802,208)} Q ${T(838,296)} ${T(780,382)} L ${T(698,393)} Q ${T(695,260)} ${T(665,160)} Z`;
+    const cuffL = `M ${T(220,382)} L ${T(302,393)} L ${T(305,372)} L ${T(226,362)} Z`;
+    const cuffR = `M ${T(780,382)} L ${T(698,393)} L ${T(695,372)} L ${T(774,362)} Z`;
+    const collar = `M ${T(408,148)} Q ${T(500,nd+8)} ${T(592,148)} L ${T(602,176)} Q ${T(500,nd+42)} ${T(398,176)} Z`;
+    pieces.push(
+      { d:sleeveL, colorKey:"sleeveL", grad:true }, { d:sleeveR, colorKey:"sleeveR", grad:true },
+      { d:cuffL, colorKey:"band" }, { d:cuffR, colorKey:"band" },
+      { d:body, colorKey:bodyKey, grad:true }, { d:collar, colorKey:"neck", grad:true },
+    );
+    seams.push(`M ${T(335,160)} Q ${T(305,262)} ${T(302,393)}`, `M ${T(665,160)} Q ${T(695,262)} ${T(698,393)}`);
+  }
+  const bodyBB = { x: tx+292*sc, y: ty+168*sc, w: 416*sc, h: 700*sc };
+  return { pieces, seams, bodyBB };
+}
+
+function buildMockup() {
+  const t = tpl(), isTank = t.style === "tank", sc = 0.62;
+  const F = mockupJersey(40, 24, sc, "front", isTank);
+  const B = mockupJersey(720, 24, sc, "back", isTank);
+  return {
+    vbW: 1380, vbH: 24 + 950*sc + 20,
+    pieces: [...F.pieces, ...B.pieces],
+    seams: [...F.seams, ...B.seams],
+    zones: [
+      ...t.zones.front.map(z => ({ z, bb:F.bodyBB })),
+      ...t.zones.back.map(z => ({ z, bb:B.bodyBB })),
+    ],
+    labels: [
+      { text:"Vorne",  x:40+500*sc,  y:20, size:22 },
+      { text:"Hinten", x:720+500*sc, y:20, size:22 },
+    ],
+    dims: [], mockup: true,
+  };
+}
+
 const PART_DEFS = [
   { key:"front",   label:"Vorderteil" },
   { key:"back",    label:"Rückteil" },
@@ -426,7 +485,7 @@ const state = {
 function tpl() { return TEMPLATES.find(t => t.id === state.templateId); }
 function currentZoneList() {
   const t = tpl();
-  return state.view === "sheet" ? [...t.zones.front, ...t.zones.back] : t.zones[state.view];
+  return (state.view === "sheet" || state.view === "mockup") ? [...t.zones.front, ...t.zones.back] : t.zones[state.view];
 }
 function allZones() { return [...tpl().zones.front, ...tpl().zones.back]; }
 function zc(zoneId) { return state.zoneContent[zoneId] || {}; }
@@ -480,8 +539,18 @@ function renderPreview() {
   let parts = "";
   for (const pc of scene.pieces) {
     parts += `<path d="${pc.d}" fill="${c[pc.colorKey]}" stroke="#00000030" stroke-width="2" stroke-linejoin="round"/>`;
-    parts += `<path d="${pc.d}" fill="none" stroke="#ffffff14" stroke-width="1"/>`; // dezente Nahtandeutung
+    if (pc.grad) parts += `<path d="${pc.d}" fill="url(#sheen)"/>`;               // Stoff-Schattierung (Mockup)
+    else parts += `<path d="${pc.d}" fill="none" stroke="#ffffff14" stroke-width="1"/>`;
   }
+  let seamsSvg = "";
+  for (const d of (scene.seams||[])) seamsSvg += `<path d="${d}" fill="none" stroke="#00000026" stroke-width="2.5"/>`;
+
+  // Sheen-Verlauf (oben heller, unten dunkler) über die gesamte Höhe
+  const defs = `<defs><linearGradient id="sheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${scene.vbH}">`
+    + `<stop offset="0" stop-color="#ffffff" stop-opacity="0.20"/>`
+    + `<stop offset="0.32" stop-color="#ffffff" stop-opacity="0.04"/>`
+    + `<stop offset="0.62" stop-color="#000000" stop-opacity="0.02"/>`
+    + `<stop offset="1" stop-color="#000000" stop-opacity="0.18"/></linearGradient></defs>`;
 
   let zonesSvg = "";
   for (const zb of scene.zones) zonesSvg += renderZoneSvg(zb.z, zb.bb);
@@ -498,11 +567,13 @@ function renderPreview() {
 
   const wrap = document.querySelector(".jersey-wrap");
   wrap.style.aspectRatio = `${scene.vbW} / ${scene.vbH}`;
-  wrap.classList.toggle("sheet", state.view === "sheet");
+  wrap.classList.toggle("sheet", state.view === "sheet" || state.view === "mockup");
 
   document.getElementById("preview").innerHTML =
     `<svg class="jersey" viewBox="0 0 ${scene.vbW} ${scene.vbH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+       ${defs}
        ${parts}
+       ${seamsSvg}
        ${labelsSvg}
        ${zonesSvg}
        ${dimsSvg}
@@ -518,7 +589,8 @@ function renderPreview() {
     });
   });
 
-  const viewName = state.view === "front" ? "Vorderteil" : state.view === "back" ? "Rückteil" : "Schnittbogen · alle Zuschnitt-Teile";
+  const viewName = state.view === "front" ? "Vorderteil" : state.view === "back" ? "Rückteil"
+    : state.view === "mockup" ? "Mockup · Vorschau (vorne & hinten)" : "Schnittbogen · alle Zuschnitt-Teile";
   const sp = sizeSpec();
   document.getElementById("caption").textContent = `${t.name} · ${t.sport} · Gr. ${state.size} (${sp.len}×${sp.chest} cm) · ${viewName}`;
 }
@@ -656,7 +728,7 @@ function panelFarben() {
 function panelZonen() {
   const t = tpl();
   let inner;
-  if (state.view === "sheet") {
+  if (state.view === "sheet" || state.view === "mockup") {
     inner = `<div class="section-title">Vorderteil</div>${t.zones.front.map(zoneEditor).join("")}`
           + `<div class="section-title" style="margin-top:18px">Rückteil</div>${t.zones.back.map(zoneEditor).join("")}`;
   } else {
@@ -882,12 +954,22 @@ async function exportPng(view) {
   const ctx = canvas.getContext("2d");
   ctx.scale(SCALE, SCALE);
 
+  // Sheen-Verlauf (Mockup-Stoffschattierung)
+  let sheen = null;
+  if (scene.mockup) {
+    sheen = ctx.createLinearGradient(0,0,0,scene.vbH);
+    sheen.addColorStop(0, "rgba(255,255,255,0.20)"); sheen.addColorStop(0.32, "rgba(255,255,255,0.04)");
+    sheen.addColorStop(0.62, "rgba(0,0,0,0.02)"); sheen.addColorStop(1, "rgba(0,0,0,0.18)");
+  }
   // Zuschnitt-Teile
   for (const pc of scene.pieces) {
     const path = new Path2D(pc.d);
     ctx.fillStyle = c[pc.colorKey]; ctx.fill(path);
     ctx.strokeStyle = "#00000030"; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke(path);
+    if (pc.grad && sheen) { ctx.fillStyle = sheen; ctx.fill(path); }
   }
+  // Nähte
+  for (const d of (scene.seams||[])) { ctx.strokeStyle = "#00000026"; ctx.lineWidth = 2.5; ctx.stroke(new Path2D(d)); }
   // Teile-Beschriftung
   ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillStyle = "#8c9bb0";
   for (const l of (scene.labels||[])) { ctx.font = `700 ${l.size}px Inter, sans-serif`; ctx.fillText(l.text, l.x, l.y); }
