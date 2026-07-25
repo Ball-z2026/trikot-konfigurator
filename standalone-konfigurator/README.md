@@ -15,8 +15,13 @@ Anzeige auf System-Schriften zurück, alles bleibt funktionsfähig.
 
 Extrahiert aus `client/src/pages/CustomerConfigurator.tsx`:
 
-- **Parts** (Korpus, Ärmel links/rechts, Kragen) – einzeln einfärbbar, mit
-  Live-**CMYK**-Anzeige für den Textildruck (Umrechnung portiert aus
+- **Schnitt-Teile wie im echten Sublimations-Schnitt** – flache, einzeln
+  bedruckbare Zuschnitt-Teile (Vorderteil, Rückteil, Ärmel links/rechts,
+  Ärmelbündchen, Kragen), die zusammengenäht das Trikot ergeben. Drei
+  Ansichten: **Vorderteil**, **Rückteil** und kompletter **Schnittbogen**
+  (alle Teile nebeneinander, wie der Druckbogen).
+- **Farbe je Teil** – jedes Panel einzeln einfärbbar, mit Live-**CMYK**-
+  Anzeige für den Textildruck (Umrechnung portiert aus
   `client/src/lib/cmyk.ts`).
 - **Zonen** mit prozentualer Positionierung (`posX/posY/width/height`) und
   Purposes: `clubLogo`, `playerName`, `playerNumber`, `playerInitials`,

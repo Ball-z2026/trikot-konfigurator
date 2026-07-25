@@ -53,6 +53,7 @@
     .main { grid-template-columns: 1fr; }
     .stage { padding: 14px 12px 4px; overflow: visible; }
     .jersey-wrap { width: min(340px, 78%); margin-top: 2px; }
+    .jersey-wrap.sheet { width: 97%; }
     .sidebar { border-left: none; border-top: 1px solid var(--line); }
     .tabs { position: sticky; top: 0; background: var(--panel); z-index: 6; overflow-x: visible; }
     .tab { flex: 1 1 0; min-width: 0; padding: 11px 3px; font-size: 11px; gap: 3px; flex-direction: column; }
@@ -66,6 +67,7 @@
   .seg { border: none; background: transparent; color: var(--muted); font-weight: 700; font-size: 13px; padding: 7px 16px; border-radius: 999px; cursor: pointer; }
   .seg.active { background: var(--primary); color: #fff; }
   .jersey-wrap { width: min(500px, 78%); aspect-ratio: 1000 / 950; margin-top: 4px; filter: drop-shadow(0 24px 40px rgba(0,0,0,.5)); }
+  .jersey-wrap.sheet { width: min(760px, 96%); }
   svg.jersey { width: 100%; height: 100%; display: block; }
   .zone-hit { cursor: pointer; }
   .zone-outline { fill: none; stroke: var(--accent); stroke-dasharray: 6 5; stroke-width: 2.5; opacity: 0; transition: opacity .15s; }
@@ -160,8 +162,9 @@
     <!-- Preview stage -->
     <div class="stage">
       <div class="stage-toolbar">
-        <button class="seg" data-view="front" id="segFront">Vorderseite</button>
-        <button class="seg" data-view="back" id="segBack">Rückseite</button>
+        <button class="seg" data-view="front">Vorderteil</button>
+        <button class="seg" data-view="back">Rückteil</button>
+        <button class="seg" data-view="sheet">Schnittbogen</button>
       </div>
       <div class="jersey-wrap">
         <div id="preview"></div>
@@ -181,8 +184,10 @@
 /* =========================================================================
    Ballz Trikot-Konfigurator — Standalone Demo
    Eigenständige, offline lauffähige Nachbildung des CustomerConfigurator.
-   Kernmodell 1:1 übernommen: Parts (einfärbbar, CMYK), Zonen (posX/posY/
-   width/height in %, Purposes), Spielerliste, Google-Fonts, Front/Back,
+   Modell wie beim echten Sublimations-Schnitt: flache Zuschnitt-Teile
+   (Vorderteil, Rückteil, Ärmel, Ärmelbündchen, Kragen) – jedes einzeln
+   einfärbbar (CMYK), mit Zonen (Purposes) auf Vorder-/Rückteil. Ansichten:
+   Vorderteil, Rückteil, kompletter Schnittbogen. Spielerliste, Google-Fonts,
    PNG-Export. Alle Daten sind Mock-Daten – es wird kein Server benötigt.
    ========================================================================= */
 
@@ -228,62 +233,132 @@ const SIZES = ["XS","S","M","L","XL","XXL","3XL"];
 const COLOR_PRESETS = ["#ffffff","#111827","#dc2626","#ea580c","#f59e0b","#16a34a","#0ea5e9","#1d4ed8","#4f46e5","#7c3aed","#db2777","#facc15"];
 
 /* ---------- Mock-Templates (Struktur wie shared/templates.ts) ---------- */
-// Zonen: x/y/w/h in % der Vorschaufläche (viewBox 1000x950), analog posX/posY/width/height.
+// Zonen sitzen auf einem Zuschnitt-Teil (Vorderteil / Rückteil). rx/ry/rw/rh
+// sind relativ zur Bounding-Box des jeweiligen Teils (0..1) – so lassen sie
+// sich sowohl einzeln (groß) als auch im Schnittbogen (klein) platzieren.
 function baseZones() {
   return {
     front: [
-      { id:"f-logo", label:"Vereinswappen", purpose:"clubLogo",   x:54, y:24, w:15, h:13 },
-      { id:"f-num",  label:"Brustnummer",   purpose:"playerNumber",x:32, y:27, w:11, h:8.5, font:"Anton" },
-      { id:"f-spon1",label:"Brust Sponsor", purpose:"custom",      x:28, y:46, w:44, h:8,  font:"Montserrat", text:"HAUPTSPONSOR" },
-      { id:"f-spon2",label:"Bauch Sponsor", purpose:"custom",      x:33, y:64, w:34, h:7,  font:"Montserrat", text:"" },
+      { id:"f-logo", label:"Vereinswappen", purpose:"clubLogo",   rx:.55, ry:.16, rw:.26, rh:.12 },
+      { id:"f-num",  label:"Brustnummer",   purpose:"playerNumber",rx:.16, ry:.18, rw:.22, rh:.13, font:"Anton" },
+      { id:"f-spon1",label:"Brust Sponsor", purpose:"custom",      rx:.12, ry:.44, rw:.74, rh:.09, font:"Montserrat", text:"HAUPTSPONSOR" },
+      { id:"f-spon2",label:"Bauch Sponsor", purpose:"custom",      rx:.20, ry:.64, rw:.58, rh:.07, font:"Montserrat", text:"" },
     ],
     back: [
-      { id:"b-club", label:"Vereinsname",   purpose:"clubName",    x:24, y:25, w:52, h:6.5, font:"Bebas Neue" },
-      { id:"b-name", label:"Spielername",   purpose:"playerName",  x:22, y:32, w:56, h:6,  font:"Oswald" },
-      { id:"b-num",  label:"Rückennummer",  purpose:"playerNumber",x:34, y:39, w:32, h:26, font:"Anton" },
-      { id:"b-spon", label:"Rücken Sponsor",purpose:"custom",      x:30, y:75, w:40, h:6,  font:"Montserrat", text:"" },
+      { id:"b-club", label:"Vereinsname",   purpose:"clubName",    rx:.10, ry:.15, rw:.80, rh:.07, font:"Bebas Neue" },
+      { id:"b-name", label:"Spielername",   purpose:"playerName",  rx:.12, ry:.26, rw:.76, rh:.07, font:"Oswald" },
+      { id:"b-num",  label:"Rückennummer",  purpose:"playerNumber",rx:.30, ry:.37, rw:.40, rh:.26, font:"Anton" },
+      { id:"b-spon", label:"Rücken Sponsor",purpose:"custom",      rx:.22, ry:.74, rw:.56, rh:.07, font:"Montserrat", text:"" },
     ],
   };
 }
 
+// Farben je Zuschnitt-Teil (Sublimation: jedes Panel einzeln bedruckbar)
 const TEMPLATES = [
   { id:"fb-sub",  name:"Fußball Home",   sport:"Fußball",    icon:"⚽", style:"shirt",
-    colors:{ body:"#c81e2b", sleeveL:"#111827", sleeveR:"#111827", collar:"#111827" }, zones: baseZones() },
+    colors:{ front:"#c81e2b", back:"#c81e2b", sleeveL:"#111827", sleeveR:"#111827", band:"#111827", neck:"#111827" }, zones: baseZones() },
   { id:"hb-sub",  name:"Handball Away",  sport:"Handball",   icon:"🤾", style:"shirt",
-    colors:{ body:"#1d4ed8", sleeveL:"#f8fafc", sleeveR:"#f8fafc", collar:"#facc15" }, zones: baseZones() },
+    colors:{ front:"#1d4ed8", back:"#1d4ed8", sleeveL:"#f8fafc", sleeveR:"#f8fafc", band:"#facc15", neck:"#facc15" }, zones: baseZones() },
   { id:"bb-tank", name:"Basketball Pro", sport:"Basketball", icon:"🏀", style:"tank",
-    colors:{ body:"#0f172a", sleeveL:"#ff5a1f", sleeveR:"#ff5a1f", collar:"#ff5a1f" }, zones: baseZones() },
+    colors:{ front:"#0f172a", back:"#0f172a", sleeveL:"#ff5a1f", sleeveR:"#ff5a1f", band:"#ff5a1f", neck:"#ff5a1f" }, zones: baseZones() },
   { id:"vb-sub",  name:"Volleyball",     sport:"Volleyball", icon:"🏐", style:"shirt",
-    colors:{ body:"#16a34a", sleeveL:"#052e16", sleeveR:"#052e16", collar:"#f8fafc" }, zones: baseZones() },
+    colors:{ front:"#16a34a", back:"#16a34a", sleeveL:"#052e16", sleeveR:"#052e16", band:"#f8fafc", neck:"#f8fafc" }, zones: baseZones() },
 ];
 
-/* ---------- Jersey-Geometrie (SVG-Pfade, viewBox 0 0 1000 950) ---------- */
-function jerseyPaths(style, view) {
-  if (style === "tank") {
-    const ndC = view === "front" ? 250 : 212;         // Tiefe des Rundhals-Ausschnitts (Mitte)
-    const outer = 2*ndC - 182, inner = 2*(ndC-20) - 188; // Kontrollpunkte der Parabeln
-    const body = `M 360 185 L 430 182 Q 500 ${outer} 570 182 L 640 185`
-      + ` C 706 200 700 340 708 445 C 728 590 726 725 720 868`
-      + ` Q 500 894 280 868 C 274 725 272 590 292 445`
-      + ` C 300 340 294 200 360 185 Z`;
-    // Kragen-Saum: schmales Band parallel zum Rundhals
-    const collar = `M 430 182 Q 500 ${outer} 570 182 L 555 188 Q 500 ${inner} 445 188 Z`;
-    return { body, sleeveL:null, sleeveR:null, collar };
-  }
-  const nd = view === "front" ? 230 : 190; // Halsausschnitt: vorne V-artig tiefer, hinten runder
-  const body = `M 335 160 L 415 150 Q 500 ${nd} 585 150 L 665 160 L 712 405`
-    + ` C 730 560 728 720 720 865 Q 500 892 280 865`
-    + ` C 272 720 270 560 288 405 Z`;
-  const sleeveL = `M 335 160 L 198 208 Q 162 296 220 382 L 302 393 Q 305 260 335 160 Z`;
-  const sleeveR = `M 665 160 L 802 208 Q 838 296 780 382 L 698 393 Q 695 260 665 160 Z`;
-  const collar  = `M 408 148 Q 500 ${nd+8} 592 148 L 602 176 Q 500 ${nd+42} 398 176 Z`;
-  return { body, sleeveL, sleeveR, collar };
+/* ---------- Schnitt-Geometrie (flache Zuschnitt-Teile wie im echten Schnitt) ----------
+   Jedes Teil wird flach gezeichnet – so, wie es sublimiert und danach vernäht wird. */
+const P = (x,y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+
+// Flaches Vorder-/Rückteil (Torso-Panel): Schulternaht, Halsausschnitt, Armloch, Saum
+function flatPanel(b, ndFrac) {
+  const {x:X,y:Y,w:W,h:H} = b;
+  return `M ${P(X+0.10*W, Y+0.03*H)}`
+    + ` L ${P(X+0.35*W, Y)}`
+    + ` Q ${P(X+0.50*W, Y+ndFrac*H)} ${P(X+0.65*W, Y)}`
+    + ` L ${P(X+0.90*W, Y+0.03*H)}`
+    + ` C ${P(X+1.03*W, Y+0.09*H)} ${P(X+1.02*W, Y+0.20*H)} ${P(X+0.985*W, Y+0.31*H)}`
+    + ` L ${P(X+0.93*W, Y+H)}`
+    + ` Q ${P(X+0.50*W, Y+1.03*H)} ${P(X+0.07*W, Y+H)}`
+    + ` L ${P(X+0.015*W, Y+0.31*H)}`
+    + ` C ${P(X-0.02*W, Y+0.20*H)} ${P(X-0.03*W, Y+0.09*H)} ${P(X+0.10*W, Y+0.03*H)} Z`;
 }
+// Ärmel-Zuschnitt (Ärmelkugel): oben leicht gewölbt, unten runde Kappe
+function sleevePiece(b) {
+  const {x:X,y:Y,w:W,h:H} = b;
+  return `M ${P(X, Y+0.24*H)}`
+    + ` Q ${P(X+0.5*W, Y-0.04*H)} ${P(X+W, Y+0.24*H)}`
+    + ` L ${P(X+0.90*W, Y+0.52*H)}`
+    + ` Q ${P(X+0.5*W, Y+1.06*H)} ${P(X+0.10*W, Y+0.52*H)} Z`;
+}
+// Ärmelbündchen / Kragen als schmales Band
+function bandPiece(b) {
+  const {x:X,y:Y,w:W,h:H} = b;
+  return `M ${P(X, Y+0.25*H)} L ${P(X+W, Y)} L ${P(X+W, Y+0.75*H)} L ${P(X, Y+H)} Z`;
+}
+function neckPiece(b) {
+  const {x:X,y:Y,w:W,h:H} = b;
+  return `M ${P(X, Y+0.10*H)} L ${P(X+W, Y)} L ${P(X+W, Y+H)} L ${P(X, Y+0.90*H)} Z`;
+}
+
+// Baut die komplette Szene für eine Ansicht: front | back | sheet
+function buildScene(view) {
+  const t = tpl(), isTank = t.style === "tank";
+  if (view === "front" || view === "back") {
+    const bb = { x:255, y:120, w:490, h:760 };
+    const nd = view === "front" ? (isTank?0.20:0.16) : (isTank?0.14:0.10);
+    return {
+      vbW:1000, vbH:1000,
+      pieces: [{ key:view, d:flatPanel(bb, nd), colorKey:view }],
+      zones: t.zones[view].map(z => ({ z, bb })),
+      labels: [{ text: view==="front"?"Vorderteil":"Rückteil", x:bb.x+bb.w/2, y:bb.y-24, size:26 }],
+    };
+  }
+  // Schnittbogen: alle Zuschnitt-Teile nebeneinander (wie der Druckbogen)
+  const frontBB = { x:35,  y:185, w:400, h:585 };
+  const backBB  = { x:470, y:185, w:400, h:585 };
+  const rBandBB = { x:985, y:225, w:315, h:52 };
+  const rArmBB  = { x:975, y:305, w:335, h:180 };
+  const lBandBB = { x:985, y:548, w:315, h:52 };
+  const lArmBB  = { x:975, y:628, w:335, h:180 };
+  const neckBB  = { x:300, y:862, w:360, h:54 };
+  const pieces = [
+    { key:"front", d:flatPanel(frontBB, isTank?0.20:0.16), colorKey:"front" },
+    { key:"back",  d:flatPanel(backBB,  isTank?0.14:0.10), colorKey:"back" },
+  ];
+  const labels = [
+    { text:"Vorderteil", x:frontBB.x+frontBB.w/2, y:frontBB.y-16, size:22 },
+    { text:"Rückteil",   x:backBB.x+backBB.w/2,   y:backBB.y-16,  size:22 },
+  ];
+  if (!isTank) {
+    pieces.push(
+      { key:"rArm",  d:sleevePiece(rArmBB), colorKey:"sleeveR" },
+      { key:"lArm",  d:sleevePiece(lArmBB), colorKey:"sleeveL" },
+      { key:"rBand", d:bandPiece(rBandBB),  colorKey:"band" },
+      { key:"lBand", d:bandPiece(lBandBB),  colorKey:"band" },
+    );
+    labels.push(
+      { text:"Ärmelbündchen R", x:rBandBB.x+rBandBB.w/2, y:rBandBB.y-8, size:17 },
+      { text:"Ärmel rechts",    x:rArmBB.x+rArmBB.w/2,   y:rArmBB.y-8,  size:17 },
+      { text:"Ärmelbündchen L", x:lBandBB.x+lBandBB.w/2, y:lBandBB.y-8, size:17 },
+      { text:"Ärmel links",     x:lArmBB.x+lArmBB.w/2,   y:lArmBB.y-8,  size:17 },
+    );
+  }
+  pieces.push({ key:"neck", d:neckPiece(neckBB), colorKey:"neck" });
+  labels.push({ text:"Kragen", x:neckBB.x+neckBB.w/2, y:neckBB.y-8, size:17 });
+  const zones = [
+    ...t.zones.front.map(z => ({ z, bb:frontBB })),
+    ...t.zones.back.map(z => ({ z, bb:backBB })),
+  ];
+  return { vbW:1330, vbH:950, pieces, zones, labels };
+}
+
 const PART_DEFS = [
-  { key:"body",    label:"Korpus (Vorder-/Rückteil)" },
-  { key:"sleeveL", label:"Ärmel links" },
+  { key:"front",   label:"Vorderteil" },
+  { key:"back",    label:"Rückteil" },
   { key:"sleeveR", label:"Ärmel rechts" },
-  { key:"collar",  label:"Kragen" },
+  { key:"sleeveL", label:"Ärmel links" },
+  { key:"band",    label:"Ärmelbündchen" },
+  { key:"neck",    label:"Kragen" },
 ];
 
 /* ---------- State ---------- */
@@ -305,7 +380,10 @@ const state = {
 };
 
 function tpl() { return TEMPLATES.find(t => t.id === state.templateId); }
-function currentZones() { return tpl().zones[state.view]; }
+function currentZoneList() {
+  const t = tpl();
+  return state.view === "sheet" ? [...t.zones.front, ...t.zones.back] : t.zones[state.view];
+}
 function allZones() { return [...tpl().zones.front, ...tpl().zones.back]; }
 function zc(zoneId) { return state.zoneContent[zoneId] || {}; }
 function selPlayer() { return state.players[state.selectedPlayer] || null; }
@@ -337,26 +415,33 @@ function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&l
 
 function renderPreview() {
   const t = tpl();
-  const p = jerseyPaths(t.style, state.view);
+  const scene = buildScene(state.view);
   const c = state.partColors;
-  const stroke = "#00000022";
 
   let parts = "";
-  parts += `<path d="${p.body}" fill="${c.body}" stroke="${stroke}" stroke-width="2"/>`;
-  if (p.sleeveL) parts += `<path d="${p.sleeveL}" fill="${c.sleeveL}" stroke="${stroke}" stroke-width="2"/>`;
-  if (p.sleeveR) parts += `<path d="${p.sleeveR}" fill="${c.sleeveR}" stroke="${stroke}" stroke-width="2"/>`;
-  parts += `<path d="${p.collar}" fill="${c.collar}" stroke="${stroke}" stroke-width="2"/>`;
-  // dezente Seitennaht-Andeutung
-  parts += `<path d="${p.body}" fill="none" stroke="#ffffff10" stroke-width="1"/>`;
-
-  let zonesSvg = "";
-  for (const z of currentZones()) {
-    zonesSvg += renderZoneSvg(z);
+  for (const pc of scene.pieces) {
+    parts += `<path d="${pc.d}" fill="${c[pc.colorKey]}" stroke="#00000030" stroke-width="2" stroke-linejoin="round"/>`;
+    parts += `<path d="${pc.d}" fill="none" stroke="#ffffff14" stroke-width="1"/>`; // dezente Nahtandeutung
   }
 
+  let zonesSvg = "";
+  for (const zb of scene.zones) zonesSvg += renderZoneSvg(zb.z, zb.bb);
+
+  let labelsSvg = "";
+  for (const l of (scene.labels||[])) {
+    labelsSvg += `<text x="${l.x}" y="${l.y}" text-anchor="middle" fill="#8c9bb0"
+      font-family="Inter,sans-serif" font-weight="700" font-size="${l.size}"
+      letter-spacing="0.5">${esc(l.text)}</text>`;
+  }
+
+  const wrap = document.querySelector(".jersey-wrap");
+  wrap.style.aspectRatio = `${scene.vbW} / ${scene.vbH}`;
+  wrap.classList.toggle("sheet", state.view === "sheet");
+
   document.getElementById("preview").innerHTML =
-    `<svg class="jersey" viewBox="0 0 1000 950" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    `<svg class="jersey" viewBox="0 0 ${scene.vbW} ${scene.vbH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
        ${parts}
+       ${labelsSvg}
        ${zonesSvg}
      </svg>`;
 
@@ -370,12 +455,12 @@ function renderPreview() {
     });
   });
 
-  document.getElementById("caption").textContent =
-    `${t.name} · ${t.sport} · ${state.view === "front" ? "Vorderseite" : "Rückseite"}`;
+  const viewName = state.view === "front" ? "Vorderteil" : state.view === "back" ? "Rückteil" : "Schnittbogen · alle Zuschnitt-Teile";
+  document.getElementById("caption").textContent = `${t.name} · ${t.sport} · ${viewName}`;
 }
 
-function renderZoneSvg(z) {
-  const x = z.x/100*1000, y = z.y/100*950, w = z.w/100*1000, h = z.h/100*950;
+function renderZoneSvg(z, bb) {
+  const x = bb.x + z.rx*bb.w, y = bb.y + z.ry*bb.h, w = z.rw*bb.w, h = z.rh*bb.h;
   const cx = x + w/2, cy = y + h/2;
   const selected = state.selectedZoneId === z.id ? " selected" : "";
   const img = zoneImage(z);
@@ -466,7 +551,9 @@ function panelVorlage() {
 
 /* ---- Farben ---- */
 function panelFarben() {
-  const rows = PART_DEFS.filter(pd => state.partColors[pd.key] !== undefined && (pd.key!=="sleeveL"&&pd.key!=="sleeveR" ? true : tpl().style!=="tank"))
+  const isTank = tpl().style === "tank";
+  const hidden = isTank ? new Set(["sleeveL","sleeveR","band"]) : new Set();
+  const rows = PART_DEFS.filter(pd => !hidden.has(pd.key))
     .map(pd => {
       const col = state.partColors[pd.key];
       const cmyk = formatCmyk(hexToCmyk(col));
@@ -489,10 +576,17 @@ function panelFarben() {
 
 /* ---- Text & Zonen ---- */
 function panelZonen() {
-  const zones = currentZones();
-  const items = zones.map(z => zoneEditor(z)).join("");
-  return `<div class="section-title">Zonen · ${state.view==='front'?'Vorderseite':'Rückseite'}</div>${items}
-          <p class="hint">Zonen mit <span class="auto-tag">auto</span> werden aus Spielerliste / Vereinsdaten befüllt. Klicke eine Zone im Trikot an, um sie hier zu öffnen.</p>`;
+  const t = tpl();
+  let inner;
+  if (state.view === "sheet") {
+    inner = `<div class="section-title">Vorderteil</div>${t.zones.front.map(zoneEditor).join("")}`
+          + `<div class="section-title" style="margin-top:18px">Rückteil</div>${t.zones.back.map(zoneEditor).join("")}`;
+  } else {
+    const title = state.view === "front" ? "Zonen · Vorderteil" : "Zonen · Rückteil";
+    inner = `<div class="section-title">${title}</div>${t.zones[state.view].map(zoneEditor).join("")}`;
+  }
+  return `${inner}
+          <p class="hint">Zonen mit <span class="auto-tag">auto</span> werden aus Spielerliste / Vereinsdaten befüllt. Klicke eine Zone auf dem Zuschnitt-Teil an, um sie hier zu öffnen.</p>`;
 }
 function zoneEditor(z) {
   const open = state.selectedZoneId === z.id;
@@ -575,16 +669,16 @@ function panelTeam() {
 function panelExport() {
   return `<div class="section-title">Export</div>
     <div class="field">
-      <button class="btn primary" id="exportPng">⬇︎ Druckdatei als PNG exportieren</button>
+      <button class="btn primary" id="exportSheet">⬇︎ Kompletten Schnittbogen exportieren</button>
     </div>
     <div class="field">
-      <button class="btn ghost btn-full" id="exportBoth">⬇︎ Vorder- & Rückseite exportieren</button>
+      <button class="btn ghost btn-full" id="exportPng">⬇︎ Aktuelles Teil als PNG exportieren</button>
     </div>
     <div class="divider"></div>
     <div class="field">
       <button class="btn ghost btn-full" id="resetAll">↺ Konfiguration zurücksetzen</button>
     </div>
-    <p class="hint">Der Export rendert das aktuelle Trikot als hochauflösende PNG-Datei (2000×2400 px) inklusive Farben, Zonen und Schriften – analog zum Druckdatei-Export des Originals.</p>`;
+    <p class="hint">Der Schnittbogen-Export rendert alle Zuschnitt-Teile (Vorderteil, Rückteil, Ärmel, Bündchen, Kragen) als hochauflösende PNG-Druckdatei – so, wie sie sublimiert und danach vernäht werden.</p>`;
 }
 
 /* =========================================================================
@@ -668,7 +762,7 @@ function wirePanel() {
 
   // Export
   bindClick("exportPng", () => exportPng(state.view));
-  bindClick("exportBoth", async () => { await exportPng("front"); await exportPng("back"); });
+  bindClick("exportSheet", () => exportPng("sheet"));
   bindClick("resetAll", () => {
     const t = tpl(); state.partColors = {...t.colors}; state.zoneContent = {}; state.selectedZoneId = null;
     renderPreview(); renderPanel();
@@ -698,36 +792,33 @@ function wireUploadEl(el, cb) {
 async function exportPng(view) {
   await (document.fonts ? document.fonts.ready : Promise.resolve());
   const SCALE = 2;
-  const W = 1000*SCALE, H = 950*SCALE;
+  const t = tpl();
+  const scene = buildScene(view);
+  const c = state.partColors;
   const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
+  canvas.width = scene.vbW*SCALE; canvas.height = scene.vbH*SCALE;
   const ctx = canvas.getContext("2d");
   ctx.scale(SCALE, SCALE);
 
-  const t = tpl();
-  const p = jerseyPaths(t.style, view);
-  const c = state.partColors;
-
-  function fillPath(d, color) {
-    if (!d) return;
-    const path = new Path2D(d);
-    ctx.fillStyle = color; ctx.fill(path);
-    ctx.strokeStyle = "#00000022"; ctx.lineWidth = 2; ctx.stroke(path);
+  // Zuschnitt-Teile
+  for (const pc of scene.pieces) {
+    const path = new Path2D(pc.d);
+    ctx.fillStyle = c[pc.colorKey]; ctx.fill(path);
+    ctx.strokeStyle = "#00000030"; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke(path);
   }
-  fillPath(p.body, c.body);
-  fillPath(p.sleeveL, c.sleeveL);
-  fillPath(p.sleeveR, c.sleeveR);
-  fillPath(p.collar, c.collar);
+  // Teile-Beschriftung
+  ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillStyle = "#8c9bb0";
+  for (const l of (scene.labels||[])) { ctx.font = `700 ${l.size}px Inter, sans-serif`; ctx.fillText(l.text, l.x, l.y); }
 
-  const zones = t.zones[view];
   // Bilder vorab laden
-  const imgs = await Promise.all(zones.map(z => {
-    const src = zoneImage(z); if (!src || !IMAGE_PURPOSES.has(z.purpose)) return null;
+  const imgs = await Promise.all(scene.zones.map(zb => {
+    const src = zoneImage(zb.z); if (!src || !IMAGE_PURPOSES.has(zb.z.purpose)) return null;
     return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
   }));
 
-  zones.forEach((z, i) => {
-    const x = z.x/100*1000, y = z.y/100*950, w = z.w/100*1000, h = z.h/100*950;
+  scene.zones.forEach((zb, i) => {
+    const z = zb.z, bb = zb.bb;
+    const x = bb.x + z.rx*bb.w, y = bb.y + z.ry*bb.h, w = z.rw*bb.w, h = z.rh*bb.h;
     if (IMAGE_PURPOSES.has(z.purpose)) {
       const im = imgs[i];
       if (im) {
@@ -741,19 +832,16 @@ async function exportPng(view) {
     let fontPx = h*0.82*zoneSize(z);
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.font = `${zoneWeight(z)} ${fontPx}px "${zoneFont(z)}", sans-serif`;
-    // Breite einpassen (analog textLength)
-    let m = ctx.measureText(txt);
-    const maxW = w*0.94;
+    const maxW = w*0.94, m = ctx.measureText(txt);
     if (m.width > maxW) { fontPx *= maxW/m.width; ctx.font = `${zoneWeight(z)} ${fontPx}px "${zoneFont(z)}", sans-serif`; }
     ctx.lineJoin = "round";
     ctx.strokeStyle = "#00000030"; ctx.lineWidth = fontPx*0.04; ctx.strokeText(txt, x+w/2, y+h/2);
     ctx.fillStyle = zoneColor(z); ctx.fillText(txt, x+w/2, y+h/2);
   });
 
-  const url = canvas.toDataURL("image/png");
   const a = document.createElement("a");
-  a.href = url;
-  a.download = `${t.id}_${view}_druckdatei.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.download = `${t.id}_${view === "sheet" ? "schnittbogen" : view}_druckdatei.png`;
   a.click();
 }
 
@@ -767,8 +855,7 @@ function wireStage() {
   }));
 }
 function updateSeg() {
-  document.getElementById("segFront").classList.toggle("active", state.view === "front");
-  document.getElementById("segBack").classList.toggle("active", state.view === "back");
+  document.querySelectorAll(".seg").forEach(b => b.classList.toggle("active", b.dataset.view === state.view));
 }
 
 function init() {
