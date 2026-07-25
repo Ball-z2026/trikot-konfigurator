@@ -54,7 +54,9 @@
     .stage { padding: 14px 12px 4px; overflow: visible; }
     .jersey-wrap { width: min(340px, 78%); margin-top: 2px; }
     .sidebar { border-left: none; border-top: 1px solid var(--line); }
-    .tabs { position: sticky; top: 0; background: var(--panel); z-index: 6; }
+    .tabs { position: sticky; top: 0; background: var(--panel); z-index: 6; overflow-x: visible; }
+    .tab { flex: 1 1 0; min-width: 0; padding: 11px 3px; font-size: 11px; gap: 3px; flex-direction: column; }
+    .tab svg { width: 17px; height: 17px; }
     .panel-body { overflow: visible; }
   }
 
@@ -63,7 +65,7 @@
   .stage-toolbar { display: flex; gap: 8px; background: var(--panel); border: 1px solid var(--line); padding: 5px; border-radius: 999px; z-index: 5; margin-bottom: 8px; }
   .seg { border: none; background: transparent; color: var(--muted); font-weight: 700; font-size: 13px; padding: 7px 16px; border-radius: 999px; cursor: pointer; }
   .seg.active { background: var(--primary); color: #fff; }
-  .jersey-wrap { width: min(520px, 80%); aspect-ratio: 1000 / 1200; margin-top: 4px; filter: drop-shadow(0 24px 40px rgba(0,0,0,.5)); }
+  .jersey-wrap { width: min(500px, 78%); aspect-ratio: 1000 / 950; margin-top: 4px; filter: drop-shadow(0 24px 40px rgba(0,0,0,.5)); }
   svg.jersey { width: 100%; height: 100%; display: block; }
   .zone-hit { cursor: pointer; }
   .zone-outline { fill: none; stroke: var(--accent); stroke-dasharray: 6 5; stroke-width: 2.5; opacity: 0; transition: opacity .15s; }
@@ -226,20 +228,20 @@ const SIZES = ["XS","S","M","L","XL","XXL","3XL"];
 const COLOR_PRESETS = ["#ffffff","#111827","#dc2626","#ea580c","#f59e0b","#16a34a","#0ea5e9","#1d4ed8","#4f46e5","#7c3aed","#db2777","#facc15"];
 
 /* ---------- Mock-Templates (Struktur wie shared/templates.ts) ---------- */
-// Zonen: x/y/w/h in % der Vorschaufläche (viewBox 1000x1200), analog posX/posY/width/height.
+// Zonen: x/y/w/h in % der Vorschaufläche (viewBox 1000x950), analog posX/posY/width/height.
 function baseZones() {
   return {
     front: [
-      { id:"f-logo", label:"Vereinswappen", purpose:"clubLogo",   x:57, y:20, w:15, h:12 },
-      { id:"f-num",  label:"Brustnummer",   purpose:"playerNumber",x:26, y:21, w:12, h:9,  font:"Anton" },
-      { id:"f-spon1",label:"Brust Sponsor", purpose:"custom",      x:30, y:47, w:40, h:8,  font:"Montserrat", text:"HAUPTSPONSOR" },
+      { id:"f-logo", label:"Vereinswappen", purpose:"clubLogo",   x:54, y:24, w:15, h:13 },
+      { id:"f-num",  label:"Brustnummer",   purpose:"playerNumber",x:32, y:27, w:11, h:8.5, font:"Anton" },
+      { id:"f-spon1",label:"Brust Sponsor", purpose:"custom",      x:28, y:46, w:44, h:8,  font:"Montserrat", text:"HAUPTSPONSOR" },
       { id:"f-spon2",label:"Bauch Sponsor", purpose:"custom",      x:33, y:64, w:34, h:7,  font:"Montserrat", text:"" },
     ],
     back: [
-      { id:"b-club", label:"Vereinsname",   purpose:"clubName",    x:24, y:19, w:52, h:7,  font:"Bebas Neue" },
-      { id:"b-name", label:"Spielername",   purpose:"playerName",  x:22, y:26, w:56, h:6,  font:"Oswald" },
-      { id:"b-num",  label:"Rückennummer",  purpose:"playerNumber",x:35, y:33, w:30, h:27, font:"Anton" },
-      { id:"b-spon", label:"Rücken Sponsor",purpose:"custom",      x:30, y:74, w:40, h:6,  font:"Montserrat", text:"" },
+      { id:"b-club", label:"Vereinsname",   purpose:"clubName",    x:24, y:25, w:52, h:6.5, font:"Bebas Neue" },
+      { id:"b-name", label:"Spielername",   purpose:"playerName",  x:22, y:32, w:56, h:6,  font:"Oswald" },
+      { id:"b-num",  label:"Rückennummer",  purpose:"playerNumber",x:34, y:39, w:32, h:26, font:"Anton" },
+      { id:"b-spon", label:"Rücken Sponsor",purpose:"custom",      x:30, y:75, w:40, h:6,  font:"Montserrat", text:"" },
     ],
   };
 }
@@ -255,18 +257,26 @@ const TEMPLATES = [
     colors:{ body:"#16a34a", sleeveL:"#052e16", sleeveR:"#052e16", collar:"#f8fafc" }, zones: baseZones() },
 ];
 
-/* ---------- Jersey-Geometrie (SVG-Pfade, viewBox 0 0 1000 1200) ---------- */
+/* ---------- Jersey-Geometrie (SVG-Pfade, viewBox 0 0 1000 950) ---------- */
 function jerseyPaths(style, view) {
-  const neckDip = view === "front" ? 250 : 205; // Vorne tiefer, hinten runder/höher
   if (style === "tank") {
-    const body = `M 385 205 L 470 205 Q 500 ${neckDip} 530 205 L 615 205 L 655 470 L 690 1050 L 310 1050 L 345 470 Z`;
-    const collar = `M 462 202 Q 500 ${neckDip+18} 538 202 L 548 226 Q 500 ${neckDip+46} 452 226 Z`;
+    const ndC = view === "front" ? 250 : 212;         // Tiefe des Rundhals-Ausschnitts (Mitte)
+    const outer = 2*ndC - 182, inner = 2*(ndC-20) - 188; // Kontrollpunkte der Parabeln
+    const body = `M 360 185 L 430 182 Q 500 ${outer} 570 182 L 640 185`
+      + ` C 706 200 700 340 708 445 C 728 590 726 725 720 868`
+      + ` Q 500 894 280 868 C 274 725 272 590 292 445`
+      + ` C 300 340 294 200 360 185 Z`;
+    // Kragen-Saum: schmales Band parallel zum Rundhals
+    const collar = `M 430 182 Q 500 ${outer} 570 182 L 555 188 Q 500 ${inner} 445 188 Z`;
     return { body, sleeveL:null, sleeveR:null, collar };
   }
-  const body    = `M 340 185 L 430 180 Q 500 ${neckDip} 570 180 L 660 185 L 700 360 L 690 1050 L 310 1050 L 300 360 Z`;
-  const sleeveL = `M 340 185 L 205 255 L 238 445 L 300 360 Z`;
-  const sleeveR = `M 660 185 L 795 255 L 762 445 L 700 360 Z`;
-  const collar  = `M 425 177 Q 500 ${neckDip+22} 575 177 L 588 202 Q 500 ${neckDip+52} 412 202 Z`;
+  const nd = view === "front" ? 230 : 190; // Halsausschnitt: vorne V-artig tiefer, hinten runder
+  const body = `M 335 160 L 415 150 Q 500 ${nd} 585 150 L 665 160 L 712 405`
+    + ` C 730 560 728 720 720 865 Q 500 892 280 865`
+    + ` C 272 720 270 560 288 405 Z`;
+  const sleeveL = `M 335 160 L 198 208 Q 162 296 220 382 L 302 393 Q 305 260 335 160 Z`;
+  const sleeveR = `M 665 160 L 802 208 Q 838 296 780 382 L 698 393 Q 695 260 665 160 Z`;
+  const collar  = `M 408 148 Q 500 ${nd+8} 592 148 L 602 176 Q 500 ${nd+42} 398 176 Z`;
   return { body, sleeveL, sleeveR, collar };
 }
 const PART_DEFS = [
@@ -345,7 +355,7 @@ function renderPreview() {
   }
 
   document.getElementById("preview").innerHTML =
-    `<svg class="jersey" viewBox="0 0 1000 1200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    `<svg class="jersey" viewBox="0 0 1000 950" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
        ${parts}
        ${zonesSvg}
      </svg>`;
@@ -365,7 +375,7 @@ function renderPreview() {
 }
 
 function renderZoneSvg(z) {
-  const x = z.x/100*1000, y = z.y/100*1200, w = z.w/100*1000, h = z.h/100*1200;
+  const x = z.x/100*1000, y = z.y/100*950, w = z.w/100*1000, h = z.h/100*950;
   const cx = x + w/2, cy = y + h/2;
   const selected = state.selectedZoneId === z.id ? " selected" : "";
   const img = zoneImage(z);
@@ -406,7 +416,7 @@ function renderZoneSvg(z) {
 const TAB_DEFS = [
   { id:"vorlage", label:"Vorlage",  icon:'<path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>' },
   { id:"farben",  label:"Farben",   icon:'<circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1 .9-1.5 2-1.5h2.5A4 4 0 0 0 21 11c0-5-4-9-9-9z" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
-  { id:"zonen",   label:"Text & Zonen", icon:'<path d="M4 7V4h16v3M9 20h6M12 4v16" fill="none" stroke="currentColor" stroke-width="2"/>' },
+  { id:"zonen",   label:"Zonen",    icon:'<path d="M4 7V4h16v3M9 20h6M12 4v16" fill="none" stroke="currentColor" stroke-width="2"/>' },
   { id:"team",    label:"Team",     icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2"/>' },
   { id:"export",  label:"Export",   icon:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2"/>' },
 ];
@@ -688,7 +698,7 @@ function wireUploadEl(el, cb) {
 async function exportPng(view) {
   await (document.fonts ? document.fonts.ready : Promise.resolve());
   const SCALE = 2;
-  const W = 1000*SCALE, H = 1200*SCALE;
+  const W = 1000*SCALE, H = 950*SCALE;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d");
@@ -717,7 +727,7 @@ async function exportPng(view) {
   }));
 
   zones.forEach((z, i) => {
-    const x = z.x/100*1000, y = z.y/100*1200, w = z.w/100*1000, h = z.h/100*1200;
+    const x = z.x/100*1000, y = z.y/100*950, w = z.w/100*1000, h = z.h/100*950;
     if (IMAGE_PURPOSES.has(z.purpose)) {
       const im = imgs[i];
       if (im) {
