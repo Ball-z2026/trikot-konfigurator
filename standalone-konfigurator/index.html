@@ -470,6 +470,8 @@ const state = {
   ],
   selectedPlayer: 0,
   selectedZoneId: null,
+  selectedPart: null,             // { side, part, key } – angeklicktes Teil im Foto-Mockup
+  partPattern: {},                // key -> "solid" | "streifen" | "verlauf"
 };
 
 function tpl() { return TEMPLATES.find(t => t.id === state.templateId); }
@@ -637,9 +639,28 @@ function renderJerseySVGFallback() {
 const BLANKS = window.__BLANKS__ || {};   // { menFront:{du,w,h}, menBack, tankFront, tankBack }
 function blanksFor() {
   return tpl().style === "tank"
-    ? { front: BLANKS.tankFront, back: BLANKS.tankBack, bbX:[0.30,0.70], bbY:[0.14,0.86] }
-    : { front: BLANKS.menFront,  back: BLANKS.menBack,  bbX:[0.30,0.70], bbY:[0.20,0.84] };
+    ? { front: BLANKS.tankFront, back: BLANKS.tankBack, bbX:[0.30,0.70], bbY:[0.14,0.86], regions:REGIONS_TANK }
+    : { front: BLANKS.menFront,  back: BLANKS.menBack,  bbX:[0.30,0.70], bbY:[0.20,0.84], regions:REGIONS_SHIRT };
 }
+// Teil-Regionen (Polygone in 0..1 des Shirt-Fotos) -> einzeln einfärbbar/anwählbar
+const REGIONS_SHIRT = {
+  sleeveL:[[.30,.05],[.02,.16],[.06,.40],[.27,.42],[.30,.16]],
+  sleeveR:[[.70,.05],[.98,.16],[.94,.40],[.73,.42],[.70,.16]],
+  body:[[.30,.09],[.70,.09],[.75,.42],[.79,.95],[.21,.95],[.25,.42]],
+  cuffL:[[.02,.35],[.13,.40],[.11,.47],[.02,.44]],
+  cuffR:[[.98,.35],[.87,.40],[.89,.47],[.98,.44]],
+  collar:[[.42,.035],[.58,.035],[.595,.115],[.405,.115]],
+  hem:[[.21,.885],[.79,.885],[.79,.955],[.21,.955]],
+};
+const REGIONS_TANK = {
+  body:[[.30,.06],[.70,.06],[.78,.40],[.80,.95],[.20,.95],[.22,.40]],
+  collar:[[.41,.04],[.59,.04],[.605,.125],[.395,.125]],
+  hem:[[.20,.885],[.80,.885],[.80,.955],[.20,.955]],
+};
+const REGION_COLORKEY = { body:null, sleeveL:"sleeveL", sleeveR:"sleeveR", collar:"neck", cuffL:"band", cuffR:"band", hem:"band" };
+const REGION_LABEL = { body:"Korpus", sleeveL:"Ärmel links", sleeveR:"Ärmel rechts", collar:"Kragen", cuffL:"Bündchen links", cuffR:"Bündchen rechts", hem:"Saum" };
+const PAINT_ORDER = ["body","sleeveL","sleeveR","cuffL","cuffR","collar","hem"];
+function partColorKey(part, side) { return part==="body" ? (side==="front"?"front":"back") : REGION_COLORKEY[part]; }
 // Freigestelltes Blank-Foto laden (echtes Shirt, transparenter Hintergrund)
 const cutCache = {};
 function loadCut(b) {
@@ -647,7 +668,7 @@ function loadCut(b) {
     if(cutCache[k]) return res(cutCache[k]);
     const im=new Image(); im.onload=()=>{ cutCache[k]={img:im,w:b.w,h:b.h}; res(cutCache[k]); }; im.onerror=()=>res(null); im.src=b.du; });
 }
-let mkZoneRects = [];
+let mkZoneRects = [], mkPartRects = [];
 async function renderJerseyPreview() {
   const t = tpl(), need = blanksFor();
   const wrap = document.querySelector(".jersey-wrap");
@@ -660,28 +681,49 @@ async function renderJerseyPreview() {
 
   const VW=900, VH=560, S=2; cv.width=VW*S; cv.height=VH*S;
   const ctx=cv.getContext("2d"); ctx.scale(S,S); ctx.clearRect(0,0,VW,VH);
-  mkZoneRects = [];
+  mkZoneRects = []; mkPartRects = [];
   const DW=340;
-  drawCutShirt(ctx, cF, state.partColors.front, 40, 78, DW, t.zones.front, need);
-  drawCutShirt(ctx, cB, state.partColors.back, 520, 78, DW, t.zones.back, need);
+  drawCutShirt(ctx, cF, "front", 40, 78, DW, t.zones.front, need);
+  drawCutShirt(ctx, cB, "back", 520, 78, DW, t.zones.back, need);
   ctx.fillStyle="#8c9bb0"; ctx.font="700 20px Inter, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="alphabetic";
   ctx.fillText("Vorne", 40+DW/2, 44); ctx.fillText("Hinten", 520+DW/2, 44);
   document.getElementById("caption").textContent = `${t.name} · ${t.sport} · Gr. ${state.size} · Trikot-Vorschau (Foto-Mockup)`;
 }
-// Echtes freigestelltes Shirt einfärben (Multiply erhält Falten) + Design drauf
-function drawCutShirt(ctx, cut, hex, dx, dy, dw, zones, need) {
-  const dh = dw*cut.h/cut.w;
+// Echtes Shirt PRO TEIL einfärben/bemustern (Regionen-Masken), Falten bleiben
+function polyPath(g, reg, w, h) { g.beginPath(); reg.forEach(([x,y],i)=> i?g.lineTo(x*w,y*h):g.moveTo(x*w,y*h)); g.closePath(); }
+function fillForPart(g, part, key, w, h) {
+  const hex = state.partColors[key], pat = (state.partPattern||{})[key] || "solid";
+  if (pat === "streifen") { const p=document.createElement("canvas"); p.width=p.height=22; const pg=p.getContext("2d");
+    pg.fillStyle=hex; pg.fillRect(0,0,22,22); pg.fillStyle=shade(hex,-0.22); pg.fillRect(0,0,11,22); return g.createPattern(p,"repeat"); }
+  if (pat === "verlauf") { const gr=g.createLinearGradient(0,0,0,h); gr.addColorStop(0,shade(hex,0.18)); gr.addColorStop(1,shade(hex,-0.20)); return gr; }
+  return hex;
+}
+function drawCutShirt(ctx, cut, side, dx, dy, dw, zones, need) {
+  const dh = dw*cut.h/cut.w, regs = need.regions;
   // Schlagschatten
   ctx.save(); ctx.globalAlpha=0.24; ctx.filter="blur(8px)"; ctx.fillStyle="#000";
   ctx.beginPath(); ctx.ellipse(dx+dw/2, dy+dh*0.98, dw*0.35, dh*0.05, 0, 0, 7); ctx.fill(); ctx.restore();
-  // Einfärben auf Offscreen (native Auflösung), Alpha des Shirts erhalten
+  // Einfärben pro Teil auf Offscreen (native Auflösung), Alpha erhalten
   const o=document.createElement("canvas"); o.width=cut.w; o.height=cut.h; const g=o.getContext("2d");
   g.drawImage(cut.img, 0, 0);
-  g.globalCompositeOperation="multiply"; g.fillStyle=hex; g.fillRect(0,0,cut.w,cut.h);
-  g.globalCompositeOperation="destination-in"; g.drawImage(cut.img, 0, 0);
-  g.globalCompositeOperation="source-over";
+  for (const part of PAINT_ORDER) { const reg=regs[part]; if(!reg) continue;
+    const key=partColorKey(part, side);
+    g.save(); polyPath(g, reg, cut.w, cut.h); g.clip();
+    g.globalCompositeOperation="multiply"; g.fillStyle=fillForPart(g, part, key, cut.w, cut.h); g.fillRect(0,0,cut.w,cut.h);
+    g.globalCompositeOperation="source-over"; g.restore();
+  }
+  g.globalCompositeOperation="destination-in"; g.drawImage(cut.img, 0, 0); g.globalCompositeOperation="source-over";
   ctx.drawImage(o, 0, 0, cut.w, cut.h, dx, dy, dw, dh);
-  // Zonen (relativ zur Druckfläche des Shirts)
+  // Teil-Polygone registrieren (Klick-Auswahl) + Auswahl markieren
+  for (const part of Object.keys(regs)) {
+    const abs = regs[part].map(([px,py]) => [dx+px*dw, dy+py*dh]);
+    mkPartRects.push({ side, part, key:partColorKey(part,side), poly:abs });
+    if (state.selectedPart && state.selectedPart.side===side && state.selectedPart.part===part) {
+      ctx.save(); ctx.beginPath(); abs.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
+      ctx.strokeStyle="#ff5a1f"; ctx.lineWidth=2.5; ctx.setLineDash([6,4]); ctx.stroke(); ctx.restore();
+    }
+  }
+  // Zonen (relativ zur Druckfläche)
   const bb = { x: dx+need.bbX[0]*dw, y: dy+need.bbY[0]*dh, w: (need.bbX[1]-need.bbX[0])*dw, h: (need.bbY[1]-need.bbY[0])*dh };
   for (const z of zones) drawZoneCanvas(ctx, z, bb);
 }
@@ -710,11 +752,18 @@ function placeholder(ctx,x,y,w,h,label){
 const zoneImgCache = {};
 function loadZoneImg(src){ if(zoneImgCache[src]!==undefined) return; zoneImgCache[src]=null;
   const im=new Image(); im.onload=()=>{ zoneImgCache[src]=im; if(state.view==="mockup") renderPreview(); }; im.onerror=()=>{}; im.src=src; }
+function pointInPoly(px,py,poly){ let inside=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+  const [xi,yi]=poly[i],[xj,yj]=poly[j];
+  if(((yi>py)!==(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside; } return inside; }
 function wireMockupClick(cv){ cv.addEventListener("click", e => {
   const r=cv.getBoundingClientRect(), sx=900/r.width, sy=560/r.height;
   const px=(e.clientX-r.left)*sx, py=(e.clientY-r.top)*sy;
-  for(const z of mkZoneRects){ if(px>=z.x&&px<=z.x+z.w&&py>=z.y&&py<=z.y+z.h){ state.selectedZoneId=z.id;
-    if(state.tab!=="zonen"){ state.tab="zonen"; renderTabs(); renderPanel(); } else renderPanel(); renderPreview(); return; } }
+  // 1) Zonen (Nummer/Name/Logo) haben Vorrang
+  for(const z of mkZoneRects){ if(px>=z.x&&px<=z.x+z.w&&py>=z.y&&py<=z.y+z.h){ state.selectedZoneId=z.id; state.selectedPart=null;
+    if(state.tab!=="zonen"){ state.tab="zonen"; renderTabs(); } renderPanel(); renderPreview(); return; } }
+  // 2) Teil-Regionen (Korpus/Ärmel/Kragen…) anwählen
+  for(const p of mkPartRects){ if(pointInPoly(px,py,p.poly)){ state.selectedPart={ side:p.side, part:p.part, key:p.key }; state.selectedZoneId=null;
+    if(state.tab!=="farben"){ state.tab="farben"; renderTabs(); } renderPanel(); renderPreview(); return; } }
 }); }
 
 function renderPreview() {
@@ -917,25 +966,33 @@ function panelVorlage() {
 function panelFarben() {
   const isTank = tpl().style === "tank";
   const hidden = isTank ? new Set(["sleeveL","sleeveR","band"]) : new Set();
+  const selKey = state.selectedPart ? state.selectedPart.key : null;
+  const PATTERNS = [["solid","Einfarbig"],["streifen","Streifen"],["verlauf","Farbverlauf"]];
   const rows = PART_DEFS.filter(pd => !hidden.has(pd.key))
     .map(pd => {
       const col = state.partColors[pd.key];
       const cmyk = formatCmyk(hexToCmyk(col));
+      const pat = (state.partPattern||{})[pd.key] || "solid";
       const presets = COLOR_PRESETS.map(p =>
         `<button class="preset" style="background:${p}" data-part="${pd.key}" data-col="${p}"></button>`).join("");
-      return `<div class="part-row">
+      const patSel = `<select data-partpat="${pd.key}" style="margin-top:7px;font-size:12px;padding:6px 8px">
+        ${PATTERNS.map(([v,l])=>`<option value="${v}" ${pat===v?'selected':''}>${l}</option>`).join("")}</select>`;
+      return `<div class="part-row" style="${selKey===pd.key?'border-color:var(--primary);box-shadow:0 0 0 1px var(--primary) inset':''}">
                 <label class="swatch" style="background:${col}">
                   <input type="color" value="${col}" data-partcolor="${pd.key}" />
                 </label>
                 <div class="part-meta">
-                  <div class="pn">${pd.label}</div>
+                  <div class="pn">${pd.label}${selKey===pd.key?' <span class="auto-tag" style="color:var(--primary);border-color:var(--primary);background:rgba(255,90,31,.12)">gewählt</span>':''}</div>
                   <div class="cmyk">${col.toUpperCase()} · ${cmyk}</div>
                   <div class="presets">${presets}</div>
+                  ${patSel}
                 </div>
               </div>`;
     }).join("");
-  return `<div class="section-title">Farben pro Teil (CMYK)</div>${rows}
-          <p class="hint">Jedes Teil wird einzeln eingefärbt. Die CMYK-Werte entsprechen der Umrechnung für den Textildruck (portiert aus <code>lib/cmyk.ts</code>).</p>`;
+  return `<div class="section-title">Farbe &amp; Muster pro Teil</div>
+          <p class="hint" style="margin:-6px 0 12px">Tipp: In der <b>Vorschau</b> ein Teil (Korpus, Ärmel, Kragen …) <b>anklicken</b> → wird hier markiert. Farbe wählen und optional ein <b>Muster</b>.</p>
+          ${rows}
+          <p class="hint">CMYK-Werte für den Textildruck (portiert aus <code>lib/cmyk.ts</code>). Muster werden im Foto-Mockup pro Teil angewendet.</p>`;
 }
 
 /* ---- Text & Zonen ---- */
@@ -1076,6 +1133,9 @@ function wirePanel() {
   }));
   document.querySelectorAll(".preset[data-part]").forEach(b => b.addEventListener("click", () => {
     state.partColors[b.dataset.part] = b.dataset.col; renderPreview(); renderPanel();
+  }));
+  document.querySelectorAll("[data-partpat]").forEach(s => s.addEventListener("change", e => {
+    state.partPattern[s.dataset.partpat] = e.target.value; renderPreview();
   }));
 
   // Zonen
