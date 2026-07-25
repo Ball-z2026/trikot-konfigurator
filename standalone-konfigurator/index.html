@@ -72,7 +72,10 @@
   .jersey-wrap.sheet { width: min(760px, 96%); }
   .jersey-wrap.threed { width: min(460px, 74%); aspect-ratio: 4 / 5; filter: none; }
   .jersey-wrap.threed #preview, .jersey-wrap.threed canvas { width: 100%; height: 100%; }
-  #gl3d { display: block; border-radius: 16px; background: radial-gradient(120% 120% at 50% 25%, #1c2740, #0b0f17 70%); cursor: grab; touch-action: none; }
+  #gl3d { display: block; border-radius: 16px; cursor: grab; touch-action: none;
+    background:
+      radial-gradient(52% 14% at 50% 90%, rgba(0,0,0,.34), transparent 72%),
+      radial-gradient(125% 120% at 50% 16%, #eaeef4, #cbd4e0 52%, #aab5c6 100%); }
   #gl3d:active { cursor: grabbing; }
   .gl-hint { margin-top: 8px; font-size: 11.5px; color: var(--muted); text-align: center; }
   svg.jersey { width: 100%; height: 100%; display: block; }
@@ -151,6 +154,19 @@
   .upload-zone { border: 1.5px dashed var(--line); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; color: var(--muted); font-size: 12.5px; }
   .upload-zone:hover { border-color: var(--primary); color: var(--text); }
   .divider { height: 1px; background: var(--line); margin: 18px 0; }
+  .rules-box { border: 1px solid var(--line); border-radius: 11px; background: var(--panel-2); padding: 12px 13px; }
+  .rules-head { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 9px; }
+  .rules-badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; text-transform: none; letter-spacing: 0; }
+  .rules-badge.ok { background: rgba(22,163,74,.16); color: #4ade80; border: 1px solid rgba(22,163,74,.35); }
+  .rules-badge.warn { background: rgba(245,158,11,.16); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
+  .rule-row { display: flex; align-items: center; gap: 9px; padding: 4px 0; font-size: 12.5px; }
+  .rule-ic { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 900; flex-shrink: 0; }
+  .rule-ic.ok { background: rgba(22,163,74,.18); color: #4ade80; }
+  .rule-ic.warn { background: rgba(245,158,11,.18); color: #fbbf24; }
+  .rule-lbl { flex: 1; color: var(--text); }
+  .rule-val { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 700; }
+  .rule-val.warn { color: #fbbf24; }
+  .rules-src { font-size: 10.5px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
   .swatch-preview-img { width: 100%; }
 </style>
 </head>
@@ -225,7 +241,7 @@ function initials(name) {
 
 /* ---------- Purpose-Labels (aus CustomerConfigurator.tsx) ---------- */
 const PURPOSE_LABELS = {
-  logo: "Logo",
+  logo: "Sponsor / Logo",
   clubLogo: "Vereinswappen",
   playerName: "Spielername",
   playerNumber: "Nummer",
@@ -255,6 +271,30 @@ const SIZE_CHART = [
 ];
 function sizeSpec() { return SIZE_CHART.find(s => s.id === state.size) || SIZE_CHART.find(s => s.id === "L"); }
 
+/* ---------- Verbandsregeln (portiert aus shared/jerseyRules.ts, Amateur) ---------- */
+const SPORT_RULES = {
+  "Fußball":    { backMin:25, frontMin:10, range:[1,49], frontReq:false, backReq:true, src:"DFB §§ 9–10" },
+  "Handball":   { backMin:20, frontMin:10, range:[1,99], frontReq:true,  backReq:true, src:"IHF Regel 4:8 / DHB" },
+  "Basketball": { backMin:20, frontMin:10, range:[0,99], frontReq:true,  backReq:true, src:"FIBA Rules Art. 4" },
+  "Volleyball": { backMin:20, frontMin:15, range:[1,99], frontReq:true,  backReq:true, src:"FIVB / DVV" },
+};
+// Prüft die aktuellen Nummern-Zonen (Höhe in cm aus Maßtabelle) gegen die Regeln
+function ruleChecks() {
+  const t = tpl(), s = sizeSpec(), r = SPORT_RULES[t.sport];
+  if (!r) return null;
+  const fZ = t.zones.front.find(z => z.purpose === "playerNumber");
+  const bZ = t.zones.back.find(z => z.purpose === "playerNumber");
+  const bCm = bZ ? +(bZ.rh * s.len).toFixed(1) : 0;
+  const fCm = fZ ? +(fZ.rh * s.len).toFixed(1) : 0;
+  const checks = [
+    { ok: bCm >= r.backMin,  label:`Rückennummer ≥ ${r.backMin} cm`, val:`${bCm} cm` },
+    { ok: !r.frontReq || fCm >= r.frontMin, label:`Brustnummer ≥ ${r.frontMin} cm${r.frontReq?"":" (optional)"}`, val:`${fCm} cm` },
+  ];
+  const num = parseInt(selPlayer()?.number, 10);
+  if (!isNaN(num)) checks.push({ ok: num>=r.range[0] && num<=r.range[1], label:`Nummer ${r.range[0]}–${r.range[1]}`, val:`#${num}` });
+  return { checks, src:r.src, sport:t.sport };
+}
+
 /* ---------- Mock-Templates (Struktur wie shared/templates.ts) ---------- */
 // Zonen sitzen auf einem Zuschnitt-Teil (Vorderteil / Rückteil). rx/ry/rw/rh
 // sind relativ zur Bounding-Box des jeweiligen Teils (0..1) – so lassen sie
@@ -262,16 +302,16 @@ function sizeSpec() { return SIZE_CHART.find(s => s.id === state.size) || SIZE_C
 function baseZones() {
   return {
     front: [
-      { id:"f-logo", label:"Vereinswappen", purpose:"clubLogo",   rx:.55, ry:.16, rw:.26, rh:.12 },
-      { id:"f-num",  label:"Brustnummer",   purpose:"playerNumber",rx:.16, ry:.18, rw:.22, rh:.13, font:"Anton" },
-      { id:"f-spon1",label:"Brust Sponsor", purpose:"custom",      rx:.12, ry:.44, rw:.74, rh:.09, font:"Montserrat", text:"HAUPTSPONSOR" },
-      { id:"f-spon2",label:"Bauch Sponsor", purpose:"custom",      rx:.20, ry:.64, rw:.58, rh:.07, font:"Montserrat", text:"" },
+      { id:"f-logo", label:"Vereinswappen",       purpose:"clubLogo",   rx:.55, ry:.15, rw:.26, rh:.13 },
+      { id:"f-num",  label:"Brustnummer",         purpose:"playerNumber",rx:.16, ry:.17, rw:.22, rh:.13, font:"Anton" },
+      { id:"f-spon1",label:"Hauptsponsor (Logo)", purpose:"logo",       rx:.20, ry:.42, rw:.60, rh:.16 },
+      { id:"f-spon2",label:"Bauch-Sponsor (Logo)",purpose:"logo",       rx:.28, ry:.64, rw:.44, rh:.09 },
     ],
     back: [
-      { id:"b-club", label:"Vereinsname",   purpose:"clubName",    rx:.10, ry:.15, rw:.80, rh:.07, font:"Bebas Neue" },
-      { id:"b-name", label:"Spielername",   purpose:"playerName",  rx:.12, ry:.26, rw:.76, rh:.07, font:"Oswald" },
-      { id:"b-num",  label:"Rückennummer",  purpose:"playerNumber",rx:.30, ry:.37, rw:.40, rh:.26, font:"Anton" },
-      { id:"b-spon", label:"Rücken Sponsor",purpose:"custom",      rx:.22, ry:.74, rw:.56, rh:.07, font:"Montserrat", text:"" },
+      { id:"b-club", label:"Vereinsname",         purpose:"clubName",    rx:.10, ry:.14, rw:.80, rh:.07, font:"Bebas Neue" },
+      { id:"b-name", label:"Spielername",         purpose:"playerName",  rx:.12, ry:.25, rw:.76, rh:.07, font:"Oswald" },
+      { id:"b-num",  label:"Rückennummer",        purpose:"playerNumber",rx:.30, ry:.36, rw:.40, rh:.27, font:"Anton" },
+      { id:"b-spon", label:"Rücken-Sponsor (Logo)",purpose:"logo",      rx:.26, ry:.75, rw:.48, rh:.08 },
     ],
   };
 }
@@ -685,6 +725,27 @@ function renderPanel() {
   wirePanel();
 }
 
+/* ---- Verbandsregeln-Box ---- */
+function rulesBox() {
+  const rc = ruleChecks();
+  if (!rc) return "";
+  const rows = rc.checks.map(c =>
+    `<div class="rule-row">
+       <span class="rule-ic ${c.ok?'ok':'warn'}">${c.ok?'✓':'!'}</span>
+       <span class="rule-lbl">${c.label}</span>
+       <span class="rule-val ${c.ok?'':'warn'}">${c.val}</span>
+     </div>`).join("");
+  const allOk = rc.checks.every(c => c.ok);
+  return `<div class="rules-box">
+    <div class="rules-head">
+      <span>Verbandsregeln · ${rc.sport}</span>
+      <span class="rules-badge ${allOk?'ok':'warn'}">${allOk?'erfüllt':'prüfen'}</span>
+    </div>
+    ${rows}
+    <div class="rules-src">Quelle: ${rc.src}. Nummern-Höhe wird aus der Maßtabelle (Gr. ${state.size}) berechnet.</div>
+  </div>`;
+}
+
 /* ---- Vorlage ---- */
 function panelVorlage() {
   const cards = TEMPLATES.map(t =>
@@ -708,7 +769,8 @@ function panelVorlage() {
               Maßlinien einblenden (Länge · Brust · Arm)
             </label>
           </div>
-          <p class="hint" style="margin:-6px 0 4px">Aktuell: <b>Gr. ${state.size}</b> – Länge ${sp.len} cm · Brustbreite ${sp.chest} cm · Armlänge ${sp.arm} cm. Standard ist L; Vorder-/Rückteil sind maßstabsgetreu auf diese Werte skaliert.</p>
+          <p class="hint" style="margin:-6px 0 10px">Aktuell: <b>Gr. ${state.size}</b> – Länge ${sp.len} cm · Brustbreite ${sp.chest} cm · Armlänge ${sp.arm} cm. Standard ist L; Vorder-/Rückteil sind maßstabsgetreu auf diese Werte skaliert.</p>
+          ${rulesBox()}
           <div class="divider"></div>
           <div class="field">
             <label>Vereinsname</label>
@@ -1064,12 +1126,13 @@ const M4 = {
 
 // Trikot-Torso als Mesh (elliptischer Querschnitt, Textur aus Design-Atlas)
 function buildTorso(isTank) {
-  const NU=64, NV=52;
-  const prof=[[0,0.22],[0.05,0.44],[0.13,0.60],[0.45,0.61],[0.80,0.59],[1,0.585]];
+  const NU=72, NV=54;
+  // Breit & flach wie ein echtes Trikot; Schultern oben, leichte Taille, Saum
+  const prof=[[0,0.36],[0.08,0.56],[0.16,0.63],[0.42,0.635],[0.72,0.60],[1,0.60]];
   const rAt=v=>{ for(let i=1;i<prof.length;i++){ if(v<=prof[i][0]){ const a=prof[i-1],b=prof[i],k=(v-a[0])/(b[0]-a[0]); return a[1]+(b[1]-a[1])*k; } } return prof[prof.length-1][1]; };
-  const yAt=v=>0.98 - v*2.04;
+  const yAt=v=>0.98 - v*2.02;
   const pos=[],uv=[],grid=[];
-  for(let i=0;i<=NV;i++){ const v=i/NV, r=rAt(v), rx=r, rz=r*0.5, y=yAt(v); const row=[];
+  for(let i=0;i<=NV;i++){ const v=i/NV, r=rAt(v), rx=r, rz=r*0.40, y=yAt(v); const row=[];
     for(let j=0;j<=NU;j++){ const th=j/NU*Math.PI*2; const x=rx*Math.sin(th), z=rz*Math.cos(th);
       let u=0.25 + th/(Math.PI*2); u=u-Math.floor(u);
       row.push(pos.length/3); pos.push(x,y,z); uv.push(u, v);
@@ -1107,7 +1170,7 @@ function buildCone(dir, len, r0, r1) {
 }
 // Hals-Füllung (flache Disc), verdeckt das Innere des Trikots
 function buildNeckFill() {
-  const NU=40, rx=0.24, rz=0.13, cy=0.9, pos=[0,cy,0], nrm=[0,1,0], idx=[];
+  const NU=40, rx=0.31, rz=0.135, cy=0.955, pos=[0,cy,0], nrm=[0,1,0], idx=[];
   for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; pos.push(rx*Math.sin(a), cy, rz*Math.cos(a)); nrm.push(0,1,0); }
   for(let j=0;j<NU;j++) idx.push(0, 1+j, 1+j+1);
   const uv=new Float32Array((pos.length/3)*2);
@@ -1115,7 +1178,7 @@ function buildNeckFill() {
 }
 // Kragen-Ring (elliptischer Torus)
 function buildCollar() {
-  const NA=48, NB=14, rx=0.32, rz=0.17, tube=0.06, cy=0.9, pos=[],nrm=[],idx=[],grid=[];
+  const NA=52, NB=14, rx=0.33, rz=0.15, tube=0.05, cy=0.94, pos=[],nrm=[],idx=[],grid=[];
   for(let i=0;i<=NA;i++){ const a=i/NA*Math.PI*2, row=[];
     for(let j=0;j<=NB;j++){ const b=j/NB*Math.PI*2; const cb=Math.cos(b),sb=Math.sin(b);
       row.push(pos.length/3);
@@ -1174,11 +1237,14 @@ const Jersey3D = (() => {
       void main(){ gl_Position=uP*uV*uM*vec4(aPos,1.0); vN=(uM*vec4(aNrm,0.0)).xyz; vUv=aUv; }`;
     const fs=`precision mediump float; varying vec3 vN; varying vec2 vUv;
       uniform sampler2D uTex; uniform int uUseTex; uniform vec3 uColor;
-      void main(){ vec3 N=normalize(vN); vec3 L=normalize(vec3(0.35,0.55,0.85));
-        float diff=max(dot(N,L),0.0); float amb=0.58;
+      void main(){ vec3 N=normalize(vN);
+        vec3 L1=normalize(vec3(0.35,0.65,0.85)), L2=normalize(vec3(-0.5,0.2,0.4));
+        float d1=max(dot(N,L1),0.0), d2=max(dot(N,L2),0.0);
+        float hemi=0.5+0.5*N.y; float amb=mix(0.5,0.72,hemi);   // weicher Himmel/Boden-Ambient
         vec3 base = uUseTex==1 ? texture2D(uTex,vUv).rgb : uColor;
-        float rim=pow(1.0-max(dot(N,vec3(0.0,0.0,1.0)),0.0),2.5)*0.12;
-        gl_FragColor=vec4(base*(amb+diff*0.62)+rim, 1.0); }`;
+        float rim=pow(1.0-max(dot(N,vec3(0.0,0.0,1.0)),0.0),3.0)*0.14;
+        float light=amb + d1*0.42 + d2*0.16;
+        gl_FragColor=vec4(base*light+rim, 1.0); }`;
     prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(prog);
     gl.useProgram(prog);
     loc={ aPos:gl.getAttribLocation(prog,"aPos"), aNrm:gl.getAttribLocation(prog,"aNrm"), aUv:gl.getAttribLocation(prog,"aUv"),
@@ -1197,8 +1263,8 @@ const Jersey3D = (() => {
     const fill=buildNeckFill(); fill.color=hex(c.neck); meshes.push(attrBuf(fill));
     const collar=buildCollar(); collar.color=hex(c.neck); meshes.push(attrBuf(collar));
     if(!isTank){
-      const rS=buildCone(1,0.62,0.26,0.19); rS.local=M4.mul(M4.trans(0.46,0.53,0), rotZ(-0.38)); rS.color=hex(c.sleeveR); meshes.push(attrBuf(rS));
-      const lS=buildCone(-1,0.62,0.26,0.19); lS.local=M4.mul(M4.trans(-0.46,0.53,0), rotZ(0.38)); lS.color=hex(c.sleeveL); meshes.push(attrBuf(lS));
+      const rS=buildCone(1,0.60,0.30,0.21); rS.local=M4.mul(M4.trans(0.47,0.66,0), rotZ(-0.46)); rS.color=hex(c.sleeveR); meshes.push(attrBuf(rS));
+      const lS=buildCone(-1,0.60,0.30,0.21); lS.local=M4.mul(M4.trans(-0.47,0.66,0), rotZ(0.46)); lS.color=hex(c.sleeveL); meshes.push(attrBuf(lS));
     }
   }
   function rotZ(a){ const c=Math.cos(a),s=Math.sin(a); return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]; }
