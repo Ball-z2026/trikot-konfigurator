@@ -232,6 +232,20 @@ const FONTS = ["Inter","Oswald","Bebas Neue","Anton","Teko","Archivo Black","Mon
 const SIZES = ["XS","S","M","L","XL","XXL","3XL"];
 const COLOR_PRESETS = ["#ffffff","#111827","#dc2626","#ea580c","#f59e0b","#16a34a","#0ea5e9","#1d4ed8","#4f46e5","#7c3aed","#db2777","#facc15"];
 
+/* ---------- Offizielle Maßtabelle (cm) – Basis für den Schnitt ----------
+   len = Länge (Schulter→Saum), chest = Brustbreite (flach, Achsel→Achsel),
+   arm = Armlänge. Standard ist Größe L. */
+const SIZE_CHART = [
+  { id:"104", len:37, chest:24, arm:15 }, { id:"116", len:41, chest:27, arm:16 },
+  { id:"128", len:45, chest:30, arm:17 }, { id:"140", len:49, chest:33, arm:18 },
+  { id:"152", len:53, chest:36, arm:19 }, { id:"164", len:56, chest:39, arm:20 },
+  { id:"176", len:59, chest:42, arm:21 }, { id:"XS", len:65, chest:48, arm:23 },
+  { id:"S",  len:68, chest:51, arm:24 }, { id:"M",  len:71, chest:54, arm:25 },
+  { id:"L",  len:74, chest:57, arm:26 }, { id:"XL", len:77, chest:60, arm:27 },
+  { id:"2XL", len:80, chest:63, arm:28 }, { id:"3XL", len:83, chest:66, arm:29 },
+];
+function sizeSpec() { return SIZE_CHART.find(s => s.id === state.size) || SIZE_CHART.find(s => s.id === "L"); }
+
 /* ---------- Mock-Templates (Struktur wie shared/templates.ts) ---------- */
 // Zonen sitzen auf einem Zuschnitt-Teil (Vorderteil / Rückteil). rx/ry/rw/rh
 // sind relativ zur Bounding-Box des jeweiligen Teils (0..1) – so lassen sie
@@ -265,32 +279,38 @@ const TEMPLATES = [
     colors:{ front:"#16a34a", back:"#16a34a", sleeveL:"#052e16", sleeveR:"#052e16", band:"#f8fafc", neck:"#f8fafc" }, zones: baseZones() },
 ];
 
-/* ---------- Schnitt-Geometrie (flache Zuschnitt-Teile wie im echten Schnitt) ----------
-   Jedes Teil wird flach gezeichnet – so, wie es sublimiert und danach vernäht wird. */
+/* ---------- Schnitt-Geometrie (maßstabsgetreu nach Maßtabelle, Basis L) ----------
+   Alle Teile werden flach gezeichnet – so, wie sie sublimiert und dann vernäht
+   werden. Vorder-/Rückteil sind exakt auf Länge × Brustbreite (cm) skaliert. */
 const P = (x,y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
 
-// Flaches Vorder-/Rückteil (Torso-Panel): Schulternaht, Halsausschnitt, Armloch, Saum
-function flatPanel(b, ndFrac) {
+// Flaches Vorder-/Rückteil aus cm-Maßen (Schulter, Halsausschnitt, Achsel, Saum)
+// o: { neckD (Anteil Höhe), shoulder/neckW (Anteil Breite), armhole (Anteil Höhe) }
+function flatPanel(b, o) {
   const {x:X,y:Y,w:W,h:H} = b;
-  return `M ${P(X+0.10*W, Y+0.03*H)}`
-    + ` L ${P(X+0.35*W, Y)}`
-    + ` Q ${P(X+0.50*W, Y+ndFrac*H)} ${P(X+0.65*W, Y)}`
-    + ` L ${P(X+0.90*W, Y+0.03*H)}`
-    + ` C ${P(X+1.03*W, Y+0.09*H)} ${P(X+1.02*W, Y+0.20*H)} ${P(X+0.985*W, Y+0.31*H)}`
-    + ` L ${P(X+0.93*W, Y+H)}`
-    + ` Q ${P(X+0.50*W, Y+1.03*H)} ${P(X+0.07*W, Y+H)}`
-    + ` L ${P(X+0.015*W, Y+0.31*H)}`
-    + ` C ${P(X-0.02*W, Y+0.20*H)} ${P(X-0.03*W, Y+0.09*H)} ${P(X+0.10*W, Y+0.03*H)} Z`;
+  const cx = X + W/2, top = Y + 0.012*H;
+  const shH = o.shoulder*W/2, neH = o.neckW*W/2, chH = 0.5*W, hemH = 0.49*W;
+  const nD = o.neckD*H, arm = o.armhole*H;
+  return `M ${P(cx-shH, top)}`
+    + ` L ${P(cx-neH, Y)}`
+    + ` Q ${P(cx, Y+nD)} ${P(cx+neH, Y)}`
+    + ` L ${P(cx+shH, top)}`
+    + ` Q ${P(cx+chH, Y+arm*0.5)} ${P(cx+chH, Y+arm)}`
+    + ` L ${P(cx+hemH, Y+H)}`
+    + ` Q ${P(cx, Y+H+0.02*H)} ${P(cx-hemH, Y+H)}`
+    + ` L ${P(cx-chH, Y+arm)}`
+    + ` Q ${P(cx-chH, Y+arm*0.5)} ${P(cx-shH, top)} Z`;
+}
+function panelOpts(view, isTank) {
+  if (isTank) return { neckD: view==="front"?0.15:0.05, shoulder:0.34, neckW:0.34, armhole:0.40 };
+  return { neckD: view==="front"?0.11:0.04, shoulder:0.80, neckW:0.33, armhole:0.29 };
 }
 // Ärmel-Zuschnitt (Ärmelkugel): oben leicht gewölbt, unten runde Kappe
 function sleevePiece(b) {
   const {x:X,y:Y,w:W,h:H} = b;
-  return `M ${P(X, Y+0.24*H)}`
-    + ` Q ${P(X+0.5*W, Y-0.04*H)} ${P(X+W, Y+0.24*H)}`
-    + ` L ${P(X+0.90*W, Y+0.52*H)}`
-    + ` Q ${P(X+0.5*W, Y+1.06*H)} ${P(X+0.10*W, Y+0.52*H)} Z`;
+  return `M ${P(X, Y+0.24*H)} Q ${P(X+0.5*W, Y-0.04*H)} ${P(X+W, Y+0.24*H)}`
+    + ` L ${P(X+0.90*W, Y+0.52*H)} Q ${P(X+0.5*W, Y+1.06*H)} ${P(X+0.10*W, Y+0.52*H)} Z`;
 }
-// Ärmelbündchen / Kragen als schmales Band
 function bandPiece(b) {
   const {x:X,y:Y,w:W,h:H} = b;
   return `M ${P(X, Y+0.25*H)} L ${P(X+W, Y)} L ${P(X+W, Y+0.75*H)} L ${P(X, Y+H)} Z`;
@@ -299,36 +319,55 @@ function neckPiece(b) {
   const {x:X,y:Y,w:W,h:H} = b;
   return `M ${P(X, Y+0.10*H)} L ${P(X+W, Y)} L ${P(X+W, Y+H)} L ${P(X, Y+0.90*H)} Z`;
 }
+// Maßlinie (Doppelpfeil mit cm-Beschriftung)
+function dim(x1,y1,x2,y2,label) { return { x1,y1,x2,y2, label }; }
 
 // Baut die komplette Szene für eine Ansicht: front | back | sheet
 function buildScene(view) {
-  const t = tpl(), isTank = t.style === "tank";
+  const t = tpl(), isTank = t.style === "tank", s = sizeSpec();
+  const ratio = s.len / s.chest;               // Höhe/Breite exakt aus Maßtabelle
+
   if (view === "front" || view === "back") {
-    const bb = { x:255, y:120, w:490, h:760 };
-    const nd = view === "front" ? (isTank?0.20:0.16) : (isTank?0.14:0.10);
+    const CM = 9, pw = s.chest*CM, ph = s.len*CM;
+    const padX = 150, padTop = 64, padBottom = 96;
+    const bb = { x:padX, y:padTop, w:pw, h:ph };
+    const o = panelOpts(view, isTank);
     return {
-      vbW:1000, vbH:1000,
-      pieces: [{ key:view, d:flatPanel(bb, nd), colorKey:view }],
+      vbW: pw + padX*2, vbH: ph + padTop + padBottom,
+      pieces: [{ key:view, d:flatPanel(bb, o), colorKey:view }],
       zones: t.zones[view].map(z => ({ z, bb })),
-      labels: [{ text: view==="front"?"Vorderteil":"Rückteil", x:bb.x+bb.w/2, y:bb.y-24, size:26 }],
+      labels: [{ text: view==="front"?"Vorderteil":"Rückteil", x:bb.x+bb.w/2, y:bb.y-28, size:26 }],
+      dims: state.showDims ? [
+        dim(bb.x-42, bb.y, bb.x-42, bb.y+bb.h, `Länge ${s.len} cm`),
+        dim(bb.x, bb.y+bb.h+42, bb.x+bb.w, bb.y+bb.h+42, `Brustbreite ${s.chest} cm`),
+      ] : [],
     };
   }
+
   // Schnittbogen: alle Zuschnitt-Teile nebeneinander (wie der Druckbogen)
-  const frontBB = { x:35,  y:185, w:400, h:585 };
-  const backBB  = { x:470, y:185, w:400, h:585 };
-  const rBandBB = { x:985, y:225, w:315, h:52 };
-  const rArmBB  = { x:975, y:305, w:335, h:180 };
-  const lBandBB = { x:985, y:548, w:315, h:52 };
-  const lArmBB  = { x:975, y:628, w:335, h:180 };
-  const neckBB  = { x:300, y:862, w:360, h:54 };
+  const PW = 350, PH = PW*ratio;               // Panelbreite fix, Höhe maßstäblich
+  const frontBB = { x:50,  y:150, w:PW, h:PH };
+  const backBB  = { x:50+PW+70, y:150, w:PW, h:PH };
+  const colX = 895;                            // rechte Spalte: Ärmel, Bündchen, Kragen
+  const rBandBB = { x:colX+6, y:150, w:230, h:44 };
+  const rArmBB  = { x:colX,   y:210, w:242, h:150 };
+  const lBandBB = { x:colX+6, y:388, w:230, h:44 };
+  const lArmBB  = { x:colX,   y:448, w:242, h:150 };
+  const neckBB  = { x:colX+6, y:632, w:230, h:44 };
+  const oF = panelOpts("front", isTank), oB = panelOpts("back", isTank);
   const pieces = [
-    { key:"front", d:flatPanel(frontBB, isTank?0.20:0.16), colorKey:"front" },
-    { key:"back",  d:flatPanel(backBB,  isTank?0.14:0.10), colorKey:"back" },
+    { key:"front", d:flatPanel(frontBB, oF), colorKey:"front" },
+    { key:"back",  d:flatPanel(backBB,  oB), colorKey:"back" },
   ];
   const labels = [
     { text:"Vorderteil", x:frontBB.x+frontBB.w/2, y:frontBB.y-16, size:22 },
     { text:"Rückteil",   x:backBB.x+backBB.w/2,   y:backBB.y-16,  size:22 },
   ];
+  const dims = state.showDims ? [
+    dim(frontBB.x-36, frontBB.y, frontBB.x-36, frontBB.y+frontBB.h, `${s.len} cm`),
+    dim(frontBB.x, frontBB.y+frontBB.h+34, frontBB.x+frontBB.w, frontBB.y+frontBB.h+34, `Brustbreite ${s.chest} cm`),
+  ] : [];
+  let bottom = frontBB.y + frontBB.h + 60;
   if (!isTank) {
     pieces.push(
       { key:"rArm",  d:sleevePiece(rArmBB), colorKey:"sleeveR" },
@@ -337,19 +376,22 @@ function buildScene(view) {
       { key:"lBand", d:bandPiece(lBandBB),  colorKey:"band" },
     );
     labels.push(
-      { text:"Ärmelbündchen R", x:rBandBB.x+rBandBB.w/2, y:rBandBB.y-8, size:17 },
-      { text:"Ärmel rechts",    x:rArmBB.x+rArmBB.w/2,   y:rArmBB.y-8,  size:17 },
-      { text:"Ärmelbündchen L", x:lBandBB.x+lBandBB.w/2, y:lBandBB.y-8, size:17 },
-      { text:"Ärmel links",     x:lArmBB.x+lArmBB.w/2,   y:lArmBB.y-8,  size:17 },
+      { text:"Ärmelbündchen R", x:rBandBB.x+rBandBB.w/2, y:rBandBB.y-8, size:16 },
+      { text:"Ärmel rechts",    x:rArmBB.x+rArmBB.w/2,   y:rArmBB.y-8,  size:16 },
+      { text:"Ärmelbündchen L", x:lBandBB.x+lBandBB.w/2, y:lBandBB.y-8, size:16 },
+      { text:"Ärmel links",     x:lArmBB.x+lArmBB.w/2,   y:lArmBB.y-8,  size:16 },
     );
+    if (state.showDims) dims.push(dim(rArmBB.x+rArmBB.w*0.16, rArmBB.y+rArmBB.h*0.14, rArmBB.x+rArmBB.w*0.84, rArmBB.y+rArmBB.h*0.60, `Arm ${s.arm} cm`));
   }
-  pieces.push({ key:"neck", d:neckPiece(neckBB), colorKey:"neck" });
-  labels.push({ text:"Kragen", x:neckBB.x+neckBB.w/2, y:neckBB.y-8, size:17 });
+  const nBB = isTank ? { x:colX+6, y:210, w:230, h:44 } : neckBB;
+  pieces.push({ key:"neck", d:neckPiece(nBB), colorKey:"neck" });
+  labels.push({ text:"Kragen", x:nBB.x+nBB.w/2, y:nBB.y-8, size:16 });
   const zones = [
     ...t.zones.front.map(z => ({ z, bb:frontBB })),
     ...t.zones.back.map(z => ({ z, bb:backBB })),
   ];
-  return { vbW:1330, vbH:950, pieces, zones, labels };
+  const vbH = Math.max(bottom, (isTank ? nBB.y+nBB.h : lArmBB.y+lArmBB.h), nBB.y+nBB.h) + 40;
+  return { vbW:1200, vbH, pieces, zones, labels, dims };
 }
 
 const PART_DEFS = [
@@ -366,6 +408,8 @@ const state = {
   templateId: TEMPLATES[0].id,
   view: "front",
   tab: "vorlage",
+  size: "L",              // Standardgröße (Maßtabelle)
+  showDims: true,         // Maßlinien einblenden
   partColors: { ...TEMPLATES[0].colors },
   zoneContent: {},                 // zoneId -> { text, imageDataUrl, font, size, color, weight }
   clubName: "SV MUSTERSTADT",
@@ -413,6 +457,21 @@ function zoneImage(z)  {
    ========================================================================= */
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+// Maßlinie als SVG (Doppelpfeil, Endkappen, cm-Label mit Hintergrund)
+function renderDim(d) {
+  const { x1,y1,x2,y2,label } = d;
+  const len = Math.hypot(x2-x1, y2-y1) || 1, ux=(x2-x1)/len, uy=(y2-y1)/len, px=-uy, py=ux, s=13;
+  const head = (tx,ty,dx,dy) => `<path d="M ${P(tx-dx*s+px*s*0.55, ty-dy*s+py*s*0.55)} L ${P(tx,ty)} L ${P(tx-dx*s-px*s*0.55, ty-dy*s-py*s*0.55)}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const cap = (x,y) => `<line x1="${(x+px*8).toFixed(1)}" y1="${(y+py*8).toFixed(1)}" x2="${(x-px*8).toFixed(1)}" y2="${(y-py*8).toFixed(1)}" stroke="#3b82f6" stroke-width="2"/>`;
+  const fs = 22, midX=(x1+x2)/2, midY=(y1+y2)/2, vertical = Math.abs(uy) > Math.abs(ux);
+  const w = label.length*fs*0.56 + 14, h = fs+8;
+  const g = `<g transform="translate(${(midX + (vertical?-14:0)).toFixed(1)} ${(midY + (vertical?0:-13)).toFixed(1)}) rotate(${vertical?-90:0})">`
+    + `<rect x="${(-w/2).toFixed(1)}" y="${(-h/2).toFixed(1)}" width="${w.toFixed(1)}" height="${h}" rx="5" fill="#0b0f17" opacity="0.82"/>`
+    + `<text x="0" y="0" text-anchor="middle" dominant-baseline="central" fill="#8fbcff" font-family="Inter,sans-serif" font-weight="800" font-size="${fs}">${esc(label)}</text></g>`;
+  return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#3b82f6" stroke-width="2.5"/>`
+    + head(x2,y2,ux,uy) + head(x1,y1,-ux,-uy) + cap(x1,y1) + cap(x2,y2) + g;
+}
+
 function renderPreview() {
   const t = tpl();
   const scene = buildScene(state.view);
@@ -434,6 +493,9 @@ function renderPreview() {
       letter-spacing="0.5">${esc(l.text)}</text>`;
   }
 
+  let dimsSvg = "";
+  for (const d of (scene.dims||[])) dimsSvg += renderDim(d);
+
   const wrap = document.querySelector(".jersey-wrap");
   wrap.style.aspectRatio = `${scene.vbW} / ${scene.vbH}`;
   wrap.classList.toggle("sheet", state.view === "sheet");
@@ -443,6 +505,7 @@ function renderPreview() {
        ${parts}
        ${labelsSvg}
        ${zonesSvg}
+       ${dimsSvg}
      </svg>`;
 
   // Klick auf Zone selektiert sie
@@ -456,7 +519,8 @@ function renderPreview() {
   });
 
   const viewName = state.view === "front" ? "Vorderteil" : state.view === "back" ? "Rückteil" : "Schnittbogen · alle Zuschnitt-Teile";
-  document.getElementById("caption").textContent = `${t.name} · ${t.sport} · ${viewName}`;
+  const sp = sizeSpec();
+  document.getElementById("caption").textContent = `${t.name} · ${t.sport} · Gr. ${state.size} (${sp.len}×${sp.chest} cm) · ${viewName}`;
 }
 
 function renderZoneSvg(z, bb) {
@@ -533,8 +597,22 @@ function panelVorlage() {
        <div class="nm">${t.name}</div>
        <div class="sp">${t.sport} · ${t.style==='tank'?'Ärmellos':'Kurzarm'}</div>
      </button>`).join("");
+  const sp = sizeSpec();
+  const sizeOpts = SIZE_CHART.map(s => `<option value="${s.id}" ${s.id===state.size?'selected':''}>${s.id}  ·  ${s.len}×${s.chest} cm</option>`).join("");
   return `<div class="section-title">Vorlage wählen</div>
           <div class="card-tpl">${cards}</div>
+          <div class="divider"></div>
+          <div class="section-title">Größe (Maßtabelle)</div>
+          <div class="field">
+            <select id="sizeSel">${sizeOpts}</select>
+          </div>
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-weight:600">
+              <input type="checkbox" id="dimsToggle" ${state.showDims?'checked':''} style="width:auto;accent-color:var(--primary)" />
+              Maßlinien einblenden (Länge · Brust · Arm)
+            </label>
+          </div>
+          <p class="hint" style="margin:-6px 0 4px">Aktuell: <b>Gr. ${state.size}</b> – Länge ${sp.len} cm · Brustbreite ${sp.chest} cm · Armlänge ${sp.arm} cm. Standard ist L; Vorder-/Rückteil sind maßstabsgetreu auf diese Werte skaliert.</p>
           <div class="divider"></div>
           <div class="field">
             <label>Vereinsname</label>
@@ -696,6 +774,10 @@ function wirePanel() {
   }));
   bindText("clubName", v => { state.clubName = v; renderPreview(); });
   wireUpload("clubLogoUp", dataUrl => { state.clubLogo = dataUrl; renderPreview(); renderPanel(); });
+  const sizeSel = document.getElementById("sizeSel");
+  if (sizeSel) sizeSel.addEventListener("change", e => { state.size = e.target.value; renderPreview(); renderPanel(); });
+  const dimsT = document.getElementById("dimsToggle");
+  if (dimsT) dimsT.addEventListener("change", e => { state.showDims = e.target.checked; renderPreview(); });
 
   // Farben
   document.querySelectorAll("[data-partcolor]").forEach(inp => inp.addEventListener("input", e => {
@@ -839,9 +921,25 @@ async function exportPng(view) {
     ctx.fillStyle = zoneColor(z); ctx.fillText(txt, x+w/2, y+h/2);
   });
 
+  // Maßlinien
+  for (const d of (scene.dims||[])) {
+    const len = Math.hypot(d.x2-d.x1, d.y2-d.y1) || 1, ux=(d.x2-d.x1)/len, uy=(d.y2-d.y1)/len, px=-uy, py=ux, s=13;
+    ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.beginPath(); ctx.moveTo(d.x1,d.y1); ctx.lineTo(d.x2,d.y2); ctx.stroke();
+    const head = (tx,ty,dx,dy) => { ctx.beginPath();
+      ctx.moveTo(tx-dx*s+px*s*0.55, ty-dy*s+py*s*0.55); ctx.lineTo(tx,ty); ctx.lineTo(tx-dx*s-px*s*0.55, ty-dy*s-py*s*0.55); ctx.stroke(); };
+    head(d.x2,d.y2,ux,uy); head(d.x1,d.y1,-ux,-uy);
+    const fs = 22, midX=(d.x1+d.x2)/2, midY=(d.y1+d.y2)/2, vertical = Math.abs(uy) > Math.abs(ux);
+    ctx.save(); ctx.translate(midX + (vertical?-14:0), midY + (vertical?0:-13)); if (vertical) ctx.rotate(-Math.PI/2);
+    ctx.font = `800 ${fs}px Inter, sans-serif`; const tw = ctx.measureText(d.label).width;
+    ctx.fillStyle = "rgba(11,15,23,0.82)"; ctx.fillRect(-tw/2-7, -(fs+8)/2, tw+14, fs+8);
+    ctx.fillStyle = "#8fbcff"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(d.label, 0, 0);
+    ctx.restore();
+  }
+
   const a = document.createElement("a");
   a.href = canvas.toDataURL("image/png");
-  a.download = `${t.id}_${view === "sheet" ? "schnittbogen" : view}_druckdatei.png`;
+  a.download = `${t.id}_gr${state.size}_${view === "sheet" ? "schnittbogen" : view}_druckdatei.png`;
   a.click();
 }
 
