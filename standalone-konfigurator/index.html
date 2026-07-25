@@ -70,6 +70,11 @@
   .seg.active { background: var(--primary); color: #fff; }
   .jersey-wrap { width: min(500px, 78%); aspect-ratio: 1000 / 950; margin-top: 4px; filter: drop-shadow(0 24px 40px rgba(0,0,0,.5)); }
   .jersey-wrap.sheet { width: min(760px, 96%); }
+  .jersey-wrap.threed { width: min(460px, 74%); aspect-ratio: 4 / 5; filter: none; }
+  .jersey-wrap.threed #preview, .jersey-wrap.threed canvas { width: 100%; height: 100%; }
+  #gl3d { display: block; border-radius: 16px; background: radial-gradient(120% 120% at 50% 25%, #1c2740, #0b0f17 70%); cursor: grab; touch-action: none; }
+  #gl3d:active { cursor: grabbing; }
+  .gl-hint { margin-top: 8px; font-size: 11.5px; color: var(--muted); text-align: center; }
   svg.jersey { width: 100%; height: 100%; display: block; }
   .zone-hit { cursor: pointer; }
   .zone-outline { fill: none; stroke: var(--accent); stroke-dasharray: 6 5; stroke-width: 2.5; opacity: 0; transition: opacity .15s; }
@@ -168,6 +173,7 @@
         <button class="seg" data-view="back">Rückteil</button>
         <button class="seg" data-view="sheet">Schnittbogen</button>
         <button class="seg" data-view="mockup">Mockup</button>
+        <button class="seg" data-view="3d">3D</button>
       </div>
       <div class="jersey-wrap">
         <div id="preview"></div>
@@ -533,8 +539,26 @@ function renderDim(d) {
 
 function renderPreview() {
   const t = tpl();
+
+  // 3D-Ansicht (WebGL) – eigener Renderpfad
+  if (state.view === "3d") {
+    const wrap = document.querySelector(".jersey-wrap");
+    wrap.classList.remove("sheet"); wrap.classList.add("threed"); wrap.style.aspectRatio = "";
+    let cv = document.getElementById("gl3d");
+    if (!cv) { document.getElementById("preview").innerHTML = `<canvas id="gl3d"></canvas>`; cv = document.getElementById("gl3d"); }
+    const ok = Jersey3D.ensure(cv);
+    if (ok) Jersey3D.update();
+    else document.getElementById("preview").innerHTML = `<div class="hint" style="padding:30px;text-align:center">Dein Browser unterstützt kein WebGL – bitte die anderen Ansichten nutzen.</div>`;
+    const sp = sizeSpec();
+    document.getElementById("caption").textContent = `${t.name} · ${t.sport} · Gr. ${state.size} · 3D · ziehen zum Drehen`;
+    return;
+  }
+  if (Jersey3D.active) Jersey3D.stop();
+
   const scene = buildScene(state.view);
   const c = state.partColors;
+  const wrap0 = document.querySelector(".jersey-wrap");
+  wrap0.classList.remove("threed");
 
   let parts = "";
   for (const pc of scene.pieces) {
@@ -1024,6 +1048,206 @@ async function exportPng(view) {
   a.download = `${t.id}_gr${state.size}_${view === "sheet" ? "schnittbogen" : view}_druckdatei.png`;
   a.click();
 }
+
+/* =========================================================================
+   3D-ANSICHT (rohes WebGL, keine externen Libs)
+   Generisches Trikot-Mesh + Textur aus dem 2D-Design, drehbar per Drag.
+   ========================================================================= */
+const M4 = {
+  ident: () => [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1],
+  mul: (a,b) => { const o=new Array(16); for(let r=0;r<4;r++)for(let c=0;c<4;c++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];o[c*4+r]=s;} return o; },
+  persp: (fov,asp,n,f) => { const t=1/Math.tan(fov/2); return [t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,(2*f*n)/(n-f),0]; },
+  trans: (x,y,z) => [1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1],
+  rotX: a => { const c=Math.cos(a),s=Math.sin(a); return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]; },
+  rotY: a => { const c=Math.cos(a),s=Math.sin(a); return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]; },
+};
+
+// Trikot-Torso als Mesh (elliptischer Querschnitt, Textur aus Design-Atlas)
+function buildTorso(isTank) {
+  const NU=64, NV=52;
+  const prof=[[0,0.22],[0.05,0.44],[0.13,0.60],[0.45,0.61],[0.80,0.59],[1,0.585]];
+  const rAt=v=>{ for(let i=1;i<prof.length;i++){ if(v<=prof[i][0]){ const a=prof[i-1],b=prof[i],k=(v-a[0])/(b[0]-a[0]); return a[1]+(b[1]-a[1])*k; } } return prof[prof.length-1][1]; };
+  const yAt=v=>0.98 - v*2.04;
+  const pos=[],uv=[],grid=[];
+  for(let i=0;i<=NV;i++){ const v=i/NV, r=rAt(v), rx=r, rz=r*0.5, y=yAt(v); const row=[];
+    for(let j=0;j<=NU;j++){ const th=j/NU*Math.PI*2; const x=rx*Math.sin(th), z=rz*Math.cos(th);
+      let u=0.25 + th/(Math.PI*2); u=u-Math.floor(u);
+      row.push(pos.length/3); pos.push(x,y,z); uv.push(u, v);
+    } grid.push(row);
+  }
+  const nrm=new Array(pos.length).fill(0);
+  const idx=[];
+  for(let i=0;i<NV;i++)for(let j=0;j<NU;j++){ const a=grid[i][j],b=grid[i][j+1],c=grid[i+1][j],d=grid[i+1][j+1];
+    idx.push(a,c,b, b,c,d);
+  }
+  // Normalen aus Flächen
+  for(let f=0;f<idx.length;f+=3){ const [ia,ib,ic]=[idx[f],idx[f+1],idx[f+2]];
+    const ax=pos[ia*3],ay=pos[ia*3+1],az=pos[ia*3+2];
+    const ux=pos[ib*3]-ax,uy=pos[ib*3+1]-ay,uz=pos[ib*3+2]-az;
+    const vx=pos[ic*3]-ax,vy=pos[ic*3+1]-ay,vz=pos[ic*3+2]-az;
+    const nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx;
+    for(const ii of [ia,ib,ic]){ nrm[ii*3]+=nx; nrm[ii*3+1]+=ny; nrm[ii*3+2]+=nz; }
+  }
+  for(let i=0;i<nrm.length;i+=3){ const l=Math.hypot(nrm[i],nrm[i+1],nrm[i+2])||1; nrm[i]/=l;nrm[i+1]/=l;nrm[i+2]/=l; }
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array(uv), idx:new Uint16Array(idx), tex:true };
+}
+// Konus (Ärmel) entlang dir*X, an der Schulter platziert
+function buildCone(dir, len, r0, r1) {
+  const NU=32, pos=[],nrm=[],idx=[]; const rings=[[0,r0],[len,r1]];
+  const base=[];
+  for(const [xx,r] of rings){ const row=[]; for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; const y=r*Math.cos(a), z=r*Math.sin(a);
+    row.push(pos.length/3); pos.push(dir*xx,y,z); nrm.push(dir*0.25, Math.cos(a), Math.sin(a)); } base.push(row); }
+  for(let j=0;j<NU;j++){ const a=base[0][j],b=base[0][j+1],c=base[1][j],d=base[1][j+1]; idx.push(a,c,b, b,c,d); }
+  // Kappe am Ärmelende
+  const capC=pos.length/3; pos.push(dir*len,0,0); nrm.push(dir,0,0);
+  for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; pos.push(dir*len, r1*Math.cos(a), r1*Math.sin(a)); nrm.push(dir,0,0); }
+  for(let j=0;j<NU;j++){ idx.push(capC, capC+1+j, capC+1+j+1); }
+  const N=pos.length/3, uv=new Float32Array(N*2);
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false };
+}
+// Hals-Füllung (flache Disc), verdeckt das Innere des Trikots
+function buildNeckFill() {
+  const NU=40, rx=0.24, rz=0.13, cy=0.9, pos=[0,cy,0], nrm=[0,1,0], idx=[];
+  for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; pos.push(rx*Math.sin(a), cy, rz*Math.cos(a)); nrm.push(0,1,0); }
+  for(let j=0;j<NU;j++) idx.push(0, 1+j, 1+j+1);
+  const uv=new Float32Array((pos.length/3)*2);
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false };
+}
+// Kragen-Ring (elliptischer Torus)
+function buildCollar() {
+  const NA=48, NB=14, rx=0.32, rz=0.17, tube=0.06, cy=0.9, pos=[],nrm=[],idx=[],grid=[];
+  for(let i=0;i<=NA;i++){ const a=i/NA*Math.PI*2, row=[];
+    for(let j=0;j<=NB;j++){ const b=j/NB*Math.PI*2; const cb=Math.cos(b),sb=Math.sin(b);
+      row.push(pos.length/3);
+      pos.push((rx+tube*cb)*Math.sin(a), cy+tube*sb, (rz+tube*cb)*Math.cos(a));
+      nrm.push(cb*Math.sin(a), sb, cb*Math.cos(a));
+    } grid.push(row); }
+  for(let i=0;i<NA;i++)for(let j=0;j<NB;j++){ const a=grid[i][j],b=grid[i][j+1],c=grid[i+1][j],d=grid[i+1][j+1]; idx.push(a,c,b,b,c,d); }
+  const uv=new Float32Array((pos.length/3)*2);
+  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false };
+}
+
+// Design-Atlas (links Vorderteil, rechts Rückteil) als 2D-Canvas -> Textur
+async function buildAtlas() {
+  const t = tpl(), S = 512, cvs = document.createElement("canvas");
+  cvs.width = S*2; cvs.height = S*2; const ctx = cvs.getContext("2d");
+  const halves = [{ side:"front", ox:0 }, { side:"back", ox:S }];
+  // Bilder (Logo) vorab laden
+  const allZones = [...t.zones.front.map(z=>({z,side:"front"})), ...t.zones.back.map(z=>({z,side:"back"}))];
+  const imgs = await Promise.all(allZones.map(o => { const src=zoneImage(o.z); if(!src||!IMAGE_PURPOSES.has(o.z.purpose)) return null;
+    return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=src; }); }));
+  for (const half of halves) {
+    ctx.fillStyle = state.partColors[half.side]; ctx.fillRect(half.ox, 0, S, S*2);
+    t.zones[half.side].forEach(z => {
+      const x=half.ox+z.rx*S, y=z.ry*S*2, w=z.rw*S, h=z.rh*S*2;
+      if (IMAGE_PURPOSES.has(z.purpose)) {
+        const gi = allZones.findIndex(o=>o.z===z); const im=imgs[gi];
+        if(im){ const r=Math.min(w/im.width,h/im.height); ctx.drawImage(im, x+(w-im.width*r)/2, y+(h-im.height*r)/2, im.width*r, im.height*r); }
+        return;
+      }
+      const txt=zoneText(z); if(!txt) return;
+      let fp=h*0.82*zoneSize(z); ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.font=`${zoneWeight(z)} ${fp}px "${zoneFont(z)}", sans-serif`;
+      const mw=w*0.94, m=ctx.measureText(txt); if(m.width>mw){ fp*=mw/m.width; ctx.font=`${zoneWeight(z)} ${fp}px "${zoneFont(z)}", sans-serif`; }
+      ctx.lineJoin="round"; ctx.strokeStyle="#00000030"; ctx.lineWidth=fp*0.04; ctx.strokeText(txt,x+w/2,y+h/2);
+      ctx.fillStyle=zoneColor(z); ctx.fillText(txt,x+w/2,y+h/2);
+    });
+  }
+  return cvs;
+}
+
+const Jersey3D = (() => {
+  let gl, prog, loc, cv, raf=0, meshes=[], tex, yaw=-0.35, pitch=0.06, zoom=4.3, style=null;
+  let drag=false, lx=0, ly=0;
+  const attrBuf = m => { const b={};
+    for(const k of ["pos","nrm","uv"]){ const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER, m[k], gl.STATIC_DRAW); b[k]=buf; }
+    const ib=gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.idx, gl.STATIC_DRAW);
+    return { ...b, ib, n:m.idx.length, tex:m.tex, local:m.local||M4.ident(), color:m.color||[0.5,0.5,0.5] };
+  };
+  function sh(type,src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+  function initGL(){
+    gl = cv.getContext("webgl", {antialias:true, alpha:true}) || cv.getContext("experimental-webgl");
+    if(!gl) return false;
+    const vs=`attribute vec3 aPos; attribute vec3 aNrm; attribute vec2 aUv;
+      uniform mat4 uP,uV,uM; varying vec3 vN; varying vec2 vUv;
+      void main(){ gl_Position=uP*uV*uM*vec4(aPos,1.0); vN=(uM*vec4(aNrm,0.0)).xyz; vUv=aUv; }`;
+    const fs=`precision mediump float; varying vec3 vN; varying vec2 vUv;
+      uniform sampler2D uTex; uniform int uUseTex; uniform vec3 uColor;
+      void main(){ vec3 N=normalize(vN); vec3 L=normalize(vec3(0.35,0.55,0.85));
+        float diff=max(dot(N,L),0.0); float amb=0.58;
+        vec3 base = uUseTex==1 ? texture2D(uTex,vUv).rgb : uColor;
+        float rim=pow(1.0-max(dot(N,vec3(0.0,0.0,1.0)),0.0),2.5)*0.12;
+        gl_FragColor=vec4(base*(amb+diff*0.62)+rim, 1.0); }`;
+    prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(prog);
+    gl.useProgram(prog);
+    loc={ aPos:gl.getAttribLocation(prog,"aPos"), aNrm:gl.getAttribLocation(prog,"aNrm"), aUv:gl.getAttribLocation(prog,"aUv"),
+      uP:gl.getUniformLocation(prog,"uP"), uV:gl.getUniformLocation(prog,"uV"), uM:gl.getUniformLocation(prog,"uM"),
+      uTex:gl.getUniformLocation(prog,"uTex"), uUseTex:gl.getUniformLocation(prog,"uUseTex"), uColor:gl.getUniformLocation(prog,"uColor") };
+    tex=gl.createTexture();
+    gl.enable(gl.DEPTH_TEST);
+    bindPointer();
+    return true;
+  }
+  function buildMeshes(){
+    for(const m of meshes){ gl.deleteBuffer(m.pos); gl.deleteBuffer(m.nrm); gl.deleteBuffer(m.uv); gl.deleteBuffer(m.ib); }
+    meshes=[]; const isTank = tpl().style==="tank"; style=tpl().style;
+    const c=state.partColors, hex=h=>{const x=hexToRgb(h);return [x.r/255,x.g/255,x.b/255];};
+    meshes.push(attrBuf(buildTorso(isTank)));
+    const fill=buildNeckFill(); fill.color=hex(c.neck); meshes.push(attrBuf(fill));
+    const collar=buildCollar(); collar.color=hex(c.neck); meshes.push(attrBuf(collar));
+    if(!isTank){
+      const rS=buildCone(1,0.62,0.26,0.19); rS.local=M4.mul(M4.trans(0.46,0.53,0), rotZ(-0.38)); rS.color=hex(c.sleeveR); meshes.push(attrBuf(rS));
+      const lS=buildCone(-1,0.62,0.26,0.19); lS.local=M4.mul(M4.trans(-0.46,0.53,0), rotZ(0.38)); lS.color=hex(c.sleeveL); meshes.push(attrBuf(lS));
+    }
+  }
+  function rotZ(a){ const c=Math.cos(a),s=Math.sin(a); return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]; }
+  async function uploadTex(){ const atlas=await buildAtlas();
+    gl.bindTexture(gl.TEXTURE_2D,tex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,atlas);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  }
+  function resize(){ const dpr=Math.min(window.devicePixelRatio||1,2); const w=cv.clientWidth||400, h=cv.clientHeight||500;
+    cv.width=w*dpr; cv.height=h*dpr; }
+  function render(){ resize(); gl.viewport(0,0,cv.width,cv.height);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    const P=M4.persp(0.56, cv.width/cv.height, 0.1, 50), V=M4.trans(0,0.0,-zoom);
+    const R=M4.mul(M4.rotY(yaw), M4.rotX(pitch));
+    gl.uniformMatrix4fv(loc.uP,false,new Float32Array(P)); gl.uniformMatrix4fv(loc.uV,false,new Float32Array(V));
+    for(const m of meshes){ const model=M4.mul(R,m.local);
+      gl.uniformMatrix4fv(loc.uM,false,new Float32Array(model));
+      gl.uniform1i(loc.uUseTex, m.tex?1:0); if(!m.tex) gl.uniform3fv(loc.uColor, m.color);
+      if(m.tex){ gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,tex); gl.uniform1i(loc.uTex,0); }
+      gl.bindBuffer(gl.ARRAY_BUFFER,m.pos); gl.enableVertexAttribArray(loc.aPos); gl.vertexAttribPointer(loc.aPos,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,m.nrm); gl.enableVertexAttribArray(loc.aNrm); gl.vertexAttribPointer(loc.aNrm,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,m.uv); gl.enableVertexAttribArray(loc.aUv); gl.vertexAttribPointer(loc.aUv,2,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.ib); gl.drawElements(gl.TRIANGLES,m.n,gl.UNSIGNED_SHORT,0);
+    }
+  }
+  function loop(){ render(); raf=requestAnimationFrame(loop); }
+  function bindPointer(){
+    cv.addEventListener("pointerdown", e=>{ drag=true; lx=e.clientX; ly=e.clientY; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener("pointermove", e=>{ if(!drag) return; yaw+=(e.clientX-lx)*0.01; pitch+=(e.clientY-ly)*0.01;
+      pitch=Math.max(-0.9,Math.min(0.9,pitch)); lx=e.clientX; ly=e.clientY; });
+    cv.addEventListener("pointerup", ()=>drag=false);
+    cv.addEventListener("wheel", e=>{ e.preventDefault(); zoom=Math.max(3.0,Math.min(7.0, zoom+e.deltaY*0.003)); }, {passive:false});
+  }
+  return {
+    active:false,
+    ensure(canvas){ if(this.active && gl) return true; cv=canvas; try{ if(!initGL()) return false; }catch(e){ console.error(e); return false; }
+      this.active=true; buildMeshes(); loop(); return true; },
+    update(){ if(!this.active) return; if(tpl().style!==style) buildMeshes(); else {
+        const c=state.partColors, hex=h=>{const x=hexToRgb(h);return [x.r/255,x.g/255,x.b/255];};
+        // Farben der Solid-Teile aktualisieren: [1]=Hals-Füllung, [2]=Kragen, [3]=Ärmel R, [4]=Ärmel L
+        meshes[1].color=hex(c.neck); meshes[2].color=hex(c.neck);
+        if(tpl().style!=="tank"){ meshes[3].color=hex(c.sleeveR); meshes[4].color=hex(c.sleeveL); }
+      }
+      uploadTex();
+    },
+    stop(){ if(raf) cancelAnimationFrame(raf); raf=0; this.active=false; gl=null; },
+  };
+})();
 
 /* =========================================================================
    INIT
