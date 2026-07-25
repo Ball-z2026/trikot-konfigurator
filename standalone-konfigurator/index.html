@@ -187,9 +187,8 @@
       <div class="stage-toolbar">
         <button class="seg" data-view="front">Vorderteil</button>
         <button class="seg" data-view="back">Rückteil</button>
+        <button class="seg" data-view="mockup">Vorschau</button>
         <button class="seg" data-view="sheet">Schnittbogen</button>
-        <button class="seg" data-view="mockup">Mockup</button>
-        <button class="seg" data-view="3d">3D</button>
       </div>
       <div class="jersey-wrap">
         <div id="preview"></div>
@@ -376,8 +375,6 @@ function buildScene(view) {
   const t = tpl(), isTank = t.style === "tank", s = sizeSpec();
   const ratio = s.len / s.chest;               // Höhe/Breite exakt aus Maßtabelle
 
-  if (view === "mockup") return buildMockup();
-
   if (view === "front" || view === "back") {
     const CM = 9, pw = s.chest*CM, ph = s.len*CM;
     const padX = 150, padTop = 64, padBottom = 96;
@@ -443,60 +440,6 @@ function buildScene(view) {
   ];
   const vbH = Math.max(bottom, (isTank ? nBB.y+nBB.h : lArmBB.y+lArmBB.h), nBB.y+nBB.h) + 40;
   return { vbW:1200, vbH, pieces, zones, labels, dims };
-}
-
-/* ---------- Mockup: zusammengesetztes Trikot (Vorschau, generisch) ----------
-   Die Zuschnitt-Teile werden zu einem getragenen Trikot zusammengesetzt und mit
-   Stoff-Schattierung versehen. Vorne + Hinten nebeneinander. */
-function mockupJersey(tx, ty, sc, side, isTank) {
-  const T = (x,y) => `${(tx+x*sc).toFixed(1)} ${(ty+y*sc).toFixed(1)}`;
-  const bodyKey = side === "front" ? "front" : "back";
-  const pieces = [], seams = [];
-  if (isTank) {
-    const nd = side==="front" ? 250 : 212, outer = 2*nd-182, inner = 2*(nd-20)-188;
-    const body = `M ${T(360,185)} L ${T(430,182)} Q ${T(500,outer)} ${T(570,182)} L ${T(640,185)}`
-      + ` C ${T(706,200)} ${T(700,340)} ${T(708,445)} C ${T(728,590)} ${T(726,725)} ${T(720,868)}`
-      + ` Q ${T(500,894)} ${T(280,868)} C ${T(274,725)} ${T(272,590)} ${T(292,445)} C ${T(300,340)} ${T(294,200)} ${T(360,185)} Z`;
-    const collar = `M ${T(430,182)} Q ${T(500,outer)} ${T(570,182)} L ${T(555,188)} Q ${T(500,inner)} ${T(445,188)} Z`;
-    pieces.push({ d:body, colorKey:bodyKey, grad:true }, { d:collar, colorKey:"neck", grad:true });
-  } else {
-    const nd = side==="front" ? 230 : 190;
-    const body = `M ${T(335,160)} L ${T(415,150)} Q ${T(500,nd)} ${T(585,150)} L ${T(665,160)} L ${T(712,405)}`
-      + ` C ${T(730,560)} ${T(728,720)} ${T(720,865)} Q ${T(500,892)} ${T(280,865)} C ${T(272,720)} ${T(270,560)} ${T(288,405)} Z`;
-    const sleeveL = `M ${T(335,160)} L ${T(198,208)} Q ${T(162,296)} ${T(220,382)} L ${T(302,393)} Q ${T(305,260)} ${T(335,160)} Z`;
-    const sleeveR = `M ${T(665,160)} L ${T(802,208)} Q ${T(838,296)} ${T(780,382)} L ${T(698,393)} Q ${T(695,260)} ${T(665,160)} Z`;
-    const cuffL = `M ${T(220,382)} L ${T(302,393)} L ${T(305,372)} L ${T(226,362)} Z`;
-    const cuffR = `M ${T(780,382)} L ${T(698,393)} L ${T(695,372)} L ${T(774,362)} Z`;
-    const collar = `M ${T(408,148)} Q ${T(500,nd+8)} ${T(592,148)} L ${T(602,176)} Q ${T(500,nd+42)} ${T(398,176)} Z`;
-    pieces.push(
-      { d:sleeveL, colorKey:"sleeveL", grad:true }, { d:sleeveR, colorKey:"sleeveR", grad:true },
-      { d:cuffL, colorKey:"band" }, { d:cuffR, colorKey:"band" },
-      { d:body, colorKey:bodyKey, grad:true }, { d:collar, colorKey:"neck", grad:true },
-    );
-    seams.push(`M ${T(335,160)} Q ${T(305,262)} ${T(302,393)}`, `M ${T(665,160)} Q ${T(695,262)} ${T(698,393)}`);
-  }
-  const bodyBB = { x: tx+292*sc, y: ty+168*sc, w: 416*sc, h: 700*sc };
-  return { pieces, seams, bodyBB };
-}
-
-function buildMockup() {
-  const t = tpl(), isTank = t.style === "tank", sc = 0.62;
-  const F = mockupJersey(40, 24, sc, "front", isTank);
-  const B = mockupJersey(720, 24, sc, "back", isTank);
-  return {
-    vbW: 1380, vbH: 24 + 950*sc + 20,
-    pieces: [...F.pieces, ...B.pieces],
-    seams: [...F.seams, ...B.seams],
-    zones: [
-      ...t.zones.front.map(z => ({ z, bb:F.bodyBB })),
-      ...t.zones.back.map(z => ({ z, bb:B.bodyBB })),
-    ],
-    labels: [
-      { text:"Vorne",  x:40+500*sc,  y:20, size:22 },
-      { text:"Hinten", x:720+500*sc, y:20, size:22 },
-    ],
-    dims: [], mockup: true,
-  };
 }
 
 const PART_DEFS = [
@@ -577,23 +520,100 @@ function renderDim(d) {
     + head(x2,y2,ux,uy) + head(x1,y1,-ux,-uy) + cap(x1,y1) + cap(x2,y2) + g;
 }
 
+/* ---------- Realistische Trikot-Vorschau (2D-Illustration) ---------- */
+// Farbe aufhellen/abdunkeln (amt: -1..1)
+function shade(hex, amt) {
+  const { r, g, b } = hexToRgb(hex);
+  const f = amt < 0 ? 0 : 255, p = Math.abs(amt);
+  const m = v => Math.round(v + (f - v) * p);
+  return `rgb(${m(r)},${m(g)},${m(b)})`;
+}
+// Ein Trikot (Vorder- oder Rückseite) als schattierte Illustration
+function jerseyArt(side, ox, oy, s) {
+  const c = state.partColors;
+  const T = (x,y) => `${(ox+x*s).toFixed(1)} ${(oy+y*s).toFixed(1)}`;
+  const nd = side === "front" ? 100 : 74;
+  const body = `M ${T(112,70)} L ${T(150,60)} Q ${T(190,nd)} ${T(230,60)} L ${T(268,70)}`
+    + ` C ${T(300,84)} ${T(318,120)} ${T(322,168)} C ${T(326,262)} ${T(320,360)} ${T(312,452)}`
+    + ` Q ${T(190,472)} ${T(68,452)} C ${T(60,360)} ${T(54,262)} ${T(58,168)}`
+    + ` C ${T(62,120)} ${T(80,84)} ${T(112,70)} Z`;
+  const slL = `M ${T(112,70)} C ${T(84,78)} ${T(44,96)} ${T(26,128)} C ${T(18,150)} ${T(22,181)} ${T(34,203)} L ${T(93,190)} C ${T(83,150)} ${T(88,104)} ${T(112,70)} Z`;
+  const slR = `M ${T(268,70)} C ${T(296,78)} ${T(336,96)} ${T(354,128)} C ${T(362,150)} ${T(358,181)} ${T(346,203)} L ${T(287,190)} C ${T(297,150)} ${T(292,104)} ${T(268,70)} Z`;
+  const cuffL = `M ${T(33,203)} L ${T(93,190)} L ${T(98,211)} L ${T(38,224)} Z`;
+  const cuffR = `M ${T(347,203)} L ${T(287,190)} L ${T(282,211)} L ${T(342,224)} Z`;
+  const collar = `M ${T(146,58)} Q ${T(190,nd)} ${T(234,58)} L ${T(238,77)} Q ${T(190,nd+19)} ${T(142,77)} Z`;
+  const hem = `M ${T(66,449)} Q ${T(190,470)} ${T(314,449)} L ${T(316,470)} Q ${T(190,491)} ${T(64,470)} Z`;
+  const bodyCol = side === "front" ? c.front : c.back;
+  const svg =
+    // Schlagschatten am Boden
+    `<ellipse cx="${ox+190*s}" cy="${oy+498*s}" rx="${120*s}" ry="${20*s}" fill="url(#jShadow)"/>`
+    // Ärmel (hinter Korpus)
+    + `<path d="${slL}" fill="${shade(c.sleeveL,0.10)}"/><path d="${slL}" fill="url(#jSlL)"/>`
+    + `<path d="${slR}" fill="${shade(c.sleeveR,0.10)}"/><path d="${slR}" fill="url(#jSlR)"/>`
+    + `<path d="${cuffL}" fill="${shade(c.band,-0.06)}"/><path d="${cuffR}" fill="${shade(c.band,-0.06)}"/>`
+    // Korpus + Stoff-Schattierung (mehrfach über denselben Pfad = automatisch beschnitten)
+    + `<path d="${body}" fill="${bodyCol}"/>`
+    + `<path d="${body}" fill="url(#jBody_${side})"/>`
+    + `<path d="${body}" fill="url(#jHi)"/>`
+    + `<path d="${body}" fill="url(#jAOl)"/><path d="${body}" fill="url(#jAOr)"/>`
+    + `<path d="${body}" fill="url(#jAOc)"/><path d="${body}" fill="url(#jBot)"/>`
+    + `<path d="${body}" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="${1.4*s}"/>`
+    // Kragen + Saumband
+    + `<path d="${collar}" fill="${c.neck}"/><path d="${collar}" fill="url(#jNk)"/>`
+    + `<path d="${hem}" fill="${c.band}"/><path d="${hem}" fill="url(#jBand)"/>`
+    // Nahtandeutung Ärmel/Schulter
+    + `<path d="M ${T(112,70)} C ${T(96,110)} ${T(92,150)} ${T(96,188)}" fill="none" stroke="rgba(0,0,0,.10)" stroke-width="${1.2*s}"/>`
+    + `<path d="M ${T(268,70)} C ${T(284,110)} ${T(288,150)} ${T(284,188)}" fill="none" stroke="rgba(0,0,0,.10)" stroke-width="${1.2*s}"/>`;
+  const bodyBB = { x: ox+62*s, y: oy+80*s, w: 256*s, h: 366*s };
+  return { svg, bodyBB };
+}
+// Verlaufs-Definitionen (objectBoundingBox = passt sich jedem Teil automatisch an)
+function jerseyDefs() {
+  const c = state.partColors;
+  const lin = (id, col, a1, a2) => `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">`
+    + `<stop offset="0" stop-color="${shade(col,a1)}"/><stop offset="0.5" stop-color="${col}"/><stop offset="1" stop-color="${shade(col,a2)}"/></linearGradient>`;
+  const rad = (id, cx, cy, r, col, o0, o1) => `<radialGradient id="${id}" cx="${cx}" cy="${cy}" r="${r}">`
+    + `<stop offset="0" stop-color="${col}" stop-opacity="${o0}"/><stop offset="1" stop-color="${col}" stop-opacity="${o1}"/></radialGradient>`;
+  return `<defs>`
+    + lin("jBody_front", c.front, 0.16, -0.20) + lin("jBody_back", c.back, 0.16, -0.20)
+    + lin("jSlL", c.sleeveL, 0.14, -0.22) + lin("jSlR", c.sleeveR, 0.14, -0.22)
+    + lin("jNk", c.neck, 0.20, -0.18) + lin("jBand", c.band, 0.14, -0.18)
+    + rad("jHi", 0.40, 0.20, 0.6, "#ffffff", 0.20, 0.0)
+    + rad("jAOl", 0.05, 0.14, 0.28, "#000000", 0.26, 0.0)
+    + rad("jAOr", 0.95, 0.14, 0.28, "#000000", 0.26, 0.0)
+    + rad("jAOc", 0.5, 0.02, 0.24, "#000000", 0.24, 0.0)
+    + `<linearGradient id="jBot" x1="0" y1="0" x2="0" y2="1"><stop offset="0.62" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#000000" stop-opacity="0.18"/></linearGradient>`
+    + rad("jShadow", 0.5, 0.5, 0.5, "#000000", 0.34, 0.0)
+    + `</defs>`;
+}
+function renderJerseyPreview() {
+  const t = tpl(), sp = sizeSpec();
+  const wrap = document.querySelector(".jersey-wrap");
+  wrap.classList.remove("threed"); wrap.classList.add("sheet"); wrap.style.aspectRatio = "900 / 560";
+  const F = jerseyArt("front", 20, 30, 1.02);
+  const B = jerseyArt("back", 470, 30, 1.02);
+  let zonesSvg = "";
+  for (const z of t.zones.front) zonesSvg += renderZoneSvg(z, F.bodyBB);
+  for (const z of t.zones.back)  zonesSvg += renderZoneSvg(z, B.bodyBB);
+  const labels = `<text x="${F.bodyBB.x+F.bodyBB.w/2}" y="24" text-anchor="middle" fill="#8c9bb0" font-family="Inter,sans-serif" font-weight="700" font-size="20">Vorne</text>`
+    + `<text x="${B.bodyBB.x+B.bodyBB.w/2}" y="24" text-anchor="middle" fill="#8c9bb0" font-family="Inter,sans-serif" font-weight="700" font-size="20">Hinten</text>`;
+  document.getElementById("preview").innerHTML =
+    `<svg class="jersey" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+       ${jerseyDefs()} ${F.svg} ${B.svg} ${labels} ${zonesSvg}
+     </svg>`;
+  document.querySelectorAll(".zone-hit").forEach(el => el.addEventListener("click", () => {
+    state.selectedZoneId = el.getAttribute("data-zone");
+    if (state.tab !== "zonen") { state.tab = "zonen"; renderTabs(); renderPanel(); } else renderPanel();
+    renderPreview();
+  }));
+  document.getElementById("caption").textContent = `${t.name} · ${t.sport} · Gr. ${state.size} · Trikot-Vorschau (vorne & hinten)`;
+}
+
 function renderPreview() {
   const t = tpl();
 
-  // 3D-Ansicht (WebGL) – eigener Renderpfad
-  if (state.view === "3d") {
-    const wrap = document.querySelector(".jersey-wrap");
-    wrap.classList.remove("sheet"); wrap.classList.add("threed"); wrap.style.aspectRatio = "";
-    let cv = document.getElementById("gl3d");
-    if (!cv) { document.getElementById("preview").innerHTML = `<canvas id="gl3d"></canvas>`; cv = document.getElementById("gl3d"); }
-    const ok = Jersey3D.ensure(cv);
-    if (ok) Jersey3D.update();
-    else document.getElementById("preview").innerHTML = `<div class="hint" style="padding:30px;text-align:center">Dein Browser unterstützt kein WebGL – bitte die anderen Ansichten nutzen.</div>`;
-    const sp = sizeSpec();
-    document.getElementById("caption").textContent = `${t.name} · ${t.sport} · Gr. ${state.size} · 3D · ziehen zum Drehen`;
-    return;
-  }
-  if (Jersey3D.active) Jersey3D.stop();
+  // Realistische Trikot-Vorschau (2D-Illustration mit Stoff-Schattierung)
+  if (state.view === "mockup") { renderJerseyPreview(); return; }
 
   const scene = buildScene(state.view);
   const c = state.partColors;
@@ -1029,7 +1049,23 @@ function wireUploadEl(el, cb) {
 /* =========================================================================
    PNG-EXPORT (Canvas — nutzt geladene Fonts via document.fonts)
    ========================================================================= */
+// Rastert die aktuelle Vorschau-SVG in ein PNG (für die Trikot-Vorschau)
+async function exportSvgPreview() {
+  await (document.fonts ? document.fonts.ready : Promise.resolve());
+  if (state.view !== "mockup") renderJerseyPreview();
+  const svg = document.querySelector("#preview svg"); if (!svg) return;
+  const xml = new XMLSerializer().serializeToString(svg);
+  const img = new Image();
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml); });
+  const S = 2, canvas = document.createElement("canvas"); canvas.width = 900*S; canvas.height = 560*S;
+  const ctx = canvas.getContext("2d"); ctx.fillStyle = "#0b0f17"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const a = document.createElement("a"); a.href = canvas.toDataURL("image/png");
+  a.download = `${tpl().id}_gr${state.size}_vorschau.png`; a.click();
+}
+
 async function exportPng(view) {
+  if (view === "mockup") { await exportSvgPreview(); return; }
   await (document.fonts ? document.fonts.ready : Promise.resolve());
   const SCALE = 2;
   const t = tpl();
@@ -1111,227 +1147,6 @@ async function exportPng(view) {
   a.click();
 }
 
-/* =========================================================================
-   3D-ANSICHT (rohes WebGL, keine externen Libs)
-   Generisches Trikot-Mesh + Textur aus dem 2D-Design, drehbar per Drag.
-   ========================================================================= */
-const M4 = {
-  ident: () => [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1],
-  mul: (a,b) => { const o=new Array(16); for(let r=0;r<4;r++)for(let c=0;c<4;c++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];o[c*4+r]=s;} return o; },
-  persp: (fov,asp,n,f) => { const t=1/Math.tan(fov/2); return [t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,(2*f*n)/(n-f),0]; },
-  trans: (x,y,z) => [1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1],
-  rotX: a => { const c=Math.cos(a),s=Math.sin(a); return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]; },
-  rotY: a => { const c=Math.cos(a),s=Math.sin(a); return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]; },
-};
-
-// Trikot-Torso als Mesh (elliptischer Querschnitt, Textur aus Design-Atlas)
-function buildTorso(isTank) {
-  const NU=72, NV=54;
-  // Breit & flach wie ein echtes Trikot; Schultern oben, leichte Taille, Saum
-  const prof=[[0,0.36],[0.08,0.56],[0.16,0.63],[0.42,0.635],[0.72,0.60],[1,0.60]];
-  const rAt=v=>{ for(let i=1;i<prof.length;i++){ if(v<=prof[i][0]){ const a=prof[i-1],b=prof[i],k=(v-a[0])/(b[0]-a[0]); return a[1]+(b[1]-a[1])*k; } } return prof[prof.length-1][1]; };
-  const yAt=v=>0.98 - v*2.02;
-  const pos=[],uv=[],grid=[];
-  for(let i=0;i<=NV;i++){ const v=i/NV, r=rAt(v), rx=r, rz=r*0.46, y=yAt(v); const row=[];
-    for(let j=0;j<=NU;j++){ const th=j/NU*Math.PI*2; const x=rx*Math.sin(th), z=rz*Math.cos(th);
-      let u=0.25 + th/(Math.PI*2); u=u-Math.floor(u);
-      row.push(pos.length/3); pos.push(x,y,z); uv.push(u, v);
-    } grid.push(row);
-  }
-  const nrm=new Array(pos.length).fill(0);
-  const idx=[];
-  for(let i=0;i<NV;i++)for(let j=0;j<NU;j++){ const a=grid[i][j],b=grid[i][j+1],c=grid[i+1][j],d=grid[i+1][j+1];
-    idx.push(a,c,b, b,c,d);
-  }
-  // Normalen aus Flächen
-  for(let f=0;f<idx.length;f+=3){ const [ia,ib,ic]=[idx[f],idx[f+1],idx[f+2]];
-    const ax=pos[ia*3],ay=pos[ia*3+1],az=pos[ia*3+2];
-    const ux=pos[ib*3]-ax,uy=pos[ib*3+1]-ay,uz=pos[ib*3+2]-az;
-    const vx=pos[ic*3]-ax,vy=pos[ic*3+1]-ay,vz=pos[ic*3+2]-az;
-    const nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx;
-    for(const ii of [ia,ib,ic]){ nrm[ii*3]+=nx; nrm[ii*3+1]+=ny; nrm[ii*3+2]+=nz; }
-  }
-  for(let i=0;i<nrm.length;i+=3){ const l=Math.hypot(nrm[i],nrm[i+1],nrm[i+2])||1; nrm[i]/=l;nrm[i+1]/=l;nrm[i+2]/=l; }
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array(uv), idx:new Uint16Array(idx), tex:true };
-}
-const V = {
-  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
-  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
-  norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];},
-};
-// Ärmel als gebogener Sweep entlang einer Bézier-Kurve (natürlicher Fall, an Schulter angebunden)
-function buildSleeveSeg(side, t0, t1, colorKey, rOff, cap) {
-  const NU=30, NL=12;
-  const P0=[side*0.46,0.70,0.02], P1=[side*0.82,0.52,0.0], P2=[side*0.90,0.14,-0.05];
-  const bez=t=>{const u=1-t;return [u*u*P0[0]+2*u*t*P1[0]+t*t*P2[0], u*u*P0[1]+2*u*t*P1[1]+t*t*P2[1], u*u*P0[2]+2*u*t*P1[2]+t*t*P2[2]];};
-  const dbz=t=>V.norm([2*(1-t)*(P1[0]-P0[0])+2*t*(P2[0]-P1[0]), 2*(1-t)*(P1[1]-P0[1])+2*t*(P2[1]-P1[1]), 2*(1-t)*(P1[2]-P0[2])+2*t*(P2[2]-P1[2])]);
-  const radAt=t=>0.27*(1-t)+0.15*t + rOff;
-  const pos=[],nrm=[],grid=[];
-  for(let i=0;i<=NL;i++){ const t=t0+(t1-t0)*i/NL; const c=bez(t), T=dbz(t);
-    const sdv=V.norm(V.cross(T,[0,1,0])), up=V.cross(sdv,T); const r=radAt(t), row=[];
-    for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2, ca=Math.cos(a), sa=Math.sin(a);
-      const n=[ca*sdv[0]+sa*up[0], ca*sdv[1]+sa*up[1], ca*sdv[2]+sa*up[2]];
-      row.push(pos.length/3); pos.push(c[0]+r*n[0], c[1]+r*n[1], c[2]+r*n[2]); nrm.push(n[0],n[1],n[2]);
-    } grid.push(row);
-  }
-  const idx=[];
-  for(let i=0;i<NL;i++)for(let j=0;j<NU;j++){ const a=grid[i][j],b=grid[i][j+1],cc=grid[i+1][j],d=grid[i+1][j+1]; idx.push(a,cc,b,b,cc,d); }
-  if(cap){ const c=bez(t1),T=dbz(t1),capC=pos.length/3; pos.push(c[0],c[1],c[2]); nrm.push(side*T[0],T[1],T[2]);
-    for(let j=0;j<NU;j++) idx.push(capC, grid[NL][j], grid[NL][j+1]); }
-  const uv=new Float32Array((pos.length/3)*2);
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv, idx:new Uint16Array(idx), tex:false, colorKey };
-}
-// Hals-Füllung (flache Disc) verdeckt das Innere
-function buildNeckFill() {
-  const NU=40, rx=0.30, rz=0.16, cy=0.955, pos=[0,cy,0], nrm=[0,1,0], idx=[];
-  for(let j=0;j<=NU;j++){ const a=j/NU*Math.PI*2; pos.push(rx*Math.sin(a), cy, rz*Math.cos(a)); nrm.push(0,1,0); }
-  for(let j=0;j<NU;j++) idx.push(0, 1+j, 1+j+1);
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array((pos.length/3)*2), idx:new Uint16Array(idx), tex:false, colorKey:"neck" };
-}
-// Stehender Rundkragen (Rippe) um die Halsöffnung
-function buildCollarRib() {
-  const NA=56, rxB=0.31, rzB=0.16, bY=0.95, tY=1.02, fl=1.06, pos=[],nrm=[],idx=[],grid=[];
-  const rings=[[bY,1.0],[tY,fl]];
-  for(const [y,sc] of rings){ const row=[]; for(let j=0;j<=NA;j++){ const a=j/NA*Math.PI*2;
-    row.push(pos.length/3); pos.push(rxB*sc*Math.sin(a), y, rzB*sc*Math.cos(a)); nrm.push(Math.sin(a),0.15,Math.cos(a)); } grid.push(row); }
-  for(let j=0;j<NA;j++){ const a=grid[0][j],b=grid[0][j+1],c=grid[1][j],d=grid[1][j+1]; idx.push(a,c,b,b,c,d); }
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array((pos.length/3)*2), idx:new Uint16Array(idx), tex:false, colorKey:"neck" };
-}
-// Saumband (kurzer Ring am unteren Trikotrand)
-function buildHemBand() {
-  const NA=64, rx=0.607, rz=0.279, y0=-1.10, y1=-0.99, pos=[],nrm=[],idx=[],grid=[];
-  for(const y of [y0,y1]){ const row=[]; for(let j=0;j<=NA;j++){ const a=j/NA*Math.PI*2;
-    row.push(pos.length/3); pos.push(rx*Math.sin(a), y, rz*Math.cos(a)); nrm.push(Math.sin(a),0,Math.cos(a)); } grid.push(row); }
-  for(let j=0;j<NA;j++){ const a=grid[0][j],b=grid[0][j+1],c=grid[1][j],d=grid[1][j+1]; idx.push(a,c,b,b,c,d); }
-  return { pos:new Float32Array(pos), nrm:new Float32Array(nrm), uv:new Float32Array((pos.length/3)*2), idx:new Uint16Array(idx), tex:false, colorKey:"band" };
-}
-
-// Design-Atlas (links Vorderteil, rechts Rückteil) als 2D-Canvas -> Textur
-async function buildAtlas() {
-  const t = tpl(), S = 512, cvs = document.createElement("canvas");
-  cvs.width = S*2; cvs.height = S*2; const ctx = cvs.getContext("2d");
-  const halves = [{ side:"front", ox:0 }, { side:"back", ox:S }];
-  // Bilder (Logo) vorab laden
-  const allZones = [...t.zones.front.map(z=>({z,side:"front"})), ...t.zones.back.map(z=>({z,side:"back"}))];
-  const imgs = await Promise.all(allZones.map(o => { const src=zoneImage(o.z); if(!src||!IMAGE_PURPOSES.has(o.z.purpose)) return null;
-    return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=src; }); }));
-  for (const half of halves) {
-    ctx.fillStyle = state.partColors[half.side]; ctx.fillRect(half.ox, 0, S, S*2);
-    t.zones[half.side].forEach(z => {
-      const x=half.ox+z.rx*S, y=z.ry*S*2, w=z.rw*S, h=z.rh*S*2;
-      if (IMAGE_PURPOSES.has(z.purpose)) {
-        const gi = allZones.findIndex(o=>o.z===z); const im=imgs[gi];
-        if(im){ const r=Math.min(w/im.width,h/im.height); ctx.drawImage(im, x+(w-im.width*r)/2, y+(h-im.height*r)/2, im.width*r, im.height*r); }
-        return;
-      }
-      const txt=zoneText(z); if(!txt) return;
-      let fp=h*0.82*zoneSize(z); ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.font=`${zoneWeight(z)} ${fp}px "${zoneFont(z)}", sans-serif`;
-      const mw=w*0.94, m=ctx.measureText(txt); if(m.width>mw){ fp*=mw/m.width; ctx.font=`${zoneWeight(z)} ${fp}px "${zoneFont(z)}", sans-serif`; }
-      ctx.lineJoin="round"; ctx.strokeStyle="#00000030"; ctx.lineWidth=fp*0.04; ctx.strokeText(txt,x+w/2,y+h/2);
-      ctx.fillStyle=zoneColor(z); ctx.fillText(txt,x+w/2,y+h/2);
-    });
-  }
-  return cvs;
-}
-
-const Jersey3D = (() => {
-  let gl, prog, loc, cv, raf=0, meshes=[], tex, yaw=-0.35, pitch=0.06, zoom=4.3, style=null;
-  let drag=false, lx=0, ly=0;
-  const hexv = h => { const x=hexToRgb(h); return [x.r/255,x.g/255,x.b/255]; };
-  const attrBuf = m => { const b={};
-    for(const k of ["pos","nrm","uv"]){ const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER, m[k], gl.STATIC_DRAW); b[k]=buf; }
-    const ib=gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.idx, gl.STATIC_DRAW);
-    const color = m.colorKey ? hexv(state.partColors[m.colorKey]) : (m.color||[0.5,0.5,0.5]);
-    return { ...b, ib, n:m.idx.length, tex:m.tex, local:m.local||M4.ident(), color, colorKey:m.colorKey||null };
-  };
-  function sh(type,src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
-    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
-  function initGL(){
-    gl = cv.getContext("webgl", {antialias:true, alpha:true}) || cv.getContext("experimental-webgl");
-    if(!gl) return false;
-    const vs=`attribute vec3 aPos; attribute vec3 aNrm; attribute vec2 aUv;
-      uniform mat4 uP,uV,uM; varying vec3 vN; varying vec2 vUv;
-      void main(){ gl_Position=uP*uV*uM*vec4(aPos,1.0); vN=(uM*vec4(aNrm,0.0)).xyz; vUv=aUv; }`;
-    const fs=`precision mediump float; varying vec3 vN; varying vec2 vUv;
-      uniform sampler2D uTex; uniform int uUseTex; uniform vec3 uColor;
-      void main(){ vec3 N=normalize(vN);
-        vec3 L1=normalize(vec3(0.35,0.65,0.85)), L2=normalize(vec3(-0.5,0.2,0.4));
-        float d1=max(dot(N,L1),0.0), d2=max(dot(N,L2),0.0);
-        float hemi=0.5+0.5*N.y; float amb=mix(0.52,0.74,hemi);       // weicher Himmel/Boden-Ambient
-        float ao=mix(0.82,1.0, smoothstep(0.0,0.55,abs(N.z)));       // Seiten/Achseln leicht abschatten (Rundung)
-        vec3 base = uUseTex==1 ? texture2D(uTex,vUv).rgb : uColor;
-        float rim=pow(1.0-max(dot(N,vec3(0.0,0.0,1.0)),0.0),3.2)*0.10;  // matter, weniger Glanz
-        float light=(amb + d1*0.38 + d2*0.14)*ao;
-        gl_FragColor=vec4(base*light+rim, 1.0); }`;
-    prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(prog);
-    gl.useProgram(prog);
-    loc={ aPos:gl.getAttribLocation(prog,"aPos"), aNrm:gl.getAttribLocation(prog,"aNrm"), aUv:gl.getAttribLocation(prog,"aUv"),
-      uP:gl.getUniformLocation(prog,"uP"), uV:gl.getUniformLocation(prog,"uV"), uM:gl.getUniformLocation(prog,"uM"),
-      uTex:gl.getUniformLocation(prog,"uTex"), uUseTex:gl.getUniformLocation(prog,"uUseTex"), uColor:gl.getUniformLocation(prog,"uColor") };
-    tex=gl.createTexture();
-    gl.enable(gl.DEPTH_TEST);
-    bindPointer();
-    return true;
-  }
-  function buildMeshes(){
-    for(const m of meshes){ gl.deleteBuffer(m.pos); gl.deleteBuffer(m.nrm); gl.deleteBuffer(m.uv); gl.deleteBuffer(m.ib); }
-    meshes=[]; const isTank = tpl().style==="tank"; style=tpl().style;
-    meshes.push(attrBuf(buildTorso(isTank)));      // Textur (Design)
-    meshes.push(attrBuf(buildNeckFill()));         // Hals-Füllung
-    meshes.push(attrBuf(buildCollarRib()));        // Rundkragen-Rippe
-    meshes.push(attrBuf(buildHemBand()));          // Saumband
-    if(!isTank){
-      meshes.push(attrBuf(buildSleeveSeg(1, 0.0, 1.0, "sleeveR", 0.0, true)));    // Ärmel rechts
-      meshes.push(attrBuf(buildSleeveSeg(1, 0.82, 1.0, "band", 0.015, true)));    // Bündchen rechts
-      meshes.push(attrBuf(buildSleeveSeg(-1, 0.0, 1.0, "sleeveL", 0.0, true)));   // Ärmel links
-      meshes.push(attrBuf(buildSleeveSeg(-1, 0.82, 1.0, "band", 0.015, true)));   // Bündchen links
-    }
-  }
-  function rotZ(a){ const c=Math.cos(a),s=Math.sin(a); return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]; }
-  async function uploadTex(){ const atlas=await buildAtlas();
-    gl.bindTexture(gl.TEXTURE_2D,tex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
-    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,atlas);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-  }
-  function resize(){ const dpr=Math.min(window.devicePixelRatio||1,2); const w=cv.clientWidth||400, h=cv.clientHeight||500;
-    cv.width=w*dpr; cv.height=h*dpr; }
-  function render(){ resize(); gl.viewport(0,0,cv.width,cv.height);
-    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    const P=M4.persp(0.56, cv.width/cv.height, 0.1, 50), V=M4.trans(0,0.0,-zoom);
-    const R=M4.mul(M4.rotY(yaw), M4.rotX(pitch));
-    gl.uniformMatrix4fv(loc.uP,false,new Float32Array(P)); gl.uniformMatrix4fv(loc.uV,false,new Float32Array(V));
-    for(const m of meshes){ const model=M4.mul(R,m.local);
-      gl.uniformMatrix4fv(loc.uM,false,new Float32Array(model));
-      gl.uniform1i(loc.uUseTex, m.tex?1:0); if(!m.tex) gl.uniform3fv(loc.uColor, m.color);
-      if(m.tex){ gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,tex); gl.uniform1i(loc.uTex,0); }
-      gl.bindBuffer(gl.ARRAY_BUFFER,m.pos); gl.enableVertexAttribArray(loc.aPos); gl.vertexAttribPointer(loc.aPos,3,gl.FLOAT,false,0,0);
-      gl.bindBuffer(gl.ARRAY_BUFFER,m.nrm); gl.enableVertexAttribArray(loc.aNrm); gl.vertexAttribPointer(loc.aNrm,3,gl.FLOAT,false,0,0);
-      gl.bindBuffer(gl.ARRAY_BUFFER,m.uv); gl.enableVertexAttribArray(loc.aUv); gl.vertexAttribPointer(loc.aUv,2,gl.FLOAT,false,0,0);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.ib); gl.drawElements(gl.TRIANGLES,m.n,gl.UNSIGNED_SHORT,0);
-    }
-  }
-  function loop(){ render(); raf=requestAnimationFrame(loop); }
-  function bindPointer(){
-    cv.addEventListener("pointerdown", e=>{ drag=true; lx=e.clientX; ly=e.clientY; cv.setPointerCapture(e.pointerId); });
-    cv.addEventListener("pointermove", e=>{ if(!drag) return; yaw+=(e.clientX-lx)*0.009; pitch+=(e.clientY-ly)*0.006;
-      pitch=Math.max(-0.5,Math.min(0.5,pitch)); lx=e.clientX; ly=e.clientY; });
-    cv.addEventListener("pointerup", ()=>drag=false);
-    cv.addEventListener("wheel", e=>{ e.preventDefault(); zoom=Math.max(3.0,Math.min(7.0, zoom+e.deltaY*0.003)); }, {passive:false});
-  }
-  return {
-    active:false,
-    ensure(canvas){ if(this.active && gl) return true; cv=canvas; try{ if(!initGL()) return false; }catch(e){ console.error(e); return false; }
-      this.active=true; buildMeshes(); loop(); return true; },
-    update(){ if(!this.active) return;
-      if(tpl().style!==style) buildMeshes();
-      else for(const m of meshes){ if(m.colorKey) m.color = hexv(state.partColors[m.colorKey]); }  // Solid-Farben aktualisieren
-      uploadTex();
-    },
-    stop(){ if(raf) cancelAnimationFrame(raf); raf=0; this.active=false; gl=null; },
-  };
-})();
 
 /* =========================================================================
    INIT
