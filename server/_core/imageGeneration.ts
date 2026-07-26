@@ -17,6 +17,7 @@
  */
 import { storagePut } from "../storage";
 import { ENV } from "./env";
+import { generateImageViaMcp } from "./imageMcpClient";
 
 export type GenerateImageOptions = {
   prompt: string;
@@ -34,6 +35,12 @@ export type GenerateImageResponse = {
 export async function generateImage(
   options: GenerateImageOptions
 ): Promise<GenerateImageResponse> {
+  // Ist ein externer MCP-Server konfiguriert, läuft die Bildgenerierung
+  // darüber statt über die eingebaute Forge-Image-API.
+  if (ENV.imageMcpUrl) {
+    return generateImageViaMcpBackend(options);
+  }
+
   if (!ENV.forgeApiUrl) {
     throw new Error("BUILT_IN_FORGE_API_URL is not configured");
   }
@@ -93,4 +100,48 @@ export async function generateImage(
   return {
     url,
   };
+}
+
+/**
+ * Bildgenerierung über den externen MCP-Server (ballz-image-mcp).
+ * Das Ergebnis wird – wie beim Forge-Pfad – in unseren Storage geschrieben,
+ * damit stromabwärts immer eine stabile URL aus unserem Speicher vorliegt.
+ */
+async function generateImageViaMcpBackend(
+  options: GenerateImageOptions
+): Promise<GenerateImageResponse> {
+  const mcp = await generateImageViaMcp(
+    ENV.imageMcpUrl,
+    {
+      prompt: options.prompt,
+      originalImages: options.originalImages,
+    },
+    ENV.imageMcpToolName || undefined
+  );
+
+  let buffer: Buffer;
+  let mimeType = mcp.mimeType ?? "image/png";
+
+  if (mcp.b64Json) {
+    buffer = Buffer.from(mcp.b64Json, "base64");
+  } else if (mcp.url) {
+    const resp = await fetch(mcp.url);
+    if (!resp.ok) {
+      throw new Error(
+        `Herunterladen des MCP-Bildes fehlgeschlagen (${resp.status} ${resp.statusText})`
+      );
+    }
+    mimeType = resp.headers.get("content-type") ?? mimeType;
+    buffer = Buffer.from(await resp.arrayBuffer());
+  } else {
+    throw new Error("MCP-Bildgenerierung lieferte weder Bilddaten noch eine URL");
+  }
+
+  const ext = mimeType.includes("jpeg") || mimeType.includes("jpg") ? "jpg" : "png";
+  const { url } = await storagePut(
+    `generated/${Date.now()}.${ext}`,
+    buffer,
+    mimeType
+  );
+  return { url };
 }
