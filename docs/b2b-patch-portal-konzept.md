@@ -71,7 +71,9 @@ Vereins-Usern vermischt werden. Alternativ Erweiterung der Rollen-Enum um `b2b_c
    - Live-**Sofortpreis** je Motiv + Gesamtsumme
 
 3. **Datei-Upload + Preflight**
-   - Formate: **PDF, AI, EPS, SVG** (Vektor). *(DTF ist technisch Vollfarbe – Empfehlung: PNG/TIFF ergänzen, siehe Offene Punkte)*
+   - **Siebdruck-Transfer:** Vektordaten **PDF, AI, EPS, SVG**
+   - **DTF:** **PDF** – ideal in der **exakten Motivgröße** angelegt, **transparenter Hintergrund**,
+     **CMYK-Farbraum**, **mind. 300 DPI**, **kein aktivierter Überdruck (Overprint)**
    - Große Dateien über **S3-Presigned-URL** (nicht über den bestehenden 10-MB-Base64-Endpoint)
    - **Automatische Datenprüfung** mit Ampel-Feedback (siehe Abschnitt 6)
 
@@ -137,25 +139,34 @@ Formate PDF/AI/EPS) ist das ungeeignet. Deshalb:
 - Neuer Storage-Prefix, z. B. `b2b/print-data/{orderId}/{motifId}-{filename}`
 - Erlaubte Formate (MVP): `application/pdf`, `application/postscript` (AI/EPS),
   `image/svg+xml`. Größenlimit z. B. **100 MB** (konfigurierbar).
+- **DTF-Standard = PDF.** Empfohlene/erwartete Anlage: Dokumentgröße **exakt = Motivgröße**,
+  **transparenter Hintergrund**, **CMYK**, **≥ 300 DPI**, **Überdruck (Overprint) aus**.
 
 ### 6.2 Automatische Datenprüfung (Preflight)
 
 Ziel: dem Kunden **vor dem Absenden** Warnungen zeigen und Nacharbeit reduzieren.
 Ausgabe als **Ampel** (grün = ok, gelb = Warnung, rot = Blocker).
 
-| Prüfung | Technik | Bibliothek (bereits vorhanden) |
-|---------|---------|-------------------------------|
-| Datei lesbar / nicht beschädigt | PDF/SVG parsen | `pdfjs-dist`, `pdfkit` |
-| Seiten-/Motivgröße vs. angegebene Maße | Bounding-Box auslesen | `pdfjs-dist`, `sharp` |
-| Auflösung (bei eingebetteten Pixeln / DTF) | DPI ≥ 300 prüfen | `sharp` |
-| Farbmodus (CMYK für Siebdruck) | Farbraum erkennen | `sharp` |
-| Transparenter Hintergrund (Freisteller) | Alphakanal prüfen | `sharp` |
-| Farbanzahl (Siebdruck: Spot-Farben zählen) | Vektor-Farben analysieren | eigener Parser / `pdfjs-dist` |
-| Mindestgröße / Sicherheitsabstand | Geometrie | eigene Logik |
+| Prüfung | Gilt für | Ampel | Bibliothek (bereits vorhanden) |
+|---------|----------|-------|-------------------------------|
+| Datei lesbar / nicht beschädigt | beide | rot | `pdfjs-dist`, `pdfkit` |
+| Dokumentgröße = angegebene Motivmaße | beide | gelb/rot | `pdfjs-dist` (MediaBox/TrimBox) |
+| **Auflösung ≥ 300 DPI** | **DTF** | rot | `sharp` (effektive DPI = Pixel ÷ Motivgröße) |
+| **Farbmodus CMYK** | **DTF** (auch Siebdruck) | gelb/rot | `sharp` / PDF-ColorSpace |
+| **Transparenter Hintergrund** | **DTF** | gelb/rot | Alphakanal / PDF-Transparenzgruppe |
+| **Überdruck (Overprint) aus** | **DTF** (auch Siebdruck) | rot | PDF-`OP`/`op`/ExtGState auslesen (`pdfjs-dist`) |
+| Farbanzahl (Spot-Farben zählen) | Siebdruck | gelb | Separations/Spot-Colors aus PDF |
+| Mindestgröße / Sicherheitsabstand / Mindestliniendicke | beide | gelb | eigene Geometrie-Logik |
 
-Ergebnis wird an der Motiv-Zeile gespeichert (z. B. `preflightStatus`, `preflightReport`
-als JSON). Rote Blocker verhindern den Checkout; gelbe Warnungen erfordern ein bewusstes
-„Trotzdem so beauftragen".
+**Überdruck-Prüfung (wichtig für DTF):** Aktivierter Overprint führt beim weißen Unterdruck
+zu ausfallenden/fehlenden Flächen. Der Preflight liest die PDF-Grafikzustände aus
+(`ExtGState` mit `OP`/`op`, sowie Overprint-Attribute an Objekten) und meldet aktivierten
+Überdruck als **roten Blocker**.
+
+Ergebnis wird an der Motiv-Zeile gespeichert (`preflightStatus`, `preflightReport` als JSON).
+Rote Blocker verhindern den Checkout; gelbe Warnungen erfordern ein bewusstes
+„Trotzdem so beauftragen". Bei DTF wird zusätzlich die effektive Auflösung aus
+Pixelmaßen ÷ Motivgröße berechnet – ein zu klein skaliertes 300-DPI-Bild fällt so auf.
 
 > Hinweis: Bei DTF ist eine **Vorschau/Freisteller-Prüfung** besonders wichtig. Die bereits
 > vorhandene `photoroom`-Integration (`server/photoroom.ts`, Hintergrundentfernung) kann für
@@ -328,8 +339,9 @@ Vorhandene shadcn/ui-Bausteine reichen weitgehend aus:
 
 ## 13. Offene Punkte / zu entscheiden
 
-1. **DTF-Pixeldaten:** DTF ist Vollfarbe – reine Vektorformate reichen oft nicht.
-   Empfehlung: **PNG/TIFF (hochauflösend, transparent) zusätzlich zulassen.** Bitte bestätigen.
+1. ~~DTF-Datenformat~~ **geklärt:** DTF-Standard ist **PDF** in exakter Motivgröße,
+   transparent, CMYK, ≥ 300 DPI, Überdruck aus – wird per Preflight geprüft (Abschnitt 6.2).
+   *(Optional später: hochauflösendes PNG/TIFF zusätzlich zulassen, falls Kunden das liefern.)*
 2. **Payment-Provider:** Stripe vs. Mollie – Präferenz? (beeinflusst Integration & Gebühren)
 3. **Preislogik:** Gibt es bestehende Preislisten/Staffeln, die ich übernehmen soll?
    (Grundpreise, Klischeekosten, Mengenstaffeln, Mindermengenzuschlag)
