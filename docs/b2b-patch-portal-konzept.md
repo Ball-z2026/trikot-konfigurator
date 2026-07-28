@@ -116,6 +116,12 @@ Neuer, abgegrenzter Bereich unter `/b2b`. Umsetzung mit `wouter` analog zu `App.
 /b2b/konto/bestellungen      → Bestellhistorie
 /b2b/konto/bestellungen/:id  → Bestelldetail + Nachbestellung
 /b2b/admin/bestellungen      → (Admin) Bestellverwaltung
+
+/impressum                   → Impressum (Pflicht)
+/datenschutz                 → Datenschutzerklärung (Pflicht)
+/agb                         → AGB (B2B)
+/versand                     → Versand- & Lieferbedingungen
+/widerruf                    → Widerruf/Storno (B2B-Hinweis)
 ```
 
 Empfehlung: Eigenes Layout `B2BLayout.tsx` (getrennte Navigation/Branding vom
@@ -320,11 +326,66 @@ Vorhandene shadcn/ui-Bausteine reichen weitgehend aus:
 - **Zugriffsschutz:** Kunde sieht nur eigene Bestellungen/Daten (Row-Level-Checks).
 - **DSGVO:** Druckdaten sind Kundendaten – Löschkonzept/Aufbewahrungsfrist definieren.
 - **AGB/Widerruf:** B2B-Sonderanfertigung → i. d. R. kein Widerrufsrecht; AGB im Checkout
-  bestätigen lassen.
+  bestätigen lassen. Details siehe **Abschnitt 12 (Rechtstexte & Pflichtseiten)**.
 
 ---
 
-## 12. Umsetzungsplan (Meilensteine)
+## 12. Rechtstexte & Pflichtseiten (B2B)
+
+Diese Seiten sind **rechtlich vorgeschrieben** und zugleich **Voraussetzung für die
+Stripe-Freischaltung** (Stripe prüft die Website aktiv). Ohne sie wird die Auszahlung
+gesperrt. Alle Seiten liegen im öffentlichen Bereich und sind aus dem Footer verlinkt.
+
+> ⚠️ **Kein Rechtsrat.** Die folgende Liste ist eine Umsetzungs-Checkliste. Die konkreten
+> Texte sollten über einen **Rechtstexte-Generator** (z. B. eRecht24, IT-Recht Kanzlei,
+> Trusted Shops) erstellt oder **anwaltlich geprüft** werden – besonders die AGB.
+
+### 12.1 Pflicht (immer erforderlich)
+
+| Seite | Rechtsgrundlage | Inhalt / Besonderheit B2B |
+|-------|-----------------|---------------------------|
+| **Impressum** | § 5 DDG (früher TMG) | Firmenname, Rechtsform, Anschrift, Vertretungsberechtigte, E-Mail + Telefon, USt-IdNr., bei Firmen HRB/Registergericht |
+| **Datenschutzerklärung** | DSGVO / BDSG | Verantwortlicher, Zwecke, Hosting, S3-Speicherung der Druckdaten, **Stripe als Zahlungsdienstleister** (Datenübermittlung), Cookies, Betroffenenrechte, Aufbewahrung/Löschung |
+| **AGB** | freiwillig, aber dringend empfohlen | B2B-Klauseln: Vertragsschluss, Preise **netto zzgl. USt.**, Zahlung, Liefer-/Versandbedingungen, **Eigentumsvorbehalt**, Haftung/Gewährleistung, **Kunde haftet für gelieferte Druckdaten & Rechte** (Urheber-/Markenrecht), Freistellung, Gerichtsstand |
+| **Cookie-/Consent-Hinweis** | § 25 TDDDG (ehem. TTDSG) | Nur nötig, wenn nicht-essentielle Cookies/Tracking (z. B. Analytics) gesetzt werden. Stripe-Zahlung selbst ist funktional notwendig |
+
+### 12.2 B2B-Besonderheiten (Unterschied zum Endkunden-Shop)
+
+- **Kein gesetzliches Widerrufsrecht:** Widerrufsrecht gilt nur für **Verbraucher (B2C)**.
+  Bei reinem B2B entfällt die Widerrufsbelehrung. **Wichtig:** Dann muss sichergestellt sein,
+  dass sich **nur Unternehmer** registrieren können →
+  - Pflichtfeld **Firmenname + USt-IdNr.** bei Registrierung
+  - **Bestätigung „Ich handle als Unternehmer"** (Checkbox) im Checkout/bei Registrierung
+  - Klarer Hinweis „Angebot richtet sich ausschließlich an Gewerbetreibende"
+- **Falls doch B2C möglich** wäre: Widerrufsbelehrung + Muster-Widerrufsformular nötig – aber
+  bei **individueller Sonderanfertigung** (Patches nach Kundendaten) besteht ohnehin ein
+  **Ausschluss des Widerrufsrechts** (§ 312g Abs. 2 Nr. 1 BGB). Dieser Ausschluss muss dann
+  ausdrücklich kommuniziert werden.
+- **Preisangaben:** Im B2B üblich und zulässig **Nettopreise** (zzgl. USt.). Klar kennzeichnen.
+- **Reverse-Charge:** Bei EU-Kunden mit gültiger USt-IdNr. ggf. Rechnung ohne USt. (siehe
+  Abschnitt 14, offener Punkt).
+
+### 12.3 Weitere empfohlene Seiten/Angaben
+
+- **Versand- & Lieferbedingungen** (Kosten, Laufzeiten, Versanddienstleister) – auch von
+  Stripe erwartet
+- **Zahlungsarten-Übersicht** (welche Methoden, wann fällig)
+- **Widerrufs-/Storno-/Rückerstattungsbedingungen** (bei Sonderanfertigung: Storno nur bis
+  Produktionsstart o. Ä.)
+- **Kontaktseite** (E-Mail, Telefon, Ansprechpartner)
+
+### 12.4 Technische Umsetzung
+
+- Statische Seiten unter `/impressum`, `/datenschutz`, `/agb`, `/versand`, `/widerruf`
+  (bzw. B2B-Hinweis), im **Footer** des `B2BLayout` verlinkt
+- **AGB-/Datenschutz-Checkbox** (Pflicht) im Checkout, Zustimmung mit Zeitstempel speichern
+  (z. B. Feld `acceptedTermsAt` in `patch_orders`)
+- **Unternehmer-Bestätigung** bei Registrierung speichern (Feld `isBusiness` / `vatId`)
+- Optional: Consent-Banner-Komponente, falls Tracking eingesetzt wird
+
+---
+
+## 13. Umsetzungsplan (Meilensteine)
 
 | Phase | Inhalt | Ergebnis |
 |-------|--------|----------|
@@ -333,11 +394,16 @@ Vorhandene shadcn/ui-Bausteine reichen weitgehend aus:
 | **M3** | Konfigurator (Technik/Motive/Menge) + Sofortpreis (server-verbindlich) | Warenkorb mit Live-Preis |
 | **M4** | Checkout + Stripe-Integration + Webhook + Beleg-PDF | Echte Online-Bezahlung |
 | **M5** | Bestellhistorie + Nachbestellung + Admin-Bestellverwaltung | End-to-End produktiv |
-| **M6** | Feinschliff Preflight (Farbanzahl, CMYK), Reporting, Doku | Produktionsreife |
+| **M6** | **Rechtstexte & Pflichtseiten** (Impressum, Datenschutz, AGB, Versand/Widerruf-Hinweis, Footer, Checkout-Zustimmung, Unternehmer-Bestätigung) | **Stripe-Live-Freischaltung möglich** |
+| **M7** | Feinschliff Preflight (Farbanzahl, CMYK), Reporting, Doku | Produktionsreife |
+
+> Reihenfolge-Hinweis: **M6 muss vor der Stripe-Live-Schaltung fertig sein** – Stripe prüft
+> die Pflichtseiten, bevor echte Auszahlungen freigegeben werden. Die Stripe-Integration
+> selbst (M4) kann parallel bereits im Testmodus laufen.
 
 ---
 
-## 13. Offene Punkte / zu entscheiden
+## 14. Offene Punkte / zu entscheiden
 
 1. ~~DTF-Datenformat~~ **geklärt:** DTF-Standard ist **PDF** in exakter Motivgröße,
    transparent, CMYK, ≥ 300 DPI, Überdruck aus – wird per Preflight geprüft (Abschnitt 6.2).
