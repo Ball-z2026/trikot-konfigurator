@@ -3727,8 +3727,10 @@ Gib alle Positionen in Prozent des sichtbaren Bildbereichs an.`,
         const { storagePut } = await import("./storage");
         const key = `street-maps/map_${Date.now()}.png`;
         const { url } = await storagePut(key, imageBuffer, "image/png");
-        
-        return { url, lat, lng };
+
+        // dataUrl zusätzlich zurückgeben: erspart dem Browser den CORS-Download
+        // (der 3D-Konfigurator zeichnet das Bild auf Canvas-Texturen)
+        return { url, lat, lng, dataUrl: `data:image/png;base64,${imageBuffer.toString("base64")}` };
       }),
   }),
 

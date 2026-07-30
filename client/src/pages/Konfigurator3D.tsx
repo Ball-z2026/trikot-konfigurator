@@ -178,13 +178,20 @@ export default function Konfigurator3D() {
       toast.info("Generiere Straßenkarte …");
       const result = await generateStreetMap.mutateAsync({ address });
       const w = iframeRef.current?.contentWindow as any;
-      let src = result.url;
-      try {
-        src = await urlToDataUrl(result.url); // Data-URL vermeidet CORS-Tainting sicher
-      } catch {
-        /* Viewer lädt dann selbst mit crossOrigin */
+      // dataUrl kommt direkt vom Server (kein CORS); url nur als Fallback für alte Server-Version
+      let src: string = (result as any).dataUrl || result.url;
+      if (!src.startsWith("data:")) {
+        try {
+          src = await urlToDataUrl(src);
+        } catch {
+          /* Viewer lädt dann selbst mit crossOrigin */
+        }
       }
       w.__setMapImage(src);
+      w.ballz?.setMapStyle?.({ alpha: 0.35 });
+      if (result.lat != null && result.lng != null) {
+        w.ballz?.setVenue?.(toDms(result.lat, result.lng), true);
+      }
       toast.success("Straßenkarte der Spielstätte gesetzt.");
     } catch (e: any) {
       toast.error("Straßenkarte fehlgeschlagen: " + (e?.message || "unbekannt"));
@@ -214,7 +221,7 @@ export default function Konfigurator3D() {
       </div>
       <iframe
         ref={iframeRef}
-        src="/konfigurator/index.html?partner=ballz"
+        src="/konfigurator/index.html?embed=1"
         title="ball-z 3D-Trikot-Konfigurator"
         className="w-full flex-1 border-0"
         allow="fullscreen"
