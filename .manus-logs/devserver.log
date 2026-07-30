@@ -7248,3 +7248,8 @@
 [2026-05-10T17:14:09.399Z] 1:14:09 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-10T17:15:01.031Z] 1:15:01 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
 [2026-05-10T17:15:52.935Z] 1:15:52 PM [vite] (client) hmr update /src/pages/KiDesign.tsx, /src/index.css
+[2026-07-29T19:36:15.557Z] Starting dev server with command: pnpm run dev
+[2026-07-29T19:36:17.390Z] > trikot-konfigurator@1.0.0 dev /home/ubuntu/trikot-konfigurator
+[2026-07-29T19:36:17.390Z] > NODE_ENV=development tsx watch server/_core/index.ts
+[2026-07-29T19:36:18.809Z] [OAuth] Initialized with baseURL: https://api.manus.im
+[2026-07-29T19:36:20.480Z] Server running on http://localhost:3000/
