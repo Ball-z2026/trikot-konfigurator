@@ -87,6 +87,9 @@ export default function Konfigurator3D() {
   );
   const { data: sponsors } = trpc.sponsorTemplate.list.useQuery({ orgId }, { enabled: orgId > 0 });
   const generateStreetMap = trpc.mockup.generateStreetMap.useMutation();
+  // Gespeicherte KI-Design-Vorlagen (von /designer/ki-design) als Startpunkt
+  const { data: kiTemplates } = trpc.designTemplate.list.useQuery({ orgId }, { enabled: orgId > 0 });
+  const [refTemplate, setRefTemplate] = useState<any>(null);
 
   /** ballz-API im (same-origin) iframe abholen, sobald das 3D-Modell geladen ist */
   function getBallz(): BallzApi | null {
@@ -198,6 +201,21 @@ export default function Konfigurator3D() {
     }
   }
 
+  /** KI-Vorlage anwenden: Farben übernehmen + KI-Bild als Referenz einblenden */
+  function applyTemplate(tpl: any) {
+    setRefTemplate(tpl || null);
+    if (!tpl) return;
+    const ballz = getBallz();
+    if (!ballz) return;
+    const jerseyColor = tpl.positionsConfig?.jerseyColor;
+    if (jerseyColor) {
+      for (const z of ["front", "back", "sleeve_l", "sleeve_r"]) {
+        ballz.setZone(z, { color: jerseyColor, color2: org?.secondaryColor || "#ffffff" });
+      }
+    }
+    toast.success(`KI-Vorlage "${tpl.name}" übernommen — Referenzbild eingeblendet.`);
+  }
+
   return (
     <div className="flex h-screen flex-col">
       <div className="flex items-center gap-3 border-b bg-background px-4 py-2">
@@ -213,12 +231,45 @@ export default function Konfigurator3D() {
           {status === "verbunden" && "Vereinsdaten aktiv – Wappen, Farben, Schrift & Sponsoren übernommen"}
           {status === "ohne-verein" && "Kein Verein zugeordnet – Demo-Modus"}
         </span>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          {(kiTemplates?.length ?? 0) > 0 && (
+            <select
+              className="h-9 rounded-md border bg-background px-2 text-sm"
+              value={refTemplate?.id ?? ""}
+              onChange={(e) => {
+                const tpl = (kiTemplates || []).find((t: any) => String(t.id) === e.target.value);
+                applyTemplate(tpl);
+              }}
+            >
+              <option value="">KI-Vorlage übernehmen …</option>
+              {(kiTemplates || []).map((t: any) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          )}
           <Button size="sm" variant="outline" onClick={handleStreetMap} disabled={!org}>
             <MapPin className="mr-1 h-4 w-4" /> Echte Straßenkarte laden
           </Button>
         </div>
       </div>
+      {refTemplate?.imageUrl && (
+        <div className="flex items-center gap-3 border-b bg-muted/40 px-4 py-2">
+          <img
+            src={refTemplate.imageUrl}
+            alt={`KI-Vorlage ${refTemplate.name}`}
+            className="h-28 rounded-md border object-contain"
+          />
+          <div className="text-xs text-muted-foreground">
+            <b>KI-Vorlage „{refTemplate.name}"</b> als Referenz — Farben wurden übernommen.
+            Muster, Logos und Details baust du rechts im Konfigurator nach.
+          </div>
+          <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setRefTemplate(null)}>
+            Referenz ausblenden
+          </Button>
+        </div>
+      )}
       <iframe
         ref={iframeRef}
         src="/konfigurator/index.html?embed=1"
