@@ -36,6 +36,7 @@ import KiAnalyseSublimation from "./pages/KiAnalyseSublimation";
 import KiDesign from "./pages/KiDesign";
 import ProduktDesignerV2 from "./pages/ProduktDesignerV2";
 import ProduktEditorV2 from "./pages/ProduktEditorV2";
+import Konfigurator3D from "./pages/Konfigurator3D";
 import { ZoneEditorProvider } from "./contexts/ZoneEditorContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
@@ -77,6 +78,7 @@ function Router() {
 
       {/* ─── Modul 3: Konfigurator (fertige Produkte konfigurieren) ─── */}
       <Route path="/konfigurator" component={ProductSelect} />
+      <Route path="/konfigurator-3d" component={Konfigurator3D} />
       <Route path="/konfigurator/:id" component={CustomerConfigurator} />
       <Route path="/mockup/:token" component={MockupShare} />
       <Route path="/sponsor-review/:token" component={SponsorReview} />
