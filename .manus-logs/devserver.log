@@ -7253,3 +7253,6 @@
 [2026-07-29T19:36:17.390Z] > NODE_ENV=development tsx watch server/_core/index.ts
 [2026-07-29T19:36:18.809Z] [OAuth] Initialized with baseURL: https://api.manus.im
 [2026-07-29T19:36:20.480Z] Server running on http://localhost:3000/
+[2026-07-30T15:53:56.366Z] 3:53:56 PM [vite] (client) page reload public/konfigurator/index.html
+[2026-07-30T15:53:56.370Z] 3:53:56 PM [vite] (client) page reload public/konfigurator/index.html
+[2026-07-30T15:53:56.371Z] 3:53:56 PM [vite] (client) hmr update /src/App.tsx, /src/index.css
