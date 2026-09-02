@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>kiezfashion Design-Test</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#111;color:#eee;margin:0;padding:24px;max-width:520px}
+h1{font-size:20px;letter-spacing:.08em}label{display:block;margin:14px 0 4px;font-size:13px;color:#aaa}
+select,input{width:100%;padding:10px;background:#1c1c1c;color:#eee;border:1px solid #333;border-radius:6px}
+button{margin-top:20px;width:100%;padding:14px;background:#c9a24d;color:#111;border:0;border-radius:6px;font-weight:700;font-size:16px}
+button:disabled{opacity:.5}#out{margin-top:20px;font-size:14px;color:#aaa}img{width:100%;margin-top:12px;border-radius:8px}
+</style></head><body>
+<h1>KIEZFASHION · DEIN DESIGN</h1>
+<label>Dein Ort (jede Stadt, jedes Dorf)</label><input id="place" placeholder="z. B. Harmstorf">
+<div id="found"></div>
+<label>Motiv</label><select id="lm"><option value="">wird nach Ortssuche gefüllt</option></select>
+<label>Stil</label><select id="style"></select>
+<label>Streetart-Variante</label><select id="variant"><option value="light">LIGHT (für dunkle Textilien)</option><option value="dark">DARK (für helle Textilien)</option></select>
+<label>Textil</label><select id="garment"></select>
+<label>Deine Zeile (optional, max. 40 Zeichen)</label><input id="line" maxlength="40" placeholder="z. B. Ei Gude wie?">
+<button id="go">Design erzeugen</button>
+<div id="out"></div><style>#found{font-size:13px;color:#c9a24d;margin-top:6px;min-height:18px}</style>
+<script>
+const api = '/api/kiez';
+const session = localStorage.kfs || (localStorage.kfs = 'test_' + Math.random().toString(36).slice(2));
+let D;
+async function load(){
+  D = await (await fetch(api + '/cities')).json();
+  city.innerHTML = D.cities.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  style.innerHTML = Object.entries(D.styles).map(([k,v]) => `<option value="${k}">${v.name}</option>`).join('');
+  garment.innerHTML = D.garments.map(g => `<option>${g}</option>`).join('');
+}
+let timer;
+place.oninput = () => { clearTimeout(timer); timer = setTimeout(resolve, 700); };
+async function resolve(){
+  if (place.value.trim().length < 2) return;
+  found.textContent = 'Suche …';
+  const r = await fetch(api + '/resolve?place=' + encodeURIComponent(place.value));
+  if (!r.ok) { found.textContent = 'Ort nicht gefunden'; lm.innerHTML = ''; return; }
+  const c = await r.json();
+  found.textContent = `✓ ${c.name} · ${c.region || ''}`;
+  lm.innerHTML = c.tier === 'village' ? '<option value="">Dorfmotiv (automatisch)</option>' : c.landmarks.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+}
+go.onclick = async () => {
+  go.disabled = true; out.textContent = 'Wird erzeugt … (ca. 60 s)';
+  const r = await fetch(api + '/generate', { method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ place: place.value, landmark: lm.value, style: style.value, garment: garment.value, variant: variant.value, line: line.value, session }) });
+  const j = await r.json();
+  if (!r.ok) { out.textContent = 'Fehler: ' + JSON.stringify(j); go.disabled = false; return; }
+  const t = setInterval(async () => {
+    const s = await (await fetch(api + '/job/' + j.jobId)).json();
+    out.textContent = 'Status: ' + s.status + (s.qa ? ' – ' + s.qa : '') + (s.error ? ' – ' + s.error : '');
+    if (['done','qa_failed','error'].includes(s.status)) {
+      clearInterval(t); go.disabled = false;
+      if (s.status === 'done') out.innerHTML += `<br>Design-ID: <b>${s.designId}</b><img src="${s.preview}">`;
+    }
+  }, 5000);
+};
+load();
+</script></body></html>

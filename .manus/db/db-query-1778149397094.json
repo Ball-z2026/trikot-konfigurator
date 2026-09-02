@@ -1,9 +1,0 @@
-{
-  "query": "UPDATE product_parts SET defaultColor = '#1e3a5f' WHERE productId = 1380003 AND (label LIKE '%Vorder%' OR label LIKE '%Rück%');\nUPDATE product_parts SET defaultColor = '#ffffff' WHERE productId = 1380003 AND label LIKE '%Ärmel%';\nUPDATE product_parts SET defaultColor = '#1e3a5f' WHERE productId = 1380003 AND label LIKE '%Kragen%';\nUPDATE product_parts SET defaultColor = '#ffffff' WHERE productId = 1380003 AND label LIKE '%Bündchen%';",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute UPDATE product_parts SET defaultColor = '#1e3a5f' WHERE productId = 1380003 AND (label LIKE '%Vorder%' OR label LIKE '%Rück%');\nUPDATE product_parts SET defaultColor = '#ffffff' WHERE productId = 1380003 AND label LIKE '%Ärmel%';\nUPDATE product_parts SET defaultColor = '#1e3a5f' WHERE productId = 1380003 AND label LIKE '%Kragen%';\nUPDATE product_parts SET defaultColor = '#ffffff' WHERE productId = 1380003 AND label LIKE '%Bündchen%';",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 92
-}

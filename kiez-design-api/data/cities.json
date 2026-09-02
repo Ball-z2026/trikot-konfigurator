@@ -1,0 +1,484 @@
+{
+  "styles": {
+    "meisterwerk_hell": {
+      "name": "Meisterwerk",
+      "line": "meisterwerk"
+    },
+    "streetart": {
+      "name": "Streetart",
+      "line": "streetart"
+    }
+  },
+  "garments": [
+    "tshirt",
+    "polo",
+    "hoodie",
+    "zip_hoodie",
+    "mug",
+    "bag"
+  ],
+  "cities": [
+    {
+      "id": "berlin",
+      "name": "BERLIN",
+      "display": "Berlin",
+      "coords": "52.5200 N, 13.4050 E",
+      "river": "Spree",
+      "palette": "warm gold, deep anthracite and brick-red",
+      "heraldic_hint": "a bear silhouette as subtle motif only, never the official coat of arms",
+      "traps": [],
+      "landmarks": [
+        {
+          "id": "brandenburger_tor",
+          "name": "Brandenburg Gate",
+          "de": "Brandenburger Tor",
+          "zone": "mitte"
+        },
+        {
+          "id": "fernsehturm",
+          "name": "Berlin TV Tower at Alexanderplatz",
+          "de": "Fernsehturm",
+          "zone": "mitte"
+        },
+        {
+          "id": "east_side_gallery",
+          "name": "East Side Gallery painted wall segment",
+          "de": "East Side Gallery",
+          "zone": "friedrichshain"
+        },
+        {
+          "id": "berliner_dom",
+          "name": "Berlin Cathedral on Museum Island",
+          "de": "Berliner Dom",
+          "zone": "mitte"
+        },
+        {
+          "id": "museumsinsel",
+          "name": "Museum Island with Bode Museum",
+          "de": "Museumsinsel",
+          "zone": "mitte"
+        },
+        {
+          "id": "siegessaeule",
+          "name": "Victory Column in Tiergarten",
+          "de": "Siegessäule",
+          "zone": "tiergarten"
+        },
+        {
+          "id": "oberbaumbruecke",
+          "name": "Oberbaum Bridge over the Spree",
+          "de": "Oberbaumbrücke",
+          "zone": "friedrichshain"
+        },
+        {
+          "id": "reichstag",
+          "name": "Reichstag building with glass dome",
+          "de": "Reichstag",
+          "zone": "mitte"
+        },
+        {
+          "id": "gendarmenmarkt",
+          "name": "Gendarmenmarkt with Konzerthaus",
+          "de": "Gendarmenmarkt",
+          "zone": "mitte"
+        },
+        {
+          "id": "charlottenburg",
+          "name": "Charlottenburg Palace",
+          "de": "Schloss Charlottenburg",
+          "zone": "charlottenburg"
+        },
+        {
+          "id": "gedaechtniskirche",
+          "name": "Kaiser Wilhelm Memorial Church",
+          "de": "Gedächtniskirche",
+          "zone": "charlottenburg"
+        },
+        {
+          "id": "rotes_rathaus",
+          "name": "Red City Hall",
+          "de": "Rotes Rathaus",
+          "zone": "mitte"
+        }
+      ],
+      "area_code": "030",
+      "dialect_line": "Icke bin Berlin"
+    },
+    {
+      "id": "potsdam",
+      "name": "POTSDAM",
+      "display": "Potsdam",
+      "coords": "52.3906 N, 13.0645 E",
+      "river": "Havel",
+      "palette": "warm gold, prussian blue and sandstone ochre",
+      "heraldic_hint": "no coat of arms",
+      "traps": [
+        "Sanssouci is a terraced vineyard palace on a hill, not on the Havel waterfront"
+      ],
+      "landmarks": [
+        {
+          "id": "sanssouci",
+          "name": "Sanssouci Palace with vineyard terraces",
+          "de": "Schloss Sanssouci",
+          "zone": "park"
+        },
+        {
+          "id": "brandenburger_tor_potsdam",
+          "name": "Brandenburg Gate of Potsdam at Luisenplatz",
+          "de": "Brandenburger Tor Potsdam",
+          "zone": "innenstadt"
+        },
+        {
+          "id": "hollaendisches_viertel",
+          "name": "Dutch Quarter red brick gabled houses",
+          "de": "Holländisches Viertel",
+          "zone": "innenstadt"
+        },
+        {
+          "id": "cecilienhof",
+          "name": "Cecilienhof Palace tudor style",
+          "de": "Schloss Cecilienhof",
+          "zone": "neuer_garten"
+        },
+        {
+          "id": "nikolaikirche",
+          "name": "St. Nicholas Church dome at Alter Markt",
+          "de": "Nikolaikirche",
+          "zone": "innenstadt"
+        },
+        {
+          "id": "glienicker_bruecke",
+          "name": "Glienicke Bridge over the Havel",
+          "de": "Glienicker Brücke",
+          "zone": "havel"
+        },
+        {
+          "id": "neues_palais",
+          "name": "New Palace in Sanssouci Park",
+          "de": "Neues Palais",
+          "zone": "park"
+        },
+        {
+          "id": "babelsberg",
+          "name": "Babelsberg Palace on the Havel",
+          "de": "Schloss Babelsberg",
+          "zone": "havel"
+        }
+      ],
+      "area_code": "0331",
+      "dialect_line": "Ick bin Potsdam"
+    },
+    {
+      "id": "frankfurt",
+      "name": "FRANKFURT",
+      "display": "Frankfurt am Main",
+      "coords": "50.1109 N, 8.6821 E",
+      "river": "Main",
+      "palette": "red, warm gold and Main-river blue",
+      "heraldic_hint": "a white eagle silhouette as subtle motif only, never the official coat of arms",
+      "traps": [
+        "Europaturm is in Ginnheim and NOT part of the banking skyline",
+        "Alte Oper stands at Opernplatz, NOT at the river",
+        "Hauptwache stands on a dry paved square: no water, no reflections",
+        "Museumsufer is the SOUTH bank, the skyline is on the NORTH bank"
+      ],
+      "landmarks": [
+        {
+          "id": "roemer",
+          "name": "Römer city hall with stepped gables",
+          "de": "Römer",
+          "zone": "nordufer"
+        },
+        {
+          "id": "kaiserdom",
+          "name": "Imperial Cathedral St. Bartholomew tower",
+          "de": "Kaiserdom",
+          "zone": "nordufer"
+        },
+        {
+          "id": "mainhattan",
+          "name": "Frankfurt banking skyline at the Main",
+          "de": "Mainhattan Skyline",
+          "zone": "nordufer"
+        },
+        {
+          "id": "eiserner_steg",
+          "name": "Iron Footbridge over the Main",
+          "de": "Eiserner Steg",
+          "zone": "main"
+        },
+        {
+          "id": "alte_oper",
+          "name": "Old Opera House at Opernplatz",
+          "de": "Alte Oper",
+          "zone": "innenstadt"
+        },
+        {
+          "id": "paulskirche",
+          "name": "St. Paul's Church round building",
+          "de": "Paulskirche",
+          "zone": "nordufer"
+        },
+        {
+          "id": "hauptwache",
+          "name": "Hauptwache baroque guardhouse on a paved square",
+          "de": "Hauptwache",
+          "zone": "innenstadt"
+        },
+        {
+          "id": "sachsenhausen",
+          "name": "Alt-Sachsenhausen half-timbered houses",
+          "de": "Sachsenhausen",
+          "zone": "suedufer"
+        },
+        {
+          "id": "staedel",
+          "name": "Städel Museum at the Museumsufer",
+          "de": "Städel",
+          "zone": "suedufer"
+        },
+        {
+          "id": "palmengarten",
+          "name": "Palmengarten palm house",
+          "de": "Palmengarten",
+          "zone": "westend"
+        }
+      ],
+      "area_code": "069",
+      "dialect_line": "Ei Gude wie?"
+    },
+    {
+      "id": "hamburg",
+      "name": "HAMBURG",
+      "display": "Hamburg",
+      "coords": "53.5511 N, 9.9937 E",
+      "river": "Elbe",
+      "palette": "deep blue, copper and brick-red",
+      "heraldic_hint": "a castle gate silhouette as subtle motif only, never the official coat of arms",
+      "traps": [
+        "Michel and Elbphilharmonie stand near the ELBE, never at the Alster",
+        "Alster lake landmarks (Rathaus, Jungfernstieg, Alsterfontäne) and Elbe landmarks must never be mixed in one waterfront"
+      ],
+      "landmarks": [
+        {
+          "id": "elbphilharmonie",
+          "name": "Elbphilharmonie concert hall on the Elbe",
+          "de": "Elbphilharmonie",
+          "zone": "elbe"
+        },
+        {
+          "id": "michel",
+          "name": "St. Michael's Church tower",
+          "de": "Michel",
+          "zone": "elbe"
+        },
+        {
+          "id": "speicherstadt",
+          "name": "Speicherstadt red brick warehouses and canals",
+          "de": "Speicherstadt",
+          "zone": "elbe"
+        },
+        {
+          "id": "landungsbruecken",
+          "name": "Landungsbrücken piers with clock tower",
+          "de": "Landungsbrücken",
+          "zone": "elbe"
+        },
+        {
+          "id": "rathaus",
+          "name": "Hamburg City Hall at the Alster",
+          "de": "Rathaus",
+          "zone": "alster"
+        },
+        {
+          "id": "jungfernstieg",
+          "name": "Jungfernstieg promenade with Alster fountain",
+          "de": "Jungfernstieg",
+          "zone": "alster"
+        },
+        {
+          "id": "koehlbrandbruecke",
+          "name": "Köhlbrand Bridge cable-stayed",
+          "de": "Köhlbrandbrücke",
+          "zone": "elbe"
+        },
+        {
+          "id": "fischmarkt",
+          "name": "Altona Fish Market hall",
+          "de": "Fischmarkt",
+          "zone": "elbe"
+        }
+      ],
+      "area_code": "040",
+      "dialect_line": "Moin"
+    },
+    {
+      "id": "st_pauli",
+      "name": "ST. PAULI",
+      "display": "St. Pauli",
+      "coords": "53.5497 N, 9.9640 E",
+      "river": "Elbe",
+      "palette": "black, brown-red and neon accents on warm gold",
+      "heraldic_hint": "no skull emblem, no club logos",
+      "traps": [
+        "St. Pauli lies at the Elbe, never at the Alster"
+      ],
+      "landmarks": [
+        {
+          "id": "reeperbahn",
+          "name": "Reeperbahn street with neon signs",
+          "de": "Reeperbahn",
+          "zone": "kiez"
+        },
+        {
+          "id": "davidwache",
+          "name": "Davidwache police station",
+          "de": "Davidwache",
+          "zone": "kiez"
+        },
+        {
+          "id": "alter_elbtunnel",
+          "name": "Old Elbe Tunnel entrance dome",
+          "de": "Alter Elbtunnel",
+          "zone": "elbe"
+        },
+        {
+          "id": "hafenstrasse",
+          "name": "Hafenstraße painted houses",
+          "de": "Hafenstraße",
+          "zone": "elbe"
+        },
+        {
+          "id": "millerntor",
+          "name": "Millerntor stadium silhouette without logos",
+          "de": "Millerntor",
+          "zone": "kiez"
+        }
+      ],
+      "area_code": "040",
+      "dialect_line": "Moin"
+    },
+    {
+      "id": "dresden",
+      "name": "DRESDEN",
+      "display": "Dresden",
+      "coords": "51.0504 N, 13.7373 E",
+      "river": "Elbe",
+      "palette": "sandstone ochre, warm gold and Elbe blue-green",
+      "heraldic_hint": "no coat of arms",
+      "traps": [
+        "Frauenkirche, Zwinger, Semperoper and Brühlsche Terrasse are all in the Altstadt on the SOUTH bank"
+      ],
+      "landmarks": [
+        {
+          "id": "frauenkirche",
+          "name": "Church of Our Lady baroque dome",
+          "de": "Frauenkirche",
+          "zone": "altstadt"
+        },
+        {
+          "id": "zwinger",
+          "name": "Zwinger palace with crown gate",
+          "de": "Zwinger",
+          "zone": "altstadt"
+        },
+        {
+          "id": "semperoper",
+          "name": "Semper Opera House",
+          "de": "Semperoper",
+          "zone": "altstadt"
+        },
+        {
+          "id": "bruehlsche_terrasse",
+          "name": "Brühl's Terrace on the Elbe",
+          "de": "Brühlsche Terrasse",
+          "zone": "altstadt"
+        },
+        {
+          "id": "blaues_wunder",
+          "name": "Blue Wonder bridge over the Elbe",
+          "de": "Blaues Wunder",
+          "zone": "elbe"
+        },
+        {
+          "id": "residenzschloss",
+          "name": "Dresden Castle with Hausmannsturm",
+          "de": "Residenzschloss",
+          "zone": "altstadt"
+        },
+        {
+          "id": "goldener_reiter",
+          "name": "Golden Rider statue in Neustadt",
+          "de": "Goldener Reiter",
+          "zone": "neustadt"
+        }
+      ],
+      "area_code": "0351",
+      "dialect_line": "Nu klar"
+    },
+    {
+      "id": "muenchen",
+      "name": "MÜNCHEN",
+      "display": "München",
+      "coords": "48.1351 N, 11.5820 E",
+      "river": "Isar",
+      "palette": "blue, white and warm gold with subtle diamond pattern",
+      "heraldic_hint": "no Münchner Kindl, no official coat of arms",
+      "traps": [
+        "Neuschwanstein is NOT in Munich and must never appear"
+      ],
+      "landmarks": [
+        {
+          "id": "frauenkirche_muc",
+          "name": "Frauenkirche with two onion domes",
+          "de": "Frauenkirche",
+          "zone": "altstadt"
+        },
+        {
+          "id": "marienplatz",
+          "name": "New City Hall at Marienplatz with Glockenspiel",
+          "de": "Marienplatz",
+          "zone": "altstadt"
+        },
+        {
+          "id": "olympiaturm",
+          "name": "Olympic Tower and tent roofs",
+          "de": "Olympiapark",
+          "zone": "olympiapark"
+        },
+        {
+          "id": "englischer_garten",
+          "name": "English Garden with Chinese Tower",
+          "de": "Englischer Garten",
+          "zone": "park"
+        },
+        {
+          "id": "eisbachwelle",
+          "name": "Eisbach river surf wave",
+          "de": "Eisbachwelle",
+          "zone": "park"
+        },
+        {
+          "id": "viktualienmarkt",
+          "name": "Viktualienmarkt with maypole",
+          "de": "Viktualienmarkt",
+          "zone": "altstadt"
+        },
+        {
+          "id": "nymphenburg",
+          "name": "Nymphenburg Palace",
+          "de": "Schloss Nymphenburg",
+          "zone": "west"
+        },
+        {
+          "id": "allianz_arena",
+          "name": "Allianz Arena silhouette without logos",
+          "de": "Allianz Arena",
+          "zone": "nord"
+        }
+      ],
+      "area_code": "089",
+      "dialect_line": "Servus"
+    }
+  ]
+}

@@ -1,8 +1,0 @@
-{
-  "query": "SELECT zones_config FROM saved_designs WHERE id = 60001",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute SELECT zones_config FROM saved_designs WHERE id = 60001",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'zones_config' in 'field list'"
-  ]
-}
