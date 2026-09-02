@@ -1,9 +1,0 @@
-{
-  "query": "\nUPDATE product_zones SET \n  posY = 21, height = 4, fontSize = 18\nWHERE id = 1410025 AND purpose = 'clubName';\n\nUPDATE product_zones SET \n  posY = 27, height = 29, fontSize = 96\nWHERE id = 1410026 AND purpose = 'playerNumber';\n\nUPDATE product_zones SET \n  posY = 58, height = 6, fontSize = 28\nWHERE id = 1410027 AND purpose = 'playerName';\n",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute \nUPDATE product_zones SET \n  posY = 21, height = 4, fontSize = 18\nWHERE id = 1410025 AND purpose = 'clubName';\n\nUPDATE product_zones SET \n  posY = 27, height = 29, fontSize = 96\nWHERE id = 1410026 AND purpose = 'playerNumber';\n\nUPDATE product_zones SET \n  posY = 58, height = 6, fontSize = 28\nWHERE id = 1410027 AND purpose = 'playerName';\n",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 74
-}

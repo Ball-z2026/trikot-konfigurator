@@ -1,9 +1,0 @@
-{
-  "query": "UPDATE product_zones SET width = 10, height = 12, posX = 72, posY = 12, fontSize = 28 WHERE partId = 1320010 AND purpose = 'playerNumber';",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute UPDATE product_zones SET width = 10, height = 12, posX = 72, posY = 12, fontSize = 28 WHERE partId = 1320010 AND purpose = 'playerNumber';",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 57
-}

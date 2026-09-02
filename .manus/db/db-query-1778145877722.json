@@ -1,9 +1,0 @@
-{
-  "query": "INSERT INTO players (teamId, name, number, position, size) VALUES \n(120001, 'Müller', '1', 'Torwart', 'L'),\n(120001, 'Schmidt', '2', 'Verteidiger', 'M'),\n(120001, 'Weber', '3', 'Verteidiger', 'L'),\n(120001, 'Fischer', '4', 'Verteidiger', 'XL'),\n(120001, 'Wagner', '5', 'Verteidiger', 'M'),\n(120001, 'Becker', '6', 'Mittelfeld', 'L'),\n(120001, 'Hoffmann', '7', 'Mittelfeld', 'M'),\n(120001, 'Schulz', '8', 'Mittelfeld', 'L'),\n(120001, 'Koch', '9', 'Stürmer', 'M'),\n(120001, 'Richter', '10', 'Mittelfeld', 'S'),\n(120001, 'Klein', '11', 'Stürmer', 'M');",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WGAmJ9xmUAc2UXY.64382672da44 --database 3uAVwxvCFYUTTcHvTxGuX2 --execute INSERT INTO players (teamId, name, number, position, size) VALUES \n(120001, 'Müller', '1', 'Torwart', 'L'),\n(120001, 'Schmidt', '2', 'Verteidiger', 'M'),\n(120001, 'Weber', '3', 'Verteidiger', 'L'),\n(120001, 'Fischer', '4', 'Verteidiger', 'XL'),\n(120001, 'Wagner', '5', 'Verteidiger', 'M'),\n(120001, 'Becker', '6', 'Mittelfeld', 'L'),\n(120001, 'Hoffmann', '7', 'Mittelfeld', 'M'),\n(120001, 'Schulz', '8', 'Mittelfeld', 'L'),\n(120001, 'Koch', '9', 'Stürmer', 'M'),\n(120001, 'Richter', '10', 'Mittelfeld', 'S'),\n(120001, 'Klein', '11', 'Stürmer', 'M');",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 60
-}
